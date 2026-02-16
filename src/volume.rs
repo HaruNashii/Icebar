@@ -4,9 +4,10 @@ use std::process::Command;
 
 
 
+#[derive(Default)]
 pub struct VolumeData
 {
-    volume_level: String,
+    pub volume_level: String,
 }
 
 pub enum VolumeAction

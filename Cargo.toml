@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+chrono = "0.4.43"
 home = "0.5.12"
-# Iced (UI)
 iced = { version = "0.14.0", features = ["canvas", "svg"] }
 iced_layershell = "0.15.0"
 ron = "0.12.0"

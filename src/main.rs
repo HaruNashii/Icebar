@@ -1,11 +1,15 @@
+use iced::Alignment;
 use iced::{Color, Element, Event, Length, Task as Command, event};
 use iced_layershell::settings::{LayerShellSettings, StartMode, Settings};
-use iced::widget::{button, row, text};
+use crate::clock::ClockData;
+use crate::clock::get_current_time;
+use crate::fs::check_if_config_file_exists;
+use iced::widget::{button, container, row, text};
 use iced_layershell::reexport::Anchor;
 use iced_layershell::to_layer_message;
 use iced_layershell::application;
-use crate::fs::check_if_config_file_exists;
 use crate::ron::read_ron_config;
+use crate::volume::VolumeData;
 use crate::volume::volume;
 use iced::theme::Style;
 
@@ -13,20 +17,14 @@ use iced::theme::Style;
 
 
 
-
 mod volume;
+mod clock;
 mod fs;
 mod ron;
 
 
 
 
-
-#[derive(Default)]
-struct Counter 
-{
-    text: String,
-}
 
 #[to_layer_message]
 #[allow(dead_code)]
@@ -35,8 +33,18 @@ enum Message
 {
     IncrementPressed,
     DecrementPressed,
-    TextInput(String),
     IcedEvent(Event),
+}
+
+
+
+
+
+#[derive(Default)]
+struct Modules
+{
+    volume_data: VolumeData,
+    clock_data: ClockData
 }
 
 
@@ -63,9 +71,7 @@ pub fn main() -> Result<(), iced_layershell::Error>
         None => StartMode::Active,
     };
 
-
-
-    application(Counter::default, namespace, update, view)
+    application(Modules::default, namespace, update, view)
         .style(style)
         .subscription(subscription)
         .settings
@@ -90,13 +96,11 @@ pub fn main() -> Result<(), iced_layershell::Error>
 
 
 fn namespace() -> String { String::from("icebar") }
-fn subscription(_: &Counter) -> iced::Subscription<Message> 
-{ 
-    event::listen().map(Message::IcedEvent) 
-}
-fn update(counter: &mut Counter, message: Message) -> Command<Message> 
+fn subscription(_: &Modules) -> iced::Subscription<Message> { event::listen().map(Message::IcedEvent) }
+fn update(modules: &mut Modules, message: Message) -> Command<Message> 
 {
-    counter.text = volume(volume::VolumeAction::Get);
+    modules.clock_data.current_time = get_current_time();
+    modules.volume_data.volume_level = volume(volume::VolumeAction::Get);
     match message 
     {
         Message::IcedEvent(_) => Command::none(),
@@ -116,22 +120,48 @@ fn update(counter: &mut Counter, message: Message) -> Command<Message>
 
 
 
-fn view(counter: &Counter) -> Element<'_, Message> 
+fn view(modules: &Modules) -> Element<'_, Message> 
 {
     row!
     [
-        text(&counter.text).size(15),
-        button("Increment").on_press(Message::IncrementPressed),
-        button("Decrement").on_press(Message::DecrementPressed)
+        // LEFT
+        container
+        (
+            text(&modules.volume_data.volume_level).size(15)
+        )
+        .width(Length::Fill)
+        .align_x(iced::alignment::Horizontal::Left),
+
+
+        // CENTER
+        container
+        (
+            row!
+            [
+                button("Increment").on_press(Message::IncrementPressed),
+                button("Decrement").on_press(Message::DecrementPressed),
+            ]
+            .spacing(10)
+        )
+        .width(Length::Fill)
+        .align_x(iced::alignment::Horizontal::Center),
+
+
+        // RIGHT
+        container
+        (
+            text(&modules.clock_data.current_time).size(15)
+        )
+        .width(Length::Fill)
+        .align_x(iced::alignment::Horizontal::Right),
     ]
     .padding(20)
-    .spacing(10)
+    .align_y(Alignment::Center)
     .width(Length::Fill)
-    .height(Length::Fill)
     .into()
 }
 
-fn style(_counter: &Counter, theme: &iced::Theme) -> iced::theme::Style 
+fn style(_: &Modules, theme: &iced::Theme) -> iced::theme::Style 
 {
     Style 
     {
