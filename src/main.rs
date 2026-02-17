@@ -214,21 +214,13 @@ fn view(modules: &Modules) -> Element<'_, Message>
     {
         let icon_widget: Element<Message> = if let Some(icon) = icon_opt
         {
-            image(icon)
-                .width(Length::Fixed(18.0))
-                .height(Length::Fixed(18.0))
-                .into() // convert Image<_> to Element<Message>
+            image(icon).width(Length::Fixed(18.0)).height(Length::Fixed(18.0)).into() // convert Image<_> to Element<Message>
         }
         else
         {
-            text("?")
-                .size(12)
-                .into() // convert Text<_> to Element<Message>
+            text("?").size(12).into() // convert Text<_> to Element<Message>
         };
-        button(icon_widget)
-            .padding(2)
-            .on_press(Message::TrayIconClicked(idx))
-            .into()
+        button(icon_widget).padding(2).on_press(Message::TrayIconClicked(idx)).into()
     }).collect();
 
     let tray_row = row(tray_elements).spacing(8);
@@ -236,12 +228,14 @@ fn view(modules: &Modules) -> Element<'_, Message>
     row!
     [
         // LEFT
-        container(
+        container
+        (
             text(&modules.volume_data.volume_level).size(15)
         ).width(Length::Fill).align_x(iced::alignment::Horizontal::Left),
 
         // CENTER
-        container(
+        container
+        (
             row!
             [
                 button("Increment").on_press(Message::IncrementPressed),
@@ -250,7 +244,8 @@ fn view(modules: &Modules) -> Element<'_, Message>
         ).width(Length::Fill).align_x(iced::alignment::Horizontal::Center),
 
         // RIGHT
-        container(
+        container
+        (
             row!
             [
                 tray_row,
