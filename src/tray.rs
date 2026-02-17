@@ -94,14 +94,32 @@ pub async fn start_watcher(sender: mpsc::Sender<TrayEvent>) -> zbus::Result<()>
 // ===================== APP CONTEXT MENU =============
 // ======================================================
 
-pub async fn call_app_context_menu(conn: &zbus::Connection, service: &str, path: &str, x: i32, y: i32)
-    -> zbus::Result<()>
+pub async fn call_app_context_menu(conn: &zbus::Connection, service: &str, path: &str, x: i32, y: i32) -> zbus::Result<()>
 {
     println!("Calling ContextMenu on service: {service}, path: {path} at ({x},{y})");
-
     let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
-    proxy.call_method("ContextMenu", &(x, y)).await?;
-    println!("Context menu requested successfully for {service}");
+    match proxy.call_method("ContextMenu", &(x, y)).await 
+    {
+        Ok(_) => println!("Context menu requested successfully for {service}"),
+        Err(e) => 
+        {
+            println!("Failed to open context menu for {service}: {e}, Trying 'SecondaryActivate'...");
+            match proxy.call_method("SecondaryActivate", &(x, y)).await
+            {
+                Ok(_) => println!("SecondaryActivate requested successfully for {service}"),
+                Err(_) =>
+                {
+                    println!("Failed to open context menu for {service}: {e}, Trying 'Activate'...");
+                    match proxy.call_method("Activate", &(x, y)).await
+                    {
+                        Ok(_) => println!("Activate requested successfully for {service}"),
+                        Err(_) => println!("Every Options Failed :(")
+                    }
+                }
+            }
+
+        },
+    }
     Ok(())
 }
 
