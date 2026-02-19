@@ -1,14 +1,15 @@
-use iced::{futures::StreamExt, theme::Style, time, widget::{button, container, row, text, image}, Alignment, Color, Element, Length, Task as Command};
-use iced_layershell::{application, to_layer_message, reexport::Anchor, settings::{LayerShellSettings, StartMode, Settings}};
+use iced::{Alignment, Color, Element, Length, Task as Command, event, futures::StreamExt, mouse::{self, ScrollDelta}, theme::Style, time, widget::{Row, button, container, image, mouse_area, row, text}};
+use iced_layershell::{application, to_layer_message, settings::{LayerShellSettings, StartMode, Settings}};
 use std::{sync::Mutex, time::Duration};
 use tokio::sync::mpsc;
 use once_cell::sync::Lazy;
+use hyprland::dispatch::*;
 
 
 
 
 
-use crate::{clock::{ClockData, get_current_time}};
+use crate::{clock::{ClockData, get_current_time}, hypr::{HyprlandData, get_hyprland_data}, ron::BarConfig};
 use crate::fs::check_if_config_file_exists;
 use crate::ron::read_ron_config;
 use crate::tray::{TrayEvent};
@@ -24,7 +25,7 @@ mod tray;
 mod popup;
 mod fs;
 mod ron;
-
+mod hypr;
 
 
 
@@ -39,9 +40,15 @@ static TRAY_RECEIVER: Lazy<Mutex<Option<mpsc::Receiver<TrayEvent>>>> = Lazy::new
 #[derive(Debug, Clone)]
 enum Message
 {
-    IncrementPressed,
-    DecrementPressed,
+    MuteAudioPressed,
     Tick,
+    Nothing,
+
+    IsHoveringVolume(bool),
+    IsHoveringWorkspace(bool),
+    MouseWheelScrolled(ScrollDelta),
+
+    WorkspaceButtonPressed(usize),
 
     TrayEvent(TrayEvent),
     TrayIconClicked(usize),
@@ -51,10 +58,14 @@ enum Message
     CloseMenu,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppData
 {
     modules: Modules,
+    is_hovering_volume: bool,
+    is_hovering_workspace: bool,
+    hyprland_data: HyprlandData,
+    ron_config: BarConfig
 }
 
 #[derive(Default, Clone)]
@@ -76,35 +87,34 @@ struct TraySubscription;
 #[tokio::main]
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
+    let hyprland_data = get_hyprland_data();
     check_if_config_file_exists();
-    let ron_config = read_ron_config();
-
-    let anchor_position = match ron_config.bar_position.as_str()
+    let (ron_config, anchor_position) = read_ron_config();
+    let ron_config_clone = ron_config.clone();
+    let app_data = AppData
     {
-        "Up" => Anchor::Top | Anchor::Left | Anchor::Right,
-        "Down" => Anchor::Bottom | Anchor::Left | Anchor::Right,
-        "Left" => Anchor::Left | Anchor::Top | Anchor::Bottom,
-        "Right" => Anchor::Right | Anchor::Top | Anchor::Bottom,
-        _ => Anchor::Top | Anchor::Left | Anchor::Right,
+        modules: Modules::default(),
+        is_hovering_volume: false, 
+        is_hovering_workspace: false, 
+        hyprland_data,
+        ron_config: ron_config_clone
     };
 
     // ---- tray watcher ----
     let (tx, rx) = mpsc::channel(32);
     *TRAY_RECEIVER.lock().unwrap() = Some(rx);
-
     tokio::spawn(async move 
     {
         let _ = tray::start_watcher(tx).await;
     });
 
-    let binded_output_name = std::env::args().nth(1);
-    let start_mode = match binded_output_name
+    let start_mode = match std::env::args().nth(1)
     {
         Some(output) => StartMode::TargetScreen(output),
         None => StartMode::Active,
     };
 
-    application(AppData::default, namespace, update, view).style(style).subscription(subscription).settings(Settings
+    application(move || app_data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings
     {
         layer_settings: LayerShellSettings
         {
@@ -134,10 +144,23 @@ fn tray_stream(_: &TraySubscription) -> impl iced::futures::Stream<Item = Messag
 
 fn subscription(_: &AppData) -> iced::Subscription<Message>
 {
+    let sub = event::listen_with(|event, _status, _id| 
+    {
+        match event 
+        {
+            iced::Event::Mouse(mouse::Event::WheelScrolled {delta, ..} ) => 
+            {
+                Some(Message::MouseWheelScrolled(delta))
+            },
+            _=> None
+        }
+    });
+
     iced::Subscription::batch
     ([
         iced::Subscription::run_with(TraySubscription, tray_stream),
-        time::every(Duration::from_secs(1)).map(|_| Message::Tick)
+        time::every(Duration::from_secs(1)).map(|_| Message::Tick),
+        sub
     ])
 }
 
@@ -147,8 +170,45 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
 {
     match message
     {
-        Message::IncrementPressed => { volume::volume(volume::VolumeAction::Increase); }
-        Message::DecrementPressed => { volume::volume(volume::VolumeAction::Decrease); }
+        Message::IsHoveringVolume(bool) => { app.is_hovering_volume = bool; }
+        Message::IsHoveringWorkspace(bool) => { app.is_hovering_workspace = bool; }
+        Message::MuteAudioPressed => { volume::volume( volume::VolumeAction::Mute); }
+        Message::WorkspaceButtonPressed(id) =>
+        {
+            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32)));
+        }
+
+        Message::MouseWheelScrolled(scrolldelta) =>
+        {
+            if app.is_hovering_volume
+            {
+                if let ScrollDelta::Pixels{x: _, y} = scrolldelta 
+                {
+                    if y > 2.
+                    {
+                        volume::volume(volume::VolumeAction::Increase);
+                    }
+                    if y < 2.
+                    {
+                        volume::volume(volume::VolumeAction::Decrease);
+                    }
+                }
+            }
+            if app.is_hovering_workspace
+            {
+                if let ScrollDelta::Pixels{x: _, y} = scrolldelta 
+                {
+                    if y > 2.
+                    {
+                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1)));
+                    }
+                    if y < 2.
+                    {
+                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1)));
+                    }
+                }
+            }
+        }
 
         Message::Tick =>
         {
@@ -219,9 +279,9 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             
             tokio::spawn(async move 
             {
-                let _  = crate::popup::run_popup(popup_data).await;
-                
+                let _ = crate::popup::run_popup(popup_data).await;
             });
+
         }
         _=> {},
     }
@@ -251,6 +311,15 @@ fn view(app: &AppData) -> Element<'_,Message>
         })
     ).spacing(8);
 
+    let workspace_buttons: Row<'_, Message> = row
+    (
+        (1..app.hyprland_data.workspace_count + 1).map(|i| 
+        {
+                button(text(format!("{i}"))).on_press(Message::WorkspaceButtonPressed(i)).into()
+        })
+    ).spacing(8);
+
+
     // ---------- bar ----------
     let bar = row!
     [
@@ -259,9 +328,14 @@ fn view(app: &AppData) -> Element<'_,Message>
             (
                 row!
                 [
-                    text(&app.modules.volume_data.volume_level),
-                    button("Increment").on_press(Message::IncrementPressed),
-                    button("Decrement").on_press(Message::DecrementPressed)
+                    mouse_area
+                    (
+                        workspace_buttons,
+                    ).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)),
+                    mouse_area
+                    (
+                        button(&*app.modules.volume_data.volume_level).on_press(Message::MuteAudioPressed)
+                    ).on_enter(Message::IsHoveringVolume(true)).on_exit(Message::IsHoveringVolume(false))
                 ].spacing(10)
             ).width(Length::Fill).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Top),
             
@@ -284,7 +358,7 @@ fn view(app: &AppData) -> Element<'_,Message>
                 row!
                 [
                     tray
-                ]
+                ].spacing(10)
             ).width(Length::Fill).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Top),
         ].padding(20).align_y(Alignment::Center);
 

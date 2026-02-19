@@ -8,6 +8,7 @@ chrono = "0.4.43"
 dirs = "6.0.0"
 futures = "0.3.32"
 home = "0.5.12"
+hyprland = { git = "https://github.com/hyprland-community/hyprland-rs", branch = "master" }
 iced = { version = "0.14.0", features = ["canvas", "svg", "tokio", "image"] }
 iced_layershell = "0.15.0"
 iced_native = "0.10.3"

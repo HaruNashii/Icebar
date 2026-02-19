@@ -122,12 +122,9 @@ fn update(data: &mut PopupData, popup_message: PopupMessage) -> Task<PopupMessag
         PopupMessage::CursorMoved(position) =>
         {
             let menu_size = (data.items.len() * 37) as f32;
-            println!("menu_size: {menu_size}");
-            println!("mouse position: {:?}", position);
             data.cursor_is_inside_menu = false;
             if (position.y >= 0. && position.y <= menu_size) && (position.x >= 0. && position.x <= 200.)
             {
-                println!("x and y is inside");
                 data.cursor_is_inside_menu = true;
             };
         }

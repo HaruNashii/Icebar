@@ -14,6 +14,7 @@ pub enum VolumeAction
 {
     Increase,
     Decrease,
+    Mute,
     Get
 }
 
@@ -29,6 +30,7 @@ pub fn volume(volume_modifier: VolumeAction) -> String
     {
         VolumeAction::Increase => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg("5%+").output().expect("Failed To Increase Volume With wpctl"),
         VolumeAction::Decrease => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg("5%-").output().expect("Failed To Decrease Volume With wpctl"),
+        VolumeAction::Mute => Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SINK@").arg("toggle").output().expect("Failed To Toggle-Mute With wpctl"),
         VolumeAction::Get => 
         {
             let output = Command::new("wpctl").arg("get-volume").arg("@DEFAULT_SINK@").output().expect("Failed To Get Current Volume With wpctl");
