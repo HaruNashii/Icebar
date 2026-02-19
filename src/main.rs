@@ -1,4 +1,4 @@
-use iced::{Alignment, Color, Element, Length, Renderer, Task as Command, Theme, event, futures::StreamExt, mouse::{self, ScrollDelta}, theme::Style, time, widget::{MouseArea, button, container, image, mouse_area, row, text}};
+use iced::{Alignment, Color, Element, Length, Renderer, Task as Command, Theme, event, futures::StreamExt, mouse::{self, ScrollDelta}, theme::Style, time, widget::{MouseArea, Row, button, container, image, mouse_area, row, text}};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
 use std::{sync::Mutex, time::Duration};
 use tokio::sync::mpsc;
@@ -329,9 +329,19 @@ fn view(app: &AppData) -> Element<'_,Message>
     ).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false));
 
     let volume_button: MouseArea<'_, Message> = mouse_area(button(&*app.modules.volume_data.volume_level).on_press(Message::MuteAudioPressed)).on_enter(Message::IsHoveringVolume(true)).on_exit(Message::IsHoveringVolume(false));
-    
     let clock: iced_layershell::reexport::core::widget::Text<'_, Theme, Renderer> = text(&app.modules.clock_data.current_time);
 
+
+    let mut left_row_vec: Vec<Element<'_, Message>> = Vec::new();
+    left_row_vec.push(workspace_buttons.into());
+    left_row_vec.push(volume_button.into());
+
+    let mut center_row_vec: Vec<Element<'_, Message>> = Vec::new();
+    center_row_vec.push(clock.into());
+
+    let mut right_row_vec: Vec<Element<'_, Message>> = Vec::new();
+    right_row_vec.push(tray.into());
+    
 
     //
     // ---------- bar ----------
@@ -341,11 +351,7 @@ fn view(app: &AppData) -> Element<'_,Message>
             // RIGHT
             container
             (
-                row!
-                [
-                    workspace_buttons,
-                    volume_button
-                ].spacing(10)
+                row(left_row_vec).spacing(10)
             ).width(Length::Fill).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Top),
             
 
@@ -353,10 +359,7 @@ fn view(app: &AppData) -> Element<'_,Message>
             // CENTER
             container
             (
-                row!
-                [
-                    clock
-                ].spacing(10)
+                row(center_row_vec).spacing(10)
             ).width(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Top),
 
 
@@ -364,10 +367,7 @@ fn view(app: &AppData) -> Element<'_,Message>
             // RIGHT
             container
             (
-                row!
-                [
-                    tray
-                ].spacing(10)
+                row(right_row_vec).spacing(10)
             ).width(Length::Fill).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Top),
         ].padding(20).align_y(Alignment::Center);
 
