@@ -8,7 +8,7 @@ use once_cell::sync::Lazy;
 
 
 
-use crate::clock::{ClockData, get_current_time};
+use crate::{clock::{ClockData, get_current_time}};
 use crate::fs::check_if_config_file_exists;
 use crate::ron::read_ron_config;
 use crate::tray::{TrayEvent};
@@ -51,10 +51,10 @@ enum Message
     CloseMenu,
 }
 
-#[derive(Default, Clone)]
+#[derive(Default)]
 struct AppData
 {
-    modules: Modules
+    modules: Modules,
 }
 
 #[derive(Default, Clone)]
@@ -98,27 +98,24 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     });
 
     let binded_output_name = std::env::args().nth(1);
-
     let start_mode = match binded_output_name
     {
         Some(output) => StartMode::TargetScreen(output),
         None => StartMode::Active,
     };
 
-    application(AppData::default, namespace, update, view).style(style).subscription(subscription)
-        .settings(Settings
+    application(AppData::default, namespace, update, view).style(style).subscription(subscription).settings(Settings
+    {
+        layer_settings: LayerShellSettings
         {
-            layer_settings: LayerShellSettings
-            {
-                size: Some((0, ron_config.bar_size)),
-                exclusive_zone: ron_config.bar_size as i32,
-                anchor: anchor_position,
-                start_mode,
-                ..Default::default()
-            },
+            size: Some((0, ron_config.bar_size)),
+            exclusive_zone: ron_config.bar_size as i32,
+            anchor: anchor_position,
+            start_mode,
             ..Default::default()
-        })
-        .run()
+        },
+        ..Default::default()
+    }).run()
 }
 
 
@@ -217,13 +214,14 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 service,
                 path,
                 items,
+                cursor_is_inside_menu: false
             };
-
+            
             tokio::spawn(async move 
             {
-                let _ = crate::popup::run_popup(popup_data).await;
+                let _  = crate::popup::run_popup(popup_data).await;
+                
             });
-
         }
         _=> {},
     }
