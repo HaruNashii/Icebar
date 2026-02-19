@@ -4,7 +4,7 @@ use std::process::Command;
 
 
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct VolumeData
 {
     pub volume_level: String,

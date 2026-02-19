@@ -3,8 +3,10 @@ use zbus::message::Header;
 use tokio::sync::mpsc::{Sender, self};
 use resvg::usvg;
 use tiny_skia::Pixmap;
-use std::fs;
+use std::{fs, process::Command};
 use std::path::{Path, PathBuf};
+
+
 
 
 
@@ -58,21 +60,92 @@ impl StatusNotifierWatcher
         }
     }
 
-    fn registered_status_notifier_items(&self) -> Vec<String>
-    {
-        vec![]
-    }
+    fn registered_status_notifier_items(&self) -> Vec<String> { vec![] }
+    fn is_status_notifier_host_registered(&self) -> bool { true }
+    fn protocol_version(&self) -> i32 { 0 }
+}
 
-    fn is_status_notifier_host_registered(&self) -> bool
-    {
-        true
-    }
 
-    fn protocol_version(&self) -> i32
+
+
+
+//
+// ================= MENU TYPES =================
+//
+
+#[derive(Debug, Clone)]
+pub struct MenuItem 
+{
+    pub id: i32,
+    pub label: String,
+    pub visible: bool
+}
+
+
+
+
+//
+// ---------- recursive layout parser ----------
+// layout node signature: (i32, a{sv}, av)
+//
+fn extract_nodes(v: &serde_json::Value, entries: &mut Vec<MenuItem>) 
+{
+    match v 
     {
-        0
+        serde_json::Value::Array(arr) => 
+        {
+            if arr.len() == 3 
+            {
+                let id = arr[0].as_i64().unwrap_or(0) as i32;
+                let props = &arr[1];
+
+                if let Some(label_obj) = props.get("label") 
+                {
+                    let label = label_obj.get("data").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                    let visible = props.get("visible").and_then(|v| v.get("data")).and_then(|v| v.as_bool()).unwrap_or(true);
+                    let enabled = props.get("enabled").and_then(|v| v.get("data")).and_then(|v| v.as_bool()).unwrap_or(true);
+                    let entry_type = props.get("type").and_then(|v| v.get("data")).and_then(|v| v.as_str()).unwrap_or("default");
+                    if visible && enabled && entry_type != "separator" { entries.push(MenuItem { id, label, visible }); }
+                }
+            }
+            for elem in arr { extract_nodes(elem, entries); }
+        }
+        serde_json::Value::Object(map) => 
+        {
+            for value in map.values() 
+            {
+                extract_nodes(value, entries);
+            }
+        }
+        _ => {}
     }
 }
+
+
+
+//
+// ---------- load menu ----------
+//
+pub async fn load_menu(service: &str, menu_path: &str) -> zbus::Result<Vec<MenuItem>> 
+{
+    let output = Command::new("busctl").args(["--user", "--json=short", "call", service, menu_path, "com.canonical.dbusmenu", "GetLayout", "iias", "0", "1", "0"]).output()?;
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let mut entries = Vec::new();
+    extract_nodes(&json, &mut entries);
+    Ok(entries)
+}
+
+
+//
+// ================= CLICK MENU ITEM =================
+//
+
+pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus::Result<()> 
+{
+    Command::new("busctl").args(["--user", "call", service, menu_path, "com.canonical.dbusmenu", "Event", "isvu", &id.to_string(), "clicked", "i", "0", "0"]).status()?;
+    Ok(())
+}
+
 
 // ======================================================
 // ===================== TRAY & WATCHER START ==========
@@ -93,35 +166,34 @@ pub async fn start_watcher(sender: mpsc::Sender<TrayEvent>) -> zbus::Result<()>
 // ======================================================
 // ===================== APP CONTEXT MENU =============
 // ======================================================
-
-pub async fn call_app_context_menu(conn: &zbus::Connection, service: &str, path: &str, x: i32, y: i32) -> zbus::Result<()>
-{
-    println!("Calling ContextMenu on service: {service}, path: {path} at ({x},{y})");
-    let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
-    match proxy.call_method("ContextMenu", &(x, y)).await 
-    {
-        Ok(_) => println!("Context menu requested successfully for {service}"),
-        Err(e) => 
-        {
-            println!("Failed to open context menu for {service}: {e}, Trying 'SecondaryActivate'...");
-            match proxy.call_method("SecondaryActivate", &(x, y)).await
-            {
-                Ok(_) => println!("SecondaryActivate requested successfully for {service}"),
-                Err(_) =>
-                {
-                    println!("Failed to open context menu for {service}: {e}, Trying 'Activate'...");
-                    match proxy.call_method("Activate", &(x, y)).await
-                    {
-                        Ok(_) => println!("Activate requested successfully for {service}"),
-                        Err(_) => println!("Every Options Failed :(")
-                    }
-                }
-            }
-
-        },
-    }
-    Ok(())
-}
+//pub async fn call_app_context_menu(conn: &zbus::Connection, service: &str, path: &str, x: i32, y: i32) -> zbus::Result<()>
+//{
+//    println!("Calling ContextMenu on service: {service}, path: {path} at ({x},{y})");
+//    let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
+//    match proxy.call_method("ContextMenu", &(x, y)).await 
+//    {
+//        Ok(_) => println!("Context menu requested successfully for {service}"),
+//        Err(e) => 
+//        {
+//            println!("Failed to open context menu for {service}: {e}, Trying 'SecondaryActivate'...");
+//            match proxy.call_method("SecondaryActivate", &(x, y)).await
+//            {
+//                Ok(_) => println!("SecondaryActivate requested successfully for {service}"),
+//                Err(_) =>
+//                {
+//                    println!("Failed to open context menu for {service}: {e}, Trying 'Activate'...");
+//                    match proxy.call_method("Activate", &(x, y)).await
+//                    {
+//                        Ok(_) => println!("Activate requested successfully for {service}"),
+//                        Err(_) => println!("Every Options Failed :(")
+//                    }
+//                }
+//            }
+//
+//        },
+//    }
+//    Ok(())
+//}
 
 
 //

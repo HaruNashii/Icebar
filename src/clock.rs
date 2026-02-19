@@ -3,7 +3,7 @@ use chrono::Local;
 
 
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct ClockData
 {
     pub current_time: String

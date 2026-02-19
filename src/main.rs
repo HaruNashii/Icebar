@@ -1,23 +1,17 @@
-use iced::Alignment;
-use iced::{Color, Element, Length, Task as Command};
-use iced_layershell::settings::{LayerShellSettings, StartMode, Settings};
-use iced_layershell::reexport::Anchor;
-use iced_layershell::{application, to_layer_message};
-use iced::widget::{button, container, row, text, image};
-use iced::theme::Style;
-use iced::time;
-use std::time::Duration;
+use iced::{futures::StreamExt, theme::Style, time, widget::{button, container, row, text, image, column, stack, Space}, Alignment, Color, Element, Length, Task as Command};
+use iced_layershell::{application, to_layer_message, reexport::Anchor, settings::{LayerShellSettings, StartMode, Settings}};
+use std::{sync::Mutex, time::Duration};
 use tokio::sync::mpsc;
-use iced::futures::StreamExt;
 use once_cell::sync::Lazy;
-use std::sync::Mutex;
+
+
 
 
 
 use crate::clock::{ClockData, get_current_time};
 use crate::fs::check_if_config_file_exists;
 use crate::ron::read_ron_config;
-use crate::tray::{TrayEvent, call_app_context_menu};
+use crate::tray::{TrayEvent};
 use crate::volume::VolumeData;
 
 
@@ -47,25 +41,33 @@ enum Message
     IncrementPressed,
     DecrementPressed,
     Tick,
+
     TrayEvent(TrayEvent),
     TrayIconClicked(usize),
+
+    MenuLoaded(String, String, Vec<tray::MenuItem>),
+    MenuAction(String, String, i32, String),
+
+    CloseMenu,
 }
 
-
-
-
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppData
 {
     modules: Modules
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct Modules
 {
     volume_data: VolumeData,
     clock_data: ClockData,
+
+    // (icon, service|path)
     tray_icons: Vec<(Option<image::Handle>, String)>,
+
+    // active popup menu
+    tray_menu: Option<(String, String, Vec<tray::MenuItem>)>,
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -90,25 +92,24 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         _ => Anchor::Top | Anchor::Left | Anchor::Right,
     };
 
-    // tray watcher
+    // ---- tray watcher ----
     let (tx, rx) = mpsc::channel(32);
     *TRAY_RECEIVER.lock().unwrap() = Some(rx);
 
-    tokio::spawn(async move
+    tokio::spawn(async move 
     {
         let _ = tray::start_watcher(tx).await;
     });
 
     let binded_output_name = std::env::args().nth(1);
+
     let start_mode = match binded_output_name
     {
         Some(output) => StartMode::TargetScreen(output),
         None => StartMode::Active,
     };
 
-    application(AppData::default, namespace, update, view)
-        .style(style)
-        .subscription(subscription)
+    application(AppData::default, namespace, update, view).style(style).subscription(subscription)
         .settings(Settings
         {
             layer_settings: LayerShellSettings
@@ -120,10 +121,15 @@ pub async fn main() -> Result<(), iced_layershell::Error>
                 ..Default::default()
             },
             ..Default::default()
-        }).run()
+        })
+        .run()
 }
 
+
+
 fn namespace() -> String { String::from("icebar") }
+
+
 
 fn tray_stream(_: &TraySubscription) -> impl iced::futures::Stream<Item = Message>
 {
@@ -131,145 +137,185 @@ fn tray_stream(_: &TraySubscription) -> impl iced::futures::Stream<Item = Messag
     tokio_stream::wrappers::ReceiverStream::new(receiver).map(Message::TrayEvent)
 }
 
+
+
 fn subscription(_: &AppData) -> iced::Subscription<Message>
 {
-    let tray_subscription = iced::Subscription::run_with(TraySubscription, tray_stream);
-    iced::Subscription::batch([tray_subscription, time::every(Duration::from_secs(1)).map(|_| Message::Tick)])
+    iced::Subscription::batch
+    ([
+        iced::Subscription::run_with(TraySubscription, tray_stream),
+        time::every(Duration::from_secs(1)).map(|_| Message::Tick)
+    ])
 }
 
-fn update(app_data: &mut AppData, message: Message) -> Command<Message>
+
+
+fn update(app: &mut AppData, message: Message) -> Command<Message>
 {
     match message
     {
+        Message::IncrementPressed => { volume::volume(volume::VolumeAction::Increase); }
+        Message::DecrementPressed => { volume::volume(volume::VolumeAction::Decrease); }
+
         Message::Tick =>
         {
-            app_data.modules.clock_data.current_time = get_current_time();
-            app_data.modules.volume_data.volume_level = volume::volume(volume::VolumeAction::Get);
+            app.modules.clock_data.current_time = get_current_time();
+            app.modules.volume_data.volume_level = volume::volume(volume::VolumeAction::Get);
         }
-        Message::IncrementPressed =>
-        {
-            volume::volume(volume::VolumeAction::Increase);
-            app_data.modules.volume_data.volume_level = volume::volume(volume::VolumeAction::Get);
-        }
-        Message::DecrementPressed =>
-        {
-            volume::volume(volume::VolumeAction::Decrease);
-            app_data.modules.volume_data.volume_level = volume::volume(volume::VolumeAction::Get);
-        }
+
         Message::TrayEvent(event) =>
         {
             match event
             {
                 TrayEvent::ItemRegistered(service) =>
                 {
-                    println!("Item Registered: {service}");
-                    // Add placeholder for this service
-                    if !app_data.modules.tray_icons.iter().any(|(_, s)| s == &service)
+                    if !app.modules.tray_icons.iter().any(|(_, s)| s == &service)
                     {
-                        app_data.modules.tray_icons.push((None, service));
+                        app.modules.tray_icons.push((None, service));
                     }
                 }
+
                 TrayEvent::Icon { data, width, height } =>
                 {
-                    // Find existing placeholder and update
-                    let mut found = false;
-                    for (handle, _service) in app_data.modules.tray_icons.iter_mut()
+                    for (handle, _) in &mut app.modules.tray_icons
                     {
                         if handle.is_none()
                         {
-                            *handle = Some(image::Handle::from_rgba(width, height, data.clone()));
-                            found = true;
-                            break;
+                            *handle =
+                                Some(image::Handle::from_rgba(width, height, data.clone()));
+                            return Command::none();
                         }
                     }
-                    // If no placeholder, push new icon
-                    if !found
-                    {
-                        app_data.modules.tray_icons.push((Some(image::Handle::from_rgba(width, height, data)), "unknown|unknown".into()));
-                    }
                 }
             }
         }
+
         Message::TrayIconClicked(idx) =>
         {
-            if let Some((_, service_path)) = app_data.modules.tray_icons.get(idx)
+            println!("TrayIcon Clicked");
+            if let Some((_, combined)) = app.modules.tray_icons.get(idx)
             {
-                println!("Opening context menu for icon {idx}: {service_path}");
-                let parts: Vec<&str> = service_path.split('|').collect();
-                if parts.len() == 2
+                let parts: Vec<&str> = combined.split('|').collect();
+                if parts.len() != 2 { return Command::none(); }
+                let service = parts[0].to_string();
+                let path = parts[1].to_string();
+                return Command::perform(async move 
                 {
-                    let service = parts[0].to_string();
-                    let path = parts[1].to_string();
-                    tokio::spawn(async move
-                    {
-                        let conn = zbus::Connection::session().await.unwrap();
-                        let _ = call_app_context_menu(&conn, &service, &path,  300, 300).await;
-                    });
-                }
+                    let conn = zbus::Connection::session().await.unwrap();
+                    let proxy: zbus::Proxy<'_> = zbus::Proxy::new(&conn, service.as_str(), path.as_str(), "org.kde.StatusNotifierItem").await.unwrap();
+                    let menu_path:zbus::zvariant::OwnedObjectPath = proxy.get_property("Menu").await.unwrap();
+                    let items = crate::tray::load_menu(&service, menu_path.as_str()).await.unwrap_or_default();
+                    (service, menu_path.to_string(), items)
+                },
+                |(s,p,i)| Message::MenuLoaded(s,p,i));
             }
         }
-        _ => {}
+
+        Message::MenuLoaded(service, path, items) =>
+        {
+            println!("\n===# Menu Loaded!!! #===");
+            println!("Service: {service}");
+            println!("Menu Path: {path}");
+            println!("Id: {:?}\n", items);
+            app.modules.tray_menu = Some((service, path, items));
+        }
+
+        Message::MenuAction(service, path, id, label) =>
+        {
+            println!("\n===# Menu Action Activated!!! #===");
+            println!("Label: {label}");
+            println!("Service: {service}");
+            println!("Menu Path: {path}");
+            println!("Id: {id}");
+            tokio::spawn(async move 
+            {
+                let _ = crate::tray::activate_menu_item(&service, &path, id).await;
+            });
+            app.modules.tray_menu = None;
+        }
+
+        Message::CloseMenu => app.modules.tray_menu = None,
+        _=> {},
     }
 
     Command::none()
 }
 
-fn view(app_data: &AppData) -> Element<'_, Message>
+fn view(app: &AppData) -> Element<'_,Message>
 {
-    println!("icons: {}", app_data.modules.tray_icons.len());
-
-    let tray_elements: Vec<Element<Message>> = app_data.modules.tray_icons.iter().enumerate().map(|(idx, (icon_opt, _service_path))|
-    {
-        let icon_widget: Element<Message> = if let Some(icon) = icon_opt
+    // ---------- tray icons ----------
+    let tray = row
+    (
+        app.modules.tray_icons.iter().enumerate().map(|(i,(icon,_))|
         {
-            image(icon).width(Length::Fixed(18.0)).height(Length::Fixed(18.0)).into() // convert Image<_> to Element<Message>
-        }
-        else
-        {
-            text("?").size(12).into() // convert Text<_> to Element<Message>
-        };
-        button(icon_widget).padding(2).on_press(Message::TrayIconClicked(idx)).into()
-    }).collect();
+            let content: Element<_> = if let Some(icon) = icon
+            {
+                image(icon.clone()).width(18).height(18).into()
+            }
+            else 
+            { 
+                text("?").into() 
+            };
 
-    let tray_row = row(tray_elements).spacing(8);
+            button(content).padding(2).on_press(Message::TrayIconClicked(i)).into()
+        })
+    ).spacing(8);
 
-    row!
+    // ---------- bar ----------
+    let bar = row!
     [
-        // LEFT
+            container(text(&app.modules.volume_data.volume_level)).width(Length::Fill),
+
+            container
+            (
+                row!
+                [
+                    button("Increment").on_press(Message::IncrementPressed),
+                    button("Decrement").on_press(Message::DecrementPressed),
+                ].spacing(10)
+            ).width(Length::Fill).align_x(iced::alignment::Horizontal::Center),
+
+            container
+            (
+                row!
+                [
+                    tray,
+                    text(&app.modules.clock_data.current_time)
+                ]
+            ).width(Length::Fill).align_x(iced::alignment::Horizontal::Right),
+        ].padding(20).align_y(Alignment::Center);
+
+
+    // ---------- overlay menu ----------
+    let overlay: Element<_> = if let Some((service,path,items)) = &app.modules.tray_menu
+    {
         container
         (
-            text(&app_data.modules.volume_data.volume_level).size(15)
-        ).width(Length::Fill).align_x(iced::alignment::Horizontal::Left),
+            column
+            (
+                items.iter().map(|item|
 
 
-        // CENTER
-        container
-        (
-            row!
-            [
-                button("Increment").on_press(Message::IncrementPressed),
-                button("Decrement").on_press(Message::DecrementPressed),
-            ].spacing(10)
-        ).width(Length::Fill).align_x(iced::alignment::Horizontal::Center),
+                    button(text(&item.label)).on_press(Message::MenuAction(service.clone(), path.clone(), item.id, item.label.clone())).into()
 
+                ).collect::<Vec<_>>()
+            ).spacing(4).padding(6)
+        ).width(Length::Shrink).into()
+    }
+    else
+    {
+        Space::new().into()
+    };
 
-        // RIGHT
-        container
-        (
-            row!
-            [
-                tray_row,
-                text(&app_data.modules.clock_data.current_time).size(15)
-            ]
-        ).width(Length::Fill).align_x(iced::alignment::Horizontal::Right),
-    ].padding(20).align_y(Alignment::Center).width(Length::Fill).into()
+    stack![bar, overlay].into()
 }
 
-fn style(_: &AppData, _theme: &iced::Theme) -> Style
+fn style(_: &AppData, _: &iced::Theme) -> Style
 {
     Style
     {
-        background_color: Color::from_rgba(0.134, 0.206, 0.203, 0.255),
+        background_color: Color::from_rgba(0.134,0.206,0.203,0.255),
         text_color: Color::WHITE
     }
 }
+
