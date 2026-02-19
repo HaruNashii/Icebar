@@ -78,7 +78,7 @@ pub struct MenuItem
 {
     pub id: i32,
     pub label: String,
-    pub visible: bool
+    pub _visible: bool
 }
 
 
@@ -105,7 +105,7 @@ fn extract_nodes(v: &serde_json::Value, entries: &mut Vec<MenuItem>)
                     let visible = props.get("visible").and_then(|v| v.get("data")).and_then(|v| v.as_bool()).unwrap_or(true);
                     let enabled = props.get("enabled").and_then(|v| v.get("data")).and_then(|v| v.as_bool()).unwrap_or(true);
                     let entry_type = props.get("type").and_then(|v| v.get("data")).and_then(|v| v.as_str()).unwrap_or("default");
-                    if visible && enabled && entry_type != "separator" { entries.push(MenuItem { id, label, visible }); }
+                    if visible && enabled && entry_type != "separator" { entries.push(MenuItem { id, label, _visible: visible }); }
                 }
             }
             for elem in arr { extract_nodes(elem, entries); }

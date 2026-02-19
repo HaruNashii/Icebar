@@ -1,4 +1,4 @@
-use iced::{futures::StreamExt, theme::Style, time, widget::{button, container, row, text, image, column, stack, Space}, Alignment, Color, Element, Length, Task as Command};
+use iced::{futures::StreamExt, theme::Style, time, widget::{button, container, row, text, image}, Alignment, Color, Element, Length, Task as Command};
 use iced_layershell::{application, to_layer_message, reexport::Anchor, settings::{LayerShellSettings, StartMode, Settings}};
 use std::{sync::Mutex, time::Duration};
 use tokio::sync::mpsc;
@@ -21,6 +21,7 @@ use crate::volume::VolumeData;
 mod volume;
 mod clock;
 mod tray;
+mod popup;
 mod fs;
 mod ron;
 
@@ -46,7 +47,6 @@ enum Message
     TrayIconClicked(usize),
 
     MenuLoaded(String, String, Vec<tray::MenuItem>),
-    MenuAction(String, String, i32, String),
 
     CloseMenu,
 }
@@ -62,12 +62,8 @@ struct Modules
 {
     volume_data: VolumeData,
     clock_data: ClockData,
-
     // (icon, service|path)
     tray_icons: Vec<(Option<image::Handle>, String)>,
-
-    // active popup menu
-    tray_menu: Option<(String, String, Vec<tray::MenuItem>)>,
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -181,8 +177,7 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                     {
                         if handle.is_none()
                         {
-                            *handle =
-                                Some(image::Handle::from_rgba(width, height, data.clone()));
+                            *handle = Some(image::Handle::from_rgba(width, height, data.clone()));
                             return Command::none();
                         }
                     }
@@ -217,29 +212,26 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             println!("Service: {service}");
             println!("Menu Path: {path}");
             println!("Id: {:?}\n", items);
-            app.modules.tray_menu = Some((service, path, items));
-        }
+            let popup_data = crate::popup::PopupData 
+            {
+                service,
+                path,
+                items,
+            };
 
-        Message::MenuAction(service, path, id, label) =>
-        {
-            println!("\n===# Menu Action Activated!!! #===");
-            println!("Label: {label}");
-            println!("Service: {service}");
-            println!("Menu Path: {path}");
-            println!("Id: {id}");
             tokio::spawn(async move 
             {
-                let _ = crate::tray::activate_menu_item(&service, &path, id).await;
+                let _ = crate::popup::run_popup(popup_data).await;
             });
-            app.modules.tray_menu = None;
-        }
 
-        Message::CloseMenu => app.modules.tray_menu = None,
+        }
         _=> {},
     }
 
     Command::none()
 }
+
+
 
 fn view(app: &AppData) -> Element<'_,Message>
 {
@@ -264,51 +256,45 @@ fn view(app: &AppData) -> Element<'_,Message>
     // ---------- bar ----------
     let bar = row!
     [
-            container(text(&app.modules.volume_data.volume_level)).width(Length::Fill),
-
+            // RIGHT
             container
             (
                 row!
                 [
+                    text(&app.modules.volume_data.volume_level),
                     button("Increment").on_press(Message::IncrementPressed),
-                    button("Decrement").on_press(Message::DecrementPressed),
+                    button("Decrement").on_press(Message::DecrementPressed)
                 ].spacing(10)
-            ).width(Length::Fill).align_x(iced::alignment::Horizontal::Center),
+            ).width(Length::Fill).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Top),
+            
 
+
+            // CENTER
             container
             (
                 row!
                 [
-                    tray,
                     text(&app.modules.clock_data.current_time)
+                ].spacing(10)
+            ).width(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Top),
+
+
+
+            // RIGHT
+            container
+            (
+                row!
+                [
+                    tray
                 ]
-            ).width(Length::Fill).align_x(iced::alignment::Horizontal::Right),
+            ).width(Length::Fill).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Top),
         ].padding(20).align_y(Alignment::Center);
 
 
-    // ---------- overlay menu ----------
-    let overlay: Element<_> = if let Some((service,path,items)) = &app.modules.tray_menu
-    {
-        container
-        (
-            column
-            (
-                items.iter().map(|item|
-
-
-                    button(text(&item.label)).on_press(Message::MenuAction(service.clone(), path.clone(), item.id, item.label.clone())).into()
-
-                ).collect::<Vec<_>>()
-            ).spacing(4).padding(6)
-        ).width(Length::Shrink).into()
-    }
-    else
-    {
-        Space::new().into()
-    };
-
-    stack![bar, overlay].into()
+    bar.into()
 }
+
+
 
 fn style(_: &AppData, _: &iced::Theme) -> Style
 {
