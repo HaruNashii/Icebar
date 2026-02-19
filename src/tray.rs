@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 
 
 
+
 // ======================================================
 // ===================== WATCHER ========================
 // ======================================================
@@ -154,10 +155,7 @@ pub async fn start_watcher(sender: mpsc::Sender<TrayEvent>) -> zbus::Result<()>
 {
     let connection = Connection::session().await?;
     connection.request_name("org.kde.StatusNotifierWatcher").await?;
-    connection.object_server().at(
-        "/StatusNotifierWatcher",
-        StatusNotifierWatcher { sender, connection: connection.clone() }
-    ).await?;
+    connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender, connection: connection.clone() }).await?;
     println!("Icebar watcher started");
     std::future::pending::<()>().await;
     Ok(())

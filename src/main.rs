@@ -1,5 +1,5 @@
-use iced::{Alignment, Color, Element, Length, Task as Command, event, futures::StreamExt, mouse::{self, ScrollDelta}, theme::Style, time, widget::{Row, button, container, image, mouse_area, row, text}};
-use iced_layershell::{application, to_layer_message, settings::{LayerShellSettings, StartMode, Settings}};
+use iced::{Alignment, Color, Element, Length, Renderer, Task as Command, Theme, event, futures::StreamExt, mouse::{self, ScrollDelta}, theme::Style, time, widget::{MouseArea, button, container, image, mouse_area, row, text}};
+use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
 use std::{sync::Mutex, time::Duration};
 use tokio::sync::mpsc;
 use once_cell::sync::Lazy;
@@ -64,13 +64,13 @@ struct AppData
     modules: Modules,
     is_hovering_volume: bool,
     is_hovering_workspace: bool,
-    hyprland_data: HyprlandData,
     ron_config: BarConfig
 }
 
 #[derive(Default, Clone)]
 struct Modules
 {
+    hyprland_data: HyprlandData,
     volume_data: VolumeData,
     clock_data: ClockData,
     // (icon, service|path)
@@ -91,12 +91,16 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     check_if_config_file_exists();
     let (ron_config, anchor_position) = read_ron_config();
     let ron_config_clone = ron_config.clone();
+
+    let modules = Modules
+    {
+        hyprland_data, volume_data: VolumeData::default(), clock_data: ClockData::default(), tray_icons: Vec::new()
+    };
     let app_data = AppData
     {
-        modules: Modules::default(),
+        modules,
         is_hovering_volume: false, 
         is_hovering_workspace: false, 
-        hyprland_data,
         ron_config: ron_config_clone
     };
 
@@ -293,7 +297,9 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
 
 fn view(app: &AppData) -> Element<'_,Message>
 {
-    // ---------- tray icons ----------
+    //
+    // ---------- MODULES ----------
+    //
     let tray = row
     (
         app.modules.tray_icons.iter().enumerate().map(|(i,(icon,_))|
@@ -311,16 +317,25 @@ fn view(app: &AppData) -> Element<'_,Message>
         })
     ).spacing(8);
 
-    let workspace_buttons: Row<'_, Message> = row
+    let workspace_buttons: MouseArea<'_, Message> = mouse_area
     (
-        (1..app.hyprland_data.workspace_count + 1).map(|i| 
-        {
-                button(text(format!("{i}"))).on_press(Message::WorkspaceButtonPressed(i)).into()
-        })
-    ).spacing(8);
+        row
+        (
+            (1..app.modules.hyprland_data.workspace_count + 1).map(|i| 
+            {
+                    button(text(format!("{i}"))).on_press(Message::WorkspaceButtonPressed(i)).into()
+            })
+        ).spacing(8)
+    ).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false));
+
+    let volume_button: MouseArea<'_, Message> = mouse_area(button(&*app.modules.volume_data.volume_level).on_press(Message::MuteAudioPressed)).on_enter(Message::IsHoveringVolume(true)).on_exit(Message::IsHoveringVolume(false));
+    
+    let clock: iced_layershell::reexport::core::widget::Text<'_, Theme, Renderer> = text(&app.modules.clock_data.current_time);
 
 
+    //
     // ---------- bar ----------
+    //
     let bar = row!
     [
             // RIGHT
@@ -328,14 +343,8 @@ fn view(app: &AppData) -> Element<'_,Message>
             (
                 row!
                 [
-                    mouse_area
-                    (
-                        workspace_buttons,
-                    ).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)),
-                    mouse_area
-                    (
-                        button(&*app.modules.volume_data.volume_level).on_press(Message::MuteAudioPressed)
-                    ).on_enter(Message::IsHoveringVolume(true)).on_exit(Message::IsHoveringVolume(false))
+                    workspace_buttons,
+                    volume_button
                 ].spacing(10)
             ).width(Length::Fill).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Top),
             
@@ -346,7 +355,7 @@ fn view(app: &AppData) -> Element<'_,Message>
             (
                 row!
                 [
-                    text(&app.modules.clock_data.current_time)
+                    clock
                 ].spacing(10)
             ).width(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Top),
 
