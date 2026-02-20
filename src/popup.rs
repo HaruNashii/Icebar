@@ -162,11 +162,11 @@ fn view(data: &PopupData) -> Element<'_, PopupMessage>
             .style(|_: &Theme, status: button::Status| 
             {
                 let mut style = button::Style::default();
-                let hovered = data.ron_config.context_menu_button_hovered;
-                let hovered_text = data.ron_config.context_menu_button_hovered_text;
-                let pressed = data.ron_config.context_menu_button_pressed;
-                let normal = data.ron_config.context_menu_button;
-                let normal_text = data.ron_config.context_menu_button_text;
+                let hovered = data.ron_config.context_menu_button_hovered_color_rgb;
+                let hovered_text = data.ron_config.context_menu_button_hovered_text_color_rgb;
+                let pressed = data.ron_config.context_menu_button_pressed_color_rgb;
+                let normal = data.ron_config.context_menu_button_color_rgb;
+                let normal_text = data.ron_config.context_menu_button_text_color_rgb;
                 match status 
                 {
                     button::Status::Hovered => 
@@ -185,7 +185,7 @@ fn view(data: &PopupData) -> Element<'_, PopupMessage>
                         style.text_color = Color::from_rgb8(normal_text[0], normal_text[1], normal_text[2]);
                     }
                 }
-                let border_color = data.ron_config.context_menu_border_color;
+                let border_color = data.ron_config.context_menu_border_color_rgba;
                 style.border.width = data.ron_config.context_menu_border_size;
                 style.border.color = Color::from_rgb8(border_color[0], border_color[0],  border_color[0]);
                 style

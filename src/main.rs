@@ -1,4 +1,4 @@
-use iced::{Alignment, Color, Element, Length, Task as Command, Theme, event, futures::StreamExt, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
+use iced::{Alignment, Color, Element, Length, Task as Command, Theme, border::Radius, event, futures::StreamExt, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
 use std::{sync::Mutex, time::Duration};
 use tokio::sync::mpsc;
@@ -9,7 +9,7 @@ use hyprland::dispatch::*;
 
 
 
-use crate::{clock::{ClockData, get_current_time}, hypr::{HyprlandData, get_hyprland_data}, monitor::get_monitor_res, ron::BarConfig};
+use crate::{clock::{ClockData, get_current_time}, hypr::{HyprlandData, current_workspace, get_hyprland_data, workspace_count}, monitor::get_monitor_res, ron::BarConfig};
 use crate::fs::check_if_config_file_exists;
 use crate::ron::read_ron_config;
 use crate::tray::{TrayEvent};
@@ -74,7 +74,7 @@ struct AppData
 #[derive(Default, Clone)]
 struct Modules
 {
-    hypr_data: HyprlandData,
+    _hypr_data: HyprlandData,
     volume_data: VolumeData,
     clock_data: ClockData,
     // (icon, service|path)
@@ -99,7 +99,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
 
     let modules = Modules
     {
-        hypr_data, volume_data: VolumeData::default(), clock_data: ClockData::default(), tray_icons: Vec::new()
+        _hypr_data: hypr_data, volume_data: VolumeData::default(), clock_data: ClockData::default(), tray_icons: Vec::new()
     };
     let app_data = AppData
     {
@@ -176,7 +176,7 @@ fn subscription(_: &AppData) -> iced::Subscription<Message>
     iced::Subscription::batch
     ([
         iced::Subscription::run_with(TraySubscription, tray_stream),
-        time::every(Duration::from_secs(1)).map(|_| Message::Tick),
+        time::every(Duration::from_millis(150)).map(|_| Message::Tick),
         sub
     ])
 }
@@ -327,16 +327,18 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
         let element: Element<_> = match item.as_str() 
         {
             "tray" => 
-                row ( app.modules.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(18).height(18).into() } else { text("?").into() }; 
+                row ( app.modules.tray_icons.iter().enumerate()
+                .map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(18).height(18).into() } 
+                    else { text("?").into() }; 
                 button(content)
                     .style(|_: &Theme, status: button::Status| 
                     {
                         let mut style = button::Style::default();
-                        let hovered = app.ron_config.tray_button_hovered;
-                        let hovered_text = app.ron_config.tray_button_hovered_text;
-                        let pressed = app.ron_config.tray_button_pressed;
-                        let normal = app.ron_config.tray_button;
-                        let normal_text = app.ron_config.tray_button_text;
+                        let hovered = app.ron_config.tray_button_hovered_color_rgb;
+                        let hovered_text = app.ron_config.tray_button_hovered_text_color_rgb;
+                        let pressed = app.ron_config.tray_button_pressed_color_rgb;
+                        let normal = app.ron_config.tray_button_color_rgb;
+                        let normal_text = app.ron_config.tray_button_text_color_rgb;
                         match status 
                         {
                             button::Status::Hovered => 
@@ -355,12 +357,14 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                                 style.text_color = Color::from_rgb8(normal_text[0], normal_text[1], normal_text[2]);
                             }
                         }
-                        let border_color = app.ron_config.tray_border_color;
                         style.border.width = app.ron_config.tray_border_size;
-                        style.border.color = Color::from_rgb8(border_color[0], border_color[0],  border_color[0]);
+                        let border_color = app.ron_config.tray_border_color_rgba;
+                        style.border.color = Color::from_rgba8(border_color[0], border_color[1],  border_color[2], border_color[3] as f32);
+                        let radius_list = app.ron_config.tray_border_radius;
+                        style.border.radius = Radius { top_left: radius_list[0] as f32, top_right: radius_list[1] as f32, bottom_left: radius_list[2] as f32, bottom_right: radius_list[3] as f32};
                         style
                     })
-                    .padding(2).on_press(Message::TrayIconClicked(i)
+                    .padding(1).on_press(Message::TrayIconClicked(i)
 
                 ).into() })).spacing(8).align_y(Alignment::Start).into(),
             "hypr/workspaces" => 
@@ -368,19 +372,46 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
             ( 
                 row 
                 ( 
-                    (1..app.modules.hypr_data.workspace_count + 1)
-                    .map(|i| { 
-
-                    button(text(format!("{i}")))
+                    (1..workspace_count() + 1)
+                    .map(|i| 
+                    { 
+                        #[allow(unused)]
+                        let mut workspace_text = &String::new();
+                        let index_string = i.to_string();
+                        match i
+                        {
+                          1  => {workspace_text = &app.ron_config.hypr_workspace_text[0]},  
+                          2  => {workspace_text = &app.ron_config.hypr_workspace_text[1]},  
+                          3  => {workspace_text = &app.ron_config.hypr_workspace_text[2]},  
+                          4  => {workspace_text = &app.ron_config.hypr_workspace_text[3]},  
+                          5  => {workspace_text = &app.ron_config.hypr_workspace_text[4]},  
+                          6  => {workspace_text = &app.ron_config.hypr_workspace_text[5]},  
+                          7  => {workspace_text = &app.ron_config.hypr_workspace_text[6]},  
+                          8  => {workspace_text = &app.ron_config.hypr_workspace_text[7]},  
+                          9  => {workspace_text = &app.ron_config.hypr_workspace_text[8]},  
+                          10 => {workspace_text = &app.ron_config.hypr_workspace_text[9]},  
+                          _=> 
+                          {
+                              workspace_text = &index_string
+                          }
+                        };
+                        button(text(workspace_text.clone()))
                     .on_press(Message::WorkspaceButtonPressed(i))
-                    .style(|_: &Theme, status: button::Status| 
+                    .style(move|_: &Theme, status: button::Status| 
                     {
                         let mut style = button::Style::default();
-                        let hovered = app.ron_config.hypr_workspace_button_hovered;
-                        let hovered_text = app.ron_config.hypr_workspace_button_hovered_text;
-                        let pressed = app.ron_config.hypr_workspace_button_pressed;
-                        let normal = app.ron_config.hypr_workspace_button;
-                        let normal_text = app.ron_config.hypr_workspace_button_text;
+                        let hovered = app.ron_config.hypr_workspace_button_hovered_color_rgb;
+                        let hovered_text = app.ron_config.hypr_workspace_button_hovered_text_color_rgb;
+                        let pressed = app.ron_config.hypr_workspace_button_pressed_color_rgb;
+                        let normal = if current_workspace() == i as i32
+                        {
+                            app.ron_config.hypr_workspace_button_selected_color_rgb
+                        }
+                        else
+                        {
+                            app.ron_config.hypr_workspace_button_color_rgb
+                        };
+                        let normal_text = app.ron_config.hypr_workspace_button_text_color_rgb;
                         match status 
                         {
                             button::Status::Hovered => 
@@ -399,9 +430,11 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                                 style.text_color = Color::from_rgb8(normal_text[0], normal_text[1], normal_text[2]);
                             }
                         }
-                        let border_color = app.ron_config.hypr_workspace_border_color;
                         style.border.width = app.ron_config.hypr_workspace_border_size;
-                        style.border.color = Color::from_rgb8(border_color[0], border_color[0],  border_color[0]);
+                        let border_color = app.ron_config.hypr_workspace_border_color_rgba;
+                        style.border.color = Color::from_rgba8(border_color[0], border_color[1],  border_color[2], border_color[3] as f32);
+                        let radius_list = app.ron_config.hypr_workspace_border_radius;
+                        style.border.radius = Radius { top_left: radius_list[0] as f32, top_right: radius_list[1] as f32, bottom_left: radius_list[2] as f32, bottom_right: radius_list[3] as f32};
                         style
                     })
                     .into() })).spacing(8).align_y(Alignment::Start)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
@@ -411,11 +444,11 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     .style(|_: &Theme, status: button::Status| 
                     {
                         let mut style = button::Style::default();
-                        let hovered = app.ron_config.clock_button_hovered;
-                        let hovered_text = app.ron_config.clock_button_hovered_text;
-                        let pressed = app.ron_config.clock_button_pressed;
-                        let normal = app.ron_config.clock_button;
-                        let normal_text = app.ron_config.clock_button_text;
+                        let hovered = app.ron_config.clock_button_hovered_color_rgb;
+                        let hovered_text = app.ron_config.clock_button_hovered_text_color_rgb;
+                        let pressed = app.ron_config.clock_button_pressed_color_rgb;
+                        let normal = app.ron_config.clock_button_color_rgb;
+                        let normal_text = app.ron_config.clock_button_text_color_rgb;
                         match status 
                         {
                             button::Status::Hovered => 
@@ -434,9 +467,11 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                                 style.text_color = Color::from_rgb8(normal_text[0], normal_text[1], normal_text[2]);
                             }
                         }
-                        let border_color = app.ron_config.clock_border_color;
                         style.border.width = app.ron_config.clock_border_size;
-                        style.border.color = Color::from_rgb8(border_color[0], border_color[0],  border_color[0]);
+                        let border_color = app.ron_config.clock_border_color_rgba;
+                        style.border.color = Color::from_rgba8(border_color[0], border_color[1],  border_color[2], border_color[3] as f32);
+                        let radius_list = app.ron_config.clock_border_radius;
+                        style.border.radius = Radius { top_left: radius_list[0] as f32, top_right: radius_list[1] as f32, bottom_left: radius_list[2] as f32, bottom_right: radius_list[3] as f32};
                         style
                     })
 
@@ -453,11 +488,11 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     .style(|_: &Theme, status: button::Status| 
                     {
                         let mut style = button::Style::default();
-                        let hovered = app.ron_config.volume_output_button_hovered;
-                        let hovered_text = app.ron_config.volume_output_button_hovered_text;
-                        let pressed = app.ron_config.volume_output_button_pressed;
-                        let normal = app.ron_config.volume_output_button;
-                        let normal_text = app.ron_config.volume_output_button_text;
+                        let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
+                        let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
+                        let pressed = app.ron_config.volume_output_button_pressed_color_rgb;
+                        let normal = app.ron_config.volume_output_button_color_rgb;
+                        let normal_text = app.ron_config.volume_output_button_text_color_rgb;
                         match status 
                         {
                             button::Status::Hovered => 
@@ -476,9 +511,11 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                                 style.text_color = Color::from_rgb8(normal_text[0], normal_text[1], normal_text[2]);
                             }
                         }
-                        let border_color = app.ron_config.volume_output_border_color;
                         style.border.width = app.ron_config.volume_output_border_size;
-                        style.border.color = Color::from_rgb8(border_color[0], border_color[0],  border_color[0]);
+                        let border_color = app.ron_config.volume_output_border_color_rgba;
+                        style.border.color = Color::from_rgba8(border_color[0], border_color[1],  border_color[2], border_color[3] as f32);
+                        let radius_list = app.ron_config.volume_output_border_radius;
+                        style.border.radius = Radius { top_left: radius_list[0] as f32, top_right: radius_list[1] as f32, bottom_left: radius_list[2] as f32, bottom_right: radius_list[3] as f32};
                         style
                     })
 

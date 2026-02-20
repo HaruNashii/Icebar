@@ -161,52 +161,17 @@ pub async fn start_watcher(sender: mpsc::Sender<TrayEvent>) -> zbus::Result<()>
     Ok(())
 }
 
-// ======================================================
-// ===================== APP CONTEXT MENU =============
-// ======================================================
-//pub async fn call_app_context_menu(conn: &zbus::Connection, service: &str, path: &str, x: i32, y: i32) -> zbus::Result<()>
-//{
-//    println!("Calling ContextMenu on service: {service}, path: {path} at ({x},{y})");
-//    let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
-//    match proxy.call_method("ContextMenu", &(x, y)).await 
-//    {
-//        Ok(_) => println!("Context menu requested successfully for {service}"),
-//        Err(e) => 
-//        {
-//            println!("Failed to open context menu for {service}: {e}, Trying 'SecondaryActivate'...");
-//            match proxy.call_method("SecondaryActivate", &(x, y)).await
-//            {
-//                Ok(_) => println!("SecondaryActivate requested successfully for {service}"),
-//                Err(_) =>
-//                {
-//                    println!("Failed to open context menu for {service}: {e}, Trying 'Activate'...");
-//                    match proxy.call_method("Activate", &(x, y)).await
-//                    {
-//                        Ok(_) => println!("Activate requested successfully for {service}"),
-//                        Err(_) => println!("Every Options Failed :(")
-//                    }
-//                }
-//            }
-//
-//        },
-//    }
-//    Ok(())
-//}
 
 
-//
 // ======================================================
 // ===================== ICON FETCH =====================
 // ======================================================
-//
-
 pub async fn fetch_icon(conn: &zbus::Connection, combined: &str) -> zbus::Result<TrayEvent>
 {
     println!("\n=== Fetching icon for tray item ===");
     let (service, path) = combined.split_once('|').unwrap_or((combined, "/StatusNotifierItem"));
     println!("Service: {service}");
     println!("Path: {path}");
-
     let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
     println!("Proxy created for {service}");
 
