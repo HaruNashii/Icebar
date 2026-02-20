@@ -9,7 +9,7 @@ use hyprland::dispatch::*;
 
 
 
-use crate::{clock::{ClockData, get_current_time}, hypr::{HyprlandData, get_hyprland_data}, ron::BarConfig};
+use crate::{clock::{ClockData, get_current_time}, hypr::{HyprlandData, get_hyprland_data}, monitor::get_monitor_res, ron::BarConfig};
 use crate::fs::check_if_config_file_exists;
 use crate::ron::read_ron_config;
 use crate::tray::{TrayEvent};
@@ -23,6 +23,7 @@ mod volume;
 mod clock;
 mod tray;
 mod popup;
+mod monitor;
 mod fs;
 mod ron;
 mod hypr;
@@ -36,12 +37,12 @@ static TRAY_RECEIVER: Lazy<Mutex<Option<mpsc::Receiver<TrayEvent>>>> = Lazy::new
 
 
 
-#[to_layer_message] #[derive(Debug, Clone)]
+#[to_layer_message]
+#[derive(Debug, Clone)]
 enum Message
 {
     MuteAudioPressed,
     Tick,
-    Nothing,
 
     IsHoveringVolume(bool),
     IsHoveringWorkspace(bool),
@@ -55,7 +56,7 @@ enum Message
 
     MenuLoaded(String, String, Vec<tray::MenuItem>),
 
-    CloseMenu,
+    CursorMoved(iced::Point),
 }
 
 #[derive(Default, Clone)]
@@ -65,7 +66,9 @@ struct AppData
     is_showing_alt_clock: bool,
     is_hovering_volume: bool,
     is_hovering_workspace: bool,
-    ron_config: BarConfig
+    ron_config: BarConfig,
+    mouse_position: (i32, i32),
+    monitor_size: (u32, u32)
 }
 
 #[derive(Default, Clone)]
@@ -88,6 +91,7 @@ struct TraySubscription;
 #[tokio::main]
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
+    let monitor_res = get_monitor_res();
     let hypr_data = get_hyprland_data();
     check_if_config_file_exists();
     let (ron_config, anchor_position) = read_ron_config();
@@ -103,7 +107,9 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         is_showing_alt_clock: false,
         is_hovering_volume: false, 
         is_hovering_workspace: false, 
-        ron_config: ron_config_clone
+        ron_config: ron_config_clone, 
+        mouse_position: (0, 0),
+        monitor_size: (monitor_res.0, monitor_res.1),
     };
 
     // ---- tray watcher ----
@@ -120,12 +126,13 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         None => StartMode::Active,
     };
 
+
     application(move || app_data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings
     {
         layer_settings: LayerShellSettings
         {
-            size: Some((0, ron_config.bar_size)),
-            exclusive_zone: ron_config.bar_size as i32,
+            size: Some((ron_config.bar_size[0], ron_config.bar_size[1])),
+            exclusive_zone: ron_config.bar_size[1] as i32,
             anchor: anchor_position,
             start_mode,
             ..Default::default()
@@ -158,6 +165,10 @@ fn subscription(_: &AppData) -> iced::Subscription<Message>
             {
                 Some(Message::MouseWheelScrolled(delta))
             },
+            iced::Event::Mouse(mouse::Event::CursorMoved { position }) => 
+            {
+                Some(Message::CursorMoved(position))
+            }
             _=> None
         }
     });
@@ -179,22 +190,9 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::IsHoveringVolume(bool) => { app.is_hovering_volume = bool; }
         Message::IsHoveringWorkspace(bool) => { app.is_hovering_workspace = bool; }
         Message::MuteAudioPressed => { volume::volume( volume::VolumeAction::Mute); }
-        Message::WorkspaceButtonPressed(id) =>
-        {
-            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32)));
-        }
-
-        Message::ToggleAltClock =>
-        {
-            if app.is_showing_alt_clock
-            {
-                app.is_showing_alt_clock = false;
-            }
-            else
-            {
-                app.is_showing_alt_clock = true;
-            }
-        }
+        Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
+        Message::WorkspaceButtonPressed(id) => { let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32))); }
+        Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
 
         Message::MouseWheelScrolled(scrolldelta) =>
         {
@@ -265,6 +263,7 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                         }
                     }
                 }
+
             }
         }
 
@@ -301,7 +300,9 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 path,
                 items,
                 cursor_is_inside_menu: false, 
-                ron_config: app.ron_config.clone()
+                ron_config: app.ron_config.clone(),
+                popup_position: app.mouse_position.clone(),
+                monitor_size: app.monitor_size,
             };
             
             tokio::spawn(async move 
@@ -325,8 +326,8 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
     {
         let element: Element<_> = match item.as_str() 
         {
-            "tray" => row ( app.modules.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(18).height(18).into() } else { text("?").into() }; 
-
+            "tray" => 
+                row ( app.modules.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(18).height(18).into() } else { text("?").into() }; 
                 button(content)
                     .style(|_: &Theme, status: button::Status| 
                     {

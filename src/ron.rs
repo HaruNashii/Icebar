@@ -11,7 +11,7 @@ use iced_layershell::reexport::Anchor;
 pub struct BarConfig
 {
    pub bar_position: String,
-   pub bar_size: u32,
+   pub bar_size: [u32;2],
    pub bar_general_padding: u16,
    pub bar_background_color_rgba: [u8;4],
 
@@ -61,6 +61,7 @@ pub struct BarConfig
    pub hypr_workspace_border_color: [u8;3],
    pub hypr_workspace_border_size: f32,
 
+   pub context_menu_width: u32,
    pub context_menu_background_color_rgba: [u8;4],
    pub context_menu_button: [u8;3],
    pub context_menu_button_text: [u8;3],

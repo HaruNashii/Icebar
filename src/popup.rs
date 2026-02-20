@@ -6,7 +6,6 @@ use crate::{ron::BarConfig, tray::MenuItem};
 
 
 
-
 #[to_layer_message]
 #[derive(Debug, Clone)]
 pub enum PopupMessage 
@@ -15,7 +14,7 @@ pub enum PopupMessage
     Close,
     Action(String, String, i32, String),
     CursorMoved(iced::Point),
-    MouseButtonClicked
+    MouseButtonClicked,
 }
 
 #[derive(Default, Clone)]
@@ -25,12 +24,23 @@ pub struct PopupData
     pub path: String,
     pub items: Vec<MenuItem>,
     pub cursor_is_inside_menu: bool,
-    pub ron_config: BarConfig
+    pub ron_config: BarConfig,
+    pub popup_position: (i32, i32),
+    pub monitor_size: (u32, u32)
 }
 
 
 
+pub fn smart_popup_position(cursor_x: i32, cursor_y: i32, screen_w: i32, screen_h: i32, popup_w: i32, popup_h: i32) -> (i32, i32) 
+{
+    let mut x = cursor_x - popup_w / 2;
+    let mut y = cursor_y - popup_h / 2;
 
+    x = x.clamp(0, screen_w - popup_w);
+    y = y.clamp(0, screen_h - popup_h);
+
+    (x, y)
+}
 
 pub async fn run_popup(data: PopupData) -> Result<(), iced_layershell::Error> 
 {
@@ -41,19 +51,21 @@ pub async fn run_popup(data: PopupData) -> Result<(), iced_layershell::Error>
         None => StartMode::Active,
     };
 
-    println!("\nAmount Of Itens in The MenuItem Vector: {}\n", data.items.len());
-    let popup_size_y = (data.items.len() * 37) as u32;
+
+    let popup_size: (u32, u32) = (data.ron_config.context_menu_width, (data.items.len() * 37) as u32);
+    let (x, y) = smart_popup_position(data.popup_position.0, data.popup_position.1, data.monitor_size.0 as i32, data.monitor_size.1 as i32, popup_size.0 as i32, popup_size.1 as i32);
+
     application( move || data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings 
     {
         layer_settings: LayerShellSettings 
         {
             layer: Layer::Overlay,
-            size: Some((200, popup_size_y)),
+            size: Some((popup_size.0, popup_size.1)),
             exclusive_zone: 0,
             keyboard_interactivity: iced_layershell::reexport::KeyboardInteractivity::Exclusive,
-            anchor: Anchor::Top | Anchor::Right,
+            anchor: Anchor::Top | Anchor::Left,
             start_mode,
-            margin: (30, 10, 0, 0),
+            margin: (y, 0, 0, x),
             ..Default::default()
         },
         ..Default::default()
@@ -68,17 +80,10 @@ fn subscription(_: &PopupData) -> iced::Subscription<PopupMessage>
     {
         match event 
         {
-            iced::Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => 
+            iced::Event::Keyboard(keyboard::Event::KeyPressed {key: keyboard::Key::Named(keyboard::key::Named::Escape), .. }) => 
             {
-                match key 
-                {
-                    keyboard::Key::Named(keyboard::key::Named::Escape) => 
-                    {
-                        println!("Escape Pressed!!!");
-                        Some(PopupMessage::Close)
-                    }
-                    _ => None,
-                }
+                println!("Escape Pressed!!!");
+                Some(PopupMessage::Close)
             }
             iced::Event::Mouse(mouse::Event::ButtonPressed(_)) => 
             {

@@ -47,7 +47,7 @@ pub fn volume(volume_modifier: VolumeAction) -> String
             {
                 let parsed = get_volume_output.replace("Volume: ", "").replace("[MUTED]", "").replace(" ", "").replace("\n", "").parse::<f32>().unwrap();
                 let rounded_result = ((parsed * 100.0).round() as u32).to_string();
-                let a = format!("{format}");
+                let a = format.to_string();
                 let b = a.replace("{}", &rounded_result);
                 return b;
             };
