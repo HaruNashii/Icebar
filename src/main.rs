@@ -91,10 +91,10 @@ struct TraySubscription;
 #[tokio::main]
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
-    let monitor_res = get_monitor_res();
     let hypr_data = get_hyprland_data();
     check_if_config_file_exists();
     let (ron_config, anchor_position) = read_ron_config();
+    let monitor_res = get_monitor_res(ron_config.display.clone());
     let ron_config_clone = ron_config.clone();
 
     let modules = Modules
@@ -120,7 +120,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         let _ = tray::start_watcher(tx).await;
     });
 
-    let start_mode = match std::env::args().nth(1)
+    let start_mode = match ron_config.display
     {
         Some(output) => StartMode::TargetScreen(output),
         None => StartMode::Active,
@@ -301,7 +301,7 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 items,
                 cursor_is_inside_menu: false, 
                 ron_config: app.ron_config.clone(),
-                popup_position: app.mouse_position.clone(),
+                popup_position: app.mouse_position,
                 monitor_size: app.monitor_size,
             };
             

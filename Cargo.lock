@@ -1953,7 +1953,6 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "usvg 0.47.0",
- "winit",
  "zbus",
 ]
 

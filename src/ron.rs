@@ -10,6 +10,7 @@ use iced_layershell::reexport::Anchor;
 #[derive(Default, Clone, Debug, Deserialize, Serialize)]
 pub struct BarConfig
 {
+   pub display: Option<String>,
    pub bar_position: String,
    pub bar_size: [u32;2],
    pub bar_general_padding: u16,

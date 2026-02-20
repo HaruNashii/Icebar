@@ -50,7 +50,7 @@ impl StatusNotifierWatcher
         };
 
         let combined = format!("{dest}|{path}");
-        println!("Tray item registered: {combined}");
+        println!("\n=== Tray item registered ===\nService Registred: {combined}");
 
         let _ = self.sender.send(TrayEvent::ItemRegistered(combined.clone())).await;
 
@@ -156,7 +156,7 @@ pub async fn start_watcher(sender: mpsc::Sender<TrayEvent>) -> zbus::Result<()>
     let connection = Connection::session().await?;
     connection.request_name("org.kde.StatusNotifierWatcher").await?;
     connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender, connection: connection.clone() }).await?;
-    println!("Icebar watcher started");
+    println!("\n=== Icebar Watcher Started!!! ===");
     std::future::pending::<()>().await;
     Ok(())
 }
