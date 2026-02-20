@@ -23,16 +23,18 @@ pub fn check_if_config_file_exists()
     {
         println!("Ron config file doesn't exist, Creating...");
         let ron_default_data = r#"
- // WARNING!!!: THE ALPHA OF THE RGBA HAS THE RANGE BETWEEN 0 TO 100, PARSING MORE THAN 100 WILL RESULT IN CRASH
+// WARNING!!!: THE ALPHA OF THE RGBA HAS THE RANGE BETWEEN 0 TO 100, PARSING MORE THAN 100 WILL RESULT IN CRASH
 
 BarConfig(
+    display: Some("DP-2"),
     bar_position: "Up",
-    bar_size: 45,
+    // THE BAR SIZE FIRST OPTION DEFINED TO "0" WILL MAKE THE BAR FILL THE ENTIRE SCREEN X AXIS
+    bar_size: (0, 45),
     bar_general_padding: 5,
     bar_background_color_rgba: (134, 206, 203, 90),
 
-    left_modules: ["hypr/workspaces", "volume/output"],
-    center_modules: ["clock"],
+    left_modules: ["tray", "hypr/workspaces", "volume/output"],
+    center_modules: ["clock", "tray"],
     right_modules: ["tray"],
 
     volume_format: " {}%",
@@ -77,6 +79,7 @@ BarConfig(
     hypr_workspace_border_color: (0, 0, 0),
     hypr_workspace_border_size: 1.0,
 
+    context_menu_width: 200,
     context_menu_background_color_rgba: (255, 255, 255, 100),
     context_menu_button: (0, 70, 255),
     context_menu_button_text: (0, 0, 0),
