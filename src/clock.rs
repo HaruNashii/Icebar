@@ -13,9 +13,9 @@ pub struct ClockData
 
 
 
-pub fn get_current_time() -> String
+pub fn get_current_time(time_format: &String) -> String
 {
     let now = Local::now();
-    let time_str = now.format("%H:%M:%S").to_string();
+    let time_str = now.format(time_format).to_string();
     time_str
 }

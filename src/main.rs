@@ -1,4 +1,4 @@
-use iced::{Alignment, Color, Element, Length, Renderer, Task as Command, Theme, event, futures::StreamExt, mouse::{self, ScrollDelta}, theme::Style, time, widget::{MouseArea, Row, button, container, image, mouse_area, row, text}};
+use iced::{Alignment, Color, Element, Length, Task as Command, Theme, event, futures::StreamExt, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
 use std::{sync::Mutex, time::Duration};
 use tokio::sync::mpsc;
@@ -36,8 +36,7 @@ static TRAY_RECEIVER: Lazy<Mutex<Option<mpsc::Receiver<TrayEvent>>>> = Lazy::new
 
 
 
-#[to_layer_message]
-#[derive(Debug, Clone)]
+#[to_layer_message] #[derive(Debug, Clone)]
 enum Message
 {
     MuteAudioPressed,
@@ -49,6 +48,7 @@ enum Message
     MouseWheelScrolled(ScrollDelta),
 
     WorkspaceButtonPressed(usize),
+    ToggleAltClock,
 
     TrayEvent(TrayEvent),
     TrayIconClicked(usize),
@@ -62,6 +62,7 @@ enum Message
 struct AppData
 {
     modules: Modules,
+    is_showing_alt_clock: bool,
     is_hovering_volume: bool,
     is_hovering_workspace: bool,
     ron_config: BarConfig
@@ -70,7 +71,7 @@ struct AppData
 #[derive(Default, Clone)]
 struct Modules
 {
-    hyprland_data: HyprlandData,
+    hypr_data: HyprlandData,
     volume_data: VolumeData,
     clock_data: ClockData,
     // (icon, service|path)
@@ -87,18 +88,19 @@ struct TraySubscription;
 #[tokio::main]
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
-    let hyprland_data = get_hyprland_data();
+    let hypr_data = get_hyprland_data();
     check_if_config_file_exists();
     let (ron_config, anchor_position) = read_ron_config();
     let ron_config_clone = ron_config.clone();
 
     let modules = Modules
     {
-        hyprland_data, volume_data: VolumeData::default(), clock_data: ClockData::default(), tray_icons: Vec::new()
+        hypr_data, volume_data: VolumeData::default(), clock_data: ClockData::default(), tray_icons: Vec::new()
     };
     let app_data = AppData
     {
         modules,
+        is_showing_alt_clock: false,
         is_hovering_volume: false, 
         is_hovering_workspace: false, 
         ron_config: ron_config_clone
@@ -182,6 +184,18 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32)));
         }
 
+        Message::ToggleAltClock =>
+        {
+            if app.is_showing_alt_clock
+            {
+                app.is_showing_alt_clock = false;
+            }
+            else
+            {
+                app.is_showing_alt_clock = true;
+            }
+        }
+
         Message::MouseWheelScrolled(scrolldelta) =>
         {
             if app.is_hovering_volume
@@ -216,8 +230,16 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
 
         Message::Tick =>
         {
-            app.modules.clock_data.current_time = get_current_time();
-            app.modules.volume_data.volume_level = volume::volume(volume::VolumeAction::Get);
+            let format_to_send = if app.is_showing_alt_clock
+            {
+                &app.ron_config.clock_alt_format
+            }
+            else
+            {
+                &app.ron_config.clock_format
+            };
+            app.modules.clock_data.current_time = get_current_time(format_to_send);
+            app.modules.volume_data.volume_level = volume::volume(volume::VolumeAction::Get([&app.ron_config.volume_format, &app.ron_config.volume_muted_format]));
         }
 
         Message::TrayEvent(event) =>
@@ -278,7 +300,8 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 service,
                 path,
                 items,
-                cursor_is_inside_menu: false
+                cursor_is_inside_menu: false, 
+                ron_config: app.ron_config.clone()
             };
             
             tokio::spawn(async move 
@@ -295,81 +318,208 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
 
 
 
+fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Message> 
+{
+    let mut children = Vec::new();
+    for item in list 
+    {
+        let element: Element<_> = match item.as_str() 
+        {
+            "tray" => row ( app.modules.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(18).height(18).into() } else { text("?").into() }; 
+
+                button(content)
+                    .style(|_: &Theme, status: button::Status| 
+                    {
+                        let mut style = button::Style::default();
+                        let hovered = app.ron_config.tray_button_hovered;
+                        let hovered_text = app.ron_config.tray_button_hovered_text;
+                        let pressed = app.ron_config.tray_button_pressed;
+                        let normal = app.ron_config.tray_button;
+                        let normal_text = app.ron_config.tray_button_text;
+                        match status 
+                        {
+                            button::Status::Hovered => 
+                            {
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(hovered[0], hovered[1], hovered[2])));
+                                style.text_color = Color::from_rgb8(hovered_text[0], hovered_text[1], hovered_text[2]);
+                            }
+                            button::Status::Pressed => 
+                            {
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(pressed[0], pressed[1], pressed[2])));
+                            }
+                            _ => 
+                            {
+                                // Default active state
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(normal[0], normal[1], normal[2])));
+                                style.text_color = Color::from_rgb8(normal_text[0], normal_text[1], normal_text[2]);
+                            }
+                        }
+                        let border_color = app.ron_config.tray_border_color;
+                        style.border.width = app.ron_config.tray_border_size;
+                        style.border.color = Color::from_rgb8(border_color[0], border_color[0],  border_color[0]);
+                        style
+                    })
+                    .padding(2).on_press(Message::TrayIconClicked(i)
+
+                ).into() })).spacing(8).align_y(Alignment::Start).into(),
+            "hypr/workspaces" => 
+            mouse_area 
+            ( 
+                row 
+                ( 
+                    (1..app.modules.hypr_data.workspace_count + 1)
+                    .map(|i| { 
+
+                    button(text(format!("{i}")))
+                    .on_press(Message::WorkspaceButtonPressed(i))
+                    .style(|_: &Theme, status: button::Status| 
+                    {
+                        let mut style = button::Style::default();
+                        let hovered = app.ron_config.hypr_workspace_button_hovered;
+                        let hovered_text = app.ron_config.hypr_workspace_button_hovered_text;
+                        let pressed = app.ron_config.hypr_workspace_button_pressed;
+                        let normal = app.ron_config.hypr_workspace_button;
+                        let normal_text = app.ron_config.hypr_workspace_button_text;
+                        match status 
+                        {
+                            button::Status::Hovered => 
+                            {
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(hovered[0], hovered[1], hovered[2])));
+                                style.text_color = Color::from_rgb8(hovered_text[0], hovered_text[1], hovered_text[2]);
+                            }
+                            button::Status::Pressed => 
+                            {
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(pressed[0], pressed[1], pressed[2])));
+                            }
+                            _ => 
+                            {
+                                // Default active state
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(normal[0], normal[1], normal[2])));
+                                style.text_color = Color::from_rgb8(normal_text[0], normal_text[1], normal_text[2]);
+                            }
+                        }
+                        let border_color = app.ron_config.hypr_workspace_border_color;
+                        style.border.width = app.ron_config.hypr_workspace_border_size;
+                        style.border.color = Color::from_rgb8(border_color[0], border_color[0],  border_color[0]);
+                        style
+                    })
+                    .into() })).spacing(8).align_y(Alignment::Start)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
+            "clock" => container(
+
+                button(&*app.modules.clock_data.current_time).on_press(Message::ToggleAltClock)
+                    .style(|_: &Theme, status: button::Status| 
+                    {
+                        let mut style = button::Style::default();
+                        let hovered = app.ron_config.clock_button_hovered;
+                        let hovered_text = app.ron_config.clock_button_hovered_text;
+                        let pressed = app.ron_config.clock_button_pressed;
+                        let normal = app.ron_config.clock_button;
+                        let normal_text = app.ron_config.clock_button_text;
+                        match status 
+                        {
+                            button::Status::Hovered => 
+                            {
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(hovered[0], hovered[1], hovered[2])));
+                                style.text_color = Color::from_rgb8(hovered_text[0], hovered_text[1], hovered_text[2]);
+                            }
+                            button::Status::Pressed => 
+                            {
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(pressed[0], pressed[1], pressed[2])));
+                            }
+                            _ => 
+                            {
+                                // Default active state
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(normal[0], normal[1], normal[2])));
+                                style.text_color = Color::from_rgb8(normal_text[0], normal_text[1], normal_text[2]);
+                            }
+                        }
+                        let border_color = app.ron_config.clock_border_color;
+                        style.border.width = app.ron_config.clock_border_size;
+                        style.border.color = Color::from_rgb8(border_color[0], border_color[0],  border_color[0]);
+                        style
+                    })
+
+
+
+
+                ).align_y(Alignment::Start).into(),
+            "volume/output" => 
+            container
+            (
+                mouse_area ( 
+
+                    button (&*app.modules.volume_data.volume_level).on_press(Message::MuteAudioPressed)
+                    .style(|_: &Theme, status: button::Status| 
+                    {
+                        let mut style = button::Style::default();
+                        let hovered = app.ron_config.volume_output_button_hovered;
+                        let hovered_text = app.ron_config.volume_output_button_hovered_text;
+                        let pressed = app.ron_config.volume_output_button_pressed;
+                        let normal = app.ron_config.volume_output_button;
+                        let normal_text = app.ron_config.volume_output_button_text;
+                        match status 
+                        {
+                            button::Status::Hovered => 
+                            {
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(hovered[0], hovered[1], hovered[2])));
+                                style.text_color = Color::from_rgb8(hovered_text[0], hovered_text[1], hovered_text[2]);
+                            }
+                            button::Status::Pressed => 
+                            {
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(pressed[0], pressed[1], pressed[2])));
+                            }
+                            _ => 
+                            {
+                                // Default active state
+                                style.background = Some(iced::Background::Color(Color::from_rgb8(normal[0], normal[1], normal[2])));
+                                style.text_color = Color::from_rgb8(normal_text[0], normal_text[1], normal_text[2]);
+                            }
+                        }
+                        let border_color = app.ron_config.volume_output_border_color;
+                        style.border.width = app.ron_config.volume_output_border_size;
+                        style.border.color = Color::from_rgb8(border_color[0], border_color[0],  border_color[0]);
+                        style
+                    })
+
+
+
+            ).on_enter(Message::IsHoveringVolume(true)).on_exit(Message::IsHoveringVolume(false))).align_y(Alignment::Start).into(),
+            _ => continue,
+        };
+
+        children.push(element);
+    }
+
+    row(children).spacing(8).align_y(Alignment::Start).into()
+}
+
+
+
 fn view(app: &AppData) -> Element<'_,Message>
 {
     //
     // ---------- MODULES ----------
     //
-    let tray = row
-    (
-        app.modules.tray_icons.iter().enumerate().map(|(i,(icon,_))|
-        {
-            let content: Element<_> = if let Some(icon) = icon
-            {
-                image(icon.clone()).width(18).height(18).into()
-            }
-            else 
-            { 
-                text("?").into() 
-            };
-
-            button(content).padding(2).on_press(Message::TrayIconClicked(i)).into()
-        })
-    ).spacing(8);
-
-    let workspace_buttons: MouseArea<'_, Message> = mouse_area
-    (
-        row
-        (
-            (1..app.modules.hyprland_data.workspace_count + 1).map(|i| 
-            {
-                    button(text(format!("{i}"))).on_press(Message::WorkspaceButtonPressed(i)).into()
-            })
-        ).spacing(8)
-    ).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false));
-
-    let volume_button: MouseArea<'_, Message> = mouse_area(button(&*app.modules.volume_data.volume_level).on_press(Message::MuteAudioPressed)).on_enter(Message::IsHoveringVolume(true)).on_exit(Message::IsHoveringVolume(false));
-    let clock: iced_layershell::reexport::core::widget::Text<'_, Theme, Renderer> = text(&app.modules.clock_data.current_time);
+    let left = build_modules(&app.ron_config.left_modules, app);
+    let center = build_modules(&app.ron_config.center_modules, app);
+    let right = build_modules(&app.ron_config.right_modules, app);
 
 
-    let mut left_row_vec: Vec<Element<'_, Message>> = Vec::new();
-    left_row_vec.push(workspace_buttons.into());
-    left_row_vec.push(volume_button.into());
-
-    let mut center_row_vec: Vec<Element<'_, Message>> = Vec::new();
-    center_row_vec.push(clock.into());
-
-    let mut right_row_vec: Vec<Element<'_, Message>> = Vec::new();
-    right_row_vec.push(tray.into());
-    
 
     //
     // ---------- bar ----------
     //
     let bar = row!
     [
-            // RIGHT
-            container
-            (
-                row(left_row_vec).spacing(10)
-            ).width(Length::Fill).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Top),
-            
+        // RIGHT
+        container(left).width(Length::Fill).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Top),
+        
+        // CENTER
+        container(center).width(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Top),
 
-
-            // CENTER
-            container
-            (
-                row(center_row_vec).spacing(10)
-            ).width(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Top),
-
-
-
-            // RIGHT
-            container
-            (
-                row(right_row_vec).spacing(10)
-            ).width(Length::Fill).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Top),
-        ].padding(20).align_y(Alignment::Center);
+        // RIGHT
+        container(right).width(Length::Fill).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Top),
+    ].padding(app.ron_config.bar_general_padding).align_y(Alignment::Start);
 
 
     bar.into()
@@ -377,11 +527,11 @@ fn view(app: &AppData) -> Element<'_,Message>
 
 
 
-fn style(_: &AppData, _: &iced::Theme) -> Style
+fn style(app: &AppData, _: &iced::Theme) -> Style
 {
     Style
     {
-        background_color: Color::from_rgba(0.134,0.206,0.203,0.255),
+        background_color: Color::from_rgba8(app.ron_config.bar_background_color_rgba[0],app.ron_config.bar_background_color_rgba[1],app.ron_config.bar_background_color_rgba[2],app.ron_config.bar_background_color_rgba[3] as f32 / 100.),
         text_color: Color::WHITE
     }
 }

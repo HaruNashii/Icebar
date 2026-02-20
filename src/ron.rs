@@ -12,6 +12,64 @@ pub struct BarConfig
 {
    pub bar_position: String,
    pub bar_size: u32,
+   pub bar_general_padding: u16,
+   pub bar_background_color_rgba: [u8;4],
+
+   pub left_modules: Vec<String>,
+   pub center_modules: Vec<String>,
+   pub right_modules: Vec<String>,
+
+   pub volume_format: String,
+   pub volume_muted_format: String,
+
+   pub clock_format: String,
+   pub clock_alt_format: String,
+
+   pub tray_background_color_rgba: [u8;4],
+   pub tray_button: [u8;3],
+   pub tray_button_text: [u8;3],
+   pub tray_button_hovered: [u8;3],
+   pub tray_button_hovered_text: [u8;3],
+   pub tray_button_pressed: [u8;3],
+   pub tray_border_color: [u8;3],
+   pub tray_border_size: f32,
+
+   pub clock_background_color_rgba: [u8;4],
+   pub clock_button: [u8;3],
+   pub clock_button_text: [u8;3],
+   pub clock_button_hovered: [u8;3],
+   pub clock_button_hovered_text: [u8;3],
+   pub clock_button_pressed: [u8;3],
+   pub clock_border_color: [u8;3],
+   pub clock_border_size: f32,
+
+   pub volume_output_background_color_rgba: [u8;4],
+   pub volume_output_button: [u8;3],
+   pub volume_output_button_text: [u8;3],
+   pub volume_output_button_hovered: [u8;3],
+   pub volume_output_button_hovered_text: [u8;3],
+   pub volume_output_button_pressed: [u8;3],
+   pub volume_output_border_color: [u8;3],
+   pub volume_output_border_size: f32,
+
+   pub hypr_workspace_background_color_rgba: [u8;4],
+   pub hypr_workspace_button: [u8;3],
+   pub hypr_workspace_button_text: [u8;3],
+   pub hypr_workspace_button_hovered: [u8;3],
+   pub hypr_workspace_button_hovered_text: [u8;3],
+   pub hypr_workspace_button_pressed: [u8;3],
+   pub hypr_workspace_border_color: [u8;3],
+   pub hypr_workspace_border_size: f32,
+
+   pub context_menu_background_color_rgba: [u8;4],
+   pub context_menu_button: [u8;3],
+   pub context_menu_button_text: [u8;3],
+   pub context_menu_button_hovered: [u8;3],
+   pub context_menu_button_hovered_text: [u8;3],
+   pub context_menu_button_pressed: [u8;3],
+   pub context_menu_border_color: [u8;3],
+   pub context_menu_border_size: f32
+
 }
 
 pub fn read_ron_config() -> (BarConfig, Anchor)

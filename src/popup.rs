@@ -1,7 +1,7 @@
 use std::time::Duration;
 use iced::{Color, Element, Length, Task, Theme, event, mouse, theme::Style, time, widget::{button, column, container, text}};
 use iced_layershell::{application, reexport::{Anchor, Layer, core::keyboard}, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
-use crate::tray::MenuItem;
+use crate::{ron::BarConfig, tray::MenuItem};
 
 
 
@@ -24,7 +24,8 @@ pub struct PopupData
     pub service: String,
     pub path: String,
     pub items: Vec<MenuItem>,
-    pub cursor_is_inside_menu: bool
+    pub cursor_is_inside_menu: bool,
+    pub ron_config: BarConfig
 }
 
 
@@ -156,26 +157,32 @@ fn view(data: &PopupData) -> Element<'_, PopupMessage>
             .style(|_: &Theme, status: button::Status| 
             {
                 let mut style = button::Style::default();
+                let hovered = data.ron_config.context_menu_button_hovered;
+                let hovered_text = data.ron_config.context_menu_button_hovered_text;
+                let pressed = data.ron_config.context_menu_button_pressed;
+                let normal = data.ron_config.context_menu_button;
+                let normal_text = data.ron_config.context_menu_button_text;
                 match status 
                 {
                     button::Status::Hovered => 
                     {
-                        style.background = Some(iced::Background::Color(Color::from_rgb(0.0, 0.5, 1.0))); // Blue background on hover
-                        style.text_color = Color::WHITE;
+                        style.background = Some(iced::Background::Color(Color::from_rgb8(hovered[0], hovered[1], hovered[2])));
+                        style.text_color = Color::from_rgb8(hovered_text[0], hovered_text[1], hovered_text[2]);
                     }
                     button::Status::Pressed => 
                     {
-                        style.background = Some(iced::Background::Color(Color::from_rgb(0.0, 0.3, 0.7))); // Darker blue when pressed
+                        style.background = Some(iced::Background::Color(Color::from_rgb8(pressed[0], pressed[1], pressed[2])));
                     }
                     _ => 
                     {
                         // Default active state
-                        style.background = Some(iced::Background::Color(Color::from_rgb(0.0, 0.7, 1.0)));
-                        style.text_color = Color::BLACK;
+                        style.background = Some(iced::Background::Color(Color::from_rgb8(normal[0], normal[1], normal[2])));
+                        style.text_color = Color::from_rgb8(normal_text[0], normal_text[1], normal_text[2]);
                     }
                 }
-                style.border.width = 1.0;
-                style.border.color = Color::BLACK;
+                let border_color = data.ron_config.context_menu_border_color;
+                style.border.width = data.ron_config.context_menu_border_size;
+                style.border.color = Color::from_rgb8(border_color[0], border_color[0],  border_color[0]);
                 style
              })
             .width(Length::Fill).into()
@@ -191,12 +198,12 @@ fn view(data: &PopupData) -> Element<'_, PopupMessage>
 }
 
 
-fn style(_: &PopupData, _: &iced::Theme) -> Style
+fn style(app: &PopupData, _: &iced::Theme) -> Style
 {
     Style
     {
-        background_color: Color::from_rgba(0.061,0.056,0.070,0.255),
-        text_color: Color::WHITE
+        background_color: Color::from_rgba8(app.ron_config.context_menu_background_color_rgba[0], app.ron_config.context_menu_background_color_rgba[1], app.ron_config.context_menu_background_color_rgba[2], app.ron_config.context_menu_background_color_rgba[3] as f32 / 100.),
+        text_color: Color::from_rgb(1.0, 1., 1.)
     }
 }
 
