@@ -10,10 +10,10 @@ use hyprland::dispatch::*;
 
 
 // ============ CRATES ============
-use crate::modules::tray::{self, TrayEvent, tray_stream, TraySubscription, start_tray};
-use crate::modules::hypr::{current_workspace, workspace_count};
+use crate::modules::tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream};
 use crate::modules::clock::{ClockData, get_current_time};
 use crate::modules::volume::{self, VolumeAction};
+use crate::modules::hypr::{self, UserHyprData};
 use crate::fs::check_if_config_file_exists;
 use crate::monitor::get_monitor_res;
 use crate::ron::read_ron_config;
@@ -74,7 +74,8 @@ struct Modules
 {
     tray_icons: Vec<(Option<image::Handle>, String)>,
     volume_data: VolumeData,
-    clock_data: ClockData
+    clock_data: ClockData,
+    hypr_data: UserHyprData
 }
 
 pub struct UserStyle
@@ -119,6 +120,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     {
         volume_data: VolumeData::default(), 
         clock_data: ClockData::default(), 
+        hypr_data: UserHyprData::default(),
         tray_icons: Vec::new()
     };
     let app_data = AppData
@@ -243,6 +245,8 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             app.modules.clock_data.current_time = get_current_time(format_to_send);
             app.modules.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput([&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format]));
             app.modules.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput([&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format]));
+            app.modules.hypr_data.current_workspace = hypr::current_workspace();
+            app.modules.hypr_data.workspace_count = hypr::workspace_count();
         }
 
         Message::TrayEvent(event) =>
@@ -415,7 +419,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "hypr/workspaces" => mouse_area ( row((1..workspace_count() + 1).map(|i| 
+            "hypr/workspaces" => mouse_area ( row((1..app.modules.hypr_data.workspace_count + 1).map(|i| 
             { 
                 #[allow(unused)]
                 let mut workspace_text = &String::new();
@@ -439,7 +443,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     let hovered = app.ron_config.hypr_workspace_button_hovered_color_rgb;
                     let hovered_text = app.ron_config.hypr_workspace_button_hovered_text_color_rgb;
                     let pressed = app.ron_config.hypr_workspace_button_pressed_color_rgb;
-                    let normal = if current_workspace() == i as i32 { app.ron_config.hypr_workspace_button_selected_color_rgb } else { app.ron_config.hypr_workspace_button_color_rgb };
+                    let normal = if app.modules.hypr_data.current_workspace == i as i32 { app.ron_config.hypr_workspace_button_selected_color_rgb } else { app.ron_config.hypr_workspace_button_color_rgb };
                     let normal_text = app.ron_config.hypr_workspace_button_text_color_rgb;
                     let border_size = app.ron_config.hypr_workspace_border_size;
                     let border_color_rgba = app.ron_config.hypr_workspace_border_color_rgba;

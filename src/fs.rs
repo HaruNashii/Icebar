@@ -53,8 +53,8 @@ BarConfig(
     output_volume_muted_format: "󰝟 Muted",
     input_volume_format: "󰍬 {}%",
     input_volume_muted_format: " Muted",
-    clock_format: "%H:%M",
-    clock_alt_format: "%H:%M:%S | %a %d %b %Y",
+    clock_format: "󰥔  %H:%M",
+    clock_alt_format: "󰃭  %a %d %b   󰥔  %H:%M:%S",
 
 
     // ================= TRAY =================
