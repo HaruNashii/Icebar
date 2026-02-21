@@ -1,6 +1,6 @@
 // ============ IMPORTS ============
 use iced_layershell::{application, reexport::{Anchor, Layer, core::keyboard}, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
-use iced::{Color, Element, Length, Task, Theme, event, mouse, theme::Style, time, widget::{button, column, container, text}};
+use iced::{Color, Element, Font, Length, Task, Theme, event, mouse, theme::Style, time, widget::{button, column, container, text}};
 use std::time::Duration;
 
 
@@ -34,6 +34,7 @@ pub struct PopupData
     pub monitor_size: (u32, u32),
     pub ron_config: BarConfig,
     pub items: Vec<MenuItem>,
+    pub default_font: Font,
     pub service: String,
     pub path: String
 }
@@ -154,7 +155,7 @@ fn update(data: &mut PopupData, popup_message: PopupMessage) -> Task<PopupMessag
 
 fn view(data: &PopupData) -> Element<'_, PopupMessage> 
 {
-    let button_vec: Vec<Element<'_, PopupMessage>> = data.items.iter().map(|item| { button(text(&item.label).width(Length::Fill).height(Length::Fill).center()) .on_press(PopupMessage::Action(data.service.to_string(), data.path.to_string(), item.id, item.label.to_string())) .style(|_: &Theme, status: button::Status| 
+    let button_vec: Vec<Element<'_, PopupMessage>> = data.items.iter().map(|item| { button(text(&item.label).font(data.default_font).size(data.ron_config.context_menu_text_size).width(Length::Fill).height(Length::Fill).center()) .on_press(PopupMessage::Action(data.service.to_string(), data.path.to_string(), item.id, item.label.to_string())) .style(|_: &Theme, status: button::Status| 
     {
         let hovered = data.ron_config.context_menu_button_hovered_color_rgb;
         let hovered_text = data.ron_config.context_menu_button_hovered_text_color_rgb;

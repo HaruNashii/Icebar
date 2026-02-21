@@ -24,11 +24,14 @@ pub fn check_if_config_file_exists()
     {
         println!("Ron config file doesn't exist, Creating...");
         let ron_default_data = r#"// WARNING!!!: THE ALPHA OF THE RGBA HAS THE RANGE BETWEEN 0 TO 100, PARSING MORE THAN 100 WILL RESULT IN CRASH
-BarConfig(
+// WARNING!!!: "bar_size" FIRST OPTION DEFINED TO "0" WILL MAKE THE BAR FILL THE ENTIRE SCREEN X AXIS
+// WARNING!!!: IF THE NUMBERS OF WORKSPACE IS GREATER THAN THE PARSED "hypr_workspace_text:" AND "hypr_workspace_selected_text:", THE NON-PARSED FORMAT WORKSPACE WILL HAVE THE NUMBER OF THE DETERMINED WORKSPACE
+
+BarConfig
+(
     // ================= GENERAL =================
     display: Some("DP-2"),
     bar_position: "Up",
-    // THE BAR SIZE FIRST OPTION DEFINED TO "0" WILL MAKE THE BAR FILL THE ENTIRE SCREEN X AXIS
     bar_size: (0, 45),
     bar_general_padding: 6,
     bar_background_color_rgba: (18, 18, 22, 92),
@@ -57,7 +60,7 @@ BarConfig(
     clock_alt_format: "󰃭  %a %d %b   󰥔  %H:%M:%S",
 
 
-    // ================= TRAY =================
+    // ================= TRAY (STYLE) =================
     tray_background_color_rgba: (30, 30, 36, 0),
     tray_button_color_rgb: (60, 50, 70),
     tray_button_text_color_rgb: (220, 220, 230),
@@ -69,7 +72,8 @@ BarConfig(
     tray_border_radius: (6, 6, 6, 6),
 
 
-    // ================= CLOCK =================
+    // ================= CLOCK (STYLE) =================
+    clock_text_size: 15,
     clock_background_color_rgba: (25, 25, 30, 95),
     clock_button_color_rgb: (50, 45, 60),
     clock_button_text_color_rgb: (235, 235, 240),
@@ -81,7 +85,8 @@ BarConfig(
     clock_border_radius: (8, 8, 8, 8),
 
 
-    // ================= VOLUME/OUTPUT =================
+    // ================= VOLUME/OUTPUT (STYLE) =================
+    volume_output_text_size: 15,
     volume_output_background_color_rgba: (30, 30, 36, 95),
     volume_output_button_color_rgb: (55, 45, 65),
     volume_output_button_text_color_rgb: (220, 220, 230),
@@ -93,7 +98,8 @@ BarConfig(
     volume_output_border_radius: (6, 6, 6, 6),
 
 
-    // ================= VOLUME/INPUT =================
+    // ================= VOLUME/INPUT (STYLE) =================
+    volume_input_text_size: 15,
     volume_input_background_color_rgba: (30, 30, 36, 95),
     volume_input_button_color_rgb: (55, 45, 65),
     volume_input_button_text_color_rgb: (220, 220, 230),
@@ -105,8 +111,11 @@ BarConfig(
     volume_input_border_radius: (6, 6, 6, 6),
 
 
-    // ================= HYPR WORKSPACES =================
-    hypr_workspace_text: ("A", "B", "C", "D", "E", "F", "G", "H", "I", "J"),
+    // ================= HYPR WORKSPACES (STYLE) =================
+    hypr_workspace_text_size: 15,
+    hypr_workspace_text: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+    hypr_workspace_selected_text: Some(["●", "●", "●", "●", "●", "●", "●", "●", "●", "●"]),
+    hypr_workspace_spacing: 3,
     hypr_workspace_background_color_rgba: (28, 28, 34, 95),
     hypr_workspace_button_color_rgb: (45, 40, 55),
     hypr_workspace_button_text_color_rgb: (200, 200, 210),
@@ -119,7 +128,8 @@ BarConfig(
     hypr_workspace_border_radius: (6, 6, 6, 6),
 
 
-    // ================= CONTEXT MENU =================
+    // ================= CONTEXT MENU (STYLE) =================
+    context_menu_text_size: 15,
     context_menu_width: 200,
     context_menu_background_color_rgba: (20, 20, 24, 98),
     context_menu_button_color_rgb: (45, 40, 55),

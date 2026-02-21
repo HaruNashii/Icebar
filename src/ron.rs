@@ -45,6 +45,7 @@ pub struct BarConfig
    pub tray_border_size: f32,
    pub tray_border_radius: [u32;4],
 
+   pub clock_text_size: u32,
    pub clock_background_color_rgba: [u8;4],
    pub clock_button_color_rgb: [u8;3],
    pub clock_button_text_color_rgb: [u8;3],
@@ -55,6 +56,7 @@ pub struct BarConfig
    pub clock_border_size: f32,
    pub clock_border_radius: [u32;4],
 
+   pub volume_output_text_size: u32,
    pub volume_output_background_color_rgba: [u8;4],
    pub volume_output_button_color_rgb: [u8;3],
    pub volume_output_button_text_color_rgb: [u8;3],
@@ -65,6 +67,7 @@ pub struct BarConfig
    pub volume_output_border_size: f32,
    pub volume_output_border_radius: [u32;4],
 
+   pub volume_input_text_size: u32,
    pub volume_input_background_color_rgba: [u8;4],
    pub volume_input_button_color_rgb: [u8;3],
    pub volume_input_button_text_color_rgb: [u8;3],
@@ -75,7 +78,10 @@ pub struct BarConfig
    pub volume_input_border_size: f32,
    pub volume_input_border_radius: [u32;4],
 
-   pub hypr_workspace_text: [String;10],
+   pub hypr_workspace_text_size: u32,
+   pub hypr_workspace_text: Vec<String>,
+   pub hypr_workspace_selected_text: Option<Vec<String>>,
+   pub hypr_workspace_spacing: u32,
    pub hypr_workspace_background_color_rgba: [u8;4],
    pub hypr_workspace_button_color_rgb: [u8;3],
    pub hypr_workspace_button_text_color_rgb: [u8;3],
@@ -87,6 +93,7 @@ pub struct BarConfig
    pub hypr_workspace_border_size: f32,
    pub hypr_workspace_border_radius: [u32;4],
 
+   pub context_menu_text_size: u32,
    pub context_menu_width: u32,
    pub context_menu_background_color_rgba: [u8;4],
    pub context_menu_button_color_rgb: [u8;3],

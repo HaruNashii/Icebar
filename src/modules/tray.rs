@@ -1,11 +1,12 @@
 // ============ IMPORTS ============
 use std::{collections::{HashMap, HashSet}, fs, path::{Path, PathBuf}, process::Command, sync::Mutex};
 use zbus::{interface, message::Header, Connection, Proxy};
+use iced::futures::{Stream, StreamExt};
 use tokio::sync::mpsc::{self, Sender};
-use iced::futures::StreamExt;
 use once_cell::sync::Lazy;
 use zbus::fdo::DBusProxy;
 use tiny_skia::Pixmap;
+use std::pin::Pin;
 
 
 
@@ -63,10 +64,10 @@ pub struct MenuItem
 
 
 // ============ FUNCTIONS ============
-pub fn tray_stream(_: &TraySubscription) -> impl iced::futures::Stream<Item = Message> 
+pub fn tray_stream(_: &TraySubscription) -> Pin<Box<dyn Stream<Item = Message> + Send>>
 {
     let rx = TRAY_RECEIVER.lock().unwrap().take().expect("tray receiver already taken");
-    tokio_stream::wrappers::ReceiverStream::new(rx).map(Message::TrayEvent)
+    Box::pin(tokio_stream::wrappers::ReceiverStream::new(rx).map(Message::TrayEvent))
 }
 
 
@@ -144,7 +145,8 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
         }
     });
 
-    println!("\n=== Icebar Watcher Started ===");
+    println!("\n=== Icebar Watcher ===");
+    println!("Started Successfully!!");
     std::future::pending::<()>().await;
     Ok(())
 }
@@ -204,36 +206,24 @@ pub async fn fetch_icon(conn: &Connection, combined: &str) -> zbus::Result<TrayE
 {
     let (service, path) = combined.split_once('|').unwrap_or((combined, "/StatusNotifierItem"));
     let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
-    if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("IconPixmap").await
+    if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("IconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().max_by_key(|(w, h, _)| w * h)
     {
-        if let Some((w, h, data)) = pixmaps.into_iter().max_by_key(|(w, h, _)| w * h)
-        {
-            return Ok(TrayEvent::Icon {data, width: w as u32, height: h as u32});
-        }
+        return Ok(TrayEvent::Icon {data, width: w as u32, height: h as u32});
     }
     let theme_path = proxy.get_property::<String>("IconThemePath").await.ok();
     let try_name = |name: String| {load_icon_with_theme_path(&name, theme_path.as_deref())};
-    if let Ok(name) = proxy.get_property::<String>("IconName").await 
+    if let Ok(name) = proxy.get_property::<String>("IconName").await && let Some((d, w, h)) = try_name(name) 
     {
-        if let Some((d, w, h)) = try_name(name) 
-        {
-            return Ok(TrayEvent::Icon { data: d, width: w, height: h });
-        }
+        return Ok(TrayEvent::Icon { data: d, width: w, height: h });
     }
-    if let Ok(name) = proxy.get_property::<String>("AttentionIconName").await
+    if let Ok(name) = proxy.get_property::<String>("AttentionIconName").await && let Some((d, w, h)) = try_name(name) 
     {
-        if let Some((d, w, h)) = try_name(name) 
-        {
-            return Ok(TrayEvent::Icon { data: d, width: w, height: h });
-        }
+        return Ok(TrayEvent::Icon { data: d, width: w, height: h });
     }
-    if let Ok(title) = proxy.get_property::<String>("Title").await 
+    if let Ok(title) = proxy.get_property::<String>("Title").await && let Some(icon) = load_icon_from_desktop(&title) 
     {
-        if let Some(icon) = load_icon_from_desktop(&title) 
-        {
-            let (d, w, h) = icon;
-            return Ok(TrayEvent::Icon { data: d, width: w, height: h });
-        }
+        let (d, w, h) = icon;
+        return Ok(TrayEvent::Icon { data: d, width: w, height: h });
     }
     Err(zbus::Error::Failure("No icon available".into()))
 }
@@ -343,21 +333,18 @@ fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
 fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option<(Vec<u8>, u32, u32)> 
 {
     println!("Trying to load icon: {name} with theme_path: {:?}", theme_path);
-    if let Some(base) = theme_path
+    if let Some(base) = theme_path && !base.is_empty()
     {
-        if !base.is_empty()
+        let base = PathBuf::from(base);
+        for size in ["16x16","22x22","24x24","32x32","48x48","scalable"]
         {
-            let base = PathBuf::from(base);
-            for size in ["16x16","22x22","24x24","32x32","48x48","scalable"]
+            for ext in ["svg","png"] // prefer svg first
             {
-                for ext in ["svg","png"] // prefer svg first
+                let candidate = base.join(size).join("apps").join(format!("{name}.{ext}"));
+                if let Some(icon) = try_load_icon(&candidate)
                 {
-                    let candidate = base.join(size).join("apps").join(format!("{name}.{ext}"));
-                    if let Some(icon) = try_load_icon(&candidate)
-                    {
-                        println!("Loaded icon from app theme path: {:?}", candidate);
-                        return Some(icon);
-                    }
+                    println!("Loaded icon from app theme path: {:?}", candidate);
+                    return Some(icon);
                 }
             }
         }
@@ -420,13 +407,10 @@ fn load_icon_from_theme(name: &str) -> Option<(Vec<u8>, u32, u32)>
 
     for root in roots
     {
-        if root.exists()
+        if root.exists() && let Some(path) = search_icon_recursive(&root, name, &exts)
         {
-            if let Some(path) = search_icon_recursive(&root, name, &exts)
-            {
-                println!("Loaded icon from {:?}", path);
-                return try_load_icon(&path);
-            }
+            println!("Loaded icon from {:?}", path);
+            return try_load_icon(&path);
         }
     }
 
@@ -442,25 +426,13 @@ fn search_icon_recursive(dir: &Path, name: &str, exts: &[&str]) -> Option<PathBu
         for entry in entries.flatten()
         {
             let path = entry.path();
-            if path.is_dir()
+            if path.is_dir() && let Some(found) = search_icon_recursive(&path, name, exts)
             {
-                if let Some(found) = search_icon_recursive(&path, name, exts)
-                {
-                    return Some(found);
-                }
+                return Some(found);
             }
-            else if let Some(stem) = path.file_stem().and_then(|s| s.to_str())
+            else if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) && stem == name && let Some(ext) = path.extension().and_then(|e| e.to_str()) && exts.contains(&ext)
             {
-                if stem == name
-                {
-                    if let Some(ext) = path.extension().and_then(|e| e.to_str())
-                    {
-                        if exts.contains(&ext)
-                        {
-                            return Some(path);
-                        }
-                    }
-                }
+                return Some(path);
             }
         }
     }

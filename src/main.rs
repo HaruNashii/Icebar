@@ -311,13 +311,14 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             println!("Id: {:?}\n", items);
             let popup_data = crate::popup::PopupData 
             {
-                service,
-                path,
-                items,
-                cursor_is_inside_menu: false, 
-                ron_config: app.ron_config.clone(),
+                default_font: app.default_font,
                 popup_position: app.mouse_position,
+                ron_config: app.ron_config.clone(),
                 monitor_size: app.monitor_size,
+                cursor_is_inside_menu: false, 
+                service,
+                items,
+                path,
             };
             
             tokio::spawn(async move 
@@ -421,24 +422,29 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
             "hypr/workspaces" => mouse_area ( row((1..app.modules.hypr_data.workspace_count + 1).map(|i| 
             { 
-                #[allow(unused)]
-                let mut workspace_text = &String::new();
-                let index_string = i.to_string();
-                match i
+                let workspace_text = if let Some(selected_text) = &app.ron_config.hypr_workspace_selected_text && app.modules.hypr_data.current_workspace as usize == i
                 {
-                  1  => {workspace_text = &app.ron_config.hypr_workspace_text[0]},  
-                  2  => {workspace_text = &app.ron_config.hypr_workspace_text[1]},  
-                  3  => {workspace_text = &app.ron_config.hypr_workspace_text[2]},  
-                  4  => {workspace_text = &app.ron_config.hypr_workspace_text[3]},  
-                  5  => {workspace_text = &app.ron_config.hypr_workspace_text[4]},  
-                  6  => {workspace_text = &app.ron_config.hypr_workspace_text[5]},  
-                  7  => {workspace_text = &app.ron_config.hypr_workspace_text[6]},  
-                  8  => {workspace_text = &app.ron_config.hypr_workspace_text[7]},  
-                  9  => {workspace_text = &app.ron_config.hypr_workspace_text[8]},  
-                  10 => {workspace_text = &app.ron_config.hypr_workspace_text[9]},  
-                  _=> { workspace_text = &index_string }
+                    if i > app.ron_config.hypr_workspace_text.len() 
+                    {
+                        &format!("{}", i).to_string()
+                    } 
+                    else 
+                    {
+                        &selected_text[i - 1]
+                    }
+                } 
+                else 
+                {
+                    if i > app.ron_config.hypr_workspace_text.len() 
+                    {
+                        &format!("{}", i).to_string()
+                    } 
+                    else 
+                    {
+                        &app.ron_config.hypr_workspace_text[i - 1]
+                    }
                 };
-                button(text(workspace_text.clone()).font(app.default_font)).on_press(Message::WorkspaceButtonPressed(i)).style(move|_: &Theme, status: button::Status| 
+                button(text(workspace_text.clone()).font(app.default_font).size(app.ron_config.hypr_workspace_text_size)).on_press(Message::WorkspaceButtonPressed(i)).style(move|_: &Theme, status: button::Status| 
                 {
                     let hovered = app.ron_config.hypr_workspace_button_hovered_color_rgb;
                     let hovered_text = app.ron_config.hypr_workspace_button_hovered_text_color_rgb;
@@ -450,11 +456,11 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     let border_radius = app.ron_config.hypr_workspace_border_radius;
                     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
                 }).into() 
-            })).spacing(8).align_y(Alignment::Start)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
+            })).spacing(app.ron_config.hypr_workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
 
 
 
-            "clock" => container(button(text(&*app.modules.clock_data.current_time).font(app.default_font)).on_press(Message::ToggleAltClock).style(|_: &Theme, status: button::Status| 
+            "clock" => container(button(text(&*app.modules.clock_data.current_time).font(app.default_font).size(app.ron_config.clock_text_size)).on_press(Message::ToggleAltClock).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.clock_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.clock_button_hovered_text_color_rgb;
@@ -465,11 +471,11 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let border_color_rgba = app.ron_config.clock_border_color_rgba;
                 let border_radius = app.ron_config.clock_border_radius;
                 set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            })).align_y(Alignment::Start).into(),
+            })).align_y(Alignment::Center).into(),
 
 
 
-            "volume/output" => container(mouse_area ( button (text(&*app.modules.volume_data.output_volume_level).font(app.default_font)).on_press(Message::MuteAudioPressedOutput).style(|_: &Theme, status: button::Status| 
+            "volume/output" => container(mouse_area ( button (text(&*app.modules.volume_data.output_volume_level).font(app.default_font).size(app.ron_config.volume_output_text_size)).on_press(Message::MuteAudioPressedOutput).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
@@ -480,11 +486,11 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let border_color_rgba = app.ron_config.volume_output_border_color_rgba;
                 let border_radius = app.ron_config.volume_output_border_radius;
                 set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            })).on_enter(Message::IsHoveringVolumeOutput(true)).on_exit(Message::IsHoveringVolumeOutput(false))).align_y(Alignment::Start).into(),
+            })).on_enter(Message::IsHoveringVolumeOutput(true)).on_exit(Message::IsHoveringVolumeOutput(false))).align_y(Alignment::Center).into(),
 
 
 
-            "volume/input" => container(mouse_area ( button (text(&*app.modules.volume_data.input_volume_level).font(app.default_font)).on_press(Message::MuteAudioPressedInput).style(|_: &Theme, status: button::Status| 
+            "volume/input" => container(mouse_area ( button (text(&*app.modules.volume_data.input_volume_level).font(app.default_font).size(app.ron_config.volume_input_text_size)).on_press(Message::MuteAudioPressedInput).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.volume_input_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
@@ -495,7 +501,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let border_color_rgba = app.ron_config.volume_input_border_color_rgba;
                 let border_radius = app.ron_config.volume_input_border_radius;
                 set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            })).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).align_y(Alignment::Start).into(),
+            })).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).align_y(Alignment::Center).into(),
             _ => continue,
         };
 
