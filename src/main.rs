@@ -10,11 +10,15 @@ use hyprland::dispatch::*;
 
 
 // ============ CRATES ============
-use crate::{clock::{ClockData, get_current_time}, hypr::{current_workspace, workspace_count}, monitor::get_monitor_res, ron::BarConfig, tray::start_tray};
-use crate::tray::{TrayEvent, tray_stream, TraySubscription};
+use crate::modules::tray::{self, TrayEvent, tray_stream, TraySubscription, start_tray};
+use crate::modules::hypr::{current_workspace, workspace_count};
+use crate::modules::clock::{ClockData, get_current_time};
+use crate::modules::volume::{self, VolumeAction};
 use crate::fs::check_if_config_file_exists;
+use crate::monitor::get_monitor_res;
 use crate::ron::read_ron_config;
-use crate::volume::VolumeData;
+use modules::volume::VolumeData;
+use crate::ron::BarConfig;
 
 
 
@@ -22,11 +26,8 @@ use crate::volume::VolumeData;
 
 // ============ MOD'S ============
 mod monitor;
-mod volume;
-mod clock;
+mod modules;
 mod popup;
-mod tray;
-mod hypr;
 mod ron;
 mod fs;
 
@@ -240,8 +241,8 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         {
             let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format };
             app.modules.clock_data.current_time = get_current_time(format_to_send);
-            app.modules.volume_data.output_volume_level = volume::volume(volume::VolumeAction::GetOutput([&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format]));
-            app.modules.volume_data.input_volume_level = volume::volume(volume::VolumeAction::GetInput([&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format]));
+            app.modules.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput([&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format]));
+            app.modules.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput([&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format]));
         }
 
         Message::TrayEvent(event) =>
