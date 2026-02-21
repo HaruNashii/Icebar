@@ -42,12 +42,14 @@ pub enum Message
     MenuLoaded(String, String, Vec<tray::MenuItem>),
     MouseWheelScrolled(ScrollDelta),
     WorkspaceButtonPressed(usize),
+    IsHoveringVolumeOutput(bool),
+    IsHoveringVolumeInput(bool),
     IsHoveringWorkspace(bool),
     CursorMoved(iced::Point),
-    IsHoveringVolume(bool),
     TrayIconClicked(usize),
+    MuteAudioPressedOutput,
+    MuteAudioPressedInput,
     TrayEvent(TrayEvent),
-    MuteAudioPressed,
     ToggleAltClock,
     Tick
 }
@@ -55,10 +57,11 @@ pub enum Message
 #[derive(Default, Clone)]
 struct AppData
 {
+    is_hovering_volume_output: bool,
+    is_hovering_volume_input: bool,
     is_hovering_workspace: bool,
     is_showing_alt_clock: bool,
     mouse_position: (i32, i32),
-    is_hovering_volume: bool,
     monitor_size: (u32, u32),
     ron_config: BarConfig,
     modules: Modules
@@ -107,10 +110,11 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let app_data = AppData
     {
         monitor_size: (monitor_res.0, monitor_res.1),
+        is_hovering_volume_output: false, 
+        is_hovering_volume_input: false, 
         is_hovering_workspace: false, 
         ron_config: ron_config_clone, 
         is_showing_alt_clock: false,
-        is_hovering_volume: false, 
         mouse_position: (0, 0),
         modules
     };
@@ -169,19 +173,26 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
 {
     match message
     {
-        Message::IsHoveringVolume(bool) => { app.is_hovering_volume = bool; }
+        Message::IsHoveringVolumeOutput(bool) => { app.is_hovering_volume_output = bool; }
+        Message::IsHoveringVolumeInput(bool) => { app.is_hovering_volume_input = bool; }
         Message::IsHoveringWorkspace(bool) => { app.is_hovering_workspace = bool; }
-        Message::MuteAudioPressed => { volume::volume( volume::VolumeAction::Mute); }
+        Message::MuteAudioPressedOutput => { volume::volume( volume::VolumeAction::MuteOutput); }
+        Message::MuteAudioPressedInput => { volume::volume( volume::VolumeAction::MuteInput); }
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
         Message::WorkspaceButtonPressed(id) => { let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32))); }
         Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
 
         Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>
         {
-            if app.is_hovering_volume
+            if app.is_hovering_volume_output
             {
-                    if y > 2. { volume::volume(volume::VolumeAction::Increase); }
-                    if y < 2. { volume::volume(volume::VolumeAction::Decrease); }
+                    if y > 2. { volume::volume(volume::VolumeAction::IncreaseOutput); }
+                    if y < 2. { volume::volume(volume::VolumeAction::DecreaseOutput); }
+            }
+            if app.is_hovering_volume_input
+            {
+                    if y > 2. { volume::volume(volume::VolumeAction::IncreaseInput); }
+                    if y < 2. { volume::volume(volume::VolumeAction::DecreaseInput); }
             }
             if app.is_hovering_workspace
             {
@@ -194,7 +205,8 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         {
             let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format };
             app.modules.clock_data.current_time = get_current_time(format_to_send);
-            app.modules.volume_data.volume_level = volume::volume(volume::VolumeAction::Get([&app.ron_config.volume_format, &app.ron_config.volume_muted_format]));
+            app.modules.volume_data.output_volume_level = volume::volume(volume::VolumeAction::GetOutput([&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format]));
+            app.modules.volume_data.input_volume_level = volume::volume(volume::VolumeAction::GetInput([&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format]));
         }
 
         Message::TrayEvent(event) =>
@@ -279,9 +291,6 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
 
     Command::none()
 }
-
-
-
 
 
 
@@ -420,7 +429,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "volume/output" => container(mouse_area ( button (&*app.modules.volume_data.volume_level).on_press(Message::MuteAudioPressed).style(|_: &Theme, status: button::Status| 
+            "volume/output" => container(mouse_area ( button (&*app.modules.volume_data.output_volume_level).on_press(Message::MuteAudioPressedOutput).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
@@ -431,7 +440,22 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let border_color_rgba = app.ron_config.volume_output_border_color_rgba;
                 let border_radius = app.ron_config.volume_output_border_radius;
                 set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            })).on_enter(Message::IsHoveringVolume(true)).on_exit(Message::IsHoveringVolume(false))).align_y(Alignment::Start).into(),
+            })).on_enter(Message::IsHoveringVolumeOutput(true)).on_exit(Message::IsHoveringVolumeOutput(false))).align_y(Alignment::Start).into(),
+
+
+
+            "volume/input" => container(mouse_area ( button (&*app.modules.volume_data.input_volume_level).on_press(Message::MuteAudioPressedInput).style(|_: &Theme, status: button::Status| 
+            {
+                let hovered = app.ron_config.volume_input_button_hovered_color_rgb;
+                let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
+                let pressed = app.ron_config.volume_input_button_pressed_color_rgb;
+                let normal = app.ron_config.volume_input_button_color_rgb;
+                let normal_text = app.ron_config.volume_input_button_text_color_rgb;
+                let border_size = app.ron_config.volume_input_border_size;
+                let border_color_rgba = app.ron_config.volume_input_border_color_rgba;
+                let border_radius = app.ron_config.volume_input_border_radius;
+                set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+            })).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).align_y(Alignment::Start).into(),
             _ => continue,
         };
 

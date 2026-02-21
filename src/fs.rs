@@ -37,12 +37,14 @@ BarConfig(
     // ================= MODULES =================
     left_modules: ["hypr/workspaces"],
     center_modules: ["clock"],
-    right_modules: ["tray", "volume/output"],
+    right_modules: ["tray", "volume/output", "volume/input"],
 
 
     // ================= FORMATS =================
-    volume_format: " {}%",
-    volume_muted_format: "󰝟 muted",
+    output_volume_format: " {}%",
+    output_volume_muted_format: "󰝟 Muted",
+    input_volume_format: "󰍬 {}%",
+    input_volume_muted_format: " Muted",
     clock_format: "%H:%M",
     clock_alt_format: "%H:%M:%S | %a %d %b %Y",
 
@@ -71,7 +73,7 @@ BarConfig(
     clock_border_radius: (8, 8, 8, 8),
 
 
-    // ================= VOLUME =================
+    // ================= VOLUME/OUTPUT =================
     volume_output_background_color_rgba: (30, 30, 36, 95),
     volume_output_button_color_rgb: (55, 45, 65),
     volume_output_button_text_color_rgb: (220, 220, 230),
@@ -81,6 +83,18 @@ BarConfig(
     volume_output_border_color_rgba: (110, 80, 120, 100),
     volume_output_border_size: 1.0,
     volume_output_border_radius: (6, 6, 6, 6),
+
+
+    // ================= VOLUME/INPUT =================
+    volume_input_background_color_rgba: (30, 30, 36, 95),
+    volume_input_button_color_rgb: (55, 45, 65),
+    volume_input_button_text_color_rgb: (220, 220, 230),
+    volume_input_button_hovered_color_rgb: (150, 45, 85),
+    volume_input_button_hovered_text_color_rgb: (255, 255, 255),
+    volume_input_button_pressed_color_rgb: (85, 30, 50),
+    volume_input_border_color_rgba: (110, 80, 120, 100),
+    volume_input_border_size: 1.0,
+    volume_input_border_radius: (6, 6, 6, 6),
 
 
     // ================= HYPR WORKSPACES =================

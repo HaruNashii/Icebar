@@ -22,9 +22,10 @@ pub struct BarConfig
    pub center_modules: Vec<String>,
    pub right_modules: Vec<String>,
 
-   pub volume_format: String,
-   pub volume_muted_format: String,
-
+   pub output_volume_format: String,
+   pub output_volume_muted_format: String,
+   pub input_volume_format: String,
+   pub input_volume_muted_format: String,
    pub clock_format: String,
    pub clock_alt_format: String,
 
@@ -57,6 +58,16 @@ pub struct BarConfig
    pub volume_output_border_color_rgba: [u8;4],
    pub volume_output_border_size: f32,
    pub volume_output_border_radius: [u32;4],
+
+   pub volume_input_background_color_rgba: [u8;4],
+   pub volume_input_button_color_rgb: [u8;3],
+   pub volume_input_button_text_color_rgb: [u8;3],
+   pub volume_input_button_hovered_color_rgb: [u8;3],
+   pub volume_input_button_hovered_text_color_rgb: [u8;3],
+   pub volume_input_button_pressed_color_rgb: [u8;3],
+   pub volume_input_border_color_rgba: [u8;4],
+   pub volume_input_border_size: f32,
+   pub volume_input_border_radius: [u32;4],
 
    pub hypr_workspace_text: [String;10],
    pub hypr_workspace_background_color_rgba: [u8;4],
