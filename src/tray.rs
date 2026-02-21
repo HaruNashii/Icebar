@@ -1,11 +1,11 @@
 // ============ IMPORTS ============
-use std::{sync::Mutex, path::{Path, PathBuf}, fs, process::Command};
-use zbus::{message::Header, interface, Connection, Proxy};
-use tokio::sync::mpsc::{Sender, self};
+use std::{collections::{HashMap, HashSet}, fs, path::{Path, PathBuf}, process::Command, sync::Mutex};
+use zbus::{interface, message::Header, Connection, Proxy};
+use tokio::sync::mpsc::{self, Sender};
 use iced::futures::StreamExt;
 use once_cell::sync::Lazy;
+use zbus::fdo::DBusProxy;
 use tiny_skia::Pixmap;
-use resvg::usvg;
 
 
 
@@ -17,33 +17,37 @@ use crate::Message;
 
 
 
-// ============ CONSTS/STATICS, ETC... ============
+
+// ============ STATICS ============
 static TRAY_RECEIVER: Lazy<Mutex<Option<mpsc::Receiver<TrayEvent>>>> = Lazy::new(|| Mutex::new(None));
+static OWNER_MAP: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+static REGISTERED: Lazy<Mutex<HashSet<String>>> = Lazy::new(|| Mutex::new(HashSet::new()));
 
 
 
 
 
-// ============ STRUCT ============
+// ============ ENUM/STRUCT ============
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct TraySubscription;
 
 #[derive(Debug, Clone)]
-pub enum TrayEvent
+pub enum TrayEvent 
 {
+    ItemUnregistered(String),
     ItemRegistered(String),
-    Icon
+    Icon 
     {
         data: Vec<u8>,
         height: u32,
-        width: u32
+        width: u32,
     },
 }
 
-pub struct StatusNotifierWatcher
+pub struct StatusNotifierWatcher 
 {
     pub sender: Sender<TrayEvent>,
-    pub connection: Connection
+    pub connection: Connection,
 }
 
 #[derive(Debug, Clone)]
@@ -51,7 +55,7 @@ pub struct MenuItem
 {
     pub _visible: bool,
     pub label: String,
-    pub id: i32
+    pub id: i32,
 }
 
 
@@ -59,81 +63,118 @@ pub struct MenuItem
 
 
 // ============ FUNCTIONS ============
-pub fn tray_stream(_: &TraySubscription) -> impl iced::futures::Stream<Item = Message>
+pub fn tray_stream(_: &TraySubscription) -> impl iced::futures::Stream<Item = Message> 
 {
-    let receiver = TRAY_RECEIVER.lock().unwrap().take().expect("tray receiver already taken");
-    tokio_stream::wrappers::ReceiverStream::new(receiver).map(Message::TrayEvent)
+    let rx = TRAY_RECEIVER.lock().unwrap().take().expect("tray receiver already taken");
+    tokio_stream::wrappers::ReceiverStream::new(rx).map(Message::TrayEvent)
 }
 
 
 
-pub fn start_tray()
+pub fn start_tray() 
 {
     let (tx, rx) = mpsc::channel(32);
     *TRAY_RECEIVER.lock().unwrap() = Some(rx);
-    tokio::spawn(async move { let _ = start_watcher(tx).await; });
+    tokio::spawn(async move 
+    {
+        let _ = start_watcher(tx).await;
+    });
 }
 
 
 
 #[interface(name = "org.kde.StatusNotifierWatcher")]
-impl StatusNotifierWatcher
+impl StatusNotifierWatcher 
 {
-    async fn register_status_notifier_item(&self, service: &str, #[zbus(header)] header: Header<'_>)
+    pub async fn register_status_notifier_item(&self, service: &str, #[zbus(header)] header: Header<'_>) 
     {
         let sender = header.sender().map(|s| s.to_string()).unwrap_or_default();
-        let (dest, path) = if service.starts_with('/')
+        REGISTERED.lock().unwrap().insert(sender.clone());
+        let (dest, path) = if service.starts_with('/') 
         {
-            (sender, service.to_string())
-        }
-        else
+            (sender.clone(), service.to_string())
+        } 
+        else 
         {
             (service.to_string(), "/StatusNotifierItem".into())
         };
 
         let combined = format!("{dest}|{path}");
-        println!("\n=== Tray item registered ===\nService Registred: {combined}");
-
+        println!("\n=== Tray item registered ===\n{combined}");
         let _ = self.sender.send(TrayEvent::ItemRegistered(combined.clone())).await;
-
-        match fetch_icon(&self.connection, &combined).await
+        OWNER_MAP.lock().unwrap().insert(sender.clone(), combined.clone());
+        if let Ok(icon) = fetch_icon(&self.connection, &combined).await 
         {
-            Ok(icon) => { let _ = self.sender.send(icon).await; }
-            Err(e) => println!("Icon fetch failed: {e}")
+            let _ = self.sender.send(icon).await;
         }
     }
 }
 
 
 
-fn extract_nodes(v: &serde_json::Value, entries: &mut Vec<MenuItem>) 
+pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()> 
+{
+    let connection = Connection::session().await?;
+    connection.request_name("org.kde.StatusNotifierWatcher").await?;
+    connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender: sender.clone(), connection: connection.clone() }).await?;
+    use futures_util::StreamExt;
+    let dbus = DBusProxy::new(&connection).await.unwrap();
+    let mut name_changes = dbus.receive_name_owner_changed().await.unwrap();
+    let tx_clone = sender.clone();
+
+    tokio::spawn(async move 
+    {
+        while let Some(signal) = name_changes.next().await 
+        {
+            let args = signal.args().unwrap();
+            let name = args.name().to_string();
+            let new_owner = args.new_owner();
+            if new_owner.is_none() 
+            {
+                let was_registered = REGISTERED.lock().unwrap().remove(&name);
+                if was_registered 
+                {
+                    let combined_opt = OWNER_MAP.lock().unwrap().remove(&name);
+                    if let Some(combined) = combined_opt 
+                    {
+                        let _ = tx_clone.send(TrayEvent::ItemUnregistered(combined)).await;
+                    }
+                }
+            }
+        }
+    });
+
+    println!("\n=== Icebar Watcher Started ===");
+    std::future::pending::<()>().await;
+    Ok(())
+}
+
+
+
+fn extract_nodes(v: &serde_json::Value, out: &mut Vec<MenuItem>) 
 {
     match v 
     {
         serde_json::Value::Array(arr) => 
         {
-            if arr.len() == 3 
+            if let [id, props, ..] = &arr[..] 
             {
-                let id = arr[0].as_i64().unwrap_or(0) as i32;
-                let props = &arr[1];
-                if let Some(label_obj) = props.get("label") 
+                let id = id.as_i64().unwrap_or(0) as i32;
+                if let Some(label) = props.get("label").and_then(|v| v.get("data")).and_then(|v| v.as_str())
                 {
-                    let label = label_obj.get("data").and_then(|v| v.as_str()).unwrap_or("").to_string();
                     let visible = props.get("visible").and_then(|v| v.get("data")).and_then(|v| v.as_bool()).unwrap_or(true);
                     let enabled = props.get("enabled").and_then(|v| v.get("data")).and_then(|v| v.as_bool()).unwrap_or(true);
-                    let entry_type = props.get("type").and_then(|v| v.get("data")).and_then(|v| v.as_str()).unwrap_or("default");
-                    if visible && enabled && entry_type != "separator" { entries.push(MenuItem { id, label, _visible: visible }); }
+                    let ty = props.get("type").and_then(|v| v.get("data")).and_then(|v| v.as_str()).unwrap_or("default");
+                    if visible && enabled && ty != "separator" 
+                    {
+                        out.push(MenuItem {id, label: label.into(), _visible: visible});
+                    }
                 }
             }
-            for elem in arr { extract_nodes(elem, entries); }
+
+            for e in arr { extract_nodes(e, out) }
         }
-        serde_json::Value::Object(map) => 
-        {
-            for value in map.values() 
-            {
-                extract_nodes(value, entries);
-            }
-        }
+        serde_json::Value::Object(map) => { map.values().for_each(|v| extract_nodes(v, out)) }
         _ => {}
     }
 }
@@ -142,7 +183,7 @@ fn extract_nodes(v: &serde_json::Value, entries: &mut Vec<MenuItem>)
 
 pub async fn load_menu(service: &str, menu_path: &str) -> zbus::Result<Vec<MenuItem>> 
 {
-    let output = Command::new("busctl").args(["--user", "--json=short", "call", service, menu_path, "com.canonical.dbusmenu", "GetLayout", "iias", "0", "1", "0"]).output()?;
+    let output = Command::new("busctl").args(["--user", "--json=short", "call", service, menu_path, "com.canonical.dbusmenu", "GetLayout", "iias", "0", "1", "0", ]).output()?;
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     let mut entries = Vec::new();
     extract_nodes(&json, &mut entries);
@@ -153,108 +194,74 @@ pub async fn load_menu(service: &str, menu_path: &str) -> zbus::Result<Vec<MenuI
 
 pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus::Result<()> 
 {
-    Command::new("busctl").args(["--user", "call", service, menu_path, "com.canonical.dbusmenu", "Event", "isvu", &id.to_string(), "clicked", "i", "0", "0"]).status()?;
+    Command::new("busctl").args(["--user", "call", service, menu_path, "com.canonical.dbusmenu", "Event", "isvu", &id.to_string(), "clicked", "i", "0", "0", ]).status()?;
     Ok(())
 }
 
 
 
-pub async fn start_watcher(sender: mpsc::Sender<TrayEvent>) -> zbus::Result<()>
+pub async fn fetch_icon(conn: &Connection, combined: &str) -> zbus::Result<TrayEvent> 
 {
-    let connection = Connection::session().await?;
-    connection.request_name("org.kde.StatusNotifierWatcher").await?;
-    connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender, connection: connection.clone() }).await?;
-    println!("\n=== Icebar Watcher Started!!! ===");
-    std::future::pending::<()>().await;
-    Ok(())
-}
-
-
-
-pub async fn fetch_icon(conn: &zbus::Connection, combined: &str) -> zbus::Result<TrayEvent>
-{
-    println!("\n=== Fetching icon for tray item ===");
     let (service, path) = combined.split_once('|').unwrap_or((combined, "/StatusNotifierItem"));
-    println!("Service: {service}");
-    println!("Path: {path}");
     let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
-    println!("Proxy created for {service}");
-
-    // 1️⃣ IconPixmap
     if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("IconPixmap").await
     {
-        println!("Found IconPixmap with {} candidates", pixmaps.len());
         if let Some((w, h, data)) = pixmaps.into_iter().max_by_key(|(w, h, _)| w * h)
         {
-            println!("Using IconPixmap {}x{}", w, h);
-            return Ok(TrayEvent::Icon { data, width: w as u32, height: h as u32 });
+            return Ok(TrayEvent::Icon {data, width: w as u32, height: h as u32});
         }
     }
-    else
-    {
-        println!("No IconPixmap property");
-    }
-
-    // 2️⃣ IconThemePath
     let theme_path = proxy.get_property::<String>("IconThemePath").await.ok();
-    println!("IconThemePath: {:?}", theme_path);
-
-    // 3️⃣ IconName
-    if let Ok(icon_name) = proxy.get_property::<String>("IconName").await
+    let try_name = |name: String| {load_icon_with_theme_path(&name, theme_path.as_deref())};
+    if let Ok(name) = proxy.get_property::<String>("IconName").await 
     {
-        println!("IconName property: {icon_name}");
-        if let Some((bytes, w, h)) = load_icon_with_theme_path(&icon_name, theme_path.as_deref())
+        if let Some((d, w, h)) = try_name(name) 
         {
-            println!("Loaded icon via IconName: {}x{}", w, h);
-            return Ok(TrayEvent::Icon { data: bytes, width: w, height: h });
+            return Ok(TrayEvent::Icon { data: d, width: w, height: h });
         }
     }
-    else
+    if let Ok(name) = proxy.get_property::<String>("AttentionIconName").await
     {
-        println!("No IconName property");
-    }
-
-    // 4️⃣ AttentionIconName fallback
-    if let Ok(icon_name) = proxy.get_property::<String>("AttentionIconName").await
-    {
-        println!("AttentionIconName property: {icon_name}");
-        if let Some((bytes, w, h)) = load_icon_with_theme_path(&icon_name, theme_path.as_deref())
+        if let Some((d, w, h)) = try_name(name) 
         {
-            println!("Loaded icon via AttentionIconName: {}x{}", w, h);
-            return Ok(TrayEvent::Icon { data: bytes, width: w, height: h });
+            return Ok(TrayEvent::Icon { data: d, width: w, height: h });
         }
     }
-    else
+    if let Ok(title) = proxy.get_property::<String>("Title").await 
     {
-        println!("No AttentionIconName property");
-    }
-
-    // 5️⃣ .desktop Fallback
-    println!("Attempting .desktop fallback...");
-
-    // Try Title property first
-    let title = proxy.get_property::<String>("Title").await.ok();
-    if let Some(title) = title
-    {
-        println!("Title from proxy: {title}");
-        if let Some((bytes, w, h)) = load_icon_from_desktop(&title)
+        if let Some(icon) = load_icon_from_desktop(&title) 
         {
-            println!("Loaded icon via .desktop fallback: {}x{}", w, h);
-            return Ok(TrayEvent::Icon { data: bytes, width: w, height: h });
+            let (d, w, h) = icon;
+            return Ok(TrayEvent::Icon { data: d, width: w, height: h });
         }
     }
-    else
-    {
-        println!("No Title property available for .desktop fallback, trying service-based guess...");
-        if let Some((bytes, w, h)) = load_icon_from_desktop(service)
-        {
-            println!("Loaded icon via .desktop fallback using service name: {}x{}", w, h);
-            return Ok(TrayEvent::Icon { data: bytes, width: w, height: h });
-        }
-    }
-
-    println!("=== Failed to load any icon for {combined} ===");
     Err(zbus::Error::Failure("No icon available".into()))
+}
+
+
+
+fn try_load_icon(path: &std::path::Path) -> Option<(Vec<u8>, u32, u32)>
+{
+    let bytes = std::fs::read(path).ok()?;
+    match path.extension().and_then(|e| e.to_str())
+    {
+        Some("svg") =>
+        {
+            let opt = usvg::Options::default();
+            let tree = usvg::Tree::from_data(&bytes, &opt).ok()?;
+            let size = tree.size().to_int_size();
+            let mut pixmap = Pixmap::new(size.width(), size.height())?;
+            resvg::render(&tree, tiny_skia::Transform::identity(), &mut pixmap.as_mut());
+            Some((pixmap.data().to_vec(), size.width(), size.height()))
+        }
+        _ =>
+        {
+            let img = image::load_from_memory(&bytes).ok()?;
+            let rgba = img.to_rgba8();
+            let (w, h) = rgba.dimensions();
+            Some((rgba.into_raw(), w, h))
+        }
+    }
 }
 
 
@@ -312,8 +319,6 @@ fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
                     if lower_content.contains(&name.to_lowercase())
                     {
                         println!("Found matching .desktop file: {:?}", path);
-
-                        // parse Icon field
                         if let Some(icon_line) = content.lines().find(|l| l.starts_with("Icon="))
                         {
                             let icon_name = icon_line.trim_start_matches("Icon=").trim();
@@ -331,32 +336,6 @@ fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
 
     println!("No matching .desktop icon found for {name}");
     None
-}
-
-
-
-fn try_load_icon(path: &std::path::Path) -> Option<(Vec<u8>, u32, u32)>
-{
-    let bytes = std::fs::read(path).ok()?;
-    match path.extension().and_then(|e| e.to_str())
-    {
-        Some("svg") =>
-        {
-            let opt = usvg::Options::default();
-            let tree = usvg::Tree::from_data(&bytes, &opt).ok()?;
-            let size = tree.size().to_int_size();
-            let mut pixmap = Pixmap::new(size.width(), size.height())?;
-            resvg::render(&tree, tiny_skia::Transform::identity(), &mut pixmap.as_mut());
-            Some((pixmap.data().to_vec(), size.width(), size.height()))
-        }
-        _ =>
-        {
-            let img = image::load_from_memory(&bytes).ok()?;
-            let rgba = img.to_rgba8();
-            let (w, h) = rgba.dimensions();
-            Some((rgba.into_raw(), w, h))
-        }
-    }
 }
 
 
@@ -485,6 +464,5 @@ fn search_icon_recursive(dir: &Path, name: &str, exts: &[&str]) -> Option<PathBu
             }
         }
     }
-
     None
 }

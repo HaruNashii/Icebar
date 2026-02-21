@@ -106,13 +106,13 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     };
     let app_data = AppData
     {
-        modules,
-        is_showing_alt_clock: false,
-        is_hovering_volume: false, 
+        monitor_size: (monitor_res.0, monitor_res.1),
         is_hovering_workspace: false, 
         ron_config: ron_config_clone, 
+        is_showing_alt_clock: false,
+        is_hovering_volume: false, 
         mouse_position: (0, 0),
-        monitor_size: (monitor_res.0, monitor_res.1),
+        modules
     };
 
     start_tray();
@@ -120,7 +120,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let start_mode = match ron_config.display
     {
         Some(output) => StartMode::TargetScreen(output),
-        None => StartMode::Active,
+        None => StartMode::Active
     };
 
     application(move || app_data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings
@@ -149,7 +149,7 @@ fn subscription(_: &AppData) -> iced::Subscription<Message>
     {
         match event 
         {
-            iced::Event::Mouse(mouse::Event::WheelScrolled {delta, ..} ) => { Some(Message::MouseWheelScrolled(delta)) },
+            iced::Event::Mouse(mouse::Event::WheelScrolled {delta, ..} ) => { Some(Message::MouseWheelScrolled(delta)) }
             iced::Event::Mouse(mouse::Event::CursorMoved { position }) => { Some(Message::CursorMoved(position)) }
             _=> None
         }
@@ -175,6 +175,7 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
         Message::WorkspaceButtonPressed(id) => { let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32))); }
         Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
+
         Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>
         {
             if app.is_hovering_volume
@@ -206,6 +207,12 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                     {
                         app.modules.tray_icons.push((None, service));
                     }
+                }
+
+                TrayEvent::ItemUnregistered(service) => 
+                {
+                    println!("\n=== Tray item Unregistered ===\n{service}");
+                    app.modules.tray_icons.retain(|(_, s)| s != &service);
                 }
 
                 TrayEvent::Icon { data, width, height } =>

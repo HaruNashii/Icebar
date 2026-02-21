@@ -9,6 +9,7 @@ dependencies = [
  "chrono",
  "display-info",
  "futures",
+ "futures-util",
  "home",
  "hyprland",
  "iced",
