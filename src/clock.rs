@@ -1,8 +1,11 @@
+// ============ IMPORTS ============
 use chrono::Local;
 
 
 
 
+
+// ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Clone)]
 pub struct ClockData
 {
@@ -13,9 +16,5 @@ pub struct ClockData
 
 
 
-pub fn get_current_time(time_format: &str) -> String
-{
-    let now = Local::now();
-    let time_str = now.format(time_format).to_string();
-    time_str
-}
+// ============ FUNCTIONS ============
+pub fn get_current_time(time_format: &str) -> String { Local::now().format(time_format).to_string() }

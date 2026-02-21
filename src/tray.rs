@@ -1,19 +1,32 @@
-use zbus::{interface, Connection, Proxy};
-use zbus::message::Header;
+// ============ IMPORTS ============
+use std::{sync::Mutex, path::{Path, PathBuf}, fs, process::Command};
+use zbus::{message::Header, interface, Connection, Proxy};
 use tokio::sync::mpsc::{Sender, self};
-use resvg::usvg;
+use iced::futures::StreamExt;
+use once_cell::sync::Lazy;
 use tiny_skia::Pixmap;
-use std::{fs, process::Command};
-use std::path::{Path, PathBuf};
+use resvg::usvg;
 
 
 
 
 
+// ============ CRATES ============
+use crate::Message;
 
-// ======================================================
-// ===================== WATCHER ========================
-// ======================================================
+
+
+
+// ============ CONSTS/STATICS, ETC... ============
+static TRAY_RECEIVER: Lazy<Mutex<Option<mpsc::Receiver<TrayEvent>>>> = Lazy::new(|| Mutex::new(None));
+
+
+
+
+
+// ============ STRUCT ============
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+pub struct TraySubscription;
 
 #[derive(Debug, Clone)]
 pub enum TrayEvent
@@ -22,16 +35,46 @@ pub enum TrayEvent
     Icon
     {
         data: Vec<u8>,
-        width: u32,
         height: u32,
+        width: u32
     },
 }
 
 pub struct StatusNotifierWatcher
 {
     pub sender: Sender<TrayEvent>,
-    pub connection: Connection,
+    pub connection: Connection
 }
+
+#[derive(Debug, Clone)]
+pub struct MenuItem 
+{
+    pub _visible: bool,
+    pub label: String,
+    pub id: i32
+}
+
+
+
+
+
+// ============ FUNCTIONS ============
+pub fn tray_stream(_: &TraySubscription) -> impl iced::futures::Stream<Item = Message>
+{
+    let receiver = TRAY_RECEIVER.lock().unwrap().take().expect("tray receiver already taken");
+    tokio_stream::wrappers::ReceiverStream::new(receiver).map(Message::TrayEvent)
+}
+
+
+
+pub fn start_tray()
+{
+    let (tx, rx) = mpsc::channel(32);
+    *TRAY_RECEIVER.lock().unwrap() = Some(rx);
+    tokio::spawn(async move { let _ = start_watcher(tx).await; });
+}
+
+
 
 #[interface(name = "org.kde.StatusNotifierWatcher")]
 impl StatusNotifierWatcher
@@ -39,7 +82,6 @@ impl StatusNotifierWatcher
     async fn register_status_notifier_item(&self, service: &str, #[zbus(header)] header: Header<'_>)
     {
         let sender = header.sender().map(|s| s.to_string()).unwrap_or_default();
-
         let (dest, path) = if service.starts_with('/')
         {
             (sender, service.to_string())
@@ -60,35 +102,10 @@ impl StatusNotifierWatcher
             Err(e) => println!("Icon fetch failed: {e}")
         }
     }
-
-    fn registered_status_notifier_items(&self) -> Vec<String> { vec![] }
-    fn is_status_notifier_host_registered(&self) -> bool { true }
-    fn protocol_version(&self) -> i32 { 0 }
 }
 
 
 
-
-
-//
-// ================= MENU TYPES =================
-//
-
-#[derive(Debug, Clone)]
-pub struct MenuItem 
-{
-    pub id: i32,
-    pub label: String,
-    pub _visible: bool
-}
-
-
-
-
-//
-// ---------- recursive layout parser ----------
-// layout node signature: (i32, a{sv}, av)
-//
 fn extract_nodes(v: &serde_json::Value, entries: &mut Vec<MenuItem>) 
 {
     match v 
@@ -99,7 +116,6 @@ fn extract_nodes(v: &serde_json::Value, entries: &mut Vec<MenuItem>)
             {
                 let id = arr[0].as_i64().unwrap_or(0) as i32;
                 let props = &arr[1];
-
                 if let Some(label_obj) = props.get("label") 
                 {
                     let label = label_obj.get("data").and_then(|v| v.as_str()).unwrap_or("").to_string();
@@ -124,9 +140,6 @@ fn extract_nodes(v: &serde_json::Value, entries: &mut Vec<MenuItem>)
 
 
 
-//
-// ---------- load menu ----------
-//
 pub async fn load_menu(service: &str, menu_path: &str) -> zbus::Result<Vec<MenuItem>> 
 {
     let output = Command::new("busctl").args(["--user", "--json=short", "call", service, menu_path, "com.canonical.dbusmenu", "GetLayout", "iias", "0", "1", "0"]).output()?;
@@ -137,9 +150,6 @@ pub async fn load_menu(service: &str, menu_path: &str) -> zbus::Result<Vec<MenuI
 }
 
 
-//
-// ================= CLICK MENU ITEM =================
-//
 
 pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus::Result<()> 
 {
@@ -148,9 +158,7 @@ pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus
 }
 
 
-// ======================================================
-// ===================== TRAY & WATCHER START ==========
-// ======================================================
+
 pub async fn start_watcher(sender: mpsc::Sender<TrayEvent>) -> zbus::Result<()>
 {
     let connection = Connection::session().await?;
@@ -163,9 +171,6 @@ pub async fn start_watcher(sender: mpsc::Sender<TrayEvent>) -> zbus::Result<()>
 
 
 
-// ======================================================
-// ===================== ICON FETCH =====================
-// ======================================================
 pub async fn fetch_icon(conn: &zbus::Connection, combined: &str) -> zbus::Result<TrayEvent>
 {
     println!("\n=== Fetching icon for tray item ===");
@@ -252,29 +257,28 @@ pub async fn fetch_icon(conn: &zbus::Connection, combined: &str) -> zbus::Result
     Err(zbus::Error::Failure("No icon available".into()))
 }
 
-// ======================================================
-// .desktop Fallback Loader
-// ======================================================
+
 
 fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
 {
     println!("Searching .desktop files for app: {name}");
-
-    let mut desktop_paths = vec![
+    let mut desktop_paths = vec!
+    [
         // System and user installations
         PathBuf::from("/usr/share/applications"),
         PathBuf::from("/usr/local/share/applications"),
-        dirs::home_dir().map(|h| h.join(".local/share/applications")).unwrap_or_default(),
+        home::home_dir().map(|h| h.join(".local/share/applications")).unwrap_or_default(),
 
         // Flatpak standard paths
-        dirs::home_dir().map(|h| h.join(".local/share/flatpak/exports/share/applications")).unwrap_or_default(),
+        home::home_dir().map(|h| h.join(".local/share/flatpak/exports/share/applications")).unwrap_or_default(),
         PathBuf::from("/var/lib/flatpak/exports/share/applications"),
     ];
 
-    // Optional: scan Flatpak per-app exports
-    if let Ok(home) = std::env::var("HOME")
+    if let Some(home_path) = home::home_dir()
     {
-        let flatpak_app_dirs = vec![
+        let home = home_path.display().to_string();
+        let flatpak_app_dirs = vec!
+        [
             format!("{home}/.local/share/flatpak/app"),
             format!("/var/lib/flatpak/app"),
         ];
@@ -330,14 +334,10 @@ fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
 }
 
 
-// ======================================================
-// ===================== THEME LOAD =====================
-// ======================================================
 
 fn try_load_icon(path: &std::path::Path) -> Option<(Vec<u8>, u32, u32)>
 {
     let bytes = std::fs::read(path).ok()?;
-
     match path.extension().and_then(|e| e.to_str())
     {
         Some("svg") =>
@@ -347,7 +347,6 @@ fn try_load_icon(path: &std::path::Path) -> Option<(Vec<u8>, u32, u32)>
             let size = tree.size().to_int_size();
             let mut pixmap = Pixmap::new(size.width(), size.height())?;
             resvg::render(&tree, tiny_skia::Transform::identity(), &mut pixmap.as_mut());
-
             Some((pixmap.data().to_vec(), size.width(), size.height()))
         }
         _ =>
@@ -360,11 +359,11 @@ fn try_load_icon(path: &std::path::Path) -> Option<(Vec<u8>, u32, u32)>
     }
 }
 
+
+
 fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option<(Vec<u8>, u32, u32)> 
 {
     println!("Trying to load icon: {name} with theme_path: {:?}", theme_path);
-
-    // 1️⃣ App-provided theme path (flatpak/electron)
     if let Some(base) = theme_path
     {
         if !base.is_empty()
@@ -385,16 +384,15 @@ fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option<(Ve
         }
     }
 
-    // 2️⃣ Fallback to system/user theme
     if let Some(icon) = load_icon_from_theme(name)
     {
         println!("Loaded icon from system/user theme: {name}");
         return Some(icon);
     }
 
-    // 3️⃣ Flatpak standard paths
     let home = home::home_dir().expect("Failed to get home directory").display().to_string();
-    let flatpak_candidates = [
+    let flatpak_candidates = 
+    [
         format!("{home}/.local/share/flatpak/exports/share/icons/hicolor/scalable/apps/{name}.svg"),
         format!("{home}/.local/share/flatpak/exports/share/icons/hicolor/48x48/apps/{name}.png"),
         format!("/var/lib/flatpak/exports/share/icons/hicolor/scalable/apps/{name}.svg"),
@@ -424,10 +422,13 @@ fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option<(Ve
     None
 }
 
+
+
 fn load_icon_from_theme(name: &str) -> Option<(Vec<u8>, u32, u32)>
 {
     let exts = ["png","svg","xpm"];
-    let mut roots = vec![
+    let mut roots = vec!
+    [
         PathBuf::from("/usr/share/icons"),
         PathBuf::from("/usr/local/share/icons"),
         PathBuf::from("/usr/share/pixmaps"),
@@ -453,6 +454,8 @@ fn load_icon_from_theme(name: &str) -> Option<(Vec<u8>, u32, u32)>
     None
 }
 
+
+
 fn search_icon_recursive(dir: &Path, name: &str, exts: &[&str]) -> Option<PathBuf>
 {
     if let Ok(entries) = fs::read_dir(dir)
@@ -460,7 +463,6 @@ fn search_icon_recursive(dir: &Path, name: &str, exts: &[&str]) -> Option<PathBu
         for entry in entries.flatten()
         {
             let path = entry.path();
-
             if path.is_dir()
             {
                 if let Some(found) = search_icon_recursive(&path, name, exts)
@@ -486,4 +488,3 @@ fn search_icon_recursive(dir: &Path, name: &str, exts: &[&str]) -> Option<PathBu
 
     None
 }
-

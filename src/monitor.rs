@@ -1,9 +1,11 @@
+// ============ IMPORTS ============
 use display_info::DisplayInfo;
 
 
 
 
 
+// ============ FUNCTIONS ============
 pub fn get_monitor_res(option_display: Option<String>) -> (u32, u32)
 {
     let display_infos = DisplayInfo::all().unwrap();

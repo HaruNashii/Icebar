@@ -1,3 +1,4 @@
+// ============ IMPORTS ============
 use ron::from_str;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
@@ -7,6 +8,7 @@ use iced_layershell::reexport::Anchor;
 
 
 
+// ============ STRUCTS/ENUM ============
 #[derive(Default, Clone, Debug, Deserialize, Serialize)]
 pub struct BarConfig
 {
@@ -81,6 +83,11 @@ pub struct BarConfig
 
 }
 
+
+
+
+
+// ============ FUNCTIONS ============
 pub fn read_ron_config() -> (BarConfig, Anchor)
 {
     let home_path = home::home_dir().expect("Failed To Get Home Directory").display().to_string();
@@ -96,6 +103,5 @@ pub fn read_ron_config() -> (BarConfig, Anchor)
         "Right" => Anchor::Right | Anchor::Top | Anchor::Bottom,
         _ => Anchor::Top | Anchor::Left | Anchor::Right,
     };
-
     (bar_config, anchor_position)
 }
