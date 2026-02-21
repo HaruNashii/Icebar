@@ -22,6 +22,10 @@ pub struct BarConfig
    pub center_modules: Vec<String>,
    pub right_modules: Vec<String>,
 
+   pub reverse_scroll_on_workspace: bool,
+   pub incremental_steps_output: u8,
+   pub incremental_steps_input: u8,
+
    pub output_volume_format: String,
    pub output_volume_muted_format: String,
    pub input_volume_format: String,

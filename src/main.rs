@@ -186,18 +186,38 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         {
             if app.is_hovering_volume_output
             {
-                    if y > 2. { volume::volume(volume::VolumeAction::IncreaseOutput); }
-                    if y < 2. { volume::volume(volume::VolumeAction::DecreaseOutput); }
+                    if y > 2. { volume::volume(volume::VolumeAction::IncreaseOutput(app.ron_config.incremental_steps_output)); }
+                    if y < 2. { volume::volume(volume::VolumeAction::DecreaseOutput(app.ron_config.incremental_steps_output)); }
             }
             if app.is_hovering_volume_input
             {
-                    if y > 2. { volume::volume(volume::VolumeAction::IncreaseInput); }
-                    if y < 2. { volume::volume(volume::VolumeAction::DecreaseInput); }
+                    if y > 2. { volume::volume(volume::VolumeAction::IncreaseInput(app.ron_config.incremental_steps_input)); }
+                    if y < 2. { volume::volume(volume::VolumeAction::DecreaseInput(app.ron_config.incremental_steps_input)); }
             }
             if app.is_hovering_workspace
             {
-                if y > 2. { let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); }
-                if y < 2. { let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); }
+                if y > 2. 
+                { 
+                    if app.ron_config.reverse_scroll_on_workspace
+                    {
+                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
+                    }
+                    else
+                    {
+                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
+                    }
+                }
+                if y < 2. 
+                { 
+                    if app.ron_config.reverse_scroll_on_workspace
+                    {
+                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
+                    }
+                    else
+                    {
+                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
+                    }
+                }
             }
         }
 

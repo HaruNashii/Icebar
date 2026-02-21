@@ -17,10 +17,10 @@ pub enum VolumeAction<'a>
 {
     GetOutput([&'a String;2]),
     GetInput([&'a String;2]),
-    IncreaseOutput,
-    DecreaseOutput,
-    IncreaseInput,
-    DecreaseInput,
+    IncreaseOutput(u8),
+    DecreaseOutput(u8),
+    IncreaseInput(u8),
+    DecreaseInput(u8),
     MuteOutput,
     MuteInput
 }
@@ -34,8 +34,8 @@ pub fn volume(volume_modifier: VolumeAction) -> String
 {
     match volume_modifier 
     {
-        VolumeAction::IncreaseOutput => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg("5%+").output().expect("Failed To Increase Volume With wpctl"),
-        VolumeAction::DecreaseOutput => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg("5%-").output().expect("Failed To Decrease Volume With wpctl"),
+        VolumeAction::IncreaseOutput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%+", v.to_string())).output().expect("Failed To Increase Volume With wpctl"),
+        VolumeAction::DecreaseOutput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%-", v.to_string())).output().expect("Failed To Decrease Volume With wpctl"),
         VolumeAction::MuteOutput => Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SINK@").arg("toggle").output().expect("Failed To Toggle-Mute With wpctl"),
         VolumeAction::GetOutput([format, muted_format]) => 
         {
@@ -57,8 +57,8 @@ pub fn volume(volume_modifier: VolumeAction) -> String
             };
         }
 
-        VolumeAction::IncreaseInput => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg("5%+").output().expect("Failed To Increase Volume With wpctl"),
-        VolumeAction::DecreaseInput => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg("5%-").output().expect("Failed To Decrease Volume With wpctl"),
+        VolumeAction::IncreaseInput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg(format!("{}%+", v)).output().expect("Failed To Increase Volume With wpctl"),
+        VolumeAction::DecreaseInput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg(format!("{}%-", v)).output().expect("Failed To Decrease Volume With wpctl"),
         VolumeAction::MuteInput => Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SOURCE@").arg("toggle").output().expect("Failed To Toggle-Mute With wpctl"),
         VolumeAction::GetInput([format, muted_format]) => 
         {
