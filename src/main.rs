@@ -1,8 +1,8 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Color, Element, Length, Task as Command, Theme, border::Radius, event, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
+use iced::{Alignment, Color, Element, Font, font::Weight, Length, Task as Command, Theme, border::Radius, event, font::Family, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
+use std::{sync::{OnceLock}, time::Duration};
 use hyprland::dispatch::*;
-use std::time::Duration;
 
 
 
@@ -64,6 +64,7 @@ struct AppData
     mouse_position: (i32, i32),
     monitor_size: (u32, u32),
     ron_config: BarConfig,
+    default_font: Font,
     modules: Modules
 }
 
@@ -92,6 +93,13 @@ pub struct UserStyle
 
 
 
+// ============ STATICS ============
+static DEFAULT_FONT: OnceLock<(String, Weight)> = OnceLock::new();
+
+
+
+
+
 // ============ FUNCTIONS ============
 #[tokio::main]
 pub async fn main() -> Result<(), iced_layershell::Error>
@@ -101,6 +109,11 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let monitor_res = get_monitor_res(ron_config.display.clone());
     let ron_config_clone = ron_config.clone();
 
+    let font_name = ron_config.font_family;
+    let font_style_string = ron_config.font_style;
+    let font_style = weight_from_str(&font_style_string);
+    DEFAULT_FONT.set((font_name, font_style)).expect("DEFAULT_FONT already initialized");
+
     let modules = Modules
     {
         volume_data: VolumeData::default(), 
@@ -109,6 +122,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     };
     let app_data = AppData
     {
+        default_font: Font { family: Family::Name(&DEFAULT_FONT.get().expect("DEFAULT_FONT not initialized").0), weight: DEFAULT_FONT.get().expect("DEFAULT_FONT not initialized").1, ..iced::Font::DEFAULT}, 
         monitor_size: (monitor_res.0, monitor_res.1),
         is_hovering_volume_output: false, 
         is_hovering_volume_input: false, 
@@ -127,7 +141,8 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         None => StartMode::Active
     };
 
-    application(move || app_data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings
+    let default_font = app_data.default_font;
+    application(move || app_data.clone(), namespace, update, view).default_font(default_font).style(style).subscription(subscription).settings(Settings
     {
         layer_settings: LayerShellSettings
         {
@@ -395,7 +410,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let border_color_rgba = app.ron_config.tray_border_color_rgba;
                 let border_radius = app.ron_config.tray_border_radius;
                 set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            }).padding(1).on_press(Message::TrayIconClicked(i)).into() })).spacing(8).align_y(Alignment::Start).into(),
+            }).padding(0).on_press(Message::TrayIconClicked(i)).into() })).spacing(8).align_y(Alignment::Center).into(),
 
 
 
@@ -418,7 +433,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                   10 => {workspace_text = &app.ron_config.hypr_workspace_text[9]},  
                   _=> { workspace_text = &index_string }
                 };
-                button(text(workspace_text.clone())).on_press(Message::WorkspaceButtonPressed(i)).style(move|_: &Theme, status: button::Status| 
+                button(text(workspace_text.clone()).font(app.default_font)).on_press(Message::WorkspaceButtonPressed(i)).style(move|_: &Theme, status: button::Status| 
                 {
                     let hovered = app.ron_config.hypr_workspace_button_hovered_color_rgb;
                     let hovered_text = app.ron_config.hypr_workspace_button_hovered_text_color_rgb;
@@ -434,7 +449,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "clock" => container(button(&*app.modules.clock_data.current_time).on_press(Message::ToggleAltClock).style(|_: &Theme, status: button::Status| 
+            "clock" => container(button(text(&*app.modules.clock_data.current_time).font(app.default_font)).on_press(Message::ToggleAltClock).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.clock_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.clock_button_hovered_text_color_rgb;
@@ -449,7 +464,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "volume/output" => container(mouse_area ( button (&*app.modules.volume_data.output_volume_level).on_press(Message::MuteAudioPressedOutput).style(|_: &Theme, status: button::Status| 
+            "volume/output" => container(mouse_area ( button (text(&*app.modules.volume_data.output_volume_level).font(app.default_font)).on_press(Message::MuteAudioPressedOutput).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
@@ -464,7 +479,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "volume/input" => container(mouse_area ( button (&*app.modules.volume_data.input_volume_level).on_press(Message::MuteAudioPressedInput).style(|_: &Theme, status: button::Status| 
+            "volume/input" => container(mouse_area ( button (text(&*app.modules.volume_data.input_volume_level).font(app.default_font)).on_press(Message::MuteAudioPressedInput).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.volume_input_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
@@ -484,5 +499,24 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
         children.push(element);
     }
 
-    row(children).spacing(8).align_y(Alignment::Start).into()
+    row(children).spacing(8).align_y(Alignment::Center).into()
+}
+
+
+
+fn weight_from_str(s: &str) -> Weight 
+{
+    match s.to_lowercase().as_str() 
+    {
+        "thin" => Weight::Thin,
+        "extra_light" | "extralight" | "ultralight" => Weight::ExtraLight,
+        "light" => Weight::Light,
+        "normal" | "regular" => Weight::Normal,
+        "medium" => Weight::Medium,
+        "semibold" | "semi_bold" => Weight::Semibold,
+        "bold" => Weight::Bold,
+        "extra_bold" | "extrabold" | "ultrabold" => Weight::ExtraBold,
+        "black" | "heavy" => Weight::Black,
+        _ => Weight::Normal, 
+    }
 }

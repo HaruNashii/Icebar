@@ -32,6 +32,8 @@ BarConfig(
     bar_size: (0, 45),
     bar_general_padding: 6,
     bar_background_color_rgba: (18, 18, 22, 92),
+    font_family: "JetBrains Mono",
+    font_style: "Bold",
 
 
     // ================= MODULES =================
@@ -40,8 +42,14 @@ BarConfig(
     right_modules: ["tray", "volume/output", "volume/input"],
 
 
+    // ================= MODULES CONFIGS =================
+    reverse_scroll_on_workspace: false,
+    incremental_steps_output: 10,
+    incremental_steps_input: 10,
+
+
     // ================= FORMATS =================
-    output_volume_format: " {}%",
+    output_volume_format: "   {}%",
     output_volume_muted_format: "󰝟 Muted",
     input_volume_format: "󰍬 {}%",
     input_volume_muted_format: " Muted",

@@ -34,8 +34,8 @@ pub fn volume(volume_modifier: VolumeAction) -> String
 {
     match volume_modifier 
     {
-        VolumeAction::IncreaseOutput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%+", v.to_string())).output().expect("Failed To Increase Volume With wpctl"),
-        VolumeAction::DecreaseOutput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%-", v.to_string())).output().expect("Failed To Decrease Volume With wpctl"),
+        VolumeAction::IncreaseOutput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%+", v)).output().expect("Failed To Increase Volume With wpctl"),
+        VolumeAction::DecreaseOutput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%-", v)).output().expect("Failed To Decrease Volume With wpctl"),
         VolumeAction::MuteOutput => Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SINK@").arg("toggle").output().expect("Failed To Toggle-Mute With wpctl"),
         VolumeAction::GetOutput([format, muted_format]) => 
         {

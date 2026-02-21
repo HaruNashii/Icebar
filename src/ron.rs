@@ -17,6 +17,8 @@ pub struct BarConfig
    pub bar_size: [u32;2],
    pub bar_general_padding: u16,
    pub bar_background_color_rgba: [u8;4],
+   pub font_family: String,
+   pub font_style: String,
 
    pub left_modules: Vec<String>,
    pub center_modules: Vec<String>,
