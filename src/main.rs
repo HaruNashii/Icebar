@@ -12,13 +12,13 @@ use hyprland::dispatch::*;
 // ============ CRATES ============
 use crate::modules::tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream};
 use crate::modules::clock::{ClockData, get_current_time};
+use crate::helpers::fs::check_if_config_file_exists;
 use crate::modules::volume::{self, VolumeAction};
 use crate::modules::hypr::{self, UserHyprData};
-use crate::fs::check_if_config_file_exists;
+use crate::helpers::monitor::get_monitor_res;
+use crate::context_menu::run_context_menu;
 use crate::modules::volume::VolumeData;
-use crate::monitor::get_monitor_res;
 use crate::ron::read_ron_config;
-use crate::popup::run_popup;
 use crate::ron::BarConfig;
 
 
@@ -26,11 +26,10 @@ use crate::ron::BarConfig;
 
 
 // ============ MOD'S ============
-mod monitor;
+mod context_menu;
 mod modules;
-mod popup;
+mod helpers;
 mod ron;
-mod fs;
 
 
 
@@ -310,11 +309,11 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             println!("Service: {service}");
             println!("Menu Path: {path}");
             println!("Id: {:?}\n", items);
-            let popup_data = crate::popup::PopupData 
+            let context_menu_data = crate::context_menu::ContextMenuData 
             {
-                default_font: app.default_font,
-                popup_position: app.mouse_position,
+                mouse_position: app.mouse_position,
                 ron_config: app.ron_config.clone(),
+                default_font: app.default_font,
                 monitor_size: app.monitor_size,
                 cursor_is_inside_menu: false, 
                 service,
@@ -324,7 +323,7 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             
             std::thread::spawn(move || 
             {
-                run_popup(popup_data);
+                run_context_menu(context_menu_data);
             });
 
         }

@@ -124,10 +124,11 @@ exec-once = icebar
 ## 🧩 Architecture Overview
 ```
 src/
-├── main.rs        → application entry point
-├── tray.rs        → StatusNotifier watcher
-├── popup.rs       → popup UI + logic
-├── modules/       → bar components
+├── main.rs             → application entry point
+├── tray.rs             → StatusNotifier watcher
+├── context_menu.rs     → context menu UI + logic
+├── modules/            → bar components
+├── helpers/            → small helpers
 ```
 
 ### Key Systems

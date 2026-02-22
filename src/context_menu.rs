@@ -17,7 +17,7 @@ use crate::{ron::BarConfig, set_style, tray::MenuItem};
 // ============ ENUM/STRUCT, ETC ============
 #[to_layer_message]
 #[derive(Debug, Clone)]
-pub enum PopupMessage 
+pub enum ContextMenuMessage 
 {
     Action(String, String, i32, String),
     CursorMoved(iced::Point),
@@ -27,10 +27,10 @@ pub enum PopupMessage
 }
 
 #[derive(Default, Clone)]
-pub struct PopupData 
+pub struct ContextMenuData 
 {
     pub cursor_is_inside_menu: bool,
-    pub popup_position: (i32, i32),
+    pub mouse_position: (i32, i32),
     pub monitor_size: (u32, u32),
     pub ron_config: BarConfig,
     pub items: Vec<MenuItem>,
@@ -53,7 +53,7 @@ pub fn smart_popup_position(cursor_x: i32, cursor_y: i32, screen_w: i32, screen_
 
 
 
-pub fn run_popup(data: PopupData)
+pub fn run_context_menu(data: ContextMenuData)
 {
     let start_mode = match data.ron_config.display
     {
@@ -61,14 +61,14 @@ pub fn run_popup(data: PopupData)
         None => StartMode::Active,
     };
 
-    let popup_size: (u32, u32) = (data.ron_config.context_menu_width, (data.items.len() * 37) as u32);
+    let context_menu_size: (u32, u32) = (data.ron_config.context_menu_width, (data.items.len() * 37) as u32);
     let (x, y) = if let Some(forced_values) = data.ron_config.force_static_position_context_menu
     {
         forced_values
     }
     else 
     {
-        smart_popup_position(data.popup_position.0, data.popup_position.1, data.monitor_size.0 as i32, data.monitor_size.1 as i32, popup_size.0 as i32, popup_size.1 as i32)
+        smart_popup_position(data.mouse_position.0, data.mouse_position.1, data.monitor_size.0 as i32, data.monitor_size.1 as i32, context_menu_size.0 as i32, context_menu_size.1 as i32)
     };
 
 
@@ -86,7 +86,7 @@ pub fn run_popup(data: PopupData)
         layer_settings: LayerShellSettings 
         {
             layer: Layer::Overlay,
-            size: Some((popup_size.0, popup_size.1)),
+            size: Some((context_menu_size.0, context_menu_size.1)),
             exclusive_zone: 0,
             keyboard_interactivity: iced_layershell::reexport::KeyboardInteractivity::Exclusive,
             anchor: anchor_position,
@@ -104,33 +104,33 @@ fn namespace() -> String { "IceBar_Tray_ContextMenu".into() }
 
 
 
-fn subscription(_: &PopupData) -> iced::Subscription<PopupMessage>
+fn subscription(_: &ContextMenuData) -> iced::Subscription<ContextMenuMessage>
 {
     let sub = event::listen_with(|event, _status, _id| 
     {
         match event 
         {
-            iced::Event::Keyboard(keyboard::Event::KeyPressed {key: keyboard::Key::Named(keyboard::key::Named::Escape), .. }) => { Some(PopupMessage::Close) }
-            iced::Event::Mouse(mouse::Event::ButtonPressed(_)) => { Some(PopupMessage::MouseButtonClicked) }
-            iced::Event::Mouse(mouse::Event::CursorMoved { position }) => { Some(PopupMessage::CursorMoved(position)) }
+            iced::Event::Keyboard(keyboard::Event::KeyPressed {key: keyboard::Key::Named(keyboard::key::Named::Escape), .. }) => { Some(ContextMenuMessage::Close) }
+            iced::Event::Mouse(mouse::Event::ButtonPressed(_)) => { Some(ContextMenuMessage::MouseButtonClicked) }
+            iced::Event::Mouse(mouse::Event::CursorMoved { position }) => { Some(ContextMenuMessage::CursorMoved(position)) }
             _ => None,
         }
     });
 
     iced::Subscription::batch
     ([
-        time::every(Duration::from_secs(1)).map(|_| PopupMessage::Tick),
+        time::every(Duration::from_secs(1)).map(|_| ContextMenuMessage::Tick),
         sub
     ])
 }
 
 
 
-fn update(data: &mut PopupData, popup_message: PopupMessage) -> Task<PopupMessage> 
+fn update(data: &mut ContextMenuData, popup_message: ContextMenuMessage) -> Task<ContextMenuMessage> 
 { 
     match popup_message
     {
-        PopupMessage::Action(service, path, id, label) =>
+        ContextMenuMessage::Action(service, path, id, label) =>
         {
             println!("\n===# Menu Action Activated!!! #===");
             println!("Label: {label}");
@@ -143,7 +143,7 @@ fn update(data: &mut PopupData, popup_message: PopupMessage) -> Task<PopupMessag
             });
             return iced::exit();
         }
-        PopupMessage::CursorMoved(position) =>
+        ContextMenuMessage::CursorMoved(position) =>
         {
             let menu_size = (data.items.len() * 37) as f32;
             data.cursor_is_inside_menu = false;
@@ -152,14 +152,14 @@ fn update(data: &mut PopupData, popup_message: PopupMessage) -> Task<PopupMessag
                 data.cursor_is_inside_menu = true;
             };
         }
-        PopupMessage::MouseButtonClicked =>
+        ContextMenuMessage::MouseButtonClicked =>
         {
             if !data.cursor_is_inside_menu
             {
                 return iced::exit();
             }
         }
-        PopupMessage::Close =>
+        ContextMenuMessage::Close =>
         {
             return iced::exit();
         }
@@ -170,9 +170,9 @@ fn update(data: &mut PopupData, popup_message: PopupMessage) -> Task<PopupMessag
 
 
 
-fn view(data: &PopupData) -> Element<'_, PopupMessage> 
+fn view(data: &ContextMenuData) -> Element<'_, ContextMenuMessage> 
 {
-    let button_vec: Vec<Element<'_, PopupMessage>> = data.items.iter().map(|item| { button(text(&item.label).font(data.default_font).size(data.ron_config.context_menu_text_size).width(Length::Fill).height(Length::Fill).center()).on_press(PopupMessage::Action(data.service.to_string(), data.path.to_string(), item.id, item.label.to_string())).style(|_: &Theme, status: button::Status| 
+    let button_vec: Vec<Element<'_, ContextMenuMessage>> = data.items.iter().map(|item| { button(text(&item.label).font(data.default_font).size(data.ron_config.context_menu_text_size).width(Length::Fill).height(Length::Fill).center()).on_press(ContextMenuMessage::Action(data.service.to_string(), data.path.to_string(), item.id, item.label.to_string())).style(|_: &Theme, status: button::Status| 
     {
         let hovered = data.ron_config.context_menu_button_hovered_color_rgb;
         let hovered_text = data.ron_config.context_menu_button_hovered_text_color_rgb;
@@ -207,7 +207,7 @@ fn context_menu_background_button_style(ron_config: &BarConfig) -> iced::widget:
     background_style
 }
 
-fn user_style(app: &PopupData, _: &iced::Theme) -> Style
+fn user_style(app: &ContextMenuData, _: &iced::Theme) -> Style
 {
     Style
     {
