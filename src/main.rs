@@ -433,16 +433,13 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                         &selected_text[i - 1]
                     }
                 } 
+                else if i > app.ron_config.hypr_workspace_text.len() 
+                {
+                    &format!("{}", i).to_string()
+                } 
                 else 
                 {
-                    if i > app.ron_config.hypr_workspace_text.len() 
-                    {
-                        &format!("{}", i).to_string()
-                    } 
-                    else 
-                    {
-                        &app.ron_config.hypr_workspace_text[i - 1]
-                    }
+                    &app.ron_config.hypr_workspace_text[i - 1]
                 };
                 button(text(workspace_text.clone()).font(app.default_font).size(app.ron_config.hypr_workspace_text_size)).on_press(Message::WorkspaceButtonPressed(i)).style(move|_: &Theme, status: button::Status| 
                 {
