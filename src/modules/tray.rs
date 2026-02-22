@@ -109,6 +109,15 @@ impl StatusNotifierWatcher
             let _ = self.sender.send(icon).await;
         }
     }
+
+    #[zbus(property)]
+    fn registered_status_notifier_items(&self) -> Vec<String> { OWNER_MAP.lock().unwrap().values().cloned().collect() }
+    
+    #[zbus(property)]
+    fn is_status_notifier_host_registered(&self) -> bool { true }
+    
+    #[zbus(property)]
+    fn protocol_version(&self) -> i32 { 0 }
 }
 
 
