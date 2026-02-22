@@ -72,7 +72,7 @@ pub async fn run_popup(data: PopupData) -> Result<(), iced_layershell::Error>
     };
 
 
-    let anchor_position = if data.ron_config.bar_position == "Down".to_string()
+    let anchor_position = if data.ron_config.bar_position == "Down"
     {
         Anchor::Bottom | Anchor::Left
     }
