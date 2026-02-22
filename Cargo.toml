@@ -1,5 +1,6 @@
 [package]
-name = "IceBar"
+name = "icebar"
+description = "Icebar is a lightweight, Wayland status bar written in Rust, powered by iced and iced-layer-shell."
 version = "0.1.0"
 edition = "2024"
 
