@@ -10,11 +10,12 @@ use hyprland::dispatch::*;
 
 
 // ============ CRATES ============
-use crate::modules::tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream};
+use crate::modules::{sway::{UserSwayAction, change_workspace}, tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}};
 use crate::modules::clock::{ClockData, get_current_time};
 use crate::helpers::fs::check_if_config_file_exists;
 use crate::modules::volume::{self, VolumeAction};
 use crate::modules::hypr::{self, UserHyprData};
+use crate::modules::sway::{self, UserSwayData};
 use crate::helpers::monitor::get_monitor_res;
 use crate::context_menu::run_context_menu;
 use crate::modules::volume::VolumeData;
@@ -75,7 +76,8 @@ struct Modules
     tray_icons: Vec<(Option<image::Handle>, String)>,
     volume_data: VolumeData,
     clock_data: ClockData,
-    hypr_data: UserHyprData
+    hypr_data: UserHyprData,
+    sway_data: UserSwayData
 }
 
 pub struct UserStyle
@@ -111,6 +113,11 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let monitor_res = get_monitor_res(ron_config.display.clone());
     let ron_config_clone = ron_config.clone();
 
+    if module_is_active(&ron_config, "tray".to_string())
+    {
+        start_tray();
+    }
+
     let font_name = ron_config.font_family;
     let font_style_string = ron_config.font_style;
     let font_style = weight_from_str(&font_style_string);
@@ -121,6 +128,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         volume_data: VolumeData::default(), 
         clock_data: ClockData::default(), 
         hypr_data: UserHyprData::default(),
+        sway_data: UserSwayData::default(),
         tray_icons: Vec::new()
     };
     let app_data = AppData
@@ -136,7 +144,6 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         modules
     };
 
-    start_tray();
 
     let start_mode = match ron_config.display
     {
@@ -197,7 +204,17 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::MuteAudioPressedOutput => { volume::volume( volume::VolumeAction::MuteOutput); }
         Message::MuteAudioPressedInput => { volume::volume( volume::VolumeAction::MuteInput); }
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
-        Message::WorkspaceButtonPressed(id) => { let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32))); }
+        Message::WorkspaceButtonPressed(id) => 
+        {
+            if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+            {
+                let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32))); 
+            }
+            else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+            {
+                change_workspace(UserSwayAction::ChangeWithIndex(id));
+            }
+        }
         Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
 
         Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>
@@ -218,22 +235,50 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 { 
                     if app.ron_config.reverse_scroll_on_workspace
                     {
-                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
+                        if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+                        {
+                            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
+                        } 
+                        else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+                        {
+                            change_workspace(UserSwayAction::MoveNext);
+                        };
                     }
                     else
                     {
-                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
+                        if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+                        {
+                            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
+                        } 
+                        else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+                        {
+                            change_workspace(UserSwayAction::MovePrev);
+                        };
                     }
                 }
                 if y < 2. 
                 { 
                     if app.ron_config.reverse_scroll_on_workspace
                     {
-                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
+                        if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+                        {
+                            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
+                        } 
+                        else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+                        {
+                            change_workspace(UserSwayAction::MovePrev);
+                        };
                     }
                     else
                     {
-                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
+                        if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+                        {
+                            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
+                        } 
+                        else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+                        {
+                            change_workspace(UserSwayAction::MoveNext);
+                        };
                     }
                 }
             }
@@ -258,6 +303,11 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             {
                 app.modules.hypr_data.current_workspace = hypr::current_workspace();
                 app.modules.hypr_data.workspace_count = hypr::workspace_count();
+            }
+            if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+            {
+                app.modules.sway_data.current_workspace = sway::current_workspace();
+                app.modules.sway_data.workspace_count = sway::workspace_count();
             }
         }
 
@@ -466,6 +516,43 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
                 }).into() 
             })).spacing(app.ron_config.hypr_workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
+
+
+
+            "sway/workspaces" => mouse_area ( row((1..app.modules.sway_data.workspace_count + 1).map(|i| 
+            { 
+                let workspace_text = if let Some(selected_text) = &app.ron_config.sway_workspace_selected_text && app.modules.sway_data.current_workspace as usize == i
+                {
+                    if i > app.ron_config.sway_workspace_text.len() 
+                    {
+                        &format!("{}", i).to_string()
+                    } 
+                    else 
+                    {
+                        &selected_text[i - 1]
+                    }
+                } 
+                else if i > app.ron_config.sway_workspace_text.len() 
+                {
+                    &format!("{}", i).to_string()
+                } 
+                else 
+                {
+                    &app.ron_config.sway_workspace_text[i - 1]
+                };
+                button(text(workspace_text.clone()).font(app.default_font).size(app.ron_config.sway_workspace_text_size)).on_press(Message::WorkspaceButtonPressed(i)).style(move|_: &Theme, status: button::Status| 
+                {
+                    let hovered = app.ron_config.sway_workspace_button_hovered_color_rgb;
+                    let hovered_text = app.ron_config.sway_workspace_button_hovered_text_color_rgb;
+                    let pressed = app.ron_config.sway_workspace_button_pressed_color_rgb;
+                    let normal = if app.modules.sway_data.current_workspace == i as i32 { app.ron_config.hypr_workspace_button_selected_color_rgb } else { app.ron_config.hypr_workspace_button_color_rgb };
+                    let normal_text = app.ron_config.sway_workspace_button_text_color_rgb;
+                    let border_size = app.ron_config.sway_workspace_border_size;
+                    let border_color_rgba = app.ron_config.sway_workspace_border_color_rgba;
+                    let border_radius = app.ron_config.sway_workspace_border_radius;
+                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                }).into() 
+            })).spacing(app.ron_config.sway_workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
 
 
 

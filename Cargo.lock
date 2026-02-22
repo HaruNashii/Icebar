@@ -1666,6 +1666,7 @@ dependencies = [
  "ron",
  "serde",
  "serde_json",
+ "swayipc",
  "tiny-skia 0.12.0",
  "tokio",
  "tokio-stream",
@@ -4138,6 +4139,28 @@ dependencies = [
  "skrifa",
  "yazi",
  "zeno",
+]
+
+[[package]]
+name = "swayipc"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fd6ee13016b1ae2fbf741ddb2133d983a3fecdc34686eec6202e2a80612d82f"
+dependencies = [
+ "serde",
+ "serde_json",
+ "swayipc-types",
+]
+
+[[package]]
+name = "swayipc-types"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a29165dc67819a052bd67962b6c9de7c5d4461f0e8d224eb0f7cdd26cf05a650"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

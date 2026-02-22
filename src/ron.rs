@@ -116,6 +116,23 @@ pub struct BarConfig
     pub hypr_workspace_border_radius: [u32;4],
 
 
+    // ================= HYPR WORKSPACES (STYLE) =================
+    pub sway_workspace_text_size: u32,
+    pub sway_workspace_text: Vec<String>,
+    pub sway_workspace_selected_text: Option<Vec<String>>,
+    pub sway_workspace_spacing: u32,
+    pub sway_workspace_background_color_rgba: [u8;4],
+    pub sway_workspace_button_color_rgb: [u8;3],
+    pub sway_workspace_button_text_color_rgb: [u8;3],
+    pub sway_workspace_button_selected_color_rgb: [u8;3],
+    pub sway_workspace_button_hovered_color_rgb: [u8;3],
+    pub sway_workspace_button_hovered_text_color_rgb: [u8;3],
+    pub sway_workspace_button_pressed_color_rgb: [u8;3],
+    pub sway_workspace_border_color_rgba: [u8;4],
+    pub sway_workspace_border_size: f32,
+    pub sway_workspace_border_radius: [u32;4],
+
+
     // ================= CONTEXT MENU (STYLE) =================
     pub context_menu_background_color_rgba: [u8;4],
     pub context_menu_background_size: u16,
@@ -276,6 +293,44 @@ impl Default for BarConfig
             hypr_workspace_border_color_rgba: [120, 90, 135, 100],
             hypr_workspace_border_size: 1.0,
             hypr_workspace_border_radius: [6, 6, 6, 6],
+
+            // ================= SWAY WORKSPACES (STYLE) =================
+            sway_workspace_text_size: 15,
+            sway_workspace_text: vec![
+                "1".into(),
+                "2".into(),
+                "3".into(),
+                "4".into(),
+                "5".into(),
+                "6".into(),
+                "7".into(),
+                "8".into(),
+                "9".into(),
+                "10".into(),
+            ],
+            sway_workspace_selected_text: Some(vec![
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+            ]),
+            sway_workspace_spacing: 3,
+            sway_workspace_background_color_rgba: [28, 28, 34, 95],
+            sway_workspace_button_color_rgb: [45, 40, 55],
+            sway_workspace_button_text_color_rgb: [200, 200, 210],
+            sway_workspace_button_selected_color_rgb: [150, 40, 80],
+            sway_workspace_button_hovered_color_rgb: [140, 35, 75],
+            sway_workspace_button_hovered_text_color_rgb: [255, 255, 255],
+            sway_workspace_button_pressed_color_rgb: [90, 25, 50],
+            sway_workspace_border_color_rgba: [120, 90, 135, 100],
+            sway_workspace_border_size: 1.0,
+            sway_workspace_border_radius: [6, 6, 6, 6],
             
             // ================= CONTEXT MENU (STYLE) =================
             context_menu_background_color_rgba: [20, 20, 24, 98],
