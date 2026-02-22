@@ -9,7 +9,8 @@ use iced_layershell::reexport::Anchor;
 
 
 // ============ STRUCTS/ENUM ============
-#[derive(Default, Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
 pub struct BarConfig
 {
     // ================= GENERAL =================
@@ -140,13 +141,172 @@ pub struct BarConfig
 
 
 // ============ FUNCTIONS ============
+impl Default for BarConfig 
+{
+    fn default() -> Self 
+    {
+        Self 
+        {
+            display: None,
+            bar_position: "Up".into(),
+            bar_size: [0, 45],
+            bar_general_padding: 6,
+            bar_background_color_rgba: [18, 18, 22, 92],
+            font_family: "JetBrains Mono".into(),
+            font_style: "Bold".into(),
+
+            left_modules: vec![],
+            center_modules: vec!["clock".to_string()],
+            right_modules: vec!["tray".to_string(), "volume/output".to_string(), "volume/input".to_string()],
+
+            force_static_position_context_menu: None,
+            reverse_scroll_on_workspace: false,
+            incremental_steps_output: 10,
+            incremental_steps_input: 10,
+
+            output_volume_format: 
+            [
+                "{}%".to_string(),
+                "{}%".to_string(),
+                "{}%".to_string(),
+                "{}%".to_string(),
+                "{}%".to_string(),
+                "{}%".to_string(),
+            ],
+            output_volume_muted_format: "Muted".into(),
+            input_volume_format:
+            [
+                "{}%".to_string(),
+                "{}%".to_string(),
+                "{}%".to_string(),
+                "{}%".to_string(),
+                "{}%".to_string(),
+                "{}%".to_string(),
+            ],
+            input_volume_muted_format: "Muted".into(),
+
+            clock_format: "󰥔  %H:%M".into(),
+            clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S".into(),
+
+
+            // ================= TRAY (STYLE) =================
+            tray_icon_size: 18,
+            tray_button_size: 5,
+            tray_spacing: 8,
+            tray_background_color_rgba: [30, 30, 36, 0],
+            tray_button_color_rgb: [60, 50, 70],
+            tray_button_text_color_rgb: [220, 220, 230],
+            tray_button_hovered_color_rgb: [110, 40, 80],
+            tray_button_hovered_text_color_rgb: [255, 255, 255],
+            tray_button_pressed_color_rgb: [70, 20, 40],
+            tray_border_color_rgba: [90, 70, 100, 100],
+            tray_border_size: 1.0,
+            tray_border_radius: [6, 6, 6, 6],
+            
+            // ================= CLOCK (STYLE) =================
+            clock_text_size: 15,
+            clock_background_color_rgba: [25, 25, 30, 95],
+            clock_button_color_rgb: [50, 45, 60],
+            clock_button_text_color_rgb: [235, 235, 240],
+            clock_button_hovered_color_rgb: [130, 35, 70],
+            clock_button_hovered_text_color_rgb: [255, 255, 255],
+            clock_button_pressed_color_rgb: [80, 25, 45],
+            clock_border_color_rgba: [120, 80, 130, 100],
+            clock_border_size: 1.0,
+            clock_border_radius: [8, 8, 8, 8],
+            
+            // ================= VOLUME/OUTPUT (STYLE) =================
+            volume_output_text_size: 15,
+            volume_output_background_color_rgba: [30, 30, 36, 95],
+            volume_output_button_color_rgb: [55, 45, 65],
+            volume_output_button_text_color_rgb: [220, 220, 230],
+            volume_output_button_hovered_color_rgb: [150, 45, 85],
+            volume_output_button_hovered_text_color_rgb: [255, 255, 255],
+            volume_output_button_pressed_color_rgb: [85, 30, 50],
+            volume_output_border_color_rgba: [110, 80, 120, 100],
+            volume_output_border_size: 1.0,
+            volume_output_border_radius: [6, 6, 6, 6],
+            
+            // ================= VOLUME/INPUT (STYLE) =================
+            volume_input_text_size: 15,
+            volume_input_background_color_rgba: [30, 30, 36, 95],
+            volume_input_button_color_rgb: [55, 45, 65],
+            volume_input_button_text_color_rgb: [220, 220, 230],
+            volume_input_button_hovered_color_rgb: [150, 45, 85],
+            volume_input_button_hovered_text_color_rgb: [255, 255, 255],
+            volume_input_button_pressed_color_rgb: [85, 30, 50],
+            volume_input_border_color_rgba: [110, 80, 120, 100],
+            volume_input_border_size: 1.0,
+            volume_input_border_radius: [6, 6, 6, 6],
+            
+            // ================= HYPR WORKSPACES (STYLE) =================
+            hypr_workspace_text_size: 15,
+            hypr_workspace_text: vec![
+                "1".into(),
+                "2".into(),
+                "3".into(),
+                "4".into(),
+                "5".into(),
+                "6".into(),
+                "7".into(),
+                "8".into(),
+                "9".into(),
+                "10".into(),
+            ],
+            hypr_workspace_selected_text: Some(vec![
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+                "●".into(),
+            ]),
+            hypr_workspace_spacing: 3,
+            hypr_workspace_background_color_rgba: [28, 28, 34, 95],
+            hypr_workspace_button_color_rgb: [45, 40, 55],
+            hypr_workspace_button_text_color_rgb: [200, 200, 210],
+            hypr_workspace_button_selected_color_rgb: [150, 40, 80],
+            hypr_workspace_button_hovered_color_rgb: [140, 35, 75],
+            hypr_workspace_button_hovered_text_color_rgb: [255, 255, 255],
+            hypr_workspace_button_pressed_color_rgb: [90, 25, 50],
+            hypr_workspace_border_color_rgba: [120, 90, 135, 100],
+            hypr_workspace_border_size: 1.0,
+            hypr_workspace_border_radius: [6, 6, 6, 6],
+            
+            // ================= CONTEXT MENU (STYLE) =================
+            context_menu_background_color_rgba: [20, 20, 24, 98],
+            context_menu_background_size: 5,
+            context_menu_background_border_color_rgba: [255, 255, 255, 100],
+            context_menu_background_border_size: 1.0,
+            context_menu_background_border_radius: [6, 6, 6, 6],
+            
+            context_menu_text_size: 15,
+            context_menu_width: 200,
+            context_menu_button_color_rgb: [45, 40, 55],
+            context_menu_button_text_color_rgb: [230, 230, 240],
+            context_menu_button_hovered_color_rgb: [150, 40, 80],
+            context_menu_button_hovered_text_color_rgb: [255, 255, 255],
+            context_menu_button_pressed_color_rgb: [85, 30, 55],
+            context_menu_border_color_rgba: [130, 90, 140, 100],
+            context_menu_border_size: 1.0,
+            context_menu_border_radius: [8, 8, 8, 8],
+        }
+    }
+}
+
+
+
 pub fn read_ron_config() -> (BarConfig, Anchor)
 {
     let home_path = home::home_dir().expect("Failed To Get Home Directory").display().to_string();
     let ron_config_file_dir = format!("{}/.config/icebar/config.ron", home_path);
     let ron_file_config_path = Path::new(&ron_config_file_dir);
     let ron_content = fs::read_to_string(ron_file_config_path).expect("Couldn't Read Config File");
-    let bar_config: BarConfig = from_str(&ron_content).expect("Coudln't Translate Config File");
+    let bar_config: BarConfig = from_str(&ron_content).unwrap_or_default();
     let anchor_position = match bar_config.bar_position.as_str()
     {
         "Up" => Anchor::Top | Anchor::Left | Anchor::Right,

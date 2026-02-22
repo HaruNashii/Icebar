@@ -59,6 +59,7 @@ pub fn volume(volume_modifier: VolumeAction) -> String
                     (0.490, &formats[2]),
                     (0.900, &formats[3]),
                     (1.00, &formats[4]),
+                    (999.9, &formats[5]),
                 ];
                 let format = thresholds.iter().find(|&&(max, _)| parsed <= max).map(|&(_, fmt)| fmt).unwrap_or(&formats[0]);
                 let rounded_result = ((parsed * 100.0).round() as u32).to_string();

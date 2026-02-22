@@ -41,7 +41,7 @@ BarConfig
 
 
     // ================= MODULES =================
-    left_modules: ["hypr/workspaces"],
+    left_modules: [],
     center_modules: ["clock"],
     right_modules: ["tray", "volume/output", "volume/input"],
 

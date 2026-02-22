@@ -4,6 +4,9 @@ description = "Icebar is a lightweight, Wayland status bar written in Rust, powe
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "icebar"
+
 [dependencies]
 hyprland = { git = "https://github.com/hyprland-community/hyprland-rs", branch = "master" }
 iced = { version = "0.14.0", features = ["canvas", "svg", "tokio", "image"] }

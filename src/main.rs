@@ -242,11 +242,23 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::Tick =>
         {
             let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format };
-            app.modules.clock_data.current_time = get_current_time(format_to_send);
-            app.modules.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format)));
-            app.modules.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format)));
-            app.modules.hypr_data.current_workspace = hypr::current_workspace();
-            app.modules.hypr_data.workspace_count = hypr::workspace_count();
+            if module_is_active(&app.ron_config, "clock".to_string())
+            {
+                app.modules.clock_data.current_time = get_current_time(format_to_send);
+            }
+            if module_is_active(&app.ron_config, "volume/output".to_string())
+            {
+                app.modules.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format)));
+            }
+            if module_is_active(&app.ron_config, "volume/input".to_string())
+            {
+                app.modules.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format)));
+            }
+            if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+            {
+                app.modules.hypr_data.current_workspace = hypr::current_workspace();
+                app.modules.hypr_data.workspace_count = hypr::workspace_count();
+            }
         }
 
         Message::TrayEvent(event) =>
@@ -508,6 +520,24 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
     }
 
     row(children).spacing(8).align_y(Alignment::Center).into()
+}
+
+
+
+fn module_is_active(ron_config: &BarConfig, module: String) -> bool
+{
+    let all_possible_position = [&ron_config.left_modules, &ron_config.center_modules, &ron_config.right_modules];
+    for position in all_possible_position
+    {
+        for item in position 
+        {
+            if *item == module
+            {
+                return true;
+            }
+        }
+    }
+    false
 }
 
 
