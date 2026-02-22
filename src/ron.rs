@@ -151,9 +151,11 @@ pub fn read_ron_config() -> (BarConfig, Anchor)
     {
         "Up" => Anchor::Top | Anchor::Left | Anchor::Right,
         "Down" => Anchor::Bottom | Anchor::Left | Anchor::Right,
-        "Left" => Anchor::Left | Anchor::Top | Anchor::Bottom,
-        "Right" => Anchor::Right | Anchor::Top | Anchor::Bottom,
-        _ => Anchor::Top | Anchor::Left | Anchor::Right,
+        _ => 
+        {
+            println!("\n\n\n\n WARNING!!!! BAR POSITION PARSED IN THE CONFIG FILE IS NOT VALID, USING THE DEFAULT OPTION...\n\n\n\n");
+            Anchor::Top | Anchor::Left | Anchor::Right
+        }
     };
     (bar_config, anchor_position)
 }

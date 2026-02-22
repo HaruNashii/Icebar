@@ -71,6 +71,16 @@ pub async fn run_popup(data: PopupData) -> Result<(), iced_layershell::Error>
         smart_popup_position(data.popup_position.0, data.popup_position.1, data.monitor_size.0 as i32, data.monitor_size.1 as i32, popup_size.0 as i32, popup_size.1 as i32)
     };
 
+
+    let anchor_position = if data.ron_config.bar_position == "Down".to_string()
+    {
+        Anchor::Bottom | Anchor::Left
+    }
+    else 
+    {
+        Anchor::Top | Anchor::Left
+    };
+
     application( move || data.clone(), namespace, update, view).style(user_style).subscription(subscription).settings(Settings 
     {
         layer_settings: LayerShellSettings 
@@ -79,7 +89,7 @@ pub async fn run_popup(data: PopupData) -> Result<(), iced_layershell::Error>
             size: Some((popup_size.0, popup_size.1)),
             exclusive_zone: 0,
             keyboard_interactivity: iced_layershell::reexport::KeyboardInteractivity::Exclusive,
-            anchor: Anchor::Top | Anchor::Left,
+            anchor: anchor_position,
             start_mode,
             margin: (y, 0, 0, x),
             ..Default::default()

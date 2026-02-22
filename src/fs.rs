@@ -31,6 +31,7 @@ BarConfig
 (
     // ================= GENERAL =================
     display: Some("DP-2"),
+    // Available Options Are: "Up" and "Down" ("Left" and "Right" are planned for the future)
     bar_position: "Up",
     bar_size: (0, 45),
     bar_general_padding: 6,
