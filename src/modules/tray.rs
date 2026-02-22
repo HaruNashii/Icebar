@@ -1,10 +1,9 @@
 // ============ IMPORTS ============
 use std::{collections::{HashMap, HashSet}, fs, path::{Path, PathBuf}, process::Command, sync::Mutex};
-use zbus::{interface, message::Header, Connection, Proxy};
+use zbus::{Connection, Proxy, fdo::DBusProxy, interface, message::Header, object_server::SignalEmitter};
 use iced::futures::{Stream, StreamExt};
 use tokio::sync::mpsc::{self, Sender};
 use once_cell::sync::Lazy;
-use zbus::fdo::DBusProxy;
 use tiny_skia::Pixmap;
 use std::pin::Pin;
 
@@ -101,6 +100,8 @@ impl StatusNotifierWatcher
         };
 
         let combined = format!("{dest}|{path}");
+        let ctxt = SignalEmitter::new(&self.connection, "/StatusNotifierWatcher").unwrap();
+        StatusNotifierWatcher::status_notifier_item_registered(&ctxt, &combined).await.unwrap();
         println!("\n=== Tray item registered ===\n{combined}");
         let _ = self.sender.send(TrayEvent::ItemRegistered(combined.clone())).await;
         OWNER_MAP.lock().unwrap().insert(sender.clone(), combined.clone());
@@ -118,6 +119,15 @@ impl StatusNotifierWatcher
     
     #[zbus(property)]
     fn protocol_version(&self) -> i32 { 0 }
+
+    #[zbus(signal)]
+    async fn status_notifier_item_registered(ctxt: &SignalEmitter<'_>, service: &str) -> zbus::Result<()>;
+
+    #[zbus(signal)]
+    async fn status_notifier_item_unregistered(ctxt: &SignalEmitter<'_>, service: &str) -> zbus::Result<()>;
+
+    #[zbus(signal)]
+    async fn status_notifier_host_registered(ctxt: &SignalEmitter<'_>) -> zbus::Result<()>;
 }
 
 
@@ -127,6 +137,8 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
     let connection = Connection::session().await?;
     connection.request_name("org.kde.StatusNotifierWatcher").await?;
     connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender: sender.clone(), connection: connection.clone() }).await?;
+    let ctxt = SignalEmitter::new(&connection, "/StatusNotifierWatcher")?;
+    StatusNotifierWatcher::status_notifier_host_registered(&ctxt).await?;
     use futures_util::StreamExt;
     let dbus = DBusProxy::new(&connection).await.unwrap();
     let mut name_changes = dbus.receive_name_owner_changed().await.unwrap();
@@ -147,6 +159,8 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
                     let combined_opt = OWNER_MAP.lock().unwrap().remove(&name);
                     if let Some(combined) = combined_opt 
                     {
+                        let ctxt = SignalEmitter::new(&connection, "/StatusNotifierWatcher").unwrap();
+                        StatusNotifierWatcher::status_notifier_item_unregistered(&ctxt, &combined).await.unwrap();
                         let _ = tx_clone.send(TrayEvent::ItemUnregistered(combined)).await;
                     }
                 }
