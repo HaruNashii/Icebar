@@ -15,9 +15,10 @@ use crate::modules::clock::{ClockData, get_current_time};
 use crate::modules::volume::{self, VolumeAction};
 use crate::modules::hypr::{self, UserHyprData};
 use crate::fs::check_if_config_file_exists;
+use crate::modules::volume::VolumeData;
 use crate::monitor::get_monitor_res;
 use crate::ron::read_ron_config;
-use modules::volume::VolumeData;
+use crate::popup::run_popup;
 use crate::ron::BarConfig;
 
 
@@ -321,9 +322,9 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 path,
             };
             
-            tokio::spawn(async move 
+            std::thread::spawn(move || 
             {
-                let _ = crate::popup::run_popup(popup_data).await;
+                run_popup(popup_data);
             });
 
         }

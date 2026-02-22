@@ -53,7 +53,7 @@ pub fn smart_popup_position(cursor_x: i32, cursor_y: i32, screen_w: i32, screen_
 
 
 
-pub async fn run_popup(data: PopupData) -> Result<(), iced_layershell::Error> 
+pub fn run_popup(data: PopupData)
 {
     let start_mode = match data.ron_config.display
     {
@@ -95,7 +95,7 @@ pub async fn run_popup(data: PopupData) -> Result<(), iced_layershell::Error>
             ..Default::default()
         },
         ..Default::default()
-    }).run()
+    }).run().expect("Failed To Create ContextMenu Window");
 }
 
 
