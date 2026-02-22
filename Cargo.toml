@@ -1,7 +1,7 @@
 [package]
 name = "IceBar"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 hyprland = { git = "https://github.com/hyprland-community/hyprland-rs", branch = "master" }
