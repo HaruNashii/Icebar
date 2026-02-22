@@ -6,13 +6,6 @@ use swayipc::Connection;
 
 
 // ============ ENUM/STRUCT, ETC ============
-#[derive(Default, Clone)]
-pub struct UserSwayData
-{
-    pub workspace_count: usize,
-    pub current_workspace: i32
-}
-
 #[derive(Clone)]
 pub enum UserSwayAction
 {

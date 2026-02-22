@@ -10,17 +10,17 @@ use hyprland::dispatch::*;
 
 
 // ============ CRATES ============
-use crate::modules::{sway::{UserSwayAction, change_workspace}, tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}};
+use crate::{helpers::workspaces::WorkspaceData, modules::{sway::{UserSwayAction, change_workspace}, tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}}};
 use crate::modules::clock::{ClockData, get_current_time};
 use crate::helpers::fs::check_if_config_file_exists;
 use crate::modules::volume::{self, VolumeAction};
-use crate::modules::hypr::{self, UserHyprData};
-use crate::modules::sway::{self, UserSwayData};
 use crate::helpers::monitor::get_monitor_res;
 use crate::context_menu::run_context_menu;
 use crate::modules::volume::VolumeData;
 use crate::ron::read_ron_config;
 use crate::ron::BarConfig;
+use crate::modules::hypr;
+use crate::modules::sway;
 
 
 
@@ -76,8 +76,7 @@ struct Modules
     tray_icons: Vec<(Option<image::Handle>, String)>,
     volume_data: VolumeData,
     clock_data: ClockData,
-    hypr_data: UserHyprData,
-    sway_data: UserSwayData
+    workspace_data: WorkspaceData,
 }
 
 pub struct UserStyle
@@ -127,8 +126,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     {
         volume_data: VolumeData::default(), 
         clock_data: ClockData::default(), 
-        hypr_data: UserHyprData::default(),
-        sway_data: UserSwayData::default(),
+        workspace_data: WorkspaceData::default(),
         tray_icons: Vec::new()
     };
     let app_data = AppData
@@ -295,13 +293,13 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             }
             if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
             {
-                app.modules.hypr_data.current_workspace = hypr::current_workspace();
-                app.modules.hypr_data.workspace_count = hypr::workspace_count();
+                app.modules.workspace_data.current_workspace = hypr::current_workspace();
+                app.modules.workspace_data.workspace_count = hypr::workspace_count();
             }
             if module_is_active(&app.ron_config, "sway/workspaces".to_string())
             {
-                app.modules.sway_data.current_workspace = sway::current_workspace();
-                app.modules.sway_data.workspace_count = sway::workspace_count();
+                app.modules.workspace_data.current_workspace = sway::current_workspace();
+                app.modules.workspace_data.workspace_count = sway::workspace_count();
             }
         }
 
@@ -476,9 +474,9 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "hypr/workspaces" | "sway/workspaces" => mouse_area ( row((1..app.modules.hypr_data.workspace_count + 1).map(|i| 
+            "hypr/workspaces" | "sway/workspaces" => mouse_area ( row((1..app.modules.workspace_data.workspace_count + 1).map(|i| 
             { 
-                let workspace_text = if let Some(selected_text) = &app.ron_config.workspace_selected_text && app.modules.hypr_data.current_workspace as usize == i
+                let workspace_text = if let Some(selected_text) = &app.ron_config.workspace_selected_text && app.modules.workspace_data.current_workspace as usize == i
                 {
                     if i > app.ron_config.workspace_text.len() 
                     {
@@ -502,7 +500,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     let hovered = app.ron_config.workspace_button_hovered_color_rgb;
                     let hovered_text = app.ron_config.workspace_button_hovered_text_color_rgb;
                     let pressed = app.ron_config.workspace_button_pressed_color_rgb;
-                    let normal = if app.modules.hypr_data.current_workspace == i as i32 { app.ron_config.workspace_button_selected_color_rgb } else { app.ron_config.workspace_button_color_rgb };
+                    let normal = if app.modules.workspace_data.current_workspace == i as i32 { app.ron_config.workspace_button_selected_color_rgb } else { app.ron_config.workspace_button_color_rgb };
                     let normal_text = app.ron_config.workspace_button_text_color_rgb;
                     let border_size = app.ron_config.workspace_border_size;
                     let border_color_rgba = app.ron_config.workspace_border_color_rgba;
