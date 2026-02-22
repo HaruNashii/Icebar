@@ -243,8 +243,8 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         {
             let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format };
             app.modules.clock_data.current_time = get_current_time(format_to_send);
-            app.modules.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput([&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format]));
-            app.modules.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput([&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format]));
+            app.modules.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format)));
+            app.modules.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format)));
             app.modules.hypr_data.current_workspace = hypr::current_workspace();
             app.modules.hypr_data.workspace_count = hypr::workspace_count();
         }
@@ -405,7 +405,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
     {
         let element: Element<_> = match item.as_str() 
         {
-            "tray" => row ( app.modules.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(18).height(18).into() } else { text("?").into() }; button(content).style(|_: &Theme, status: button::Status| 
+            "tray" => row ( app.modules.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(app.ron_config.tray_icon_size).height(app.ron_config.tray_icon_size).into() } else { text("?").into() }; button(content).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.tray_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.tray_button_hovered_text_color_rgb;
@@ -416,7 +416,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let border_color_rgba = app.ron_config.tray_border_color_rgba;
                 let border_radius = app.ron_config.tray_border_radius;
                 set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            }).padding(0).on_press(Message::TrayIconClicked(i)).into() })).spacing(8).align_y(Alignment::Center).into(),
+            }).padding(app.ron_config.tray_button_size).on_press(Message::TrayIconClicked(i)).into() })).spacing(app.ron_config.tray_spacing).align_y(Alignment::Center).into(),
 
 
 

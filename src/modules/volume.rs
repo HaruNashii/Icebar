@@ -15,8 +15,8 @@ pub struct VolumeData
 
 pub enum VolumeAction<'a>
 {
-    GetOutput([&'a String;2]),
-    GetInput([&'a String;2]),
+    GetOutput((&'a [String;6], &'a String)),
+    GetInput((&'a [String;6], &'a String)),
     IncreaseOutput(u8),
     DecreaseOutput(u8),
     IncreaseInput(u8),
@@ -37,7 +37,7 @@ pub fn volume(volume_modifier: VolumeAction) -> String
         VolumeAction::IncreaseOutput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%+", v)).output().expect("Failed To Increase Volume With wpctl"),
         VolumeAction::DecreaseOutput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%-", v)).output().expect("Failed To Decrease Volume With wpctl"),
         VolumeAction::MuteOutput => Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SINK@").arg("toggle").output().expect("Failed To Toggle-Mute With wpctl"),
-        VolumeAction::GetOutput([format, muted_format]) => 
+        VolumeAction::GetOutput((formats, muted_format)) => 
         {
             let output = Command::new("wpctl").arg("get-volume").arg("@DEFAULT_SINK@").output().expect("Failed To Get Current Volume With wpctl");
             let stdout_bytes = output.stdout;
@@ -52,6 +52,15 @@ pub fn volume(volume_modifier: VolumeAction) -> String
             else
             {
                 let parsed = get_volume_output.replace("Volume: ", "").replace("[MUTED]", "").replace(" ", "").replace("\n", "").parse::<f32>().unwrap();
+                let thresholds = 
+                [
+                    (0.0, &formats[0]),
+                    (0.240, &formats[1]),
+                    (0.490, &formats[2]),
+                    (0.900, &formats[3]),
+                    (1.00, &formats[4]),
+                ];
+                let format = thresholds.iter().find(|&&(max, _)| parsed <= max).map(|&(_, fmt)| fmt).unwrap_or(&formats[0]);
                 let rounded_result = ((parsed * 100.0).round() as u32).to_string();
                 return format.to_string().replace("{}", &rounded_result);
             };
@@ -60,7 +69,7 @@ pub fn volume(volume_modifier: VolumeAction) -> String
         VolumeAction::IncreaseInput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg(format!("{}%+", v)).output().expect("Failed To Increase Volume With wpctl"),
         VolumeAction::DecreaseInput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg(format!("{}%-", v)).output().expect("Failed To Decrease Volume With wpctl"),
         VolumeAction::MuteInput => Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SOURCE@").arg("toggle").output().expect("Failed To Toggle-Mute With wpctl"),
-        VolumeAction::GetInput([format, muted_format]) => 
+        VolumeAction::GetInput((formats, muted_format)) => 
         {
             let output = Command::new("wpctl").arg("get-volume").arg("@DEFAULT_SOURCE@").output().expect("Failed To Get Current Volume With wpctl");
             let stdout_bytes = output.stdout;
@@ -75,6 +84,15 @@ pub fn volume(volume_modifier: VolumeAction) -> String
             else
             {
                 let parsed = get_volume_output.replace("Volume: ", "").replace("[MUTED]", "").replace(" ", "").replace("\n", "").parse::<f32>().unwrap();
+                let thresholds = 
+                [
+                    (0.0, &formats[0]),
+                    (0.240, &formats[1]),
+                    (0.490, &formats[2]),
+                    (0.990, &formats[3]),
+                    (1.00, &formats[4]),
+                ];
+                let format = thresholds.iter().find(|&&(max, _)| parsed <= max).map(|&(_, fmt)| fmt).unwrap_or(&formats[0]);
                 let rounded_result = ((parsed * 100.0).round() as u32).to_string();
                 return format.to_string().replace("{}", &rounded_result);
             };

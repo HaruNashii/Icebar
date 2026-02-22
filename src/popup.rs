@@ -1,6 +1,6 @@
 // ============ IMPORTS ============
 use iced_layershell::{application, reexport::{Anchor, Layer, core::keyboard}, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
-use iced::{Color, Element, Font, Length, Task, Theme, event, mouse, theme::Style, time, widget::{button, column, container, text}};
+use iced::{Color, Element, Font, Length, Task, Theme, border::Radius, event, mouse, theme::Style, time, widget::{button, column, container, text}};
 use std::time::Duration;
 
 
@@ -62,9 +62,16 @@ pub async fn run_popup(data: PopupData) -> Result<(), iced_layershell::Error>
     };
 
     let popup_size: (u32, u32) = (data.ron_config.context_menu_width, (data.items.len() * 37) as u32);
-    let (x, y) = smart_popup_position(data.popup_position.0, data.popup_position.1, data.monitor_size.0 as i32, data.monitor_size.1 as i32, popup_size.0 as i32, popup_size.1 as i32);
+    let (x, y) = if let Some(forced_values) = data.ron_config.force_static_position_context_menu
+    {
+        forced_values
+    }
+    else 
+    {
+        smart_popup_position(data.popup_position.0, data.popup_position.1, data.monitor_size.0 as i32, data.monitor_size.1 as i32, popup_size.0 as i32, popup_size.1 as i32)
+    };
 
-    application( move || data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings 
+    application( move || data.clone(), namespace, update, view).style(user_style).subscription(subscription).settings(Settings 
     {
         layer_settings: LayerShellSettings 
         {
@@ -155,7 +162,7 @@ fn update(data: &mut PopupData, popup_message: PopupMessage) -> Task<PopupMessag
 
 fn view(data: &PopupData) -> Element<'_, PopupMessage> 
 {
-    let button_vec: Vec<Element<'_, PopupMessage>> = data.items.iter().map(|item| { button(text(&item.label).font(data.default_font).size(data.ron_config.context_menu_text_size).width(Length::Fill).height(Length::Fill).center()) .on_press(PopupMessage::Action(data.service.to_string(), data.path.to_string(), item.id, item.label.to_string())) .style(|_: &Theme, status: button::Status| 
+    let button_vec: Vec<Element<'_, PopupMessage>> = data.items.iter().map(|item| { button(text(&item.label).font(data.default_font).size(data.ron_config.context_menu_text_size).width(Length::Fill).height(Length::Fill).center()).on_press(PopupMessage::Action(data.service.to_string(), data.path.to_string(), item.id, item.label.to_string())).style(|_: &Theme, status: button::Status| 
     {
         let hovered = data.ron_config.context_menu_button_hovered_color_rgb;
         let hovered_text = data.ron_config.context_menu_button_hovered_text_color_rgb;
@@ -168,18 +175,29 @@ fn view(data: &PopupData) -> Element<'_, PopupMessage>
         set_style(crate::UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius })
     }).into()}).collect();
 
+
     container
     (
         column
         (
             button_vec
-        ).spacing(4).width(Length::Fill).height(Length::Fill)
-    ).padding(6).width(Length::Fill).height(Length::Fill).into()
+        ).spacing(0).width(Length::Fill).height(Length::Fill)
+    ).padding(data.ron_config.context_menu_background_size).width(Length::Fill).height(Length::Fill).style(|_: &Theme| context_menu_background_button_style(&data.ron_config)).into()
 }
 
 
+fn context_menu_background_button_style(ron_config: &BarConfig) -> iced::widget::container::Style
+{
+    let mut background_style = container::Style::default();
+    let bgc = ron_config.context_menu_background_color_rgba;
+    let bgr = ron_config.context_menu_background_border_radius;
+    background_style.border.color = Color::from_rgba8(bgc[0], bgc[1], bgc[2], bgc[3] as f32); 
+    background_style.border.width = ron_config.context_menu_background_border_size;
+    background_style.border.radius = Radius { top_left: bgr[0] as f32, top_right: bgr[1] as f32, bottom_left: bgr[2] as f32, bottom_right: bgr[3] as f32};
+    background_style
+}
 
-fn style(app: &PopupData, _: &iced::Theme) -> Style
+fn user_style(app: &PopupData, _: &iced::Theme) -> Style
 {
     Style
     {

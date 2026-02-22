@@ -46,21 +46,26 @@ BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    force_static_position_context_menu: None,
     reverse_scroll_on_workspace: false,
     incremental_steps_output: 10,
     incremental_steps_input: 10,
 
 
     // ================= FORMATS =================
-    output_volume_format: "   {}%",
-    output_volume_muted_format: "󰝟 Muted",
-    input_volume_format: "󰍬 {}%",
-    input_volume_muted_format: " Muted",
+    			  //0%        |  25%       | 50%        |  75%       | 100%  |  > 100%
+    output_volume_format: ("    {}% ▁▁▁▁", "󰖀   {}% ▂▁▁▁", "   {}% ▂▃▁▁", "   {}% ▂▃▄▁", "   {}% ▂▃▄▅", "󰝝   {}% ▇▇▇▇"),
+    output_volume_muted_format: "  Muted",
+    input_volume_format: ("   {}% ▁▁▁▁", "  {}% ▅▁▁▁", "  {}% ▅▅▁▁", "  {}% ▅▅▅▁", "  {}% ▅▅▅▅", "󰢴  {}% ⚠️ ▇▇▇▇"),
+    input_volume_muted_format: "  Muted",
     clock_format: "󰥔  %H:%M",
-    clock_alt_format: "󰃭  %a %d %b   󰥔  %H:%M:%S",
+    clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S",
 
 
     // ================= TRAY (STYLE) =================
+    tray_icon_size: 18,
+    tray_button_size: 5,
+    tray_spacing: 8,
     tray_background_color_rgba: (30, 30, 36, 0),
     tray_button_color_rgb: (60, 50, 70),
     tray_button_text_color_rgb: (220, 220, 230),
@@ -129,9 +134,14 @@ BarConfig
 
 
     // ================= CONTEXT MENU (STYLE) =================
+    context_menu_background_color_rgba: (20, 20, 24, 98),
+    context_menu_background_size: 5,
+    context_menu_background_border_color_rgba: (255, 255, 255, 100),
+    context_menu_background_border_size: 1.0,
+    context_menu_background_border_radius: (6, 6, 6, 6),
+
     context_menu_text_size: 15,
     context_menu_width: 200,
-    context_menu_background_color_rgba: (20, 20, 24, 98),
     context_menu_button_color_rgb: (45, 40, 55),
     context_menu_button_text_color_rgb: (230, 230, 240),
     context_menu_button_hovered_color_rgb: (150, 40, 80),
