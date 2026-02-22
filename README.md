@@ -85,10 +85,13 @@ X11 is **not supported**.
 
 ### Requirements
 
-- Rust (stable)
+- Rust (stable/2024)
 - Wayland session
 - wlroots compositor
 - DBus session running
+- libxrandr
+- libxcb
+
 
 **Install Rust:**
 
