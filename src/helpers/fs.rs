@@ -118,37 +118,20 @@ BarConfig
 
 
     // ================= HYPR WORKSPACES (STYLE) =================
-    hypr_workspace_text_size: 15,
-    hypr_workspace_text: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-    hypr_workspace_selected_text: Some(["●", "●", "●", "●", "●", "●", "●", "●", "●", "●"]),
-    hypr_workspace_spacing: 3,
-    hypr_workspace_background_color_rgba: (28, 28, 34, 95),
-    hypr_workspace_button_color_rgb: (45, 40, 55),
-    hypr_workspace_button_text_color_rgb: (200, 200, 210),
-    hypr_workspace_button_selected_color_rgb: (150, 40, 80),
-    hypr_workspace_button_hovered_color_rgb: (140, 35, 75),
-    hypr_workspace_button_hovered_text_color_rgb: (255, 255, 255),
-    hypr_workspace_button_pressed_color_rgb: (90, 25, 50),
-    hypr_workspace_border_color_rgba: (120, 90, 135, 100),
-    hypr_workspace_border_size: 1.0,
-    hypr_workspace_border_radius: (6, 6, 6, 6),
-
-
-    // ================= SWAY WORKSPACES (STYLE) =================
-    sway_workspace_text_size: 15,
-    sway_workspace_text: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-    sway_workspace_selected_text: Some(["●", "●", "●", "●", "●", "●", "●", "●", "●", "●"]),
-    sway_workspace_spacing: 3,
-    sway_workspace_background_color_rgba: (28, 28, 34, 95),
-    sway_workspace_button_color_rgb: (45, 40, 55),
-    sway_workspace_button_text_color_rgb: (200, 200, 210),
-    sway_workspace_button_selected_color_rgb: (150, 40, 80),
-    sway_workspace_button_hovered_color_rgb: (140, 35, 75),
-    sway_workspace_button_hovered_text_color_rgb: (255, 255, 255),
-    sway_workspace_button_pressed_color_rgb: (90, 25, 50),
-    sway_workspace_border_color_rgba: (120, 90, 135, 100),
-    sway_workspace_border_size: 1.0,
-    sway_workspace_border_radius: (6, 6, 6, 6),
+    workspace_text_size: 15,
+    workspace_text: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+    workspace_selected_text: Some(["●", "●", "●", "●", "●", "●", "●", "●", "●", "●"]),
+    workspace_spacing: 3,
+    workspace_background_color_rgba: (28, 28, 34, 95),
+    workspace_button_color_rgb: (45, 40, 55),
+    workspace_button_text_color_rgb: (200, 200, 210),
+    workspace_button_selected_color_rgb: (150, 40, 80),
+    workspace_button_hovered_color_rgb: (140, 35, 75),
+    workspace_button_hovered_text_color_rgb: (255, 255, 255),
+    workspace_button_pressed_color_rgb: (90, 25, 50),
+    workspace_border_color_rgba: (120, 90, 135, 100),
+    workspace_border_size: 1.0,
+    workspace_border_radius: (6, 6, 6, 6),
 
 
     // ================= CONTEXT MENU (STYLE) =================

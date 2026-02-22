@@ -49,11 +49,11 @@ pub fn change_workspace(action: UserSwayAction)
         }
         UserSwayAction::MoveNext =>
         {
-            conn.run_command(format!("workspace next")).expect("Failed To Change Workspace Of Sway");
+            conn.run_command("workspace next".to_string()).expect("Failed To Change Workspace Of Sway");
         }
         UserSwayAction::MovePrev =>
         {
-            conn.run_command(format!("workspace prev")).expect("Failed To Change Workspace Of Sway");
+            conn.run_command("workspace prev".to_string()).expect("Failed To Change Workspace Of Sway");
         }
     }
 }

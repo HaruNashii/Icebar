@@ -482,11 +482,11 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "hypr/workspaces" => mouse_area ( row((1..app.modules.hypr_data.workspace_count + 1).map(|i| 
+            "hypr/workspaces" | "sway/workspaces" => mouse_area ( row((1..app.modules.hypr_data.workspace_count + 1).map(|i| 
             { 
-                let workspace_text = if let Some(selected_text) = &app.ron_config.hypr_workspace_selected_text && app.modules.hypr_data.current_workspace as usize == i
+                let workspace_text = if let Some(selected_text) = &app.ron_config.workspace_selected_text && app.modules.hypr_data.current_workspace as usize == i
                 {
-                    if i > app.ron_config.hypr_workspace_text.len() 
+                    if i > app.ron_config.workspace_text.len() 
                     {
                         &format!("{}", i).to_string()
                     } 
@@ -495,64 +495,27 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                         &selected_text[i - 1]
                     }
                 } 
-                else if i > app.ron_config.hypr_workspace_text.len() 
+                else if i > app.ron_config.workspace_text.len() 
                 {
                     &format!("{}", i).to_string()
                 } 
                 else 
                 {
-                    &app.ron_config.hypr_workspace_text[i - 1]
+                    &app.ron_config.workspace_text[i - 1]
                 };
-                button(text(workspace_text.clone()).font(app.default_font).size(app.ron_config.hypr_workspace_text_size)).on_press(Message::WorkspaceButtonPressed(i)).style(move|_: &Theme, status: button::Status| 
+                button(text(workspace_text.clone()).font(app.default_font).size(app.ron_config.workspace_text_size)).on_press(Message::WorkspaceButtonPressed(i)).style(move|_: &Theme, status: button::Status| 
                 {
-                    let hovered = app.ron_config.hypr_workspace_button_hovered_color_rgb;
-                    let hovered_text = app.ron_config.hypr_workspace_button_hovered_text_color_rgb;
-                    let pressed = app.ron_config.hypr_workspace_button_pressed_color_rgb;
-                    let normal = if app.modules.hypr_data.current_workspace == i as i32 { app.ron_config.hypr_workspace_button_selected_color_rgb } else { app.ron_config.hypr_workspace_button_color_rgb };
-                    let normal_text = app.ron_config.hypr_workspace_button_text_color_rgb;
-                    let border_size = app.ron_config.hypr_workspace_border_size;
-                    let border_color_rgba = app.ron_config.hypr_workspace_border_color_rgba;
-                    let border_radius = app.ron_config.hypr_workspace_border_radius;
+                    let hovered = app.ron_config.workspace_button_hovered_color_rgb;
+                    let hovered_text = app.ron_config.workspace_button_hovered_text_color_rgb;
+                    let pressed = app.ron_config.workspace_button_pressed_color_rgb;
+                    let normal = if app.modules.hypr_data.current_workspace == i as i32 { app.ron_config.workspace_button_selected_color_rgb } else { app.ron_config.workspace_button_color_rgb };
+                    let normal_text = app.ron_config.workspace_button_text_color_rgb;
+                    let border_size = app.ron_config.workspace_border_size;
+                    let border_color_rgba = app.ron_config.workspace_border_color_rgba;
+                    let border_radius = app.ron_config.workspace_border_radius;
                     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
                 }).into() 
-            })).spacing(app.ron_config.hypr_workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
-
-
-
-            "sway/workspaces" => mouse_area ( row((1..app.modules.sway_data.workspace_count + 1).map(|i| 
-            { 
-                let workspace_text = if let Some(selected_text) = &app.ron_config.sway_workspace_selected_text && app.modules.sway_data.current_workspace as usize == i
-                {
-                    if i > app.ron_config.sway_workspace_text.len() 
-                    {
-                        &format!("{}", i).to_string()
-                    } 
-                    else 
-                    {
-                        &selected_text[i - 1]
-                    }
-                } 
-                else if i > app.ron_config.sway_workspace_text.len() 
-                {
-                    &format!("{}", i).to_string()
-                } 
-                else 
-                {
-                    &app.ron_config.sway_workspace_text[i - 1]
-                };
-                button(text(workspace_text.clone()).font(app.default_font).size(app.ron_config.sway_workspace_text_size)).on_press(Message::WorkspaceButtonPressed(i)).style(move|_: &Theme, status: button::Status| 
-                {
-                    let hovered = app.ron_config.sway_workspace_button_hovered_color_rgb;
-                    let hovered_text = app.ron_config.sway_workspace_button_hovered_text_color_rgb;
-                    let pressed = app.ron_config.sway_workspace_button_pressed_color_rgb;
-                    let normal = if app.modules.sway_data.current_workspace == i as i32 { app.ron_config.hypr_workspace_button_selected_color_rgb } else { app.ron_config.hypr_workspace_button_color_rgb };
-                    let normal_text = app.ron_config.sway_workspace_button_text_color_rgb;
-                    let border_size = app.ron_config.sway_workspace_border_size;
-                    let border_color_rgba = app.ron_config.sway_workspace_border_color_rgba;
-                    let border_radius = app.ron_config.sway_workspace_border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-                }).into() 
-            })).spacing(app.ron_config.sway_workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
+            })).spacing(app.ron_config.workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
 
 
 
