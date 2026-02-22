@@ -244,16 +244,13 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                             change_workspace(UserSwayAction::MoveNext);
                         };
                     }
-                    else
+                    else if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
                     {
-                        if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
-                        {
-                            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
-                        } 
-                        else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
-                        {
-                            change_workspace(UserSwayAction::MovePrev);
-                        };
+                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
+                    } 
+                    else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+                    {
+                        change_workspace(UserSwayAction::MovePrev);
                     }
                 }
                 if y < 2. 
@@ -269,16 +266,13 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                             change_workspace(UserSwayAction::MovePrev);
                         };
                     }
-                    else
+                    else if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
                     {
-                        if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
-                        {
-                            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
-                        } 
-                        else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
-                        {
-                            change_workspace(UserSwayAction::MoveNext);
-                        };
+                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
+                    } 
+                    else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+                    {
+                        change_workspace(UserSwayAction::MoveNext);
                     }
                 }
             }
