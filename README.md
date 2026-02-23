@@ -109,6 +109,13 @@ Tip: Run it from your compositor autostart for best results.
 exec-once = icebar
 ```
 
+**Example (Sway):**
+```
+bar {
+    swaybar_command icebar
+}
+```
+
 ---
 
 ## 🧩 Architecture Overview
