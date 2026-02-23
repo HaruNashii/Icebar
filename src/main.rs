@@ -142,9 +142,6 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         modules
     };
 
-    let outputs = iced_layershell::get_all_outputs();
-    println!("Detected outputs: {:?}", outputs);
-
     let start_mode = match ron_config.display
     {
         Some(output) => StartMode::TargetScreen(output),
