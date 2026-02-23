@@ -98,7 +98,8 @@ Requirements:
 git clone https://github.com/HaruNashii/Icebar
 cd Icebar
 cargo build --release
-cp -rf target/release/icebar
+mkdir -p $HOME/.local/bin
+cp -rf target/release/icebar $HOME/.local/bin/
 ```
 
 
