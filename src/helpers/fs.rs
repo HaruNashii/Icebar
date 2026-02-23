@@ -30,7 +30,8 @@ pub fn check_if_config_file_exists()
 BarConfig
 (
     // ================= GENERAL =================
-    display: Some("DP-2"),
+    // Very Important To Set This Up
+    display: None,
     // Available Options Are: "Up" and "Down" ("Left" and "Right" are planned for the future)
     bar_position: "Up",
     bar_size: (0, 45),
