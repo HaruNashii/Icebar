@@ -302,7 +302,7 @@ impl Default for BarConfig
 
 
 
-pub fn read_ron_config() -> (BarConfig, Anchor)
+pub fn read_ron_config() -> (BarConfig, Anchor, Vec<String>, Vec<String>)
 {
     println!("\n=== READING CONFIG FILE ===");
     let home_path = home::home_dir().expect("Failed To Get Home Directory");
@@ -325,5 +325,27 @@ pub fn read_ron_config() -> (BarConfig, Anchor)
         _ => Anchor::Top | Anchor::Left | Anchor::Right,
     };
 
-    (bar_config, anchor_position)
+    let mut active_modules = Vec::new();
+    let mut inactive_modules = Vec::new();
+    let all_possible_modules = ["tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input"];
+    let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
+    for module in all_possible_modules
+    {
+        for position in all_possible_position
+        {
+            for item in position 
+            {
+                if *item == module
+                {
+                    active_modules.push(module.to_string());
+                }
+                else
+                {
+                    inactive_modules.push(module.to_string());
+                }
+            }
+        }
+    }
+
+    (bar_config, anchor_position, active_modules, inactive_modules)
 }

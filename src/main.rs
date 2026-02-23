@@ -67,11 +67,19 @@ struct AppData
     monitor_size: (u32, u32),
     ron_config: BarConfig,
     default_font: Font,
+    modules_data: ModulesData,
     modules: Modules
 }
 
 #[derive(Default, Clone)]
-struct Modules
+struct Modules 
+{
+    active_modules: Vec<String>,
+    _inactive_modules: Vec<String>
+}
+
+#[derive(Default, Clone)]
+struct ModulesData
 {
     tray_icons: Vec<(Option<image::Handle>, String)>,
     volume_data: VolumeData,
@@ -108,11 +116,17 @@ static DEFAULT_FONT: OnceLock<(String, Weight)> = OnceLock::new();
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
     check_if_config_file_exists();
-    let (ron_config, anchor_position) = read_ron_config();
+    let (ron_config, anchor_position, active_modules, _inactive_modules) = read_ron_config();
     let monitor_res = get_monitor_res(ron_config.display.clone());
     let ron_config_clone = ron_config.clone();
+    
+    let modules = Modules 
+    {
+        active_modules,
+        _inactive_modules
+    };
 
-    if module_is_active(&ron_config, "tray".to_string())
+    if module_is_active(&modules.active_modules, "tray".to_string())
     {
         start_tray();
     }
@@ -122,7 +136,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let font_style = weight_from_str(&font_style_string);
     DEFAULT_FONT.set((font_name, font_style)).expect("DEFAULT_FONT already initialized");
 
-    let modules = Modules
+    let modules_data = ModulesData
     {
         workspace_data: WorkspaceData::default(),
         volume_data: VolumeData::default(), 
@@ -139,6 +153,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         ron_config: ron_config_clone, 
         is_showing_alt_clock: false,
         mouse_position: (0, 0),
+        modules_data,
         modules
     };
 
@@ -203,11 +218,11 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
         Message::WorkspaceButtonPressed(id) => 
         {
-            if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+            if module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string())
             {
                 let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32))); 
             }
-            else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+            else if module_is_active(&app.modules.active_modules, "sway/workspaces".to_string())
             {
                 change_workspace(UserSwayAction::ChangeWithIndex(id));
             }
@@ -232,45 +247,42 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 { 
                     if app.ron_config.reverse_scroll_on_workspace
                     {
-                        if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+                        if module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string())
                         {
                             let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
                         } 
-                        else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+                        else if module_is_active(&app.modules.active_modules, "sway/workspaces".to_string())
                         {
                             change_workspace(UserSwayAction::MoveNext);
                         };
                     }
-                    else if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+                    else if module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string())
                     {
                         let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
                     } 
-                    else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+                    else if module_is_active(&app.modules.active_modules, "sway/workspaces".to_string())
                     {
                         change_workspace(UserSwayAction::MovePrev);
                     }
                 }
-
-
-
                 if y < 2. 
                 { 
                     if app.ron_config.reverse_scroll_on_workspace
                     {
-                        if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+                        if module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string())
                         {
                             let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
                         } 
-                        else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+                        else if module_is_active(&app.modules.active_modules, "sway/workspaces".to_string())
                         {
                             change_workspace(UserSwayAction::MovePrev);
                         };
                     }
-                    else if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
+                    else if module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string())
                     {
                         let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
                     } 
-                    else if module_is_active(&app.ron_config, "sway/workspaces".to_string())
+                    else if module_is_active(&app.modules.active_modules, "sway/workspaces".to_string())
                     {
                         change_workspace(UserSwayAction::MoveNext);
                     }
@@ -282,22 +294,22 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         {
             for module_name in &["clock", "volume/output", "volume/input", "hypr/workspaces", "sway/workspaces"] 
             {
-                if module_is_active(&app.ron_config, module_name.to_string()) 
+                if module_is_active(&app.modules.active_modules, module_name.to_string()) 
                 {
                     match *module_name 
                     {
-                        "clock" => {let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format }; app.modules.clock_data.current_time = get_current_time(format_to_send)},
-                        "volume/output" => app.modules.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format))),
-                        "volume/input" => app.modules.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format))),
+                        "clock" => {let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format }; app.modules_data.clock_data.current_time = get_current_time(format_to_send)},
+                        "volume/output" => app.modules_data.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format))),
+                        "volume/input" => app.modules_data.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format))),
                         "hypr/workspaces" =>
                         {
-                            app.modules.workspace_data.current_workspace = hypr::current_workspace();
-                            app.modules.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces);
+                            app.modules_data.workspace_data.current_workspace = hypr::current_workspace();
+                            app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces);
                         }
                         "sway/workspaces" =>
                         {
-                            app.modules.workspace_data.current_workspace = sway::current_workspace();
-                            app.modules.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces);
+                            app.modules_data.workspace_data.current_workspace = sway::current_workspace();
+                            app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces);
                         }
                         _ => {}
                     }
@@ -311,21 +323,21 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             {
                 TrayEvent::ItemRegistered(service) =>
                 {
-                    if !app.modules.tray_icons.iter().any(|(_, s)| s == &service)
+                    if !app.modules_data.tray_icons.iter().any(|(_, s)| s == &service)
                     {
-                        app.modules.tray_icons.push((None, service));
+                        app.modules_data.tray_icons.push((None, service));
                     }
                 }
 
                 TrayEvent::ItemUnregistered(service) => 
                 {
                     println!("\n=== Tray item Unregistered ===\n{service}");
-                    app.modules.tray_icons.retain(|(_, s)| s != &service);
+                    app.modules_data.tray_icons.retain(|(_, s)| s != &service);
                 }
 
                 TrayEvent::Icon { data, width, height } =>
                 {
-                    for (handle, _) in &mut app.modules.tray_icons
+                    for (handle, _) in &mut app.modules_data.tray_icons
                     {
                         if handle.is_none()
                         {
@@ -341,7 +353,7 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::TrayIconClicked(idx) =>
         {
             println!("TrayIcon Clicked");
-            if let Some((_, combined)) = app.modules.tray_icons.get(idx)
+            if let Some((_, combined)) = app.modules_data.tray_icons.get(idx)
             {
                 let parts: Vec<&str> = combined.split('|').collect();
                 if parts.len() != 2 { return Command::none(); }
@@ -461,7 +473,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
     {
         let element: Element<_> = match item.as_str() 
         {
-            "tray" => row ( app.modules.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(app.ron_config.tray_icon_size).height(app.ron_config.tray_icon_size).into() } else { text("?").into() }; button(content).style(|_: &Theme, status: button::Status| 
+            "tray" => row ( app.modules_data.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(app.ron_config.tray_icon_size).height(app.ron_config.tray_icon_size).into() } else { text("?").into() }; button(content).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.tray_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.tray_button_hovered_text_color_rgb;
@@ -476,12 +488,12 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "hypr/workspaces" | "sway/workspaces" => mouse_area ( row(app.modules.workspace_data.visible_workspaces.iter().map(|i| 
+            "hypr/workspaces" | "sway/workspaces" => mouse_area ( row(app.modules_data.workspace_data.visible_workspaces.iter().map(|i| 
             {
                 let id = *i; // workspace id (i32)
 
                 // ================= TEXT RESOLUTION =================
-                let workspace_text = if id == app.modules.workspace_data.current_workspace
+                let workspace_text = if id == app.modules_data.workspace_data.current_workspace
                 {
                     // ---- ACTIVE WORKSPACE ----
                     if let Some(selected) = &app.ron_config.workspace_selected_text 
@@ -504,7 +516,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     let hovered = app.ron_config.workspace_button_hovered_color_rgb;
                     let hovered_text = app.ron_config.workspace_button_hovered_text_color_rgb;
                     let pressed = app.ron_config.workspace_button_pressed_color_rgb;
-                    let normal = if app.modules.workspace_data.current_workspace == *i { app.ron_config.workspace_button_selected_color_rgb } else { app.ron_config.workspace_button_color_rgb };
+                    let normal = if app.modules_data.workspace_data.current_workspace == *i { app.ron_config.workspace_button_selected_color_rgb } else { app.ron_config.workspace_button_color_rgb };
                     let normal_text = app.ron_config.workspace_button_text_color_rgb;
                     let border_size = app.ron_config.workspace_border_size;
                     let border_color_rgba = app.ron_config.workspace_border_color_rgba;
@@ -515,7 +527,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "clock" => container(button(text(&*app.modules.clock_data.current_time).font(app.default_font).size(app.ron_config.clock_text_size)).on_press(Message::ToggleAltClock).style(|_: &Theme, status: button::Status| 
+            "clock" => container(button(text(&*app.modules_data.clock_data.current_time).font(app.default_font).size(app.ron_config.clock_text_size)).on_press(Message::ToggleAltClock).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.clock_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.clock_button_hovered_text_color_rgb;
@@ -530,7 +542,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "volume/output" => container(mouse_area ( button (text(&*app.modules.volume_data.output_volume_level).font(app.default_font).size(app.ron_config.volume_output_text_size)).on_press(Message::MuteAudioPressedOutput).style(|_: &Theme, status: button::Status| 
+            "volume/output" => container(mouse_area ( button (text(&*app.modules_data.volume_data.output_volume_level).font(app.default_font).size(app.ron_config.volume_output_text_size)).on_press(Message::MuteAudioPressedOutput).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
@@ -545,7 +557,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "volume/input" => container(mouse_area ( button (text(&*app.modules.volume_data.input_volume_level).font(app.default_font).size(app.ron_config.volume_input_text_size)).on_press(Message::MuteAudioPressedInput).style(|_: &Theme, status: button::Status| 
+            "volume/input" => container(mouse_area ( button (text(&*app.modules_data.volume_data.input_volume_level).font(app.default_font).size(app.ron_config.volume_input_text_size)).on_press(Message::MuteAudioPressedInput).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.volume_input_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
@@ -569,18 +581,13 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 }
 
 
-
-fn module_is_active(ron_config: &BarConfig, module: String) -> bool
+fn module_is_active(active_modules: &Vec<String>, module: String) -> bool
 {
-    let all_possible_position = [&ron_config.left_modules, &ron_config.center_modules, &ron_config.right_modules];
-    for position in all_possible_position
+    for item in active_modules 
     {
-        for item in position 
+        if *item == module 
         {
-            if *item == module
-            {
-                return true;
-            }
+            return true;
         }
     }
     false
