@@ -73,11 +73,38 @@ pub fn tray_stream(_: &TraySubscription) -> Pin<Box<dyn Stream<Item = Message> +
 
 pub fn start_tray() 
 {
+    println!("\n=== TRAY ===");
+    println!("Starting Tray...");
+    match std::env::var("DBUS_SESSION_BUS_ADDRESS") 
+    {
+        Ok(v) =>
+        {
+            println!("DBUS_SESSION_BUS_ADDRESS = {}", v);
+            if v.is_empty()
+            {
+                println!("\n\n\nWARNING!!!!! DBUS_SESSION_BUS_ADRESS IS EMPTY!!, The Tray will not work, if you started your wm that don't setup\n the dbus variables the tray will not work, you can try the workaround:\nstart your WM/DE with: ```dbus-run-session YOUR_WM/DM```.\n\n\n");
+                println!("\n\n\nWARNING!!!!! DBUS_SESSION_BUS_ADRESS IS EMPTY!!, The Tray will not work, if you started your wm that don't setup\n the dbus variables the tray will not work, you can try the workaround:\nstart your WM/DE with: ```dbus-run-session YOUR_WM/DM```.\n\n\n");
+                println!("\n\n\nWARNING!!!!! DBUS_SESSION_BUS_ADRESS IS EMPTY!!, The Tray will not work, if you started your wm that don't setup\n the dbus variables the tray will not work, you can try the workaround:\nstart your WM/DE with: ```dbus-run-session YOUR_WM/DM```.\n\n\n");
+                println!("\n\n\nWARNING!!!!! DBUS_SESSION_BUS_ADRESS IS EMPTY!!, The Tray will not work, if you started your wm that don't setup\n the dbus variables the tray will not work, you can try the workaround:\nstart your WM/DE with: ```dbus-run-session YOUR_WM/DM```.\n\n\n");
+                println!("\n\n\nWARNING!!!!! DBUS_SESSION_BUS_ADRESS IS EMPTY!!, The Tray will not work, if you started your wm that don't setup\n the dbus variables the tray will not work, you can try the workaround:\nstart your WM/DE with: ```dbus-run-session YOUR_WM/DM```.\n\n\n");
+            };
+        }
+        Err(e) => 
+        {
+                println!("{e}");
+                println!("\n\n\nWARNING!!!!! DBUS_SESSION_BUS_ADRESS IS EMPTY!!, The Tray will not work, if you started your wm that don't setup\n the dbus variables the tray will not work, you can try the workaround:\nstart your WM/DE with: ```dbus-run-session YOUR_WM/DM```.\n\n\n");
+                println!("\n\n\nWARNING!!!!! DBUS_SESSION_BUS_ADRESS IS EMPTY!!, The Tray will not work, if you started your wm that don't setup\n the dbus variables the tray will not work, you can try the workaround:\nstart your WM/DE with: ```dbus-run-session YOUR_WM/DM```.\n\n\n");
+                println!("\n\n\nWARNING!!!!! DBUS_SESSION_BUS_ADRESS IS EMPTY!!, The Tray will not work, if you started your wm that don't setup\n the dbus variables the tray will not work, you can try the workaround:\nstart your WM/DE with: ```dbus-run-session YOUR_WM/DM```.\n\n\n");
+                println!("\n\n\nWARNING!!!!! DBUS_SESSION_BUS_ADRESS IS EMPTY!!, The Tray will not work, if you started your wm that don't setup\n the dbus variables the tray will not work, you can try the workaround:\nstart your WM/DE with: ```dbus-run-session YOUR_WM/DM```.\n\n\n");
+                println!("\n\n\nWARNING!!!!! DBUS_SESSION_BUS_ADRESS IS EMPTY!!, The Tray will not work, if you started your wm that don't setup\n the dbus variables the tray will not work, you can try the workaround:\nstart your WM/DE with: ```dbus-run-session YOUR_WM/DM```.\n\n\n");
+        }
+    }
     let (tx, rx) = mpsc::channel(32);
     *TRAY_RECEIVER.lock().unwrap() = Some(rx);
+    
     tokio::spawn(async move 
     {
-        let _ = start_watcher(tx).await;
+        if let Err(e) = start_watcher(tx).await { eprintln!("Watcher failed: {e}"); }
     });
 }
 
@@ -139,6 +166,9 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
     connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender: sender.clone(), connection: connection.clone() }).await?;
     let ctxt = SignalEmitter::new(&connection, "/StatusNotifierWatcher")?;
     StatusNotifierWatcher::status_notifier_host_registered(&ctxt).await?;
+    println!("\n=== StatusNotifier ===");
+    println!("StatusNotifierHost registered");
+
     use futures_util::StreamExt;
     let dbus = DBusProxy::new(&connection).await.unwrap();
     let mut name_changes = dbus.receive_name_owner_changed().await.unwrap();

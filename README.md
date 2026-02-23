@@ -34,8 +34,6 @@ Instead, it acts as a:
 
 ### Core responsibilities
 
-Icebar:
-
 - listens for tray applications via DBus
 - renders tray items inside a bar
 - opens contextual menus as popups
@@ -83,8 +81,11 @@ X11 is **not supported**.
 
 ## 🚀 Installation
 
-### Requirements
+#### **AUR (Recommended):**
+```paru -S icebar-git``` or ```yay -S icebar-git```
 
+#### **Building From Source:**
+Requirements:
 - Rust (stable/2024)
 - Wayland session
 - wlroots compositor
@@ -92,27 +93,16 @@ X11 is **not supported**.
 - libxrandr
 - libxcb
 
-
-**Install Rust:**
-
-```bash
-curl https://sh.rustup.rs -sSf | sh
-```
-
-**Build:**
-
+**Build And Install With:**
 ```bash
 git clone https://github.com/HaruNashii/Icebar
 cd Icebar
 cargo build --release
+cp -rf target/release/icebar
 ```
 
-**Run with:**
-```bash 
-./target/release/icebar
-```
 
-Run it from your compositor autostart for best results.
+Tip: Run it from your compositor autostart for best results.
 
 **Example (Hyprland):**
 ```
@@ -218,3 +208,4 @@ Created by HaruNashii.
 Icebar exists to explore what a modern Wayland bar can look like when built with Rust and iced.
 
 ---
+

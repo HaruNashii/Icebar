@@ -22,31 +22,53 @@ pub enum UserSwayAction
 
 pub fn current_workspace() -> i32
 {
-    let mut connection = Connection::new().unwrap();
-    let workspaces = connection.get_workspaces().unwrap();
-    workspaces.iter().find(|ws| ws.focused).expect("No focused workspace").num
+    let result_connection = Connection::new();
+    if let Ok(mut connection) = result_connection
+    {
+        let result_workspaces = connection.get_workspaces();
+        if let Ok(workspaces) = result_workspaces
+        {
+            let result_return_value = workspaces.iter().find(|ws| ws.focused);
+            if let Some(return_value) = result_return_value
+            {
+                return return_value.num;
+            }
+        }
+    }
+    0
 }
 pub fn workspace_count() -> usize
 { 
-    let mut connection = Connection::new().unwrap();
-    connection.get_workspaces().unwrap().len()
+    let result_connection = Connection::new();
+    if let Ok(mut connection) = result_connection
+    {
+        let result_workspace_data = connection.get_workspaces();
+        if let Ok(workspace_data) = result_workspace_data
+        {
+            return workspace_data.len();
+        };
+    }
+    0
 }
 pub fn change_workspace(action: UserSwayAction)
 {
-    let mut conn = Connection::new().expect("Failed To Create Connection With Sway IPC");
-    match action 
+    let result_conn = Connection::new();
+    if let Ok(mut conn) = result_conn
     {
-        UserSwayAction::ChangeWithIndex(index) =>
+        match action 
         {
-            conn.run_command(format!("workspace number {index}")).expect("Failed To Change Workspace Of Sway");
-        }
-        UserSwayAction::MoveNext =>
-        {
-            conn.run_command("workspace next").expect("Failed To Change Workspace Of Sway");
-        }
-        UserSwayAction::MovePrev =>
-        {
-            conn.run_command("workspace prev").expect("Failed To Change Workspace Of Sway");
+            UserSwayAction::ChangeWithIndex(index) =>
+            {
+                let _ = conn.run_command(format!("workspace number {index}"));
+            }
+            UserSwayAction::MoveNext =>
+            {
+                let _ = conn.run_command("workspace next");
+            }
+            UserSwayAction::MovePrev =>
+            {
+                let _ = conn.run_command("workspace prev");
+            }
         }
     }
 }

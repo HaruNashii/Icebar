@@ -124,9 +124,9 @@ pub async fn main() -> Result<(), iced_layershell::Error>
 
     let modules = Modules
     {
+        workspace_data: WorkspaceData::default(),
         volume_data: VolumeData::default(), 
         clock_data: ClockData::default(), 
-        workspace_data: WorkspaceData::default(),
         tray_icons: Vec::new()
     };
     let app_data = AppData
