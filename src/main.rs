@@ -243,24 +243,26 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             }
             if app.is_hovering_workspace
             {
+                let hypr_active = module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string());
+                let sway_active = module_is_active(&app.modules.active_modules, "sway/workspaces".to_string());
                 if y > 2. 
                 { 
                     if app.ron_config.reverse_scroll_on_workspace
                     {
-                        if module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string())
+                        if hypr_active
                         {
                             let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
                         } 
-                        else if module_is_active(&app.modules.active_modules, "sway/workspaces".to_string())
+                        else if sway_active
                         {
                             change_workspace(UserSwayAction::MoveNext);
                         };
                     }
-                    else if module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string())
+                    else if hypr_active
                     {
                         let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
                     } 
-                    else if module_is_active(&app.modules.active_modules, "sway/workspaces".to_string())
+                    else if sway_active
                     {
                         change_workspace(UserSwayAction::MovePrev);
                     }
@@ -269,20 +271,20 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 { 
                     if app.ron_config.reverse_scroll_on_workspace
                     {
-                        if module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string())
+                        if hypr_active
                         {
                             let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
                         } 
-                        else if module_is_active(&app.modules.active_modules, "sway/workspaces".to_string())
+                        else if sway_active
                         {
                             change_workspace(UserSwayAction::MovePrev);
                         };
                     }
-                    else if module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string())
+                    else if hypr_active
                     {
                         let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
                     } 
-                    else if module_is_active(&app.modules.active_modules, "sway/workspaces".to_string())
+                    else if sway_active
                     {
                         change_workspace(UserSwayAction::MoveNext);
                     }
