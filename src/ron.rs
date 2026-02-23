@@ -1,14 +1,13 @@
 // ============ IMPORTS ============
-use ron::from_str;
-use serde::{Deserialize, Serialize};
-use std::{fs, path::Path};
 use iced_layershell::reexport::Anchor;
+use serde::{Deserialize, Serialize};
+use std::fs;
 
 
 
 
 
-// ============ STRUCTS/ENUM ============
+// ============ STRUCTS ============
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct BarConfig
@@ -32,6 +31,7 @@ pub struct BarConfig
     // ================= MODULES CONFIGS =================
     pub force_static_position_context_menu: Option<(i32, i32)>,
     pub reverse_scroll_on_workspace: bool,
+    pub persistent_workspaces: Option<u8>,
     pub incremental_steps_output: u8,
     pub incremental_steps_input: u8,
 
@@ -141,11 +141,11 @@ pub struct BarConfig
 
 
 // ============ FUNCTIONS ============
-impl Default for BarConfig 
+impl Default for BarConfig
 {
-    fn default() -> Self 
+    fn default() -> Self
     {
-        Self 
+         Self 
         {
             display: None,
             bar_position: "Up".into(),
@@ -161,6 +161,7 @@ impl Default for BarConfig
 
             force_static_position_context_menu: None,
             reverse_scroll_on_workspace: false,
+            persistent_workspaces: None,
             incremental_steps_output: 10,
             incremental_steps_input: 10,
 
@@ -303,20 +304,26 @@ impl Default for BarConfig
 
 pub fn read_ron_config() -> (BarConfig, Anchor)
 {
-    let home_path = home::home_dir().expect("Failed To Get Home Directory").display().to_string();
-    let ron_config_file_dir = format!("{}/.config/icebar/config.ron", home_path);
-    let ron_file_config_path = Path::new(&ron_config_file_dir);
-    let ron_content = fs::read_to_string(ron_file_config_path).expect("Couldn't Read Config File");
-    let bar_config: BarConfig = from_str(&ron_content).unwrap_or_default();
+    println!("\n=== READING CONFIG FILE ===");
+    let home_path = home::home_dir().expect("Failed To Get Home Directory");
+    let path = home_path.join(".config/icebar/config.ron");
+    let bar_config: BarConfig = fs::read_to_string(&path).ok().and_then(|content| 
+    {
+        println!("Config loaded successfully!!!.");
+        ron::from_str::<BarConfig>(&content).ok()
+    }).unwrap_or_else(|| 
+    {
+        eprintln!("Config parse failed — using defaults.");
+        BarConfig::default()
+    });
+
+
     let anchor_position = match bar_config.bar_position.as_str()
     {
         "Up" => Anchor::Top | Anchor::Left | Anchor::Right,
         "Down" => Anchor::Bottom | Anchor::Left | Anchor::Right,
-        _ => 
-        {
-            println!("\n\n\n\n WARNING!!!! BAR POSITION PARSED IN THE CONFIG FILE IS NOT VALID, USING THE DEFAULT OPTION...\n\n\n\n");
-            Anchor::Top | Anchor::Left | Anchor::Right
-        }
+        _ => Anchor::Top | Anchor::Left | Anchor::Right,
     };
+
     (bar_config, anchor_position)
 }

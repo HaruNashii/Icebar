@@ -37,18 +37,23 @@ pub fn current_workspace() -> i32
     }
     0
 }
-pub fn workspace_count() -> usize
+pub fn workspace_count() -> Vec<i32>
 { 
     let result_connection = Connection::new();
     if let Ok(mut connection) = result_connection
     {
         let result_workspace_data = connection.get_workspaces();
+        let mut return_vec = Vec::new();
         if let Ok(workspace_data) = result_workspace_data
         {
-            return workspace_data.len();
+            for item in workspace_data 
+            {
+                return_vec.push(item.id as i32);
+            }
+            return return_vec;
         };
     }
-    0
+    Vec::new()
 }
 pub fn change_workspace(action: UserSwayAction)
 {

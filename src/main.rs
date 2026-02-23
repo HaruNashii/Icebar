@@ -10,7 +10,7 @@ use hyprland::dispatch::*;
 
 
 // ============ CRATES ============
-use crate::{helpers::workspaces::WorkspaceData, modules::{sway::{UserSwayAction, change_workspace}, tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}}};
+use crate::{helpers::workspaces::{WorkspaceData, build_workspace_list}, modules::{sway::{UserSwayAction, change_workspace}, tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}}};
 use crate::modules::clock::{ClockData, get_current_time};
 use crate::helpers::fs::check_if_config_file_exists;
 use crate::modules::volume::{self, VolumeAction};
@@ -250,6 +250,9 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                         change_workspace(UserSwayAction::MovePrev);
                     }
                 }
+
+
+
                 if y < 2. 
                 { 
                     if app.ron_config.reverse_scroll_on_workspace
@@ -277,28 +280,28 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
 
         Message::Tick =>
         {
-            let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format };
-            if module_is_active(&app.ron_config, "clock".to_string())
+            for module_name in &["clock", "volume/output", "volume/input", "hypr/workspaces", "sway/workspaces"] 
             {
-                app.modules.clock_data.current_time = get_current_time(format_to_send);
-            }
-            if module_is_active(&app.ron_config, "volume/output".to_string())
-            {
-                app.modules.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format)));
-            }
-            if module_is_active(&app.ron_config, "volume/input".to_string())
-            {
-                app.modules.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format)));
-            }
-            if module_is_active(&app.ron_config, "hypr/workspaces".to_string())
-            {
-                app.modules.workspace_data.current_workspace = hypr::current_workspace();
-                app.modules.workspace_data.workspace_count = hypr::workspace_count();
-            }
-            if module_is_active(&app.ron_config, "sway/workspaces".to_string())
-            {
-                app.modules.workspace_data.current_workspace = sway::current_workspace();
-                app.modules.workspace_data.workspace_count = sway::workspace_count();
+                if module_is_active(&app.ron_config, module_name.to_string()) 
+                {
+                    match *module_name 
+                    {
+                        "clock" => {let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format }; app.modules.clock_data.current_time = get_current_time(format_to_send)},
+                        "volume/output" => app.modules.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format))),
+                        "volume/input" => app.modules.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format))),
+                        "hypr/workspaces" =>
+                        {
+                            app.modules.workspace_data.current_workspace = hypr::current_workspace();
+                            app.modules.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces);
+                        }
+                        "sway/workspaces" =>
+                        {
+                            app.modules.workspace_data.current_workspace = sway::current_workspace();
+                            app.modules.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces);
+                        }
+                        _ => {}
+                    }
+                }
             }
         }
 
@@ -473,33 +476,35 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "hypr/workspaces" | "sway/workspaces" => mouse_area ( row((1..app.modules.workspace_data.workspace_count + 1).map(|i| 
-            { 
-                let workspace_text = if let Some(selected_text) = &app.ron_config.workspace_selected_text && app.modules.workspace_data.current_workspace as usize == i
+            "hypr/workspaces" | "sway/workspaces" => mouse_area ( row(app.modules.workspace_data.visible_workspaces.iter().map(|i| 
+            {
+                let id = *i; // workspace id (i32)
+
+                // ================= TEXT RESOLUTION =================
+                let workspace_text = if id == app.modules.workspace_data.current_workspace
                 {
-                    if i > app.ron_config.workspace_text.len() 
+                    // ---- ACTIVE WORKSPACE ----
+                    if let Some(selected) = &app.ron_config.workspace_selected_text 
                     {
-                        &format!("{}", i).to_string()
+                        selected.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string())
                     } 
                     else 
                     {
-                        &selected_text[i - 1]
+                        id.to_string()
                     }
-                } 
-                else if i > app.ron_config.workspace_text.len() 
-                {
-                    &format!("{}", i).to_string()
                 } 
                 else 
                 {
-                    &app.ron_config.workspace_text[i - 1]
+                    // ---- NORMAL WORKSPACE ----
+                    app.ron_config.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string())
                 };
-                button(text(workspace_text.clone()).font(app.default_font).size(app.ron_config.workspace_text_size)).on_press(Message::WorkspaceButtonPressed(i)).style(move|_: &Theme, status: button::Status| 
+
+                button(text(workspace_text.clone()).font(app.default_font).size(app.ron_config.workspace_text_size)).on_press(Message::WorkspaceButtonPressed(*i as usize)).style(move|_: &Theme, status: button::Status| 
                 {
                     let hovered = app.ron_config.workspace_button_hovered_color_rgb;
                     let hovered_text = app.ron_config.workspace_button_hovered_text_color_rgb;
                     let pressed = app.ron_config.workspace_button_pressed_color_rgb;
-                    let normal = if app.modules.workspace_data.current_workspace == i as i32 { app.ron_config.workspace_button_selected_color_rgb } else { app.ron_config.workspace_button_color_rgb };
+                    let normal = if app.modules.workspace_data.current_workspace == *i { app.ron_config.workspace_button_selected_color_rgb } else { app.ron_config.workspace_button_color_rgb };
                     let normal_text = app.ron_config.workspace_button_text_color_rgb;
                     let border_size = app.ron_config.workspace_border_size;
                     let border_color_rgba = app.ron_config.workspace_border_color_rgba;
@@ -599,3 +604,4 @@ fn weight_from_str(s: &str) -> Weight
         _ => Weight::Normal, 
     }
 }
+

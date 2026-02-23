@@ -8,19 +8,28 @@ use std::{io::Write, fs, fs::File, path::Path};
 // ============ FUNCTIONS ============
 pub fn check_if_config_file_exists()
 {
+    println!("\n=== FS CHECK RUNNING... ===");
     let home_path = home::home_dir().expect("Failed To Get Home Directory").display().to_string();
     let ron_config_dir = format!("{}/.config/icebar", home_path);
     let ron_config_file_dir = format!("{}/config.ron", ron_config_dir);
     let ron_file_config_path = Path::new(&ron_config_file_dir);
     let ron_config_path = Path::new(&ron_config_dir);
 
-    if !Path::exists(ron_config_path)
+    if Path::exists(ron_config_path)
+    {
+        println!("Ron Config Directory Exists!!!");
+    }
+    else
     {
         println!("Ron config directory doesn't exist, Creating...");
         fs::create_dir_all(ron_config_path).expect("Couldn't Create Ron Config Directory");
     };
 
-    if !Path::exists(ron_file_config_path)
+    if Path::exists(ron_file_config_path)
+    {
+        println!("Ron Config File Exists!!!");
+    }
+    else
     {
         println!("Ron config file doesn't exist, Creating...");
         let ron_default_data = r#"// WARNING!!!: THE ALPHA OF THE RGBA HAS THE RANGE BETWEEN 0 TO 100, PARSING MORE THAN 100 WILL RESULT IN CRASH
@@ -48,14 +57,17 @@ BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    // Syntax = Some(x, y)
     force_static_position_context_menu: None,
     reverse_scroll_on_workspace: false,
+    // Syntax = Some(number_of_workspaces)
+    persistent_workspaces: None,
     incremental_steps_output: 10,
     incremental_steps_input: 10,
 
 
     // ================= FORMATS =================
-    			  //0%        |  25%       | 50%        |  75%       | 100%  |  > 100%
+    			//steps: "0%",        |  25%       | 50%        |  75%       | 100%  |  > 100%
     output_volume_format: ("    {}% ▁▁▁▁", "󰖀   {}% ▂▁▁▁", "   {}% ▂▃▁▁", "   {}% ▂▃▄▁", "   {}% ▂▃▄▅", "󰝝   {}% ▇▇▇▇"),
     output_volume_muted_format: "  Muted",
     input_volume_format: ("   {}% ▁▁▁▁", "  {}% ▅▁▁▁", "  {}% ▅▅▁▁", "  {}% ▅▅▅▁", "  {}% ▅▅▅▅", "󰢴  {}% ⚠️ ▇▇▇▇"),

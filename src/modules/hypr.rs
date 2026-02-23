@@ -5,17 +5,23 @@ use hyprland::{prelude::*, data::{Workspaces, Workspace}};
 
 
 
+
 // ============ FUNCTIONS ============
-pub fn workspace_count() -> usize 
+pub fn workspace_count() -> Vec<i32>
 { 
     let result = Workspaces::get();
-    if let Ok(value) = result 
+    if let Ok(values) = result 
     {
-        value.into_iter().len() 
+        let mut return_vec = Vec::new();
+        for item in &values 
+        {
+            return_vec.push(item.id)
+        }
+        return_vec
     }
     else
     {
-        0
+        Vec::new()
     }
 }
 pub fn current_workspace() -> i32 
