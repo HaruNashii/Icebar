@@ -83,7 +83,6 @@ pub struct BarConfig
     pub display: Option<String>,
     pub bar_position: BarPosition,
     pub bar_size: [u32;2],
-    pub bar_general_padding: u16,
     pub bar_background_color_rgba: [u8;4],
     pub font_family: String,
     pub font_style: String,
@@ -178,6 +177,8 @@ pub struct BarConfig
 
     // ================= HYPR/SWAY WORKSPACES (STYLE) =================
     pub workspace_height: u32,
+    pub workspace_width: u16,
+    pub workspace_different_selected_width: Option<u16>,
     pub workspace_text_size: u32,
     pub workspace_text: Vec<String>,
     pub workspace_selected_text: Option<Vec<String>>,
@@ -231,7 +232,6 @@ impl Default for BarConfig
             display: None,
             bar_position: BarPosition::Up,
             bar_size: [0, 45],
-            bar_general_padding: 6,
             bar_background_color_rgba: [18, 18, 22, 92],
             font_family: "JetBrains Mono".into(),
             font_style: "Normal".into(),
@@ -333,6 +333,8 @@ impl Default for BarConfig
             
             // ================= HYPR WORKSPACES (STYLE) =================
             workspace_height: 30,
+            workspace_width: 15,
+            workspace_different_selected_width: None,
             workspace_text_size: 15,
             workspace_text: vec![
                 "1".into(),

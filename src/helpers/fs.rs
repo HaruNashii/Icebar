@@ -57,7 +57,6 @@ BarConfig
     display: None,
     bar_position: Up,
     bar_size: (0, 45),
-    bar_general_padding: 6,
     bar_background_color_rgba: (18, 18, 22, 92),
     font_family: "JetBrains Mono",
     font_style: "Bold",
@@ -147,6 +146,8 @@ BarConfig
 
     // ================= HYPR WORKSPACES (STYLE) =================
     workspace_text_size: 15,
+    workspace_width: 5,
+    workspace_different_selected_width: Some(8),
     workspace_text: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
     workspace_selected_text: Some(["●", "●", "●", "●", "●", "●", "●", "●", "●", "●"]),
     workspace_spacing: 3,

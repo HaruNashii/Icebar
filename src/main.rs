@@ -470,7 +470,7 @@ fn view(app: &AppData) -> Element<'_,Message>
 
         // RIGHT
         container(right).width(Length::Fill).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Top),
-    ].padding(app.ron_config.bar_general_padding).align_y(Alignment::Start);
+    ].align_y(Alignment::Start);
     bar.into()
 }
 
@@ -560,6 +560,15 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     app.ron_config.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string())
                 };
 
+                let padding_y = if let Some(value) = app.ron_config.workspace_different_selected_width && id == app.modules_data.workspace_data.current_workspace
+                {
+                    value
+                }
+                else
+                {
+                    app.ron_config.workspace_width
+                };
+
                 button(text(workspace_text.clone()).font(app.default_font).size(app.ron_config.workspace_text_size)).on_press(Message::WorkspaceButtonPressed(*i as usize)).style(move|_: &Theme, status: button::Status| 
                 {
                     let hovered = app.ron_config.workspace_button_hovered_color_rgb;
@@ -571,7 +580,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     let border_color_rgba = app.ron_config.workspace_border_color_rgba;
                     let border_radius = app.ron_config.workspace_border_radius;
                     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-                }).into() 
+                }).padding([app.ron_config.workspace_width, padding_y * 2]).into() 
             })).height(app.ron_config.workspace_height).spacing(app.ron_config.workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
 
 
