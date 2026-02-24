@@ -32,17 +32,28 @@ pub fn check_if_config_file_exists()
     else
     {
         println!("Ron config file doesn't exist, Creating...");
-        let ron_default_data = r#"// WARNING!!!: THE ALPHA OF THE RGBA HAS THE RANGE BETWEEN 0 TO 100, PARSING MORE THAN 100 WILL RESULT IN CRASH
+        let ron_default_data = r#"// This File Is Auto-Generated When Icebar Detects That The Config File Or Config Directory Doesn't Exists.
+
+// ===== WARNINGS =====
+// WARNING!!!: THE ALPHA OF THE RGBA HAS THE RANGE BETWEEN 0 TO 100, PARSING MORE THAN 100 WILL RESULT IN CRASH
 // WARNING!!!: "bar_size" FIRST OPTION DEFINED TO "0" WILL MAKE THE BAR FILL THE ENTIRE SCREEN X AXIS
 // WARNING!!!: IF THE NUMBERS OF WORKSPACE IS GREATER THAN THE PARSED "hypr_workspace_text:" AND "hypr_workspace_selected_text:", THE NON-PARSED FORMAT WORKSPACE WILL HAVE THE NUMBER OF THE DETERMINED WORKSPACE
+// WARNING!!!: IS VERY IMPORTANT TO SET THE DISPLAY VARIABLE, NOT SETING IT UP MAY CAUSE UNDEFINED BEHAVIOUR
+
+// ===== TIPS =====
+// All possible modules: "tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input"
+// Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%
+// Available options for "bar_position" are: "Up" and "Down" (without double quote) ("Left" and "Right" are planned for the future)
+// To see the correct "font_family" and "font_style" i recommend using "fc-scan $PATH_TO_FONT_FILE"
+// The syntax of the following: "display", "force_static_position_context_menu" and "persistent_workspaces" should be "Some(VALUE_YOU_WANT)" or "None"
+// If you notice some bug or want more features, please feel free to publish your thoughs on: https://github.com/HaruNashii/Icebar.git
+// Or if you want talk directly to me to clear up any questions, my discord id is: harunashiii
 
 BarConfig
 (
     // ================= GENERAL =================
-    // Very Important To Set This Up
     display: None,
-    // Available Options Are: "Up" and "Down" ("Left" and "Right" are planned for the future)
-    bar_position: "Up",
+    bar_position: Up,
     bar_size: (0, 45),
     bar_general_padding: 6,
     bar_background_color_rgba: (18, 18, 22, 92),
@@ -57,17 +68,14 @@ BarConfig
 
 
     // ================= MODULES CONFIGS =================
-    // Syntax = Some(x, y)
     force_static_position_context_menu: None,
     reverse_scroll_on_workspace: false,
-    // Syntax = Some(number_of_workspaces)
-    persistent_workspaces: None,
+    persistent_workspaces: Some(5),
     incremental_steps_output: 10,
     incremental_steps_input: 10,
 
 
     // ================= FORMATS =================
-    			//steps: "0%",        |  25%       | 50%        |  75%       | 100%  |  > 100%
     output_volume_format: ("    {}% ▁▁▁▁", "󰖀   {}% ▂▁▁▁", "   {}% ▂▃▁▁", "   {}% ▂▃▄▁", "   {}% ▂▃▄▅", "󰝝   {}% ▇▇▇▇"),
     output_volume_muted_format: "  Muted",
     input_volume_format: ("   {}% ▁▁▁▁", "  {}% ▅▁▁▁", "  {}% ▅▅▁▁", "  {}% ▅▅▅▁", "  {}% ▅▅▅▅", "󰢴  {}% ⚠️ ▇▇▇▇"),

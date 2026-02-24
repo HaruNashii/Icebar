@@ -7,14 +7,21 @@ use std::fs;
 
 
 
-// ============ STRUCTS ============
+// ============ STRUCTS/ENUM'S ============
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub enum BarPosition
+{
+    Up,
+    Down
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct BarConfig
 {
     // ================= GENERAL =================
     pub display: Option<String>,
-    pub bar_position: String,
+    pub bar_position: BarPosition,
     pub bar_size: [u32;2],
     pub bar_general_padding: u16,
     pub bar_background_color_rgba: [u8;4],
@@ -133,7 +140,6 @@ pub struct BarConfig
     pub context_menu_border_color_rgba: [u8;4],
     pub context_menu_border_size: f32,
     pub context_menu_border_radius: [u32;4]
-
 }
 
 
@@ -148,12 +154,12 @@ impl Default for BarConfig
          Self 
         {
             display: None,
-            bar_position: "Up".into(),
+            bar_position: BarPosition::Up,
             bar_size: [0, 45],
             bar_general_padding: 6,
             bar_background_color_rgba: [18, 18, 22, 92],
             font_family: "JetBrains Mono".into(),
-            font_style: "Bold".into(),
+            font_style: "Normal".into(),
 
             left_modules: vec![],
             center_modules: vec!["clock".to_string()],
@@ -313,16 +319,17 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<String>, Vec<String>)
         ron::from_str::<BarConfig>(&content).ok()
     }).unwrap_or_else(|| 
     {
-        eprintln!("Config parse failed — using defaults.");
-        BarConfig::default()
+        println!("\n=== PARSING CONFIG FILE ===");
+        eprintln!("WARNING!!!: Config Parse Failed!!");
+        eprintln!("WARNING!!!: Your 'config.ron' syntax maybe wrong!!!");
+        panic!();
     });
 
 
-    let anchor_position = match bar_config.bar_position.as_str()
+    let anchor_position = match bar_config.bar_position
     {
-        "Up" => Anchor::Top | Anchor::Left | Anchor::Right,
-        "Down" => Anchor::Bottom | Anchor::Left | Anchor::Right,
-        _ => Anchor::Top | Anchor::Left | Anchor::Right,
+        BarPosition::Up => Anchor::Top | Anchor::Left | Anchor::Right,
+        BarPosition::Down => Anchor::Bottom | Anchor::Left | Anchor::Right,
     };
 
     let mut active_modules = Vec::new();

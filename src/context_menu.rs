@@ -8,7 +8,7 @@ use std::time::Duration;
 
 
 // ============ CRATES ============
-use crate::{ron::BarConfig, set_style, tray::MenuItem};
+use crate::{ron::{BarConfig, BarPosition}, set_style, tray::MenuItem};
 
 
 
@@ -72,13 +72,10 @@ pub fn run_context_menu(data: ContextMenuData)
     };
 
 
-    let anchor_position = if data.ron_config.bar_position == "Down"
+    let anchor_position = match data.ron_config.bar_position
     {
-        Anchor::Bottom | Anchor::Left
-    }
-    else 
-    {
-        Anchor::Top | Anchor::Left
+        BarPosition::Down => Anchor::Bottom | Anchor::Left,
+        BarPosition::Up => Anchor::Top | Anchor::Left
     };
 
     application( move || data.clone(), namespace, update, view).style(user_style).subscription(subscription).settings(Settings 

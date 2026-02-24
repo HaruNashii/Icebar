@@ -59,7 +59,6 @@ Icebar targets **wlroots-based compositors**, including:
 
 - Hyprland
 - Sway
-- River
 - Wayfire
 - Other layer-shell compatible compositors
 
@@ -74,6 +73,8 @@ X11 is **not supported**.
 - iced_layershell
 - zbus (DBus communication)
 - Wayland layer-shell protocol
+- wpctl (Volume handling) 
+
 
 `iced` provides a declarative UI model inspired by Elm architecture.
 
@@ -85,11 +86,10 @@ X11 is **not supported**.
 ```paru -S icebar-git``` or ```yay -S icebar-git```
 
 #### **Building From Source:**
-Requirements:
-- Rust (stable/2024)
-- Wayland session
-- wlroots compositor
-- DBus session running
+
+Requirements for building:
+- Rust/Cargo (stable/2024)
+- gcc-libs
 - libxrandr
 - libxcb
 
@@ -172,9 +172,9 @@ The project is primarily a learning and experimentation platform.
 
 ## 🛠 Roadmap (Planned Ideas)
 
-- Animations
 - Plugin/modules API For Custom Modules
 - Better tray icon handling
+- Animations (very low priority right now)
 
 ---
 
@@ -200,6 +200,7 @@ The project is primarily a learning and experimentation platform.
 ## 📸 Screenshots
 
 (Wil add screenshots later)
+(Accepting screenshots to display here, if you have one and want to share, i would appreciate it)
 
 ---
 
@@ -209,11 +210,3 @@ MIT License.
 See [LICENSE](https://github.com/HaruNashii/Icebar/blob/main/LICENSE) for details.
 
 ---
-
-## ❤️ Author
-
-Created by HaruNashii.
-Icebar exists to explore what a modern Wayland bar can look like when built with Rust and iced.
-
----
-

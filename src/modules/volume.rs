@@ -34,14 +34,14 @@ pub fn volume(volume_modifier: VolumeAction) -> String
 {
     match volume_modifier 
     {
-        VolumeAction::IncreaseOutput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%+", v)).output().expect("Failed To Increase Volume With wpctl"),
-        VolumeAction::DecreaseOutput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%-", v)).output().expect("Failed To Decrease Volume With wpctl"),
-        VolumeAction::MuteOutput => Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SINK@").arg("toggle").output().expect("Failed To Toggle-Mute With wpctl"),
+        VolumeAction::IncreaseOutput(v) => {let _ = Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%+", v)).output();},
+        VolumeAction::DecreaseOutput(v) => {let _ = Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%-", v)).output();},
+        VolumeAction::MuteOutput => {let _ = Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SINK@").arg("toggle").output();},
         VolumeAction::GetOutput((formats, muted_format)) => 
         {
             let output = Command::new("wpctl").arg("get-volume").arg("@DEFAULT_SINK@").output().expect("Failed To Get Current Volume With wpctl");
             let stdout_bytes = output.stdout;
-            let get_volume_output = String::from_utf8(stdout_bytes).unwrap();
+            let get_volume_output = String::from_utf8(stdout_bytes).unwrap_or_default();
             let mut is_muted = false;
             if get_volume_output.contains("[MUTED]") { is_muted = true };
 
@@ -51,7 +51,7 @@ pub fn volume(volume_modifier: VolumeAction) -> String
             }
             else
             {
-                let parsed = get_volume_output.replace("Volume: ", "").replace("[MUTED]", "").replace(" ", "").replace("\n", "").parse::<f32>().unwrap();
+                let parsed = get_volume_output.replace("Volume: ", "").replace("[MUTED]", "").replace(" ", "").replace("\n", "").parse::<f32>().unwrap_or_default();
                 let thresholds = 
                 [
                     (0.0, &formats[0]),
@@ -67,14 +67,14 @@ pub fn volume(volume_modifier: VolumeAction) -> String
             };
         }
 
-        VolumeAction::IncreaseInput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg(format!("{}%+", v)).output().expect("Failed To Increase Volume With wpctl"),
-        VolumeAction::DecreaseInput(v) => Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg(format!("{}%-", v)).output().expect("Failed To Decrease Volume With wpctl"),
-        VolumeAction::MuteInput => Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SOURCE@").arg("toggle").output().expect("Failed To Toggle-Mute With wpctl"),
+        VolumeAction::IncreaseInput(v) => {let _ = Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg(format!("{}%+", v)).output();},
+        VolumeAction::DecreaseInput(v) => {let _ = Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg(format!("{}%-", v)).output();},
+        VolumeAction::MuteInput => {let _ = Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SOURCE@").arg("toggle").output();},
         VolumeAction::GetInput((formats, muted_format)) => 
         {
             let output = Command::new("wpctl").arg("get-volume").arg("@DEFAULT_SOURCE@").output().expect("Failed To Get Current Volume With wpctl");
             let stdout_bytes = output.stdout;
-            let get_volume_output = String::from_utf8(stdout_bytes).unwrap();
+            let get_volume_output = String::from_utf8(stdout_bytes).unwrap_or_default();
             let mut is_muted = false;
             if get_volume_output.contains("[MUTED]") { is_muted = true };
 
@@ -84,7 +84,7 @@ pub fn volume(volume_modifier: VolumeAction) -> String
             }
             else
             {
-                let parsed = get_volume_output.replace("Volume: ", "").replace("[MUTED]", "").replace(" ", "").replace("\n", "").parse::<f32>().unwrap();
+                let parsed = get_volume_output.replace("Volume: ", "").replace("[MUTED]", "").replace(" ", "").replace("\n", "").parse::<f32>().unwrap_or_default();
                 let thresholds = 
                 [
                     (0.0, &formats[0]),
@@ -98,8 +98,6 @@ pub fn volume(volume_modifier: VolumeAction) -> String
                 return format.to_string().replace("{}", &rounded_result);
             };
         }
-
-
     };
     String::new()
 }
