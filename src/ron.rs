@@ -15,6 +15,28 @@ pub enum BarPosition
     Down
 }
 
+#[derive(Default, Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct CustomModule
+{
+    pub name: String,
+    pub text: String,
+    pub text_size: u32,
+    pub width: u32,
+    pub height: u32,
+    pub background_color_rgba: [u8;4],
+    pub button_color_rgb: [u8;3],
+    pub button_text_color_rgb: [u8;3],
+    pub button_hovered_color_rgb: [u8;3],
+    pub button_hovered_text_color_rgb: [u8;3],
+    pub button_pressed_color_rgb: [u8;3],
+    pub border_color_rgba: [u8;4],
+    pub border_size: f32,
+    pub border_radius: [u32;4],
+    pub command_to_exec_on_left_click: Vec<String>,
+    pub command_to_exec_on_right_click: Vec<String>
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct BarConfig
@@ -139,7 +161,11 @@ pub struct BarConfig
     pub context_menu_button_pressed_color_rgb: [u8;3],
     pub context_menu_border_color_rgba: [u8;4],
     pub context_menu_border_size: f32,
-    pub context_menu_border_radius: [u32;4]
+    pub context_menu_border_radius: [u32;4],
+
+    // ================= CUSTOM MODULES =================
+    pub custom_modules_spacing: u32,
+    pub custom_modules: Vec<CustomModule>
 }
 
 
@@ -302,6 +328,10 @@ impl Default for BarConfig
             context_menu_border_color_rgba: [130, 90, 140, 100],
             context_menu_border_size: 1.0,
             context_menu_border_radius: [8, 8, 8, 8],
+
+            // ================= CUSTOM MODULES =================
+            custom_modules_spacing: 10,
+            custom_modules: Vec::new()
         }
     }
 }
@@ -313,18 +343,18 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<String>, Vec<String>)
     println!("\n=== READING CONFIG FILE ===");
     let home_path = home::home_dir().expect("Failed To Get Home Directory");
     let path = home_path.join(".config/icebar/config.ron");
-    let bar_config: BarConfig = fs::read_to_string(&path).ok().and_then(|content| 
-    {
-        println!("Config loaded successfully!!!.");
-        ron::from_str::<BarConfig>(&content).ok()
-    }).unwrap_or_else(|| 
-    {
-        println!("\n=== PARSING CONFIG FILE ===");
-        eprintln!("WARNING!!!: Config Parse Failed!!");
-        eprintln!("WARNING!!!: Your 'config.ron' syntax maybe wrong!!!");
-        panic!();
-    });
 
+    let bar_config: BarConfig = fs::read_to_string(&path).map_err(|e| {panic!("Failed to read config: {e}"); }).and_then(|content| 
+    {
+            println!("Config loaded successfully!!!.");
+            ron::from_str::<BarConfig>(&content).map_err(|e| 
+            {
+                println!("\n=== PARSING CONFIG FILE ===");
+                eprintln!("WARNING!!!: Config Parse Failed!!");
+                eprintln!("WARNING!!!: Your 'config.ron' syntax maybe wrong!!!");
+                panic!("\n\nRON parse error:\n{e}\n\n\n");
+            })
+    }).unwrap();
 
     let anchor_position = match bar_config.bar_position
     {
@@ -334,7 +364,7 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<String>, Vec<String>)
 
     let mut active_modules = Vec::new();
     let mut inactive_modules = Vec::new();
-    let all_possible_modules = ["tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input"];
+    let all_possible_modules = ["tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input", "custom_modules"];
     let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
     for module in all_possible_modules
     {

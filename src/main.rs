@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Color, Element, Font, font::Weight, Length, Task as Command, Theme, border::Radius, event, font::Family, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
+use iced::{Alignment, Color, Element, Font, Length, Task as Command, Theme, border::Radius, event, font::{Family, Weight}, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
 use std::{sync::{OnceLock}, time::Duration};
 
@@ -34,6 +34,7 @@ mod ron;
 pub enum Message
 {
     MenuLoaded(String, String, Vec<tray::MenuItem>),
+    CreateCustomModuleCommand((Vec<String>, String, bool)),
     MouseWheelScrolled(ScrollDelta),
     WorkspaceButtonPressed(usize),
     IsHoveringVolumeOutput(bool),
@@ -214,6 +215,7 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::MuteAudioPressedOutput => { volume::volume( volume::VolumeAction::MuteOutput); }
         Message::MuteAudioPressedInput => { volume::volume( volume::VolumeAction::MuteInput); }
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
+        Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
         Message::WorkspaceButtonPressed(id) => 
         {
             if is_active_module(&app.modules.active_modules, "hypr/workspaces".to_string())
@@ -225,8 +227,6 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 change_workspace_sway(UserSwayAction::ChangeWithIndex(id));
             }
         }
-        Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
-
         Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>
         {
             if app.is_hovering_volume_output
@@ -315,6 +315,51 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                     }
                 }
             }
+        }
+
+        Message::CreateCustomModuleCommand((command_vec, custom_module_name, is_left_click)) =>
+        {
+            std::thread::spawn(move || { 
+
+                println!("\n=== Custom Module ===");
+                if custom_module_name.is_empty()
+                {
+                    if is_left_click
+                    {
+                        println!("Custom Module Button Was *Left* Clicked!!");
+                    }
+                    else
+                    {
+                        println!("Custom Module Button Was *Right* Clicked!!");
+                    }
+                }
+                else if is_left_click
+                {
+                    println!("Your Module '{custom_module_name}' Button Was *Left* Clicked!!");
+                }
+                else
+                {
+                    println!("Your Module '{custom_module_name}' Button Was *Right* Clicked!!");
+                }
+                if let Some((program, args)) = command_vec.split_first() 
+                {
+                    let mut command = std::process::Command::new(program);
+                    command.args(args);
+                    let output = command.output();
+                    if custom_module_name.is_empty()
+                    {
+                        println!("Custom Module Output: \n{:?}", output);
+                    }
+                    else
+                    {
+                        println!("'{custom_module_name}' Command Was Running!!!, The Output Was: \n{:?}", output);
+                    }
+                } 
+                else 
+                {
+                    eprintln!("Empty command vector, no argument was parsed");
+                }
+            });
         }
 
         Message::TrayEvent(event) =>
@@ -526,6 +571,28 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
             })).spacing(app.ron_config.workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
 
 
+            "custom_modules" => 
+            {
+                let mut holder_vec: Vec<Element<'a, Message>> = Vec::new();
+                for custom_module in &app.ron_config.custom_modules
+                {
+                    holder_vec.push(mouse_area(container(button(text(&custom_module.text).font(app.default_font).size(custom_module.text_size)).width(custom_module.width).height(custom_module.height).style(|_: &Theme, status: button::Status| 
+                    {
+                        let hovered = custom_module.button_hovered_color_rgb;
+                        let hovered_text = custom_module.button_hovered_text_color_rgb;
+                        let pressed = custom_module.button_pressed_color_rgb;
+                        let normal = custom_module.button_color_rgb;
+                        let normal_text = custom_module.button_text_color_rgb;
+                        let border_size = custom_module.border_size;
+                        let border_color_rgba = custom_module.border_color_rgba;
+                        let border_radius = custom_module.border_radius;
+            
+                        set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius})
+                    })).align_y(Alignment::Center)).on_press(Message::CreateCustomModuleCommand((custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true))).on_right_press(Message::CreateCustomModuleCommand((custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false))).into());
+                }
+                
+                row(holder_vec).spacing(app.ron_config.custom_modules_spacing).width(Length::Shrink).height(Length::Shrink).into()
+            }
 
             "clock" => container(button(text(&*app.modules_data.clock_data.current_time).font(app.default_font).size(app.ron_config.clock_text_size)).on_press(Message::ToggleAltClock).style(|_: &Theme, status: button::Status| 
             {

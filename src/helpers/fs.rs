@@ -45,11 +45,10 @@ pub fn check_if_config_file_exists()
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%
 // Available options for "bar_position" are: "Up" and "Down" (without double quote) ("Left" and "Right" are planned for the future)
 // To see the correct "font_family" and "font_style" i recommend using "fc-scan $PATH_TO_FONT_FILE"
-// The syntax of the following: "display", "force_static_position_context_menu" and "persistent_workspaces" should be "Some(VALUE_YOU_WANT)" or "None"
+// The unique syntax for each some modules are: "display" = Some("HDMI-A-1"), "force_static_position_context_menu" = Some((x, y)) and "persistent_workspaces" = Some(number_of_persistent_elements)
 // If you notice some bug or want more features, please feel free to publish your thoughs on: https://github.com/HaruNashii/Icebar.git
 // Or if you want talk directly to me to clear up any questions, my discord id is: harunashiii
 // or you can join my contact server with: https://discord.gg/CRsz24Ts3a
-
 
 BarConfig
 (
@@ -64,7 +63,7 @@ BarConfig
 
 
     // ================= MODULES =================
-    left_modules: [],
+    left_modules: ["custom_modules"],
     center_modules: ["clock"],
     right_modules: ["tray", "volume/output", "volume/input"],
 
@@ -173,7 +172,47 @@ BarConfig
     context_menu_button_pressed_color_rgb: (85, 30, 55),
     context_menu_border_color_rgba: (130, 90, 140, 100),
     context_menu_border_size: 1.0,
-    context_menu_border_radius: (8, 8, 8, 8)
+    context_menu_border_radius: (8, 8, 8, 8),
+
+    // ================= CUSTOM MODULES =================
+    custom_modules_spacing: 10,
+    custom_modules: [
+	//my wofi button
+	(
+		name: "Wofi Custom Module",
+		text: "Start Wofi",
+    		text_size: 15,
+    		width: 100,
+		height: 30,
+    		button_color_rgb: (45, 40, 55),
+    		button_text_color_rgb: (230, 230, 240),
+    		button_hovered_color_rgb: (150, 40, 80),
+    		button_hovered_text_color_rgb: (255, 255, 255),
+    		button_pressed_color_rgb: (85, 30, 55),
+    		border_color_rgba: (130, 90, 140, 100),
+    		border_size: 1.0,
+    		border_radius: (8, 8, 8, 8),
+		command_to_exec_on_left_click: ["wofi", "--show", "drun"],
+		command_to_exec_on_right_click: ["wofi", "--show", "run"],
+	),
+	//my shutdown button
+	(
+		name: "Shutdown Custom Module",
+		text: "Shutdown",
+    		text_size: 15,
+    		width: 100,
+		height: 30,
+    		button_color_rgb: (255, 40, 55),
+    		button_text_color_rgb: (230, 230, 240),
+    		button_hovered_color_rgb: (150, 40, 80),
+    		button_hovered_text_color_rgb: (255, 255, 255),
+    		button_pressed_color_rgb: (85, 30, 55),
+    		border_color_rgba: (130, 90, 140, 100),
+    		border_size: 1.0,
+    		border_radius: (8, 8, 8, 8),
+		command_to_exec_on_left_click: ["poweroff"],
+	)
+    ],
 )"#;
         let mut file = File::create(ron_file_config_path).expect("Couldn't Create Default Config File");
         file.write_all(ron_default_data.as_bytes()).expect("Couldn't Create Default Config File");
