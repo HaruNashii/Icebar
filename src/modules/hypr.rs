@@ -9,15 +9,10 @@ use hyprland::{prelude::*, data::{Workspaces, Workspace}};
 // ============ FUNCTIONS ============
 pub fn workspace_count() -> Vec<i32>
 { 
-    let result = Workspaces::get();
-    if let Ok(values) = result 
+    let result_workspaces = Workspaces::get();
+    if let Ok(all_workspaces) = result_workspaces
     {
-        let mut return_vec = Vec::new();
-        for item in &values 
-        {
-            return_vec.push(item.id)
-        }
-        return_vec
+        all_workspaces.iter().map(|item| item.id).collect()
     }
     else
     {

@@ -28,10 +28,12 @@ pub fn current_workspace() -> i32
         let result_workspaces = connection.get_workspaces();
         if let Ok(workspaces) = result_workspaces
         {
-            let result_return_value = workspaces.iter().find(|ws| ws.focused);
-            if let Some(return_value) = result_return_value
+            for workspace in workspaces
             {
-                return return_value.num;
+                if workspace.focused
+                {
+                    return workspace.num;
+                }
             }
         }
     }
@@ -43,14 +45,10 @@ pub fn workspace_count() -> Vec<i32>
     if let Ok(mut connection) = result_connection
     {
         let result_workspace_data = connection.get_workspaces();
-        let mut return_vec = Vec::new();
         if let Ok(workspace_data) = result_workspace_data
         {
-            for item in workspace_data 
-            {
-                return_vec.push(item.id as i32);
-            }
-            return return_vec;
+            let workspace_num: Vec<i32> = workspace_data.iter().map(|item| item.num).collect();
+            return workspace_num;
         };
     }
     Vec::new()
