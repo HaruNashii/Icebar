@@ -2,7 +2,6 @@
 use iced::{Alignment, Color, Element, Font, font::Weight, Length, Task as Command, Theme, border::Radius, event, font::Family, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
 use std::{sync::{OnceLock}, time::Duration};
-use hyprland::dispatch::*;
 
 
 
@@ -10,17 +9,10 @@ use hyprland::dispatch::*;
 
 
 // ============ CRATES ============
-use crate::{helpers::workspaces::{WorkspaceData, build_workspace_list}, modules::{sway::{UserSwayAction, change_workspace}, tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}}};
-use crate::modules::clock::{ClockData, get_current_time};
-use crate::helpers::fs::check_if_config_file_exists;
-use crate::modules::volume::{self, VolumeAction};
-use crate::helpers::monitor::get_monitor_res;
+use crate::modules::{tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}, hypr::{self, UserHyprAction, change_workspace_hypr}, sway::{self, UserSwayAction, change_workspace_sway}, volume::{self, VolumeAction, VolumeData}, clock::{ClockData, get_current_time}, };
+use crate::helpers::{workspaces::{WorkspaceData, build_workspace_list}, fs::check_if_config_file_exists, monitor::get_monitor_res, };
+use crate::ron::{read_ron_config, BarConfig};
 use crate::context_menu::run_context_menu;
-use crate::modules::volume::VolumeData;
-use crate::ron::read_ron_config;
-use crate::ron::BarConfig;
-use crate::modules::hypr;
-use crate::modules::sway;
 
 
 
@@ -126,7 +118,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         _inactive_modules
     };
 
-    if module_is_active(&modules.active_modules, "tray".to_string())
+    if is_active_module(&modules.active_modules, "tray".to_string())
     {
         start_tray();
     }
@@ -202,7 +194,7 @@ fn subscription(app: &AppData) -> iced::Subscription<Message>
         event_reader,
     ];
 
-    if module_is_active(&app.modules.active_modules, "tray".to_string()) 
+    if is_active_module(&app.modules.active_modules, "tray".to_string()) 
     {
         subs.push(iced::Subscription::run_with(TraySubscription, tray_stream));
     };
@@ -224,13 +216,13 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
         Message::WorkspaceButtonPressed(id) => 
         {
-            if module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string())
+            if is_active_module(&app.modules.active_modules, "hypr/workspaces".to_string())
             {
-                let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32))); 
+                change_workspace_hypr(UserHyprAction::ChangeWithIndex(id));
             }
-            else if module_is_active(&app.modules.active_modules, "sway/workspaces".to_string())
+            else if is_active_module(&app.modules.active_modules, "sway/workspaces".to_string())
             {
-                change_workspace(UserSwayAction::ChangeWithIndex(id));
+                change_workspace_sway(UserSwayAction::ChangeWithIndex(id));
             }
         }
         Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
@@ -249,28 +241,28 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             }
             if app.is_hovering_workspace
             {
-                let hypr_active = module_is_active(&app.modules.active_modules, "hypr/workspaces".to_string());
-                let sway_active = module_is_active(&app.modules.active_modules, "sway/workspaces".to_string());
+                let hypr_active = is_active_module(&app.modules.active_modules, "hypr/workspaces".to_string());
+                let sway_active = is_active_module(&app.modules.active_modules, "sway/workspaces".to_string());
                 if y > 2. 
                 { 
                     if app.ron_config.reverse_scroll_on_workspace
                     {
                         if hypr_active
                         {
-                            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
+                            change_workspace_hypr(UserHyprAction::MoveNext);
                         } 
                         else if sway_active
                         {
-                            change_workspace(UserSwayAction::MoveNext);
+                            change_workspace_sway(UserSwayAction::MoveNext);
                         };
                     }
                     else if hypr_active
                     {
-                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
+                        change_workspace_hypr(UserHyprAction::MovePrev);
                     } 
                     else if sway_active
                     {
-                        change_workspace(UserSwayAction::MovePrev);
+                        change_workspace_sway(UserSwayAction::MovePrev);
                     }
                 }
                 if y < 2. 
@@ -279,20 +271,20 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                     {
                         if hypr_active
                         {
-                            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
+                            change_workspace_hypr(UserHyprAction::MovePrev);
                         } 
                         else if sway_active
                         {
-                            change_workspace(UserSwayAction::MovePrev);
+                            change_workspace_sway(UserSwayAction::MovePrev);
                         };
                     }
                     else if hypr_active
                     {
-                        let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
+                        change_workspace_hypr(UserHyprAction::MoveNext);
                     } 
                     else if sway_active
                     {
-                        change_workspace(UserSwayAction::MoveNext);
+                        change_workspace_sway(UserSwayAction::MoveNext);
                     }
                 }
             }
@@ -302,7 +294,7 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
         {
             for module_name in &["clock", "volume/output", "volume/input", "hypr/workspaces", "sway/workspaces"] 
             {
-                if module_is_active(&app.modules.active_modules, module_name.to_string()) 
+                if is_active_module(&app.modules.active_modules, module_name.to_string()) 
                 {
                     match *module_name 
                     {
@@ -589,7 +581,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 }
 
 
-fn module_is_active(active_modules: &Vec<String>, module: String) -> bool
+fn is_active_module(active_modules: &Vec<String>, module: String) -> bool
 {
     for item in active_modules 
     {

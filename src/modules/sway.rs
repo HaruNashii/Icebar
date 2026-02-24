@@ -53,7 +53,7 @@ pub fn workspace_count() -> Vec<i32>
     }
     Vec::new()
 }
-pub fn change_workspace(action: UserSwayAction)
+pub fn change_workspace_sway(action: UserSwayAction)
 {
     let result_conn = Connection::new();
     if let Ok(mut conn) = result_conn
