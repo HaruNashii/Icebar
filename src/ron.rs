@@ -67,6 +67,13 @@ impl Default for CustomModule
     }
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub enum ActionOnClick 
+{
+    DefaultAction,
+    CustomAction(Vec<String>)
+}
+
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
@@ -94,6 +101,12 @@ pub struct BarConfig
     pub persistent_workspaces: Option<u8>,
     pub incremental_steps_output: u8,
     pub incremental_steps_input: u8,
+    pub action_on_left_click_clock: ActionOnClick, 
+    pub action_on_right_click_clock: ActionOnClick, 
+    pub action_on_left_click_volume_output: ActionOnClick, 
+    pub action_on_right_click_volume_output: ActionOnClick, 
+    pub action_on_left_click_volume_input: ActionOnClick, 
+    pub action_on_right_click_volume_input: ActionOnClick, 
 
 
     // ================= FORMATS =================
@@ -232,6 +245,12 @@ impl Default for BarConfig
             persistent_workspaces: None,
             incremental_steps_output: 10,
             incremental_steps_input: 10,
+            action_on_left_click_clock: ActionOnClick::DefaultAction, 
+            action_on_right_click_clock: ActionOnClick::DefaultAction, 
+            action_on_left_click_volume_output: ActionOnClick::DefaultAction, 
+            action_on_right_click_volume_output: ActionOnClick::DefaultAction, 
+            action_on_left_click_volume_input: ActionOnClick::DefaultAction, 
+            action_on_right_click_volume_input: ActionOnClick::DefaultAction, 
 
             output_volume_format: 
             [

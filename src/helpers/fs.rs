@@ -39,6 +39,7 @@ pub fn check_if_config_file_exists()
 // WARNING!!!: "bar_size" FIRST OPTION DEFINED TO "0" WILL MAKE THE BAR FILL THE ENTIRE SCREEN X AXIS
 // WARNING!!!: IF THE NUMBERS OF WORKSPACE IS GREATER THAN THE PARSED "hypr_workspace_text:" AND "hypr_workspace_selected_text:", THE NON-PARSED FORMAT WORKSPACE WILL HAVE THE NUMBER OF THE DETERMINED WORKSPACE
 // WARNING!!!: IS VERY IMPORTANT TO SET THE DISPLAY VARIABLE, NOT SETING IT UP MAY CAUSE UNDEFINED BEHAVIOUR
+// WARNING!!!: MISSING OPTIONS IS FINE AND WILL HAVE FALLBACK TO THE DEFAULT CONFIG, BUT MISSED SYNTAX WILL RESULT IN CRASH!!!
 
 // ===== TIPS =====
 // All possible modules: "tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input"
@@ -48,7 +49,7 @@ pub fn check_if_config_file_exists()
 // The unique syntax for each some modules are: "display" = Some("HDMI-A-1"), "force_static_position_context_menu" = Some((x, y)) and "persistent_workspaces" = Some(number_of_persistent_elements)
 // If you notice some bug or want more features, please feel free to publish your thoughs on: https://github.com/HaruNashii/Icebar.git
 // Or if you want talk directly to me to clear up any questions, my discord id is: harunashiii
-// or you can join my contact server with: https://discord.gg/CRsz24Ts3a
+// you can also join my contact server with: https://discord.gg/CRsz24Ts3a
 
 BarConfig
 (
@@ -74,6 +75,11 @@ BarConfig
     persistent_workspaces: Some(5),
     incremental_steps_output: 10,
     incremental_steps_input: 10,
+    action_on_left_click_clock: DefaultAction,
+    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo 'Press Enter To Exit' && read -n 1"]), 
+    action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]), 
+    action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]), 
+
 
 
     // ================= FORMATS =================

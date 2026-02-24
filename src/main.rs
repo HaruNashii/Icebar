@@ -10,7 +10,7 @@ use lazy_static::lazy_static;
 
 
 // ============ CRATES ============
-use crate::modules::{tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}, hypr::{self, UserHyprAction, change_workspace_hypr}, sway::{self, UserSwayAction, change_workspace_sway}, volume::{self, VolumeAction, VolumeData}, clock::{ClockData, get_current_time}, };
+use crate::{modules::{clock::{ClockData, get_current_time}, hypr::{self, UserHyprAction, change_workspace_hypr}, sway::{self, UserSwayAction, change_workspace_sway}, tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}, volume::{self, VolumeAction, VolumeData} }, ron::ActionOnClick};
 use crate::helpers::{workspaces::{WorkspaceData, build_workspace_list}, fs::check_if_config_file_exists, monitor::get_monitor_res, };
 use crate::ron::{read_ron_config, BarConfig};
 use crate::context_menu::run_context_menu;
@@ -47,6 +47,7 @@ pub enum Message
     MuteAudioPressedInput,
     TrayEvent(TrayEvent),
     ToggleAltClock,
+    Nothing,
     Tick
 }
 
@@ -317,12 +318,12 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             }
         }
 
-        Message::CreateCustomModuleCommand((command_vec, custom_module_name, is_left_click, output_as_text)) =>
+        Message::CreateCustomModuleCommand((command_vec, custom_name, is_left_click, output_as_text)) =>
         {
             std::thread::spawn(move || { 
 
                 println!("\n=== Custom Module ===");
-                if custom_module_name.is_empty()
+                if custom_name.is_empty()
                 {
                     if is_left_click
                     {
@@ -335,11 +336,11 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 }
                 else if is_left_click
                 {
-                    println!("Your Module '{custom_module_name}' Button Was *Left* Clicked!!");
+                    println!("Your '{custom_name}' Button Was *Left* Clicked!!");
                 }
                 else
                 {
-                    println!("Your Module '{custom_module_name}' Button Was *Right* Clicked!!");
+                    println!("Your '{custom_name}' Button Was *Right* Clicked!!");
                 }
                 if let Some((program, args)) = command_vec.split_first() 
                 {
@@ -350,14 +351,13 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                     {
                         *COMMAND_OUTPUT.lock().unwrap() = String::from_utf8_lossy(&output_result.stdout).to_string();
                     }
-                    if custom_module_name.is_empty()
+                    if custom_name.is_empty()
                     {
                         println!("Custom Module Output: \n{:?}", output);
                     }
                     else
                     {
-                        println!("'{custom_module_name}' Command Was Running!!!, The Output Was: \n{:?}", output);
-                    }
+                        println!("'{custom_name}' Command Was Running!!!, The Output Was: \n{:?}", output); }
                 } 
                 else 
                 {
@@ -614,48 +614,93 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 row(holder_vec).spacing(app.ron_config.custom_modules_spacing).width(Length::Shrink).height(Length::Shrink).into()
             }
 
-            "clock" => container(button(text(&*app.modules_data.clock_data.current_time).font(app.default_font).size(app.ron_config.clock_text_size)).on_press(Message::ToggleAltClock).style(|_: &Theme, status: button::Status| 
+            "clock" => 
             {
-                let hovered = app.ron_config.clock_button_hovered_color_rgb;
-                let hovered_text = app.ron_config.clock_button_hovered_text_color_rgb;
-                let pressed = app.ron_config.clock_button_pressed_color_rgb;
-                let normal = app.ron_config.clock_button_color_rgb;
-                let normal_text = app.ron_config.clock_button_text_color_rgb;
-                let border_size = app.ron_config.clock_border_size;
-                let border_color_rgba = app.ron_config.clock_border_color_rgba;
-                let border_radius = app.ron_config.clock_border_radius;
-                set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            })).height(app.ron_config.clock_height).align_y(Alignment::Center).into(),
+                let left_click_message: Message = match &app.ron_config.action_on_left_click_clock
+                {
+                    ActionOnClick::DefaultAction => Message::ToggleAltClock,
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Clock Custom Action".to_string(), true, false))
+
+                };
+                let right_click_message: Message = match &app.ron_config.action_on_right_click_clock
+                {
+                    ActionOnClick::DefaultAction => Message::Nothing,
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
+
+                };
+                container(mouse_area(button(text(&*app.modules_data.clock_data.current_time).font(app.default_font).size(app.ron_config.clock_text_size)).style(|_: &Theme, status: button::Status| 
+                {
+                    let hovered = app.ron_config.clock_button_hovered_color_rgb;
+                    let hovered_text = app.ron_config.clock_button_hovered_text_color_rgb;
+                    let pressed = app.ron_config.clock_button_pressed_color_rgb;
+                    let normal = app.ron_config.clock_button_color_rgb;
+                    let normal_text = app.ron_config.clock_button_text_color_rgb;
+                    let border_size = app.ron_config.clock_border_size;
+                    let border_color_rgba = app.ron_config.clock_border_color_rgba;
+                    let border_radius = app.ron_config.clock_border_radius;
+                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                })).on_press(left_click_message).on_right_press(right_click_message)).height(app.ron_config.clock_height).align_y(Alignment::Center).into()
+            }
 
 
 
-            "volume/output" => container(mouse_area ( button (text(&*app.modules_data.volume_data.output_volume_level).font(app.default_font).size(app.ron_config.volume_output_text_size)).on_press(Message::MuteAudioPressedOutput).style(|_: &Theme, status: button::Status| 
+            "volume/output" =>
             {
-                let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
-                let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
-                let pressed = app.ron_config.volume_output_button_pressed_color_rgb;
-                let normal = app.ron_config.volume_output_button_color_rgb;
-                let normal_text = app.ron_config.volume_output_button_text_color_rgb;
-                let border_size = app.ron_config.volume_output_border_size;
-                let border_color_rgba = app.ron_config.volume_output_border_color_rgba;
-                let border_radius = app.ron_config.volume_output_border_radius;
-                set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            })).on_enter(Message::IsHoveringVolumeOutput(true)).on_exit(Message::IsHoveringVolumeOutput(false))).height(app.ron_config.volume_output_height).align_y(Alignment::Center).into(),
+                let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_output
+                {
+                    ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput,
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false))
+
+                };
+                let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_output
+                {
+                    ActionOnClick::DefaultAction => Message::Nothing,
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false))
+
+                };
+                container(mouse_area ( button (text(&*app.modules_data.volume_data.output_volume_level).font(app.default_font).size(app.ron_config.volume_output_text_size)).style(|_: &Theme, status: button::Status| 
+                {
+                    let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
+                    let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
+                    let pressed = app.ron_config.volume_output_button_pressed_color_rgb;
+                    let normal = app.ron_config.volume_output_button_color_rgb;
+                    let normal_text = app.ron_config.volume_output_button_text_color_rgb;
+                    let border_size = app.ron_config.volume_output_border_size;
+                    let border_color_rgba = app.ron_config.volume_output_border_color_rgba;
+                    let border_radius = app.ron_config.volume_output_border_radius;
+                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                })).on_press(left_click_message).on_right_press(right_click_message).on_enter(Message::IsHoveringVolumeOutput(true)).on_exit(Message::IsHoveringVolumeOutput(false))).height(app.ron_config.volume_output_height).align_y(Alignment::Center).into()
+            }
 
 
 
-            "volume/input" => container(mouse_area ( button (text(&*app.modules_data.volume_data.input_volume_level).font(app.default_font).size(app.ron_config.volume_input_text_size)).on_press(Message::MuteAudioPressedInput).style(|_: &Theme, status: button::Status| 
+            "volume/input" => 
             {
-                let hovered = app.ron_config.volume_input_button_hovered_color_rgb;
-                let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
-                let pressed = app.ron_config.volume_input_button_pressed_color_rgb;
-                let normal = app.ron_config.volume_input_button_color_rgb;
-                let normal_text = app.ron_config.volume_input_button_text_color_rgb;
-                let border_size = app.ron_config.volume_input_border_size;
-                let border_color_rgba = app.ron_config.volume_input_border_color_rgba;
-                let border_radius = app.ron_config.volume_input_border_radius;
-                set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            })).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).height(app.ron_config.volume_input_height).align_y(Alignment::Center).into(),
+                let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_input
+                {
+                    ActionOnClick::DefaultAction => Message::MuteAudioPressedInput,
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false))
+
+                };
+                let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_input
+                {
+                    ActionOnClick::DefaultAction => Message::Nothing,
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false))
+
+                };
+                container(mouse_area ( button (text(&*app.modules_data.volume_data.input_volume_level).font(app.default_font).size(app.ron_config.volume_input_text_size)).style(|_: &Theme, status: button::Status| 
+                {
+                    let hovered = app.ron_config.volume_input_button_hovered_color_rgb;
+                    let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
+                    let pressed = app.ron_config.volume_input_button_pressed_color_rgb;
+                    let normal = app.ron_config.volume_input_button_color_rgb;
+                    let normal_text = app.ron_config.volume_input_button_text_color_rgb;
+                    let border_size = app.ron_config.volume_input_border_size;
+                    let border_color_rgba = app.ron_config.volume_input_border_color_rgba;
+                    let border_radius = app.ron_config.volume_input_border_radius;
+                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                })).on_press(left_click_message).on_right_press(right_click_message).on_enter(Message::IsHoveringVolumeOutput(true)).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).height(app.ron_config.volume_input_height).align_y(Alignment::Center).into()
+            }
             _ => continue,
         };
 
