@@ -195,12 +195,12 @@ BarConfig
 		command_to_exec_on_left_click: ["wofi", "--show", "drun"],
 		command_to_exec_on_right_click: ["wofi", "--show", "run"],
 	),
-	// Example of an button that displays the output
+        // Example of an button that displays the output
 	(
-		name: "Get Volume On Click, Custom Module",
-		text: "output:",
+		name: "print",
+		text: "print output:",
     		text_size: 15,
-    		width: 200,
+    		width: 240,
 		height: 30,
     		button_color_rgb: (255, 40, 55),
     		button_text_color_rgb: (230, 230, 240),
@@ -212,8 +212,8 @@ BarConfig
     		border_radius: (8, 8, 8, 8),
 		use_output_as_text: true,
 		output_as_text_format: "{text} {output}",
-		command_to_exec_on_left_click: ["wpctl", "get-volume", "@DEFAULT_SINK@"],
-		command_to_exec_on_right_click: ["wpctl", "get-volume", "@DEFAULT_SOURCE@"],
+		command_to_exec_on_left_click: ["echo", "YAAAYYY"],
+		command_to_exec_on_right_click: ["echo", "IT'S WORKING!!!"],
 	)
     ],
 )"#;

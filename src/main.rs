@@ -588,7 +588,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     {
                         custom_module.text.clone()
                     };
-                    holder_vec.push(mouse_area(container(button(text(text_to_render).font(app.default_font).size(custom_module.text_size)).width(custom_module.width).height(custom_module.height).style(|_: &Theme, status: button::Status| 
+                    holder_vec.push(mouse_area(container(button(text(text_to_render).wrapping(iced::widget::text::Wrapping::None).font(app.default_font).size(custom_module.text_size)).width(custom_module.width).height(custom_module.height).style(|_: &Theme, status: button::Status| 
                     {
                         let hovered = custom_module.button_hovered_color_rgb;
                         let hovered_text = custom_module.button_hovered_text_color_rgb;
