@@ -1,0 +1,41 @@
+name: Rust - Arch
+
+
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+
+
+env:
+  CARGO_TERM_COLOR: always
+
+
+
+jobs:
+  Setup:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: RangHo/setup-arch@main
+      with:
+        version: latest 
+        mirror: https://geo.mirror.pkgbuild.com 
+        packages: "pkg-config base-devel alsa-lib cmake gcc gcc-libs hidapi ibus jack libdecor libgl libpulse libusb libx11 libxcursor libxext libxinerama libxkbcommon libxrandr libxrender libxss libxtst mesa ninja pipewire sndio vulkan-driver vulkan-headers wayland wayland-protocols"
+    
+    - name: Build The Project
+      shell: arch.sh {0}
+      run: cargo build
+      
+    - name: Check Clippy
+      shell: arch.sh {0}
+      run: cargo clippy
+      
+    - name: Run tests
+      shell: arch.sh {0}
+      run: cargo test

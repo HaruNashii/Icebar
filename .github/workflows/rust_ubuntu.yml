@@ -1,0 +1,26 @@
+name: Rust - Ubuntu
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Dependencies
+      run: sudo apt install -y pkg-config cmake build-essential git libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libfontconfig-dev
+    - name: Build The Project
+      run: cargo build
+    - name: Check Clippy
+      run: cargo clippy
+    - name: Run tests
+      run: cargo test
