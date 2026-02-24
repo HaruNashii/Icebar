@@ -48,6 +48,8 @@ pub fn check_if_config_file_exists()
 // The syntax of the following: "display", "force_static_position_context_menu" and "persistent_workspaces" should be "Some(VALUE_YOU_WANT)" or "None"
 // If you notice some bug or want more features, please feel free to publish your thoughs on: https://github.com/HaruNashii/Icebar.git
 // Or if you want talk directly to me to clear up any questions, my discord id is: harunashiii
+// or you can join my contact server with: https://discord.gg/CRsz24Ts3a
+
 
 BarConfig
 (
