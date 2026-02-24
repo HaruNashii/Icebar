@@ -582,7 +582,16 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 {
                     let text_to_render: String = if custom_module.use_output_as_text && !custom_module.output_as_text_format.is_empty()
                     {
-                        custom_module.output_as_text_format.clone().replace("{text}", &custom_module.text).replace("{output}", &COMMAND_OUTPUT.lock().unwrap()).replace("\n", "")
+                        let mut output_text: String = COMMAND_OUTPUT.lock().unwrap().to_string();
+                        if output_text.chars().count() <= custom_module.output_text_limit_len
+                        {
+                            output_text = output_text.to_string();
+                        } 
+                        else 
+                        {
+                           output_text = format!("{}...", output_text.chars().take(custom_module.output_text_limit_len).collect::<String>());
+                        };
+                        custom_module.output_as_text_format.clone().replace("{text}", &custom_module.text).replace("{output}", &output_text).replace("\n", "")
                     }
                     else
                     {

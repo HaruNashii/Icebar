@@ -210,6 +210,7 @@ BarConfig
     		border_radius: (8, 8, 8, 8),
 		use_output_as_text: true,
 		output_as_text_format: "{text} {output}",
+                output_text_limit_len: 100,
 		command_to_exec_on_left_click: ["echo", "YAAAYYY"],
 		command_to_exec_on_right_click: ["echo", "IT'S WORKING!!!"],
 	)
