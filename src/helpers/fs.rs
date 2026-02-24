@@ -177,7 +177,7 @@ BarConfig
     // ================= CUSTOM MODULES =================
     custom_modules_spacing: 10,
     custom_modules: [
-	//my wofi button
+	// Example of an button that just runs an app
 	(
 		name: "Wofi Custom Module",
 		text: "Start Wofi",
@@ -195,12 +195,12 @@ BarConfig
 		command_to_exec_on_left_click: ["wofi", "--show", "drun"],
 		command_to_exec_on_right_click: ["wofi", "--show", "run"],
 	),
-	//my shutdown button
+	// Example of an button that displays the output
 	(
-		name: "Shutdown Custom Module",
-		text: "Shutdown",
+		name: "Get Volume On Click, Custom Module",
+		text: "output:",
     		text_size: 15,
-    		width: 100,
+    		width: 200,
 		height: 30,
     		button_color_rgb: (255, 40, 55),
     		button_text_color_rgb: (230, 230, 240),
@@ -210,7 +210,10 @@ BarConfig
     		border_color_rgba: (130, 90, 140, 100),
     		border_size: 1.0,
     		border_radius: (8, 8, 8, 8),
-		command_to_exec_on_left_click: ["poweroff"],
+		use_output_as_text: true,
+		output_as_text_format: "{text} {output}",
+		command_to_exec_on_left_click: ["wpctl", "get-volume", "@DEFAULT_SINK@"],
+		command_to_exec_on_right_click: ["wpctl", "get-volume", "@DEFAULT_SOURCE@"],
 	)
     ],
 )"#;

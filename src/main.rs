@@ -1,7 +1,8 @@
 // ============ IMPORTS ============
 use iced::{Alignment, Color, Element, Font, Length, Task as Command, Theme, border::Radius, event, font::{Family, Weight}, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
-use std::{sync::{OnceLock}, time::Duration};
+use std::{sync::{Mutex, OnceLock}, time::Duration};
+use lazy_static::lazy_static;
 
 
 
@@ -33,8 +34,8 @@ mod ron;
 #[derive(Debug, Clone)]
 pub enum Message
 {
+    CreateCustomModuleCommand((Vec<String>, String, bool, bool)),
     MenuLoaded(String, String, Vec<tray::MenuItem>),
-    CreateCustomModuleCommand((Vec<String>, String, bool)),
     MouseWheelScrolled(ScrollDelta),
     WorkspaceButtonPressed(usize),
     IsHoveringVolumeOutput(bool),
@@ -99,8 +100,7 @@ pub struct UserStyle
 
 // ============ STATICS ============
 static DEFAULT_FONT: OnceLock<(String, Weight)> = OnceLock::new();
-
-
+lazy_static! { static ref COMMAND_OUTPUT: Mutex<String> = Mutex::new(String::new()); }
 
 
 
@@ -317,7 +317,7 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
             }
         }
 
-        Message::CreateCustomModuleCommand((command_vec, custom_module_name, is_left_click)) =>
+        Message::CreateCustomModuleCommand((command_vec, custom_module_name, is_left_click, output_as_text)) =>
         {
             std::thread::spawn(move || { 
 
@@ -346,6 +346,10 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                     let mut command = std::process::Command::new(program);
                     command.args(args);
                     let output = command.output();
+                    if output_as_text && let Ok(ref output_result) = output
+                    {
+                        *COMMAND_OUTPUT.lock().unwrap() = String::from_utf8_lossy(&output_result.stdout).to_string();
+                    }
                     if custom_module_name.is_empty()
                     {
                         println!("Custom Module Output: \n{:?}", output);
@@ -529,7 +533,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let border_color_rgba = app.ron_config.tray_border_color_rgba;
                 let border_radius = app.ron_config.tray_border_radius;
                 set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            }).padding(app.ron_config.tray_button_size).on_press(Message::TrayIconClicked(i)).into() })).spacing(app.ron_config.tray_spacing).align_y(Alignment::Center).into(),
+            }).padding(app.ron_config.tray_button_size).on_press(Message::TrayIconClicked(i)).into() })).height(app.ron_config.tray_height).spacing(app.ron_config.tray_spacing).align_y(Alignment::Center).into(),
 
 
 
@@ -568,7 +572,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     let border_radius = app.ron_config.workspace_border_radius;
                     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
                 }).into() 
-            })).spacing(app.ron_config.workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
+            })).height(app.ron_config.workspace_height).spacing(app.ron_config.workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
 
 
             "custom_modules" => 
@@ -576,7 +580,15 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let mut holder_vec: Vec<Element<'a, Message>> = Vec::new();
                 for custom_module in &app.ron_config.custom_modules
                 {
-                    holder_vec.push(mouse_area(container(button(text(&custom_module.text).font(app.default_font).size(custom_module.text_size)).width(custom_module.width).height(custom_module.height).style(|_: &Theme, status: button::Status| 
+                    let text_to_render: String = if custom_module.use_output_as_text && !custom_module.output_as_text_format.is_empty()
+                    {
+                        custom_module.output_as_text_format.clone().replace("{text}", &custom_module.text).replace("{output}", &COMMAND_OUTPUT.lock().unwrap()).replace("\n", "")
+                    }
+                    else
+                    {
+                        custom_module.text.clone()
+                    };
+                    holder_vec.push(mouse_area(container(button(text(text_to_render).font(app.default_font).size(custom_module.text_size)).width(custom_module.width).height(custom_module.height).style(|_: &Theme, status: button::Status| 
                     {
                         let hovered = custom_module.button_hovered_color_rgb;
                         let hovered_text = custom_module.button_hovered_text_color_rgb;
@@ -588,9 +600,8 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                         let border_radius = custom_module.border_radius;
             
                         set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius})
-                    })).align_y(Alignment::Center)).on_press(Message::CreateCustomModuleCommand((custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true))).on_right_press(Message::CreateCustomModuleCommand((custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false))).into());
+                    })).align_y(Alignment::Center)).on_press(Message::CreateCustomModuleCommand((custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true, custom_module.use_output_as_text))).on_right_press(Message::CreateCustomModuleCommand((custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false, custom_module.use_output_as_text))).into());
                 }
-                
                 row(holder_vec).spacing(app.ron_config.custom_modules_spacing).width(Length::Shrink).height(Length::Shrink).into()
             }
 
@@ -605,7 +616,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let border_color_rgba = app.ron_config.clock_border_color_rgba;
                 let border_radius = app.ron_config.clock_border_radius;
                 set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            })).align_y(Alignment::Center).into(),
+            })).height(app.ron_config.clock_height).align_y(Alignment::Center).into(),
 
 
 
@@ -620,7 +631,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let border_color_rgba = app.ron_config.volume_output_border_color_rgba;
                 let border_radius = app.ron_config.volume_output_border_radius;
                 set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            })).on_enter(Message::IsHoveringVolumeOutput(true)).on_exit(Message::IsHoveringVolumeOutput(false))).align_y(Alignment::Center).into(),
+            })).on_enter(Message::IsHoveringVolumeOutput(true)).on_exit(Message::IsHoveringVolumeOutput(false))).height(app.ron_config.volume_output_height).align_y(Alignment::Center).into(),
 
 
 
@@ -635,7 +646,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let border_color_rgba = app.ron_config.volume_input_border_color_rgba;
                 let border_radius = app.ron_config.volume_input_border_radius;
                 set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            })).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).align_y(Alignment::Center).into(),
+            })).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).height(app.ron_config.volume_input_height).align_y(Alignment::Center).into(),
             _ => continue,
         };
 

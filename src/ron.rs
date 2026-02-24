@@ -15,7 +15,7 @@ pub enum BarPosition
     Down
 }
 
-#[derive(Default, Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct CustomModule
 {
@@ -33,9 +33,40 @@ pub struct CustomModule
     pub border_color_rgba: [u8;4],
     pub border_size: f32,
     pub border_radius: [u32;4],
+    pub use_output_as_text: bool,
+    pub output_as_text_format: String,
     pub command_to_exec_on_left_click: Vec<String>,
     pub command_to_exec_on_right_click: Vec<String>
 }
+
+impl Default for CustomModule
+{
+    fn default() -> Self
+    {
+        Self 
+        {
+            name: "Default Custom Module".to_string(),
+            text: "".to_string(),
+            text_size: 10,
+            width: 200,
+            height: 30,
+            background_color_rgba: [30, 30, 36, 0],
+            button_color_rgb: [60, 50, 70],
+            button_text_color_rgb: [220, 220, 230],
+            button_hovered_color_rgb: [110, 40, 80],
+            button_hovered_text_color_rgb: [255, 255, 255],
+            button_pressed_color_rgb: [70, 20, 40],
+            border_color_rgba: [90, 70, 100, 100],
+            border_size: 1.0,
+            border_radius: [6, 6, 6, 6],
+            use_output_as_text: false,
+            output_as_text_format: "{name}, {output}".to_string(),
+            command_to_exec_on_left_click: vec![], 
+            command_to_exec_on_right_click: vec![]
+        }
+    }
+}
+
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
@@ -75,6 +106,7 @@ pub struct BarConfig
 
 
     // ================= TRAY (STYLE) =================
+    pub tray_height: u32,
     pub tray_icon_size: u32,
     pub tray_button_size: u16,
     pub tray_spacing: u32,
@@ -90,6 +122,7 @@ pub struct BarConfig
 
 
     // ================= CLOCK (STYLE) =================
+    pub clock_height: u32,
     pub clock_text_size: u32,
     pub clock_background_color_rgba: [u8;4],
     pub clock_button_color_rgb: [u8;3],
@@ -103,6 +136,7 @@ pub struct BarConfig
 
 
     // ================= VOLUME/OUTPUT (STYLE) =================
+    pub volume_output_height: u32,
     pub volume_output_text_size: u32,
     pub volume_output_background_color_rgba: [u8;4],
     pub volume_output_button_color_rgb: [u8;3],
@@ -116,6 +150,7 @@ pub struct BarConfig
 
 
     // ================= VOLUME/INPUT (STYLE) =================
+    pub volume_input_height: u32,
     pub volume_input_text_size: u32,
     pub volume_input_background_color_rgba: [u8;4],
     pub volume_input_button_color_rgb: [u8;3],
@@ -129,6 +164,7 @@ pub struct BarConfig
 
 
     // ================= HYPR/SWAY WORKSPACES (STYLE) =================
+    pub workspace_height: u32,
     pub workspace_text_size: u32,
     pub workspace_text: Vec<String>,
     pub workspace_selected_text: Option<Vec<String>>,
@@ -223,6 +259,7 @@ impl Default for BarConfig
 
 
             // ================= TRAY (STYLE) =================
+            tray_height: 30,
             tray_icon_size: 18,
             tray_button_size: 5,
             tray_spacing: 8,
@@ -237,6 +274,7 @@ impl Default for BarConfig
             tray_border_radius: [6, 6, 6, 6],
             
             // ================= CLOCK (STYLE) =================
+            clock_height: 30,
             clock_text_size: 15,
             clock_background_color_rgba: [25, 25, 30, 95],
             clock_button_color_rgb: [50, 45, 60],
@@ -249,6 +287,7 @@ impl Default for BarConfig
             clock_border_radius: [8, 8, 8, 8],
             
             // ================= VOLUME/OUTPUT (STYLE) =================
+            volume_output_height: 30,
             volume_output_text_size: 15,
             volume_output_background_color_rgba: [30, 30, 36, 95],
             volume_output_button_color_rgb: [55, 45, 65],
@@ -261,6 +300,7 @@ impl Default for BarConfig
             volume_output_border_radius: [6, 6, 6, 6],
             
             // ================= VOLUME/INPUT (STYLE) =================
+            volume_input_height: 30,
             volume_input_text_size: 15,
             volume_input_background_color_rgba: [30, 30, 36, 95],
             volume_input_button_color_rgb: [55, 45, 65],
@@ -273,6 +313,7 @@ impl Default for BarConfig
             volume_input_border_radius: [6, 6, 6, 6],
             
             // ================= HYPR WORKSPACES (STYLE) =================
+            workspace_height: 30,
             workspace_text_size: 15,
             workspace_text: vec![
                 "1".into(),
