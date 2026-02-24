@@ -103,14 +103,14 @@ cp -rf target/release/icebar $HOME/.local/bin/
 ```
 
 
-Tip: Run it from your compositor autostart for best results.
+**Tip: Run it from your compositor autostart for best results.**
 
-**Example (Hyprland):**
+- Example (Hyprland):
 ```
 exec-once = icebar
 ```
 
-**Example (Sway):**
+- Example (Sway):
 ```
 bar {
     swaybar_command icebar
