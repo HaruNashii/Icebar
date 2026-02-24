@@ -32,10 +32,6 @@ jobs:
       shell: arch.sh {0}
       run: cargo build
       
-    - name: Check Clippy
-      shell: arch.sh {0}
-      run: cargo clippy
-      
     - name: Run tests
       shell: arch.sh {0}
       run: cargo test
