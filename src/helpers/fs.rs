@@ -42,7 +42,7 @@ pub fn check_if_config_file_exists()
 // WARNING!!!: MISSING OPTIONS IS FINE AND WILL HAVE FALLBACK TO THE DEFAULT CONFIG, BUT MISSED SYNTAX WILL RESULT IN CRASH!!!
 
 // ===== TIPS =====
-// All possible modules: "tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input"
+// All possible modules: "tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input", "custom_modules"
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%
 // Available options for "bar_position" are: "Up" and "Down" (without double quote) ("Left" and "Right" are planned for the future)
 // To see the correct "font_family" and "font_style" i recommend using "fc-scan $PATH_TO_FONT_FILE"
