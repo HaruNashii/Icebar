@@ -69,7 +69,6 @@ struct AppData
     monitor_size: (u32, u32),
     ron_config: BarConfig,
     default_font: Font,
-    modules: Modules
 }
 
 
@@ -84,8 +83,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     check_if_config_file_exists();
     let (ron_config, anchor_position, active_modules) = read_ron_config();
     let monitor_res = get_monitor_res(ron_config.display.clone());
-    let modules = Modules { active_modules, };
-    if is_active_module(&modules.active_modules, "tray".to_string()) { start_tray(); }
+    if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
     let ron_config_clone = ron_config.clone();
     let font_name = ron_config.font_family;
     let start_mode = match ron_config.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };
@@ -95,7 +93,8 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         workspace_data: WorkspaceData::default(),
         volume_data: VolumeData::default(), 
         clock_data: ClockData::default(), 
-        tray_icons: Vec::new()
+        tray_icons: Vec::new(),
+        active_modules
     };
     let app_data = AppData
     {
@@ -110,7 +109,6 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         is_showing_alt_clock: false,
         mouse_position: (0, 0),
         modules_data,
-        modules
     };
 
     let default_font = app_data.default_font;

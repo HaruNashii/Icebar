@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 
 // ============ ENUM/STRUCT, ETC ============
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct CustomModule
 {

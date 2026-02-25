@@ -8,7 +8,7 @@ use std::fs;
 
 
 // ============ CRATES ============
-use crate::modules::custom_modules::CustomModule;
+use crate::modules::{custom_modules::CustomModule, data::Modules};
 
 
 
@@ -45,9 +45,9 @@ pub struct BarConfig
 
 
     // ================= MODULES =================
-    pub left_modules: Vec<String>,
-    pub center_modules: Vec<String>,
-    pub right_modules: Vec<String>,
+    pub left_modules: Vec<Modules>,
+    pub center_modules: Vec<Modules>,
+    pub right_modules: Vec<Modules>,
 
 
     // ================= MODULES CONFIGS =================
@@ -193,8 +193,8 @@ impl Default for BarConfig
             font_style: "Normal".into(),
 
             left_modules: vec![],
-            center_modules: vec!["clock".to_string()],
-            right_modules: vec!["tray".to_string(), "volume/output".to_string(), "volume/input".to_string()],
+            center_modules: vec![Modules::Clock],
+            right_modules: vec![Modules::Tray, Modules::VolumeOutput, Modules::VolumeInput],
 
             force_static_position_context_menu: None,
             reverse_scroll_on_workspace: false,
@@ -356,7 +356,7 @@ impl Default for BarConfig
 
 
 
-pub fn read_ron_config() -> (BarConfig, Anchor, Vec<String>)
+pub fn read_ron_config() -> (BarConfig, Anchor, Vec<Modules>)
 {
     println!("\n=== READING CONFIG FILE ===");
     let home_path = home::home_dir().expect("Failed To Get Home Directory");
@@ -380,22 +380,22 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<String>)
         BarPosition::Down => Anchor::Bottom | Anchor::Left | Anchor::Right,
     };
 
-    let mut active_modules = Vec::new();
-    let all_possible_modules = ["tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input"];
+    let mut active_modules: Vec<Modules> = Vec::new();
+    let all_possible_default_modules = [Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
     let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
     for position in all_possible_position
     {
-        for item in position 
+        for item in position
         {
-            if item.contains("custom_module[")
+            if let Modules::CustomModule(_) = item
             {
-                active_modules.push(item.to_string())
-            };
-            for module in all_possible_modules
+                active_modules.push(item.to_owned());
+            }
+            for module in &all_possible_default_modules
             {
-                if *item == module
+                if *item == *module
                 {
-                    active_modules.push(module.to_string());
+                    active_modules.push(module.to_owned());
                 }
             }
         }

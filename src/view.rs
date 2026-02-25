@@ -6,7 +6,7 @@ use iced::{Alignment, Element, Length, Theme, widget::{button, container, image,
 
 
 // ============ CRATES ============
-use crate::{helpers::{string::ellipsize, style::{UserStyle, set_style}}};
+use crate::{helpers::{string::ellipsize, style::{UserStyle, set_style}}, modules::data::Modules};
 use crate::ron::ActionOnClick;
 use crate::{AppData, Message};
 
@@ -34,14 +34,14 @@ pub fn view(app: &AppData) -> Element<'_,Message>
 
 
 
-fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Message> 
+fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData) -> Element<'a, Message> 
 {
     let mut children = Vec::new();
-    for item in list 
+    for item in list_of_modules
     {
-        let element: Element<_> = match item.as_str() 
+        let element: Element<_> = match item
         {
-            "tray" => row ( app.modules_data.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(app.ron_config.tray_icon_size).height(app.ron_config.tray_icon_size).into() } else { text("?").into() }; button(content).style(|_: &Theme, status: button::Status| 
+            Modules::Tray => row ( app.modules_data.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(app.ron_config.tray_icon_size).height(app.ron_config.tray_icon_size).into() } else { text("?").into() }; button(content).style(|_: &Theme, status: button::Status| 
             {
                 let hovered = app.ron_config.tray_button_hovered_color_rgb;
                 let hovered_text = app.ron_config.tray_button_hovered_text_color_rgb;
@@ -56,7 +56,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "hypr/workspaces" | "sway/workspaces" => mouse_area ( row(app.modules_data.workspace_data.visible_workspaces.iter().map(|i| 
+            Modules::HyprWorkspaces | Modules::SwayWorkspaces => mouse_area ( row(app.modules_data.workspace_data.visible_workspaces.iter().map(|i| 
             {
                 let id = *i; // workspace id (i32)
 
@@ -105,7 +105,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "clock" => 
+            Modules::Clock => 
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_clock
                 {
@@ -136,7 +136,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "volume/output" =>
+            Modules::VolumeOutput =>
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_output
                 {
@@ -166,7 +166,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            "volume/input" => 
+            Modules::VolumeInput => 
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_input
                 {
@@ -196,13 +196,10 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
 
 
-            received_str => 
+            Modules::CustomModule(borrowed_index) => 
             {
-                if !received_str.contains("custom_module[") { continue; }
-                let index = received_str.replace("custom_module[", "").replace(']', "").replace([' ', '\n'], "").parse::<usize>();
-                let Ok(index) = index else { continue };
+                let index = *borrowed_index;
                 let custom_module = &app.ron_config.custom_modules[index];
-            
 
                 // TEXT RESOLUTION // COMMAND_OUTPUT
                 let text_to_render = if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()

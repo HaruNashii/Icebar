@@ -43,7 +43,7 @@ pub fn check_if_config_file_exists()
 // WARNING!!!: THE FIELD: "continous_command" MAY GENERATA HIGH CPU USAGE, DEPENDING ON HOW HEAVY IS THE COMMAND YOU PARSED
 
 // ===== TIPS =====
-// All possible modules: "tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input", "custom_modules".
+// All possible modules: ""HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Clock", "Tray".
 //
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
 //
@@ -74,9 +74,9 @@ BarConfig
 
 
     // ================= MODULES =================
-    left_modules: ["custom_module[0]"],
-    center_modules: ["clock"],
-    right_modules: ["tray", "volume/output", "volume/input"],
+    left_modules: [CustomModule(0)],
+    center_modules: [Clock],
+    right_modules: [Tray, VolumeOutput, VolumeInput],
 
 
     // ================= MODULES CONFIGS =================
@@ -195,7 +195,7 @@ BarConfig
     // ================= CUSTOM MODULES =================
     custom_modules_spacing: 10,
     custom_modules: [
-	// Example of an button that just runs an app or command
+    	//Example of an button that just runs an app or command
 	(
 		name: "Wofi Custom Module",
 		text: "Start Wofi",
@@ -212,7 +212,7 @@ BarConfig
 		command_to_exec_on_left_click: ["wofi", "--show", "drun"],
 		command_to_exec_on_right_click: ["wofi", "--show", "run"],
 	),
-        // Example of an button that displays the output on click
+	// Example of an button that displays the output on click
 	//(
 	//	name: "print",
 	//	text: "print output:",
@@ -231,7 +231,7 @@ BarConfig
 	//	command_to_exec_on_left_click: ["echo", "YAAAYYY"],
 	//	command_to_exec_on_right_click: ["echo", "IT'S WORKING!!!"],
 	//),
-        // Example of an button that displays the continous output
+	// Example of an button that displays the continous output
 	//(
 	//	name: "Playerctl Status - Artist - Media",
 	//	text: "Continous Output:",
@@ -247,8 +247,8 @@ BarConfig
     	//	border_radius: (3.0, 3.0, 3.0, 3.0),
 	//	use_output_as_text: false,
 	//	use_continous_output_as_text: true,
-	//	all_output_as_text_format: ": {continous_output}",
-        //      output_text_limit_len: 50,
+	//	all_output_as_text_format: "    {continous_output}",
+        //      	output_text_limit_len: 50,
 	//	continous_command: ["playerctl", "--player=spotify", "metadata", "--format", "{{ artist }} - {{ title }}"]
 	//),
 	//(
@@ -281,9 +281,7 @@ BarConfig
 	//	border_radius: (3.0, 3.0, 3.0, 3.0),
 	//	all_output_as_text_format: "{continous_output}",
 	//	use_continous_output_as_text: true,
-
-        //	//WARNING!!!! remove the "{}" around the 'r#' and the other '#' on the end
-	//	continous_command: ["bash", "-c", {r#}"case "$(playerctl --player=spotify status 2>/dev/null)" in Playing) printf "▶" ;; Paused) printf "⏸" ;; *) printf "" ;; esac"{#}],
+	//	continous_command: ["bash", "-c", "case \"$(playerctl --player=spotify status 2>/dev/null)\" in Playing) printf \" ⏸ \" ;; Paused) printf \"▶\" ;; *) printf \"▶\" ;; esac"],
 	//	command_to_exec_on_left_click: ["playerctl", "--player=spotify", "play-pause"],
 	//),
 	//(

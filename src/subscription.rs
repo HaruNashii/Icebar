@@ -7,7 +7,7 @@ use std::time::Duration;
 
 
 // ============ CRATES ============
-use crate::{AppData, Message, helpers::misc::is_active_module, modules::tray::{TraySubscription, tray_stream}};
+use crate::{AppData, Message, helpers::misc::is_active_module, modules::{data::Modules, tray::{TraySubscription, tray_stream}}};
 
 
 
@@ -32,7 +32,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
         event_reader,
     ];
 
-    if is_active_module(&app.modules.active_modules, "tray".to_string()) 
+    if is_active_module(&app.modules_data.active_modules, Modules::Tray) 
     {
         subs.push(iced::Subscription::run_with(TraySubscription, tray_stream));
     };

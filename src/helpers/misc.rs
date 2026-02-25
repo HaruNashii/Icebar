@@ -1,5 +1,7 @@
+use crate::modules::data::Modules;
+
 // ============ FUNCTIONS ============
-pub fn is_active_module(active_modules: &Vec<String>, module: String) -> bool
+pub fn is_active_module(active_modules: &Vec<Modules>, module: Modules) -> bool
 {
     for item in active_modules 
     {

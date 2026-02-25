@@ -1,4 +1,5 @@
 // ============ IMPORTS ============
+use serde::{Serialize, Deserialize};
 use iced::widget::image;
 
 
@@ -12,18 +13,25 @@ use crate::{helpers::workspaces::WorkspaceData, modules::{clock::ClockData, volu
 
 
 
-// ============ FUNCTIONS ============
-#[derive(Default, Clone)]
-pub struct Modules 
+// ============ STRUCTS/ENUM'S ============
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+pub enum Modules 
 {
-    pub active_modules: Vec<String>,
+    CustomModule(usize),
+    HyprWorkspaces,
+    SwayWorkspaces,
+    VolumeOutput,
+    VolumeInput,
+    Clock,
+    Tray,
 }
 
 #[derive(Default, Clone)]
 pub struct ModulesData
 {
     pub tray_icons: Vec<(Option<image::Handle>, String)>,
+    pub workspace_data: WorkspaceData,
+    pub active_modules: Vec<Modules>,
     pub volume_data: VolumeData,
-    pub clock_data: ClockData,
-    pub workspace_data: WorkspaceData
+    pub clock_data: ClockData
 }
