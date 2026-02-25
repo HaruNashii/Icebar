@@ -1,8 +1,7 @@
 // ============ IMPORTS ============
 use iced::{Alignment, Color, Element, Font, Length, Task as Command, Theme, border::Radius, event, font::{Family, Weight}, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
-use std::{sync::{Mutex, OnceLock}, time::Duration};
-use lazy_static::lazy_static;
+use std::{sync::OnceLock, time::Duration};
 
 
 
@@ -37,6 +36,7 @@ pub enum Message
     CreateCustomModuleCommand((Option<usize>, Vec<String>, String, bool, bool)),
     MenuLoaded(String, String, Vec<tray::MenuItem>),
     MouseWheelScrolled(ScrollDelta),
+    CommandFinished(usize, String),
     WorkspaceButtonPressed(usize),
     IsHoveringVolumeOutput(bool),
     IsHoveringVolumeInput(bool),
@@ -55,6 +55,7 @@ pub enum Message
 struct AppData
 {
     cached_continuous_outputs: Vec<String>,
+    cached_command_outputs: Vec<String>,
     is_hovering_volume_output: bool,
     is_hovering_volume_input: bool,
     is_hovering_workspace: bool,
@@ -101,7 +102,6 @@ pub struct UserStyle
 
 // ============ STATICS ============
 static DEFAULT_FONT: OnceLock<(String, Weight)> = OnceLock::new();
-lazy_static! { static ref COMMAND_OUTPUT: Mutex<Vec<String>> = Mutex::new(Vec::new()); }
 
 
 
@@ -142,6 +142,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         default_font: Font { family: Family::Name(&DEFAULT_FONT.get().expect("DEFAULT_FONT not initialized").0), weight: DEFAULT_FONT.get().expect("DEFAULT_FONT not initialized").1, ..iced::Font::DEFAULT}, 
         monitor_size: (monitor_res.0, monitor_res.1),
         cached_continuous_outputs: Vec::new(),
+        cached_command_outputs: Vec::new(),
         is_hovering_volume_output: false, 
         is_hovering_volume_input: false, 
         is_hovering_workspace: false, 
@@ -348,58 +349,60 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                 }
             }
         }
+    
+
+
+        Message::CommandFinished(index, text) => 
+        {
+            if app.cached_command_outputs.len() <= index 
+            {
+                app.cached_command_outputs.resize(index + 1, String::new());
+            }
+            app.cached_command_outputs[index] = text;
+        }
 
 
 
         Message::CreateCustomModuleCommand((output_index, command_vec, custom_name, is_left_click, output_as_text)) =>
         {
-            std::thread::spawn(move || { 
-
+            if let Some((program, args)) = command_vec.split_first()
+            {
+                let program = program.clone();
+                let args = args.to_vec();
+        
                 println!("\n=== Custom Module ===");
-                if custom_name.is_empty()
+                if custom_name.is_empty() {if is_left_click { println!("Custom Module Button Was *Left* Clicked!!"); } else { println!("Custom Module Button Was *Right* Clicked!!"); } } else if is_left_click { println!("Your '{custom_name}' Button Was *Left* Clicked!!"); } else { println!("Your '{custom_name}' Button Was *Right* Clicked!!"); }
+        
+
+                // ==============================
+                // OUTPUT USED → async + message
+                // ==============================
+                if output_as_text 
                 {
-                    if is_left_click
-                    {
-                        println!("Custom Module Button Was *Left* Clicked!!");
-                    }
-                    else
-                    {
-                        println!("Custom Module Button Was *Right* Clicked!!");
-                    }
+                    return Command::perform
+                    (async move 
+                        {
+                                let output = std::process::Command::new(program).args(args).output().ok();
+                                if custom_name.is_empty() { println!("Custom Module Output:\n{:?}", output); } else { println!( "'{custom_name}' Command Was Running!!!, The Output Was:\n{:?}", output); }
+                                output.map(|o| String::from_utf8_lossy(&o.stdout).to_string()).unwrap_or_default()
+                        },
+                        move |text| { Message::CommandFinished(output_index.unwrap_or(0), text) },
+                    );
                 }
-                else if is_left_click
+        
+
+                // ==============================
+                // FIRE & FORGET → no message
+                // ==============================
+                std::thread::spawn(move || 
                 {
-                    println!("Your '{custom_name}' Button Was *Left* Clicked!!");
-                }
-                else
-                {
-                    println!("Your '{custom_name}' Button Was *Right* Clicked!!");
-                }
-                if let Some((program, args)) = command_vec.split_first() 
-                {
-                    let mut command = std::process::Command::new(program);
-                    command.args(args);
-                    let output = command.output();
-                    if output_as_text && let Ok(ref output_result) = output && let Some(index) = output_index
-                    {
-                        let mut outputs = COMMAND_OUTPUT.lock().unwrap();
-                        let text = String::from_utf8_lossy(&output_result.stdout).to_string();
-                        if outputs.len() <= index { outputs.resize(index + 1, String::new()); }
-                        outputs[index] = text;
-                    }
-                    if custom_name.is_empty()
-                    {
-                        println!("Custom Module Output: \n{:?}", output);
-                    }
-                    else
-                    {
-                        println!("'{custom_name}' Command Was Running!!!, The Output Was: \n{:?}", output); }
-                } 
-                else 
-                {
-                    eprintln!("Empty command vector, no argument was parsed");
-                }
-            });
+                    let output = std::process::Command::new(program).args(args).output();
+                    if custom_name.is_empty() { println!("Custom Module Output:\n{:?}", output); } else { println!( "'{custom_name}' Command executed (no output capture):\n{:?}", output); }
+                });
+        
+                return Command::none();
+            }
+            else { println!("Empty command vector, no argument was parsed"); }
         }
 
 
@@ -573,6 +576,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
             }).padding(app.ron_config.tray_button_size).on_press(Message::TrayIconClicked(i)).into() })).height(app.ron_config.tray_height).spacing(app.ron_config.tray_spacing).align_y(Alignment::Center).into(),
 
 
+
             "hypr/workspaces" | "sway/workspaces" => mouse_area ( row(app.modules_data.workspace_data.visible_workspaces.iter().map(|i| 
             {
                 let id = *i; // workspace id (i32)
@@ -620,6 +624,8 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
             })).height(app.ron_config.workspace_height).spacing(app.ron_config.workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
 
 
+
+
             "clock" => 
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_clock
@@ -634,6 +640,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
 
                 };
+
                 container(mouse_area(button(text(&*app.modules_data.clock_data.current_time).font(app.default_font).size(app.ron_config.clock_text_size)).style(|_: &Theme, status: button::Status| 
                 {
                     let hovered = app.ron_config.clock_button_hovered_color_rgb;
@@ -647,6 +654,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
                 })).on_press(left_click_message).on_right_press(right_click_message)).height(app.ron_config.clock_height).align_y(Alignment::Center).into()
             }
+
 
 
             "volume/output" =>
@@ -678,6 +686,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
             }
 
 
+
             "volume/input" => 
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_input
@@ -703,7 +712,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     let border_color_rgba = app.ron_config.volume_input_border_color_rgba;
                     let border_radius = app.ron_config.volume_input_border_radius;
                     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-                })).on_press(left_click_message).on_right_press(right_click_message).on_enter(Message::IsHoveringVolumeOutput(true)).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).height(app.ron_config.volume_input_height).align_y(Alignment::Center).into()
+                })).on_press(left_click_message).on_right_press(right_click_message).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).height(app.ron_config.volume_input_height).align_y(Alignment::Center).into()
             }
 
 
@@ -716,25 +725,27 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let custom_module = &app.ron_config.custom_modules[index];
             
 
+                // TEXT RESOLUTION // COMMAND_OUTPUT
                 let text_to_render = if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()
                 {
-                    let outputs = COMMAND_OUTPUT.lock().unwrap();
-                    let output_text = outputs.get(index).map(String::as_str).unwrap_or("");
+                    let output_text = app.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
                     let output_text = ellipsize(output_text, custom_module.output_text_limit_len);
                     custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
                 }
+                // CONTINOUS_OUTPUT
                 else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
                 {
                     let output_text = ellipsize(&app.cached_continuous_outputs[index], custom_module.output_text_limit_len);
                     custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{continous_output}", &output_text).replace('\n', "")
                 }
+                // NO OUTPUT JUST TEXT
                 else 
                 {
                     custom_module.text.clone()
                 };
 
 
-                let element = mouse_area(container(button(text(text_to_render).wrapping(iced::widget::text::Wrapping::None).font(app.default_font).size(custom_module.text_size)).height(custom_module.height).style(|_, status| 
+                let element = container(mouse_area(button(text(text_to_render).wrapping(iced::widget::text::Wrapping::None).font(app.default_font).size(custom_module.text_size)).height(custom_module.height).style(|_, status| 
                 {
                     let hovered = custom_module.button_hovered_color_rgb; 
                     let hovered_text = custom_module.button_hovered_text_color_rgb; 
@@ -745,20 +756,13 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     let border_color_rgba = custom_module.border_color_rgba; 
                     let border_radius = custom_module.border_radius;
                     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-                }
-                )).align_y(Alignment::Center)).on_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true, custom_module.use_output_as_text,))).on_right_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false, custom_module.use_output_as_text)));
+                })).on_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true, custom_module.use_output_as_text,))).on_right_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false, custom_module.use_output_as_text)))).align_y(Alignment::Center);
             
                 row![element].spacing(app.ron_config.custom_modules_spacing).into()
             }
-
-
         };
-
-
-
         children.push(element);
     }
-
     row(children).spacing(8).align_y(Alignment::Center).into()
 }
 
