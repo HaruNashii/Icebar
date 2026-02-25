@@ -43,14 +43,24 @@ pub fn check_if_config_file_exists()
 // WARNING!!!: THE FIELD: "continous_command" MAY GENERATA HIGH CPU USAGE, DEPENDING ON HOW HEAVY IS THE COMMAND YOU PARSED
 
 // ===== TIPS =====
-// All possible modules: "tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input", "custom_modules"
-// Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%
-// Available options for "bar_position" are: "Up" and "Down" (without double quote) ("Left" and "Right" are planned for the future)
-// To see the correct "font_family" and "font_style" i recommend using "fc-scan $PATH_TO_FONT_FILE"
+// All possible modules: "tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input", "custom_modules".
+//
+// Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
+//
+// Available options for "bar_position" are: "Up" and "Down" (without double quote) ("Left" and "Right" are planned for the future).
+//
+// To see the correct "font_family" and "font_style" i recommend using "fc-scan $PATH_TO_FONT_FILE".
+//
+// every custom module you make will be assigned an index based on the position they are, from top to bottom, the first = 0, the second = 1
+// so for parsing your custom_module to the position just put on the position modules your "custom_module[index]"
+//
 // The unique syntax for each some modules are: "display" = Some("HDMI-A-1"), "force_static_position_context_menu" = Some((x, y)) and "persistent_workspaces" = Some(number_of_persistent_elements)
+//
 // If you notice some bug or want more features, please feel free to publish your thoughs on: https://github.com/HaruNashii/Icebar.git
 // Or if you want talk directly to me to clear up any questions, my discord id is: harunashiii
 // you can also join my contact server with: https://discord.gg/CRsz24Ts3a
+
+
 
 BarConfig
 (
@@ -202,7 +212,7 @@ BarConfig
 		command_to_exec_on_left_click: ["wofi", "--show", "drun"],
 		command_to_exec_on_right_click: ["wofi", "--show", "run"],
 	),
-        // Example of an button that displays the output
+        // Example of an button that displays the output on click
 	//(
 	//	name: "print",
 	//	text: "print output:",
@@ -218,7 +228,6 @@ BarConfig
     	//	border_radius: (3, 3, 3, 3),
 	//	use_output_as_text: true,
 	//	all_output_as_text_format: "{text} {output}",
-        //        output_text_limit_len: 100,
 	//	command_to_exec_on_left_click: ["echo", "YAAAYYY"],
 	//	command_to_exec_on_right_click: ["echo", "IT'S WORKING!!!"],
 	//),
@@ -239,7 +248,7 @@ BarConfig
 	//	use_output_as_text: false,
 	//	use_continous_output_as_text: true,
 	//	all_output_as_text_format: ": {continous_output}",
-        //        output_text_limit_len: 50,
+        //      output_text_limit_len: 50,
 	//	continous_command: ["playerctl", "--player=spotify", "metadata", "--format", "{{ artist }} - {{ title }}"]
 	//),
 	//(
@@ -272,7 +281,8 @@ BarConfig
 	//	border_radius: (3, 3, 3, 3),
 	//	all_output_as_text_format: "{continous_output}",
 	//	use_continous_output_as_text: true,
-        //	//remove the "{}" around the 'r#' and the other '#' on the end
+
+        //	//WARNING!!!! remove the "{}" around the 'r#' and the other '#' on the end
 	//	continous_command: ["bash", "-c", {r#}"case "$(playerctl --player=spotify status 2>/dev/null)" in Playing) printf "▶" ;; Paused) printf "⏸" ;; *) printf "" ;; esac"{#}],
 	//	command_to_exec_on_left_click: ["playerctl", "--player=spotify", "play-pause"],
 	//),

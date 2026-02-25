@@ -34,7 +34,7 @@ mod ron;
 #[derive(Debug, Clone)]
 pub enum Message
 {
-    CreateCustomModuleCommand((Vec<String>, String, bool, bool)),
+    CreateCustomModuleCommand((Option<usize>, Vec<String>, String, bool, bool)),
     MenuLoaded(String, String, Vec<tray::MenuItem>),
     MouseWheelScrolled(ScrollDelta),
     WorkspaceButtonPressed(usize),
@@ -101,8 +101,7 @@ pub struct UserStyle
 
 // ============ STATICS ============
 static DEFAULT_FONT: OnceLock<(String, Weight)> = OnceLock::new();
-lazy_static! { static ref COMMAND_OUTPUT: Mutex<String> = Mutex::new(String::new()); }
-
+lazy_static! { static ref COMMAND_OUTPUT: Mutex<Vec<String>> = Mutex::new(Vec::new()); }
 
 
 
@@ -352,7 +351,7 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
 
 
 
-        Message::CreateCustomModuleCommand((command_vec, custom_name, is_left_click, output_as_text)) =>
+        Message::CreateCustomModuleCommand((output_index, command_vec, custom_name, is_left_click, output_as_text)) =>
         {
             std::thread::spawn(move || { 
 
@@ -381,9 +380,12 @@ fn update(app: &mut AppData, message: Message) -> Command<Message>
                     let mut command = std::process::Command::new(program);
                     command.args(args);
                     let output = command.output();
-                    if output_as_text && let Ok(ref output_result) = output
+                    if output_as_text && let Ok(ref output_result) = output && let Some(index) = output_index
                     {
-                        *COMMAND_OUTPUT.lock().unwrap() = String::from_utf8_lossy(&output_result.stdout).to_string();
+                        let mut outputs = COMMAND_OUTPUT.lock().unwrap();
+                        let text = String::from_utf8_lossy(&output_result.stdout).to_string();
+                        if outputs.len() <= index { outputs.resize(index + 1, String::new()); }
+                        outputs[index] = text;
                     }
                     if custom_name.is_empty()
                     {
@@ -623,13 +625,13 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_clock
                 {
                     ActionOnClick::DefaultAction => Message::ToggleAltClock,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Clock Custom Action".to_string(), true, false))
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), true, false))
 
                 };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_clock
                 {
                     ActionOnClick::DefaultAction => Message::Nothing,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
 
                 };
                 container(mouse_area(button(text(&*app.modules_data.clock_data.current_time).font(app.default_font).size(app.ron_config.clock_text_size)).style(|_: &Theme, status: button::Status| 
@@ -652,13 +654,13 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_output
                 {
                     ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false))
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false))
 
                 };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_output
                 {
                     ActionOnClick::DefaultAction => Message::Nothing,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false))
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false))
 
                 };
                 container(mouse_area ( button (text(&*app.modules_data.volume_data.output_volume_level).font(app.default_font).size(app.ron_config.volume_output_text_size)).style(|_: &Theme, status: button::Status| 
@@ -681,13 +683,13 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_input
                 {
                     ActionOnClick::DefaultAction => Message::MuteAudioPressedInput,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false))
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false))
 
                 };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_input
                 {
                     ActionOnClick::DefaultAction => Message::Nothing,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false))
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false))
 
                 };
                 container(mouse_area ( button (text(&*app.modules_data.volume_data.input_volume_level).font(app.default_font).size(app.ron_config.volume_input_text_size)).style(|_: &Theme, status: button::Status| 
@@ -716,7 +718,9 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 
                 let text_to_render = if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()
                 {
-                    let output_text = ellipsize(&COMMAND_OUTPUT.lock().unwrap(), custom_module.output_text_limit_len);
+                    let outputs = COMMAND_OUTPUT.lock().unwrap();
+                    let output_text = outputs.get(index).map(String::as_str).unwrap_or("");
+                    let output_text = ellipsize(output_text, custom_module.output_text_limit_len);
                     custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
                 }
                 else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
@@ -742,7 +746,7 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
                     let border_radius = custom_module.border_radius;
                     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
                 }
-                )).align_y(Alignment::Center)).on_press(Message::CreateCustomModuleCommand((custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true, custom_module.use_output_as_text,))).on_right_press(Message::CreateCustomModuleCommand((custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false, custom_module.use_output_as_text)));
+                )).align_y(Alignment::Center)).on_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true, custom_module.use_output_as_text,))).on_right_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false, custom_module.use_output_as_text)));
             
                 row![element].spacing(app.ron_config.custom_modules_spacing).into()
             }
