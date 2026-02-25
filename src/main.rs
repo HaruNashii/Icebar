@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Color, Element, Font, Length, Task as Command, Theme, border::Radius, event, font::{Family, Weight}, mouse::{self, ScrollDelta}, theme::Style, time, widget::{button, container, image, mouse_area, row, text}};
+use iced::{Alignment, Element, Font, Length, Task as Command, Theme, event, font::{Family, Weight}, mouse::{self, ScrollDelta}, time, widget::{button, container, image, mouse_area, row, text}};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
 use std::{sync::OnceLock, time::Duration};
 
@@ -10,7 +10,7 @@ use std::{sync::OnceLock, time::Duration};
 
 // ============ CRATES ============
 use crate::{modules::{clock::{ClockData, get_current_time}, hypr::{self, UserHyprAction, change_workspace_hypr}, sway::{self, UserSwayAction, change_workspace_sway}, tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}, volume::{self, VolumeAction, VolumeData} }, ron::ActionOnClick};
-use crate::helpers::{workspaces::{WorkspaceData, build_workspace_list}, fs::check_if_config_file_exists, monitor::get_monitor_res, };
+use crate::helpers::{misc::is_active_module, style::{style, set_style, UserStyle}, string::{weight_from_str, ellipsize}, workspaces::{WorkspaceData, build_workspace_list}, fs::check_if_config_file_exists, monitor::get_monitor_res, };
 use crate::ron::{read_ron_config, BarConfig};
 use crate::context_menu::run_context_menu;
 
@@ -83,18 +83,6 @@ struct ModulesData
     workspace_data: WorkspaceData,
 }
 
-pub struct UserStyle
-{
-    status: iced::widget::button::Status, 
-    border_color_rgba: [u8;4], 
-    hovered_text: [u8;3], 
-    border_radius: [u32;4],
-    normal_text: [u8;3], 
-    hovered: [u8; 3], 
-    border_size: f32, 
-    pressed: [u8;3], 
-    normal: [u8;3]
-}
 
 
 
@@ -516,45 +504,6 @@ fn view(app: &AppData) -> Element<'_,Message>
 
 
 
-fn style(app: &AppData, _: &iced::Theme) -> Style
-{
-    Style
-    {
-        background_color: Color::from_rgba8(app.ron_config.bar_background_color_rgba[0],app.ron_config.bar_background_color_rgba[1],app.ron_config.bar_background_color_rgba[2],app.ron_config.bar_background_color_rgba[3] as f32 / 100.),
-        text_color: Color::WHITE
-    }
-}
-
-
-
-pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
-{
-    let mut style = button::Style::default();
-    match user_style.status 
-    {
-        button::Status::Hovered => 
-        {
-            style.background = Some(iced::Background::Color(Color::from_rgb8(user_style.hovered[0], user_style.hovered[1], user_style.hovered[2])));
-            style.text_color = Color::from_rgb8(user_style.hovered_text[0], user_style.hovered_text[1], user_style.hovered_text[2]);
-        }
-        button::Status::Pressed => 
-        {
-            style.background = Some(iced::Background::Color(Color::from_rgb8(user_style.pressed[0], user_style.pressed[1], user_style.pressed[2])));
-        }
-        _ => 
-        {
-            style.background = Some(iced::Background::Color(Color::from_rgb8(user_style.normal[0], user_style.normal[1], user_style.normal[2])));
-            style.text_color = Color::from_rgb8(user_style.normal_text[0], user_style.normal_text[1], user_style.normal_text[2]);
-        }
-    }
-    style.border.color = Color::from_rgba8(user_style.border_color_rgba[0], user_style.border_color_rgba[1],  user_style.border_color_rgba[2], user_style.border_color_rgba[3] as f32);
-    style.border.width = user_style.border_size;
-    style.border.radius = Radius { top_left: user_style.border_radius[0] as f32, top_right: user_style.border_radius[1] as f32, bottom_left: user_style.border_radius[2] as f32, bottom_right: user_style.border_radius[3] as f32};
-    style
-}
-
-
-
 fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Message> 
 {
     let mut children = Vec::new();
@@ -767,47 +716,3 @@ fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Mes
 }
 
 
-fn is_active_module(active_modules: &Vec<String>, module: String) -> bool
-{
-    for item in active_modules 
-    {
-        if *item == module 
-        {
-            return true;
-        }
-    }
-    false
-}
-
-
-
-fn weight_from_str(s: &str) -> Weight 
-{
-    match s.to_lowercase().as_str() 
-    {
-        "thin" => Weight::Thin,
-        "extra_light" | "extralight" | "ultralight" => Weight::ExtraLight,
-        "light" => Weight::Light,
-        "normal" | "regular" => Weight::Normal,
-        "medium" => Weight::Medium,
-        "semibold" | "semi_bold" => Weight::Semibold,
-        "bold" => Weight::Bold,
-        "extra_bold" | "extrabold" | "ultrabold" => Weight::ExtraBold,
-        "black" | "heavy" => Weight::Black,
-        _ => Weight::Normal, 
-    }
-}
-
-
-
-fn ellipsize(text: &str, limit: usize) -> String 
-{
-    if text.chars().count() <= limit 
-    {
-        text.to_owned()
-    } 
-    else 
-    {
-        format!("{}...", text.chars().take(limit).collect::<String>())
-    }
-}
