@@ -18,7 +18,7 @@ pub struct UserStyle
     pub status: iced::widget::button::Status, 
     pub border_color_rgba: [u8;4], 
     pub hovered_text: [u8;3], 
-    pub border_radius: [u32;4],
+    pub border_radius: [f32;4],
     pub normal_text: [u8;3], 
     pub hovered: [u8; 3], 
     pub border_size: f32, 
@@ -64,6 +64,6 @@ pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
     }
     style.border.color = Color::from_rgba8(user_style.border_color_rgba[0], user_style.border_color_rgba[1],  user_style.border_color_rgba[2], user_style.border_color_rgba[3] as f32);
     style.border.width = user_style.border_size;
-    style.border.radius = Radius { top_left: user_style.border_radius[0] as f32, top_right: user_style.border_radius[1] as f32, bottom_left: user_style.border_radius[2] as f32, bottom_right: user_style.border_radius[3] as f32};
+    style.border.radius = Radius { top_left: user_style.border_radius[0], top_right: user_style.border_radius[1], bottom_left: user_style.border_radius[2], bottom_right: user_style.border_radius[3]};
     style
 }

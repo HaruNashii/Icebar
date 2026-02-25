@@ -113,7 +113,7 @@ BarConfig
     tray_button_pressed_color_rgb: (70, 20, 40),
     tray_border_color_rgba: (90, 70, 100, 100),
     tray_border_size: 1.0,
-    tray_border_radius: (3, 3, 3, 3),
+    tray_border_radius: (3.0, 3.0, 3.0, 3.0),
 
 
     // ================= CLOCK (STYLE) =================
@@ -126,7 +126,7 @@ BarConfig
     clock_button_pressed_color_rgb: (80, 25, 45),
     clock_border_color_rgba: (120, 80, 130, 100),
     clock_border_size: 1.0,
-    clock_border_radius: (3, 3, 3, 3),
+    clock_border_radius: (3.0, 3.0, 3.0, 3.0),
 
 
     // ================= VOLUME/OUTPUT (STYLE) =================
@@ -139,7 +139,7 @@ BarConfig
     volume_output_button_pressed_color_rgb: (85, 30, 50),
     volume_output_border_color_rgba: (110, 80, 120, 100),
     volume_output_border_size: 1.0,
-    volume_output_border_radius: (3, 3, 3, 3),
+    volume_output_border_radius: (3.0, 3.0, 3.0, 3.0),
 
 
     // ================= VOLUME/INPUT (STYLE) =================
@@ -152,7 +152,7 @@ BarConfig
     volume_input_button_pressed_color_rgb: (85, 30, 50),
     volume_input_border_color_rgba: (110, 80, 120, 100),
     volume_input_border_size: 1.0,
-    volume_input_border_radius: (3, 3, 3, 3),
+    volume_input_border_radius: (3.0, 3.0, 3.0, 3.0),
 
 
     // ================= HYPR WORKSPACES (STYLE) =================
@@ -171,7 +171,7 @@ BarConfig
     workspace_button_pressed_color_rgb: (90, 25, 50),
     workspace_border_color_rgba: (120, 90, 135, 100),
     workspace_border_size: 1.0,
-    workspace_border_radius: (3, 3, 3, 3),
+    workspace_border_radius: (3.0, 3.0, 3.0, 3.0),
 
 
     // ================= CONTEXT MENU (STYLE) =================
@@ -179,7 +179,7 @@ BarConfig
     context_menu_background_size: 5,
     context_menu_background_border_color_rgba: (255, 255, 255, 100),
     context_menu_background_border_size: 1.0,
-    context_menu_background_border_radius: (6, 6, 6, 6),
+    context_menu_background_border_radius: (6.0, 6.0, 6.0, 6.0),
 
     context_menu_text_size: 15,
     context_menu_width: 200,
@@ -190,7 +190,7 @@ BarConfig
     context_menu_button_pressed_color_rgb: (85, 30, 55),
     context_menu_border_color_rgba: (130, 90, 140, 100),
     context_menu_border_size: 1.0,
-    context_menu_border_radius: (3, 3, 3, 3),
+    context_menu_border_radius: (3.0, 3.0, 3.0, 3.0),
 
     // ================= CUSTOM MODULES =================
     custom_modules_spacing: 10,
@@ -208,7 +208,7 @@ BarConfig
     		button_pressed_color_rgb: (85, 30, 55),
     		border_color_rgba: (130, 90, 140, 100),
     		border_size: 1.0,
-    		border_radius: (3, 3, 3, 3),
+    		border_radius: (3.0, 3.0, 3.0, 3.0),
 		command_to_exec_on_left_click: ["wofi", "--show", "drun"],
 		command_to_exec_on_right_click: ["wofi", "--show", "run"],
 	),
@@ -225,7 +225,7 @@ BarConfig
     	//	button_pressed_color_rgb: (85, 30, 55),
     	//	border_color_rgba: (130, 90, 140, 100),
     	//	border_size: 1.0,
-    	//	border_radius: (3, 3, 3, 3),
+    	//	border_radius: (3.0, 3.0, 3.0, 3.0),
 	//	use_output_as_text: true,
 	//	all_output_as_text_format: "{text} {output}",
 	//	command_to_exec_on_left_click: ["echo", "YAAAYYY"],
@@ -244,7 +244,7 @@ BarConfig
     	//	button_pressed_color_rgb: (85, 30, 55),
     	//	border_color_rgba: (130, 90, 140, 100),
     	//	border_size: 1.0,
-    	//	border_radius: (3, 3, 3, 3),
+    	//	border_radius: (3.0, 3.0, 3.0, 3.0),
 	//	use_output_as_text: false,
 	//	use_continous_output_as_text: true,
 	//	all_output_as_text_format: ": {continous_output}",
@@ -263,7 +263,7 @@ BarConfig
     	//	button_pressed_color_rgb: (85, 30, 55),
     	//	border_color_rgba: (130, 90, 140, 100),
     	//	border_size: 1.0,
-    	//	border_radius: (3, 3, 3, 3),
+    	//	border_radius: (3.0, 3.0, 3.0, 3.0),
 	//	command_to_exec_on_left_click: ["playerctl", "--player=spotify", "previous"],
 	//),
 	//(
@@ -278,7 +278,7 @@ BarConfig
     	//	button_pressed_color_rgb: (85, 30, 55),
     	//	border_color_rgba: (130, 90, 140, 100),
 	//	border_size: 1.0,
-	//	border_radius: (3, 3, 3, 3),
+	//	border_radius: (3.0, 3.0, 3.0, 3.0),
 	//	all_output_as_text_format: "{continous_output}",
 	//	use_continous_output_as_text: true,
 
@@ -298,7 +298,7 @@ BarConfig
     	//	button_pressed_color_rgb: (85, 30, 55),
     	//	border_color_rgba: (130, 90, 140, 100),
     	//	border_size: 1.0,
-    	//	border_radius: (3, 3, 3, 3),
+    	//	border_radius: (3.0, 3.0, 3.0, 3.0),
 	//	command_to_exec_on_left_click: ["playerctl", "--player=spotify", "next"],
 	//)
     ],

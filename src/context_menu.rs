@@ -200,7 +200,7 @@ fn context_menu_background_button_style(ron_config: &BarConfig) -> iced::widget:
     let bgr = ron_config.context_menu_background_border_radius;
     background_style.border.color = Color::from_rgba8(bgc[0], bgc[1], bgc[2], bgc[3] as f32); 
     background_style.border.width = ron_config.context_menu_background_border_size;
-    background_style.border.radius = Radius { top_left: bgr[0] as f32, top_right: bgr[1] as f32, bottom_left: bgr[2] as f32, bottom_right: bgr[3] as f32};
+    background_style.border.radius = Radius { top_left: bgr[0], top_right: bgr[1], bottom_left: bgr[2], bottom_right: bgr[3]};
     background_style
 }
 

@@ -1,7 +1,6 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Element, Font, Length, Task as Command, Theme, event, font::{Family, Weight}, mouse::{self, ScrollDelta}, time, widget::{button, container, image, mouse_area, row, text}};
+use iced::{Font, font::Family, mouse::ScrollDelta};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
-use std::{sync::OnceLock, time::Duration};
 
 
 
@@ -9,10 +8,12 @@ use std::{sync::OnceLock, time::Duration};
 
 
 // ============ CRATES ============
-use crate::{modules::{clock::{ClockData, get_current_time}, hypr::{self, UserHyprAction, change_workspace_hypr}, sway::{self, UserSwayAction, change_workspace_sway}, tray::{self, TrayEvent, TraySubscription, start_tray, tray_stream}, volume::{self, VolumeAction, VolumeData} }, ron::ActionOnClick};
-use crate::helpers::{misc::is_active_module, style::{style, set_style, UserStyle}, string::{weight_from_str, ellipsize}, workspaces::{WorkspaceData, build_workspace_list}, fs::check_if_config_file_exists, monitor::get_monitor_res, };
+use crate::modules::{clock::ClockData, data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}, volume::VolumeData };
+use crate::helpers::{misc::is_active_module, style::{style, set_style, UserStyle}, string::weight_from_str, workspaces::WorkspaceData, fs::check_if_config_file_exists, monitor::get_monitor_res, };
 use crate::ron::{read_ron_config, BarConfig};
-use crate::context_menu::run_context_menu;
+use crate::subscription::subscription;
+use crate::update::update;
+use crate::view::view;
 
 
 
@@ -20,8 +21,11 @@ use crate::context_menu::run_context_menu;
 
 // ============ MOD'S ============
 mod context_menu;
+mod subscription;
 mod modules;
 mod helpers;
+mod update;
+mod view;
 mod ron;
 
 
@@ -68,28 +72,7 @@ struct AppData
     modules: Modules
 }
 
-#[derive(Default, Clone)]
-struct Modules 
-{
-    active_modules: Vec<String>,
-}
 
-#[derive(Default, Clone)]
-struct ModulesData
-{
-    tray_icons: Vec<(Option<image::Handle>, String)>,
-    volume_data: VolumeData,
-    clock_data: ClockData,
-    workspace_data: WorkspaceData,
-}
-
-
-
-
-
-
-// ============ STATICS ============
-static DEFAULT_FONT: OnceLock<(String, Weight)> = OnceLock::new();
 
 
 
@@ -101,22 +84,11 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     check_if_config_file_exists();
     let (ron_config, anchor_position, active_modules) = read_ron_config();
     let monitor_res = get_monitor_res(ron_config.display.clone());
+    let modules = Modules { active_modules, };
+    if is_active_module(&modules.active_modules, "tray".to_string()) { start_tray(); }
     let ron_config_clone = ron_config.clone();
-    
-    let modules = Modules 
-    {
-        active_modules,
-    };
-
-    if is_active_module(&modules.active_modules, "tray".to_string())
-    {
-        start_tray();
-    }
-
     let font_name = ron_config.font_family;
-    let font_style_string = ron_config.font_style;
-    let font_style = weight_from_str(&font_style_string);
-    DEFAULT_FONT.set((font_name, font_style)).expect("DEFAULT_FONT already initialized");
+    let start_mode = match ron_config.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };
 
     let modules_data = ModulesData
     {
@@ -127,7 +99,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     };
     let app_data = AppData
     {
-        default_font: Font { family: Family::Name(&DEFAULT_FONT.get().expect("DEFAULT_FONT not initialized").0), weight: DEFAULT_FONT.get().expect("DEFAULT_FONT not initialized").1, ..iced::Font::DEFAULT}, 
+        default_font: Font { family: Family::Name(Box::leak(font_name.into_boxed_str())), weight: weight_from_str(&ron_config.font_style), ..iced::Font::DEFAULT}, 
         monitor_size: (monitor_res.0, monitor_res.1),
         cached_continuous_outputs: Vec::new(),
         cached_command_outputs: Vec::new(),
@@ -139,12 +111,6 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         mouse_position: (0, 0),
         modules_data,
         modules
-    };
-
-    let start_mode = match ron_config.display
-    {
-        Some(output) => StartMode::TargetScreen(output),
-        None => StartMode::Active
     };
 
     let default_font = app_data.default_font;
@@ -161,558 +127,4 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         ..Default::default()
     }).run()
 }
-
-
-
 fn namespace() -> String { String::from("icebar") }
-
-
-
-fn subscription(app: &AppData) -> iced::Subscription<Message>
-{
-    let event_reader = event::listen_with(|event, _status, _id| 
-    {
-        match event 
-        {
-            iced::Event::Mouse(mouse::Event::WheelScrolled {delta, ..} ) => { Some(Message::MouseWheelScrolled(delta)) }
-            iced::Event::Mouse(mouse::Event::CursorMoved { position }) => { Some(Message::CursorMoved(position)) }
-            _=> None
-        }
-    });
-
-    let mut subs = vec!
-    [
-        time::every(Duration::from_millis(150)).map(|_| Message::Tick),
-        event_reader,
-    ];
-
-    if is_active_module(&app.modules.active_modules, "tray".to_string()) 
-    {
-        subs.push(iced::Subscription::run_with(TraySubscription, tray_stream));
-    };
-
-    iced::Subscription::batch(subs)
-}
-
-
-
-fn update(app: &mut AppData, message: Message) -> Command<Message>
-{
-    match message
-    {
-        Message::IsHoveringVolumeOutput(bool) => { app.is_hovering_volume_output = bool; }
-        Message::IsHoveringVolumeInput(bool) => { app.is_hovering_volume_input = bool; }
-        Message::IsHoveringWorkspace(bool) => { app.is_hovering_workspace = bool; }
-        Message::MuteAudioPressedOutput => { volume::volume( volume::VolumeAction::MuteOutput); }
-        Message::MuteAudioPressedInput => { volume::volume( volume::VolumeAction::MuteInput); }
-        Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
-        Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
-
-
-
-        Message::WorkspaceButtonPressed(id) => 
-        {
-            if is_active_module(&app.modules.active_modules, "hypr/workspaces".to_string())
-            {
-                change_workspace_hypr(UserHyprAction::ChangeWithIndex(id));
-            }
-            else if is_active_module(&app.modules.active_modules, "sway/workspaces".to_string())
-            {
-                change_workspace_sway(UserSwayAction::ChangeWithIndex(id));
-            }
-        }
-
-
-
-        Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>
-        {
-            if app.is_hovering_volume_output
-            {
-                    if y > 2. { volume::volume(volume::VolumeAction::IncreaseOutput(app.ron_config.incremental_steps_output)); }
-                    if y < 2. { volume::volume(volume::VolumeAction::DecreaseOutput(app.ron_config.incremental_steps_output)); }
-            }
-            if app.is_hovering_volume_input
-            {
-                    if y > 2. { volume::volume(volume::VolumeAction::IncreaseInput(app.ron_config.incremental_steps_input)); }
-                    if y < 2. { volume::volume(volume::VolumeAction::DecreaseInput(app.ron_config.incremental_steps_input)); }
-            }
-            if app.is_hovering_workspace
-            {
-                let hypr_active = is_active_module(&app.modules.active_modules, "hypr/workspaces".to_string());
-                let sway_active = is_active_module(&app.modules.active_modules, "sway/workspaces".to_string());
-                if y > 2. 
-                { 
-                    if app.ron_config.reverse_scroll_on_workspace
-                    {
-                        if hypr_active
-                        {
-                            change_workspace_hypr(UserHyprAction::MoveNext);
-                        } 
-                        else if sway_active
-                        {
-                            change_workspace_sway(UserSwayAction::MoveNext);
-                        };
-                    }
-                    else if hypr_active
-                    {
-                        change_workspace_hypr(UserHyprAction::MovePrev);
-                    } 
-                    else if sway_active
-                    {
-                        change_workspace_sway(UserSwayAction::MovePrev);
-                    }
-                }
-                if y < 2. 
-                { 
-                    if app.ron_config.reverse_scroll_on_workspace
-                    {
-                        if hypr_active
-                        {
-                            change_workspace_hypr(UserHyprAction::MovePrev);
-                        } 
-                        else if sway_active
-                        {
-                            change_workspace_sway(UserSwayAction::MovePrev);
-                        };
-                    }
-                    else if hypr_active
-                    {
-                        change_workspace_hypr(UserHyprAction::MoveNext);
-                    } 
-                    else if sway_active
-                    {
-                        change_workspace_sway(UserSwayAction::MoveNext);
-                    }
-                }
-            }
-        }
-
-
-
-        Message::Tick =>
-        {
-            for module_name in &app.modules.active_modules
-            {
-                match module_name as &str
-                {
-                    "clock" => {let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format }; app.modules_data.clock_data.current_time = get_current_time(format_to_send)},
-                    "volume/output" => app.modules_data.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format))),
-                    "volume/input" => app.modules_data.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format))),
-                    "hypr/workspaces" =>
-                    {
-                        app.modules_data.workspace_data.current_workspace = hypr::current_workspace();
-                        app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces);
-                    }
-                    "sway/workspaces" =>
-                    {
-                        app.modules_data.workspace_data.current_workspace = sway::current_workspace();
-                        app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces);
-                    }
-                    received_str =>
-                    {
-                        if !received_str.contains("custom_module[") { continue; }
-                        let index = received_str.replace("custom_module[", "").replace(']', "").replace([' ', '\n'], "").parse::<usize>();
-                        let Ok(index) = index else { continue };
-                        let module = &app.ron_config.custom_modules[index];
-                        let command_vec = &module.continous_command;
-
-                        if !command_vec.is_empty() && let Some((program, args)) = command_vec.split_first() 
-                        {
-                            let mut command = std::process::Command::new(program);
-                            command.args(args);
-                            let output = command.output();
-                            if module.use_continous_output_as_text && let Ok(ref output_result) = output
-                            {
-                                if !app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
-                                {
-                                    app.cached_continuous_outputs[index] = String::from_utf8_lossy(&output_result.stdout).to_string();
-                                }
-                                else
-                                {
-                                    app.cached_continuous_outputs.push(String::from_utf8_lossy(&output_result.stdout).to_string());
-                                }
-                            }
-                        };
-                    }
-                }
-            }
-        }
-    
-
-
-        Message::CommandFinished(index, text) => 
-        {
-            if app.cached_command_outputs.len() <= index 
-            {
-                app.cached_command_outputs.resize(index + 1, String::new());
-            }
-            app.cached_command_outputs[index] = text;
-        }
-
-
-
-        Message::CreateCustomModuleCommand((output_index, command_vec, custom_name, is_left_click, output_as_text)) =>
-        {
-            if let Some((program, args)) = command_vec.split_first()
-            {
-                let program = program.clone();
-                let args = args.to_vec();
-        
-                println!("\n=== Custom Module ===");
-                if custom_name.is_empty() {if is_left_click { println!("Custom Module Button Was *Left* Clicked!!"); } else { println!("Custom Module Button Was *Right* Clicked!!"); } } else if is_left_click { println!("Your '{custom_name}' Button Was *Left* Clicked!!"); } else { println!("Your '{custom_name}' Button Was *Right* Clicked!!"); }
-        
-
-                // ==============================
-                // OUTPUT USED → async + message
-                // ==============================
-                if output_as_text 
-                {
-                    return Command::perform
-                    (async move 
-                        {
-                                let output = std::process::Command::new(program).args(args).output().ok();
-                                if custom_name.is_empty() { println!("Custom Module Output:\n{:?}", output); } else { println!( "'{custom_name}' Command Was Running!!!, The Output Was:\n{:?}", output); }
-                                output.map(|o| String::from_utf8_lossy(&o.stdout).to_string()).unwrap_or_default()
-                        },
-                        move |text| { Message::CommandFinished(output_index.unwrap_or(0), text) },
-                    );
-                }
-        
-
-                // ==============================
-                // FIRE & FORGET → no message
-                // ==============================
-                std::thread::spawn(move || 
-                {
-                    let output = std::process::Command::new(program).args(args).output();
-                    if custom_name.is_empty() { println!("Custom Module Output:\n{:?}", output); } else { println!( "'{custom_name}' Command executed (no output capture):\n{:?}", output); }
-                });
-        
-                return Command::none();
-            }
-            else { println!("Empty command vector, no argument was parsed"); }
-        }
-
-
-
-        Message::TrayEvent(event) =>
-        {
-            match event
-            {
-                TrayEvent::ItemRegistered(service) =>
-                {
-                    if !app.modules_data.tray_icons.iter().any(|(_, s)| s == &service)
-                    {
-                        app.modules_data.tray_icons.push((None, service));
-                    }
-                }
-
-                TrayEvent::ItemUnregistered(service) => 
-                {
-                    println!("\n=== Tray item Unregistered ===\n{service}");
-                    app.modules_data.tray_icons.retain(|(_, s)| s != &service);
-                }
-
-                TrayEvent::Icon { data, width, height } =>
-                {
-                    for (handle, _) in &mut app.modules_data.tray_icons
-                    {
-                        if handle.is_none()
-                        {
-                            *handle = Some(image::Handle::from_rgba(width, height, data.clone()));
-                            return Command::none();
-                        }
-                    }
-                }
-
-            }
-        }
-
-
-
-        Message::TrayIconClicked(idx) =>
-        {
-            println!("TrayIcon Clicked");
-            if let Some((_, combined)) = app.modules_data.tray_icons.get(idx)
-            {
-                let parts: Vec<&str> = combined.split('|').collect();
-                if parts.len() != 2 { return Command::none(); }
-                let service = parts[0].to_string();
-                let path = parts[1].to_string();
-                return Command::perform(async move 
-                {
-                    let conn = zbus::Connection::session().await.unwrap();
-                    let proxy: zbus::Proxy<'_> = zbus::Proxy::new(&conn, service.as_str(), path.as_str(), "org.kde.StatusNotifierItem").await.unwrap();
-                    let menu_path: zbus::zvariant::OwnedObjectPath = proxy.get_property("Menu").await.unwrap();
-                    let items = crate::tray::load_menu(&service, menu_path.as_str()).await.unwrap_or_default();
-                    (service, menu_path.to_string(), items)
-                },
-                |(s,p,i)| Message::MenuLoaded(s,p,i));
-            }
-        }
-
-
-
-        Message::MenuLoaded(service, path, items) =>
-        {
-            println!("\n===# Menu Loaded!!! #===");
-            println!("Service: {service}");
-            println!("Menu Path: {path}");
-            println!("Id: {:?}\n", items);
-            let context_menu_data = crate::context_menu::ContextMenuData 
-            {
-                mouse_position: app.mouse_position,
-                ron_config: app.ron_config.clone(),
-                default_font: app.default_font,
-                monitor_size: app.monitor_size,
-                cursor_is_inside_menu: false, 
-                service,
-                items,
-                path,
-            };
-            
-            std::thread::spawn(move || 
-            {
-                run_context_menu(context_menu_data);
-            });
-
-        }
-        _=> {},
-    }
-
-    Command::none()
-}
-
-
-
-fn view(app: &AppData) -> Element<'_,Message>
-{
-    // ---------- MODULES ----------
-    let left = build_modules(&app.ron_config.left_modules, app);
-    let center = build_modules(&app.ron_config.center_modules, app);
-    let right = build_modules(&app.ron_config.right_modules, app);
-
-    // ---------- bar ----------
-    let bar = row!
-    [
-        container(left).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Top).width(Length::Fill),
-        container(center).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Top).width(Length::Shrink),
-        container(right).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Top).width(Length::Fill),
-    ].align_y(Alignment::Start);
-    bar.into()
-}
-
-
-
-fn build_modules<'a>(list: &'a Vec<String>, app: &'a AppData) -> Element<'a, Message> 
-{
-    let mut children = Vec::new();
-    for item in list 
-    {
-        let element: Element<_> = match item.as_str() 
-        {
-            "tray" => row ( app.modules_data.tray_icons.iter().enumerate().map(|(i,(icon,_))| { let content: Element<_> = if let Some(icon) = icon { image(icon.clone()).width(app.ron_config.tray_icon_size).height(app.ron_config.tray_icon_size).into() } else { text("?").into() }; button(content).style(|_: &Theme, status: button::Status| 
-            {
-                let hovered = app.ron_config.tray_button_hovered_color_rgb;
-                let hovered_text = app.ron_config.tray_button_hovered_text_color_rgb;
-                let pressed = app.ron_config.tray_button_pressed_color_rgb;
-                let normal = app.ron_config.tray_button_color_rgb;
-                let normal_text = app.ron_config.tray_button_text_color_rgb;
-                let border_size = app.ron_config.tray_border_size;
-                let border_color_rgba = app.ron_config.tray_border_color_rgba;
-                let border_radius = app.ron_config.tray_border_radius;
-                set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-            }).padding(app.ron_config.tray_button_size).on_press(Message::TrayIconClicked(i)).into() })).height(app.ron_config.tray_height).spacing(app.ron_config.tray_spacing).align_y(Alignment::Center).into(),
-
-
-
-            "hypr/workspaces" | "sway/workspaces" => mouse_area ( row(app.modules_data.workspace_data.visible_workspaces.iter().map(|i| 
-            {
-                let id = *i; // workspace id (i32)
-
-                // ================= TEXT RESOLUTION =================
-                let workspace_text = if id == app.modules_data.workspace_data.current_workspace
-                {
-                    // ---- ACTIVE WORKSPACE ----
-                    if let Some(selected) = &app.ron_config.workspace_selected_text 
-                    {
-                        selected.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string())
-                    } 
-                    else 
-                    {
-                        id.to_string()
-                    }
-                } 
-                else 
-                {
-                    // ---- NORMAL WORKSPACE ----
-                    app.ron_config.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string())
-                };
-
-                let padding_y = if let Some(value) = app.ron_config.workspace_different_selected_width && id == app.modules_data.workspace_data.current_workspace
-                {
-                    value
-                }
-                else
-                {
-                    app.ron_config.workspace_width
-                };
-
-                button(text(workspace_text.clone()).font(app.default_font).size(app.ron_config.workspace_text_size)).on_press(Message::WorkspaceButtonPressed(*i as usize)).style(move|_: &Theme, status: button::Status| 
-                {
-                    let hovered = app.ron_config.workspace_button_hovered_color_rgb;
-                    let hovered_text = app.ron_config.workspace_button_hovered_text_color_rgb;
-                    let pressed = app.ron_config.workspace_button_pressed_color_rgb;
-                    let normal = if app.modules_data.workspace_data.current_workspace == *i { app.ron_config.workspace_button_selected_color_rgb } else { app.ron_config.workspace_button_color_rgb };
-                    let normal_text = app.ron_config.workspace_button_text_color_rgb;
-                    let border_size = app.ron_config.workspace_border_size;
-                    let border_color_rgba = app.ron_config.workspace_border_color_rgba;
-                    let border_radius = app.ron_config.workspace_border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-                }).padding([app.ron_config.workspace_width, padding_y * 2]).into() 
-            })).height(app.ron_config.workspace_height).spacing(app.ron_config.workspace_spacing).align_y(Alignment::Center)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into(),
-
-
-
-
-            "clock" => 
-            {
-                let left_click_message: Message = match &app.ron_config.action_on_left_click_clock
-                {
-                    ActionOnClick::DefaultAction => Message::ToggleAltClock,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), true, false))
-
-                };
-                let right_click_message: Message = match &app.ron_config.action_on_right_click_clock
-                {
-                    ActionOnClick::DefaultAction => Message::Nothing,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
-
-                };
-
-                container(mouse_area(button(text(&*app.modules_data.clock_data.current_time).font(app.default_font).size(app.ron_config.clock_text_size)).style(|_: &Theme, status: button::Status| 
-                {
-                    let hovered = app.ron_config.clock_button_hovered_color_rgb;
-                    let hovered_text = app.ron_config.clock_button_hovered_text_color_rgb;
-                    let pressed = app.ron_config.clock_button_pressed_color_rgb;
-                    let normal = app.ron_config.clock_button_color_rgb;
-                    let normal_text = app.ron_config.clock_button_text_color_rgb;
-                    let border_size = app.ron_config.clock_border_size;
-                    let border_color_rgba = app.ron_config.clock_border_color_rgba;
-                    let border_radius = app.ron_config.clock_border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-                })).on_press(left_click_message).on_right_press(right_click_message)).height(app.ron_config.clock_height).align_y(Alignment::Center).into()
-            }
-
-
-
-            "volume/output" =>
-            {
-                let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_output
-                {
-                    ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false))
-
-                };
-                let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_output
-                {
-                    ActionOnClick::DefaultAction => Message::Nothing,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false))
-
-                };
-                container(mouse_area ( button (text(&*app.modules_data.volume_data.output_volume_level).font(app.default_font).size(app.ron_config.volume_output_text_size)).style(|_: &Theme, status: button::Status| 
-                {
-                    let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
-                    let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
-                    let pressed = app.ron_config.volume_output_button_pressed_color_rgb;
-                    let normal = app.ron_config.volume_output_button_color_rgb;
-                    let normal_text = app.ron_config.volume_output_button_text_color_rgb;
-                    let border_size = app.ron_config.volume_output_border_size;
-                    let border_color_rgba = app.ron_config.volume_output_border_color_rgba;
-                    let border_radius = app.ron_config.volume_output_border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-                })).on_press(left_click_message).on_right_press(right_click_message).on_enter(Message::IsHoveringVolumeOutput(true)).on_exit(Message::IsHoveringVolumeOutput(false))).height(app.ron_config.volume_output_height).align_y(Alignment::Center).into()
-            }
-
-
-
-            "volume/input" => 
-            {
-                let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_input
-                {
-                    ActionOnClick::DefaultAction => Message::MuteAudioPressedInput,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false))
-
-                };
-                let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_input
-                {
-                    ActionOnClick::DefaultAction => Message::Nothing,
-                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false))
-
-                };
-                container(mouse_area ( button (text(&*app.modules_data.volume_data.input_volume_level).font(app.default_font).size(app.ron_config.volume_input_text_size)).style(|_: &Theme, status: button::Status| 
-                {
-                    let hovered = app.ron_config.volume_input_button_hovered_color_rgb;
-                    let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
-                    let pressed = app.ron_config.volume_input_button_pressed_color_rgb;
-                    let normal = app.ron_config.volume_input_button_color_rgb;
-                    let normal_text = app.ron_config.volume_input_button_text_color_rgb;
-                    let border_size = app.ron_config.volume_input_border_size;
-                    let border_color_rgba = app.ron_config.volume_input_border_color_rgba;
-                    let border_radius = app.ron_config.volume_input_border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-                })).on_press(left_click_message).on_right_press(right_click_message).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).height(app.ron_config.volume_input_height).align_y(Alignment::Center).into()
-            }
-
-
-
-            received_str => 
-            {
-                if !received_str.contains("custom_module[") { continue; }
-                let index = received_str.replace("custom_module[", "").replace(']', "").replace([' ', '\n'], "").parse::<usize>();
-                let Ok(index) = index else { continue };
-                let custom_module = &app.ron_config.custom_modules[index];
-            
-
-                // TEXT RESOLUTION // COMMAND_OUTPUT
-                let text_to_render = if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()
-                {
-                    let output_text = app.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
-                    let output_text = ellipsize(output_text, custom_module.output_text_limit_len);
-                    custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
-                }
-                // CONTINOUS_OUTPUT
-                else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
-                {
-                    let output_text = ellipsize(&app.cached_continuous_outputs[index], custom_module.output_text_limit_len);
-                    custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{continous_output}", &output_text).replace('\n', "")
-                }
-                // NO OUTPUT JUST TEXT
-                else 
-                {
-                    custom_module.text.clone()
-                };
-
-
-                let element = container(mouse_area(button(text(text_to_render).wrapping(iced::widget::text::Wrapping::None).font(app.default_font).size(custom_module.text_size)).height(custom_module.height).style(|_, status| 
-                {
-                    let hovered = custom_module.button_hovered_color_rgb; 
-                    let hovered_text = custom_module.button_hovered_text_color_rgb; 
-                    let pressed = custom_module.button_pressed_color_rgb; 
-                    let normal = custom_module.button_color_rgb; 
-                    let normal_text = custom_module.button_text_color_rgb; 
-                    let border_size = custom_module.border_size; 
-                    let border_color_rgba = custom_module.border_color_rgba; 
-                    let border_radius = custom_module.border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
-                })).on_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true, custom_module.use_output_as_text,))).on_right_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false, custom_module.use_output_as_text)))).align_y(Alignment::Center);
-            
-                row![element].spacing(app.ron_config.custom_modules_spacing).into()
-            }
-        };
-        children.push(element);
-    }
-    row(children).spacing(8).align_y(Alignment::Center).into()
-}
-
-
