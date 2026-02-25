@@ -40,6 +40,7 @@ pub fn check_if_config_file_exists()
 // WARNING!!!: IF THE NUMBERS OF WORKSPACE IS GREATER THAN THE PARSED "hypr_workspace_text:" AND "hypr_workspace_selected_text:", THE NON-PARSED FORMAT WORKSPACE WILL HAVE THE NUMBER OF THE DETERMINED WORKSPACE
 // WARNING!!!: IS VERY IMPORTANT TO SET THE DISPLAY VARIABLE, NOT SETING IT UP MAY CAUSE UNDEFINED BEHAVIOUR
 // WARNING!!!: MISSING OPTIONS IS FINE AND WILL HAVE FALLBACK TO THE DEFAULT CONFIG, BUT MISSED SYNTAX WILL RESULT IN CRASH!!!
+// WARNING!!!: THE FIELD: "continous_command" MAY GENERATA HIGH CPU USAGE, DEPENDING ON HOW HEAVY IS THE COMMAND YOU PARSED
 
 // ===== TIPS =====
 // All possible modules: "tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input", "custom_modules"
@@ -57,13 +58,13 @@ BarConfig
     display: None,
     bar_position: Up,
     bar_size: (0, 45),
-    bar_background_color_rgba: (18, 18, 22, 92),
+    bar_background_color_rgba: (18, 18, 22, 0),
     font_family: "JetBrains Mono",
     font_style: "Bold",
 
 
     // ================= MODULES =================
-    left_modules: ["custom_modules"],
+    left_modules: ["custom_module[0]"],
     center_modules: ["clock"],
     right_modules: ["tray", "volume/output", "volume/input"],
 
@@ -102,7 +103,7 @@ BarConfig
     tray_button_pressed_color_rgb: (70, 20, 40),
     tray_border_color_rgba: (90, 70, 100, 100),
     tray_border_size: 1.0,
-    tray_border_radius: (6, 6, 6, 6),
+    tray_border_radius: (3, 3, 3, 3),
 
 
     // ================= CLOCK (STYLE) =================
@@ -115,7 +116,7 @@ BarConfig
     clock_button_pressed_color_rgb: (80, 25, 45),
     clock_border_color_rgba: (120, 80, 130, 100),
     clock_border_size: 1.0,
-    clock_border_radius: (8, 8, 8, 8),
+    clock_border_radius: (3, 3, 3, 3),
 
 
     // ================= VOLUME/OUTPUT (STYLE) =================
@@ -128,7 +129,7 @@ BarConfig
     volume_output_button_pressed_color_rgb: (85, 30, 50),
     volume_output_border_color_rgba: (110, 80, 120, 100),
     volume_output_border_size: 1.0,
-    volume_output_border_radius: (6, 6, 6, 6),
+    volume_output_border_radius: (3, 3, 3, 3),
 
 
     // ================= VOLUME/INPUT (STYLE) =================
@@ -141,7 +142,7 @@ BarConfig
     volume_input_button_pressed_color_rgb: (85, 30, 50),
     volume_input_border_color_rgba: (110, 80, 120, 100),
     volume_input_border_size: 1.0,
-    volume_input_border_radius: (6, 6, 6, 6),
+    volume_input_border_radius: (3, 3, 3, 3),
 
 
     // ================= HYPR WORKSPACES (STYLE) =================
@@ -160,7 +161,7 @@ BarConfig
     workspace_button_pressed_color_rgb: (90, 25, 50),
     workspace_border_color_rgba: (120, 90, 135, 100),
     workspace_border_size: 1.0,
-    workspace_border_radius: (6, 6, 6, 6),
+    workspace_border_radius: (3, 3, 3, 3),
 
 
     // ================= CONTEXT MENU (STYLE) =================
@@ -179,12 +180,12 @@ BarConfig
     context_menu_button_pressed_color_rgb: (85, 30, 55),
     context_menu_border_color_rgba: (130, 90, 140, 100),
     context_menu_border_size: 1.0,
-    context_menu_border_radius: (8, 8, 8, 8),
+    context_menu_border_radius: (3, 3, 3, 3),
 
     // ================= CUSTOM MODULES =================
     custom_modules_spacing: 10,
     custom_modules: [
-	// Example of an button that just runs an app
+	// Example of an button that just runs an app or command
 	(
 		name: "Wofi Custom Module",
 		text: "Start Wofi",
@@ -197,30 +198,99 @@ BarConfig
     		button_pressed_color_rgb: (85, 30, 55),
     		border_color_rgba: (130, 90, 140, 100),
     		border_size: 1.0,
-    		border_radius: (8, 8, 8, 8),
+    		border_radius: (3, 3, 3, 3),
 		command_to_exec_on_left_click: ["wofi", "--show", "drun"],
 		command_to_exec_on_right_click: ["wofi", "--show", "run"],
 	),
         // Example of an button that displays the output
-	(
-		name: "print",
-		text: "print output:",
-    		text_size: 15,
-		height: 30,
-    		button_color_rgb: (255, 40, 55),
-    		button_text_color_rgb: (230, 230, 240),
-    		button_hovered_color_rgb: (150, 40, 80),
-    		button_hovered_text_color_rgb: (255, 255, 255),
-    		button_pressed_color_rgb: (85, 30, 55),
-    		border_color_rgba: (130, 90, 140, 100),
-    		border_size: 1.0,
-    		border_radius: (8, 8, 8, 8),
-		use_output_as_text: true,
-		output_as_text_format: "{text} {output}",
-                output_text_limit_len: 100,
-		command_to_exec_on_left_click: ["echo", "YAAAYYY"],
-		command_to_exec_on_right_click: ["echo", "IT'S WORKING!!!"],
-	)
+	//(
+	//	name: "print",
+	//	text: "print output:",
+    	//	text_size: 15,
+	//	height: 30,
+    	//	button_color_rgb: (255, 40, 55),
+    	//	button_text_color_rgb: (230, 230, 240),
+    	//	button_hovered_color_rgb: (150, 40, 80),
+    	//	button_hovered_text_color_rgb: (255, 255, 255),
+    	//	button_pressed_color_rgb: (85, 30, 55),
+    	//	border_color_rgba: (130, 90, 140, 100),
+    	//	border_size: 1.0,
+    	//	border_radius: (3, 3, 3, 3),
+	//	use_output_as_text: true,
+	//	all_output_as_text_format: "{text} {output}",
+        //        output_text_limit_len: 100,
+	//	command_to_exec_on_left_click: ["echo", "YAAAYYY"],
+	//	command_to_exec_on_right_click: ["echo", "IT'S WORKING!!!"],
+	//),
+        // Example of an button that displays the continous output
+	//(
+	//	name: "Playerctl Status - Artist - Media",
+	//	text: "Continous Output:",
+    	//	text_size: 15,
+	//	height: 30,
+    	//	button_color_rgb: (255, 40, 55),
+    	//	button_text_color_rgb: (230, 230, 240),
+    	//	button_hovered_color_rgb: (150, 40, 80),
+    	//	button_hovered_text_color_rgb: (255, 255, 255),
+    	//	button_pressed_color_rgb: (85, 30, 55),
+    	//	border_color_rgba: (130, 90, 140, 100),
+    	//	border_size: 1.0,
+    	//	border_radius: (3, 3, 3, 3),
+	//	use_output_as_text: false,
+	//	use_continous_output_as_text: true,
+	//	all_output_as_text_format: ": {continous_output}",
+        //        output_text_limit_len: 50,
+	//	continous_command: ["playerctl", "--player=spotify", "metadata", "--format", "{{ artist }} - {{ title }}"]
+	//),
+	//(
+	//	name: "Playerctl Previous Button",
+	//	text: "󰒮",
+    	//	text_size: 15,
+	//	height: 30,
+    	//	button_color_rgb: (45, 40, 55),
+    	//	button_text_color_rgb: (230, 230, 240),
+    	//	button_hovered_color_rgb: (150, 40, 80),
+    	//	button_hovered_text_color_rgb: (255, 255, 255),
+    	//	button_pressed_color_rgb: (85, 30, 55),
+    	//	border_color_rgba: (130, 90, 140, 100),
+    	//	border_size: 1.0,
+    	//	border_radius: (3, 3, 3, 3),
+	//	command_to_exec_on_left_click: ["playerctl", "--player=spotify", "previous"],
+	//),
+	//(
+	//	name: "Playerctl Play-Pause Button",
+	//	text: "󰏤",
+    	//	text_size: 15,
+	//	height: 30,
+    	//	button_color_rgb: (45, 40, 55),
+    	//	button_text_color_rgb: (230, 230, 240),
+    	//	button_hovered_color_rgb: (150, 40, 80),
+    	//	button_hovered_text_color_rgb: (255, 255, 255),
+    	//	button_pressed_color_rgb: (85, 30, 55),
+    	//	border_color_rgba: (130, 90, 140, 100),
+	//	border_size: 1.0,
+	//	border_radius: (3, 3, 3, 3),
+	//	all_output_as_text_format: "{continous_output}",
+	//	use_continous_output_as_text: true,
+        //	//remove the "{}" around the 'r#' and the other '#' on the end
+	//	continous_command: ["bash", "-c", {r#}"case "$(playerctl --player=spotify status 2>/dev/null)" in Playing) printf "▶" ;; Paused) printf "⏸" ;; *) printf "" ;; esac"{#}],
+	//	command_to_exec_on_left_click: ["playerctl", "--player=spotify", "play-pause"],
+	//),
+	//(
+	//	name: "Playerctl Next Button",
+	//	text: "󰒭",
+    	//	text_size: 15,
+	//	height: 30,
+    	//	button_color_rgb: (45, 40, 55),
+    	//	button_text_color_rgb: (230, 230, 240),
+    	//	button_hovered_color_rgb: (150, 40, 80),
+    	//	button_hovered_text_color_rgb: (255, 255, 255),
+    	//	button_pressed_color_rgb: (85, 30, 55),
+    	//	border_color_rgba: (130, 90, 140, 100),
+    	//	border_size: 1.0,
+    	//	border_radius: (3, 3, 3, 3),
+	//	command_to_exec_on_left_click: ["playerctl", "--player=spotify", "next"],
+	//)
     ],
 )"#;
         let mut file = File::create(ron_file_config_path).expect("Couldn't Create Default Config File");

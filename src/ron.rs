@@ -33,10 +33,12 @@ pub struct CustomModule
     pub border_size: f32,
     pub border_radius: [u32;4],
     pub use_output_as_text: bool,
-    pub output_as_text_format: String,
+    pub use_continous_output_as_text: bool,
+    pub all_output_as_text_format: String,
     pub output_text_limit_len: usize,
     pub command_to_exec_on_left_click: Vec<String>,
-    pub command_to_exec_on_right_click: Vec<String>
+    pub command_to_exec_on_right_click: Vec<String>,
+    pub continous_command: Vec<String>
 }
 
 impl Default for CustomModule
@@ -59,10 +61,12 @@ impl Default for CustomModule
             border_size: 1.0,
             border_radius: [6, 6, 6, 6],
             use_output_as_text: false,
-            output_as_text_format: "{name}, {output}".to_string(),
+            use_continous_output_as_text: false,
+            all_output_as_text_format: "{output}".to_string(),
             output_text_limit_len: 100,
             command_to_exec_on_left_click: vec![], 
-            command_to_exec_on_right_click: vec![]
+            command_to_exec_on_right_click: vec![],
+            continous_command: vec![]
         }
     }
 }
@@ -400,7 +404,7 @@ impl Default for BarConfig
 
 
 
-pub fn read_ron_config() -> (BarConfig, Anchor, Vec<String>, Vec<String>)
+pub fn read_ron_config() -> (BarConfig, Anchor, Vec<String>)
 {
     println!("\n=== READING CONFIG FILE ===");
     let home_path = home::home_dir().expect("Failed To Get Home Directory");
@@ -425,26 +429,27 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<String>, Vec<String>)
     };
 
     let mut active_modules = Vec::new();
-    let mut inactive_modules = Vec::new();
-    let all_possible_modules = ["tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input", "custom_modules"];
+    let all_possible_modules = ["tray", "hypr/workspaces", "sway/workspaces", "clock", "volume/output", "volume/input"];
     let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
-    for module in all_possible_modules
+    for position in all_possible_position
     {
-        for position in all_possible_position
+        for item in position 
         {
-            for item in position 
+            if item.contains("custom_module[")
+            {
+                active_modules.push(item.to_string())
+            };
+            for module in all_possible_modules
             {
                 if *item == module
                 {
                     active_modules.push(module.to_string());
                 }
-                else
-                {
-                    inactive_modules.push(module.to_string());
-                }
             }
         }
     }
 
-    (bar_config, anchor_position, active_modules, inactive_modules)
+    println!("Active modules: {:?}", active_modules);
+
+    (bar_config, anchor_position, active_modules)
 }
