@@ -25,10 +25,10 @@ pub fn view(app: &AppData) -> Element<'_,Message>
     // ---------- bar ----------
     let bar = row!
     [
-        container(left).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Top).width(Length::Fill),
-        container(center).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Top).width(Length::Shrink),
-        container(right).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Top).width(Length::Fill),
-    ].align_y(Alignment::Start);
+        container(left).align_x(iced::alignment::Horizontal::Left).width(Length::Fill),
+        container(center).align_x(iced::alignment::Horizontal::Center).width(Length::Shrink),
+        container(right).align_x(iced::alignment::Horizontal::Right).width(Length::Fill),
+    ].align_y(iced::alignment::Vertical::Center).width(Length::Fill).height(Length::Fill);
     bar.into()
 }
 
@@ -234,7 +234,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData) -> Ele
                     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
                 })).on_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true, custom_module.use_output_as_text,))).on_right_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false, custom_module.use_output_as_text)))).align_y(Alignment::Center);
             
-                row![element].spacing(app.ron_config.custom_modules_spacing).into()
+                row![element].spacing(app.ron_config.custom_modules_spacing).align_y(Alignment::Center).into()
             }
         };
         children.push(element);
