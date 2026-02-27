@@ -128,8 +128,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 match axis 
                 {
-                    Axis::Horizontal => row(workspace_buttons).width(Length::Fill).align_y(Alignment::Center).into(),
-                    Axis::Vertical => column(workspace_buttons).width(Length::Shrink).align_x(Alignment::Center).into(),
+                    Axis::Horizontal => row(workspace_buttons).width(Length::Fill).align_y(Alignment::Center).spacing(app.ron_config.workspace_spacing).into(),
+                    Axis::Vertical => column(workspace_buttons).width(Length::Shrink).align_x(Alignment::Center).spacing(app.ron_config.workspace_spacing).into(),
                 }
             }
 
