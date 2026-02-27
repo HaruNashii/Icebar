@@ -40,6 +40,8 @@ pub struct BarConfig
     // ================= GENERAL =================
     pub display: Option<String>,
     pub bar_position: BarPosition,
+    pub floating_space: i32,
+    pub increased_exclusive_bar_zone: u32,
     pub bar_size: [u32;2],
     pub bar_background_color_rgba: [u8;4],
     pub font_family: String,
@@ -198,7 +200,9 @@ impl Default for BarConfig
             // ================= GENERAL =================
             display: None,
             bar_position: BarPosition::Up,
+            floating_space: 0,
             bar_size: [0, 45],
+            increased_exclusive_bar_zone: 0,
             bar_background_color_rgba: [18, 18, 22, 92],
             font_family: "JetBrains Mono".into(),
             font_style: "Normal".into(),
