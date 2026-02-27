@@ -78,6 +78,7 @@ pub struct BarConfig
 
     // ================= TRAY (STYLE) =================
     pub tray_icon_size: u32,
+    pub tray_spacing: u32,
     pub tray_button_size: u16,
     pub tray_background_color_rgba: [u8;4],
     pub tray_button_color_rgb: [u8;3],
@@ -250,6 +251,7 @@ impl Default for BarConfig
 
             // ================= TRAY (STYLE) =================
             tray_icon_size: 18,
+            tray_spacing: 5,
             tray_button_size: 5,
             tray_background_color_rgba: [30, 30, 36, 0],
             tray_button_color_rgb: [60, 50, 70],

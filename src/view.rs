@@ -78,8 +78,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             
                 match axis 
                 {
-                    Axis::Horizontal => row(children).width(Length::Shrink).align_y(Alignment::Center).into(),
-                    Axis::Vertical => column(children).width(Length::Shrink).align_x(Alignment::Center).into()
+                    Axis::Horizontal => row(children).spacing(app.ron_config.tray_spacing).width(Length::Shrink).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column(children).spacing(app.ron_config.tray_spacing).width(Length::Shrink).align_x(Alignment::Center).into()
                 }
             },
 
@@ -111,7 +111,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                     let [r, g, b] = &app.ron_config.workspace_text_color_rgb;
                     let color_to_send = Color::from_rgb8(*r, *g, *b);
-                    button(text(orient_text(&workspace_text.clone(), &app.ron_config.workspace_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace_text_size).center()).padding(padding_y).on_press(Message::WorkspaceButtonPressed(*i as usize)).style(move |_: &Theme, status: button::Status| 
+                    mouse_area(button(text(orient_text(&workspace_text.clone(), &app.ron_config.workspace_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace_text_size).center()).padding(padding_y).style(move |_: &Theme, status: button::Status| 
                     {
                         let hovered = app.ron_config.workspace_button_hovered_color_rgb;
                         let hovered_text = app.ron_config.workspace_button_hovered_text_color_rgb;
@@ -125,7 +125,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         let border_color_rgba = app.ron_config.workspace_border_color_rgba;
                         let border_radius = app.ron_config.workspace_border_radius;
                         set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius})
-                     }).padding([app.ron_config.workspace_width, padding_y * 2]).into()
+                     }).padding([app.ron_config.workspace_width, padding_y * 2])).on_press(Message::WorkspaceButtonPressed(*i as usize)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into()
                  });
 
                 match axis 

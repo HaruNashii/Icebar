@@ -119,6 +119,7 @@ BarConfig
 
     // ================= TRAY (STYLE) =================
     tray_icon_size: 20,
+    tray_spacing: 5,
     tray_button_size: 5,
     tray_background_color_rgba: (30, 30, 36, 0),
     tray_button_color_rgb: (60, 50, 70),
