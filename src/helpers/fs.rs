@@ -110,9 +110,9 @@ BarConfig
     (
     "   {}%", "󰖀   {}%", "   {}%", "   {}%", "   {}%", "   + {}%"
     ),
-    output_volume_muted_format: "  Muted",
-    input_volume_format: ("  {}%", "  {}%", "  {}%", "  {}%", "  {}%", "󰢴  {}%"),
-    input_volume_muted_format: "  Muted",
+    output_volume_muted_format: "   Muted",
+    input_volume_format: ("   {}%", "  {}%", "  {}%", "  {}%", "  {}%", "󰢴  {}%"),
+    input_volume_muted_format: "   Muted",
     clock_format: "󰥔  %H:%M",
     clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S",
 
@@ -224,7 +224,7 @@ BarConfig
     	//Example of an button that just runs an app or command
 	(
 		name: "Wofi Custom Module",
-		text: "󰣇",
+		text: "󰣇 ",
 		text_orientation: Horizontal,
     		text_size: 15,
     		text_color_rgb: (255, 255, 255),
