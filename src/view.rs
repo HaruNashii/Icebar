@@ -294,8 +294,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
     match axis 
     {
-        Axis::Vertical => column(children).width(Length::Fill).align_x(Alignment::Center).into(),
-        Axis::Horizontal => row(children).width(Length::Shrink).align_y(Alignment::Center).into() 
+        Axis::Vertical => column(children).width(Length::Fill).align_x(Alignment::Center).spacing(app.ron_config.spacing_between_all_modules).into(),
+        Axis::Horizontal => row(children).width(Length::Shrink).align_y(Alignment::Center).spacing(app.ron_config.spacing_between_all_modules).into() 
     }
 }
 
@@ -310,7 +310,7 @@ fn axis_layout<'a>(axis: Axis, start: Element<'a, Message>, center: Element<'a, 
             row!
             [
                 container(start).width(Length::Fill).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Center),
-                container(center).width(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Center),
+                container(center).width(Length::Shrink).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Center),
                 container(end).width(Length::Fill).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Center),
             ].width(Length::Fill).height(Length::Fill).align_y(iced::alignment::Vertical::Center).into()
         }

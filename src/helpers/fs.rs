@@ -92,6 +92,7 @@ BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    spacing_between_all_modules: 5,
     force_static_position_context_menu: None,
     reverse_scroll_on_workspace: false,
     persistent_workspaces: Some(5),

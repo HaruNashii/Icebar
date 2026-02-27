@@ -53,6 +53,7 @@ pub struct BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    pub spacing_between_all_modules: u32,
     pub force_static_position_context_menu: Option<(i32, i32)>,
     pub reverse_scroll_on_workspace: bool,
     pub persistent_workspaces: Option<u8>,
@@ -203,6 +204,7 @@ impl Default for BarConfig
 
 
             // ================= MODULES CONFIGS =================
+            spacing_between_all_modules: 5,
             force_static_position_context_menu: None,
             reverse_scroll_on_workspace: false,
             persistent_workspaces: None,
