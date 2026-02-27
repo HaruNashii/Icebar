@@ -177,8 +177,8 @@ BarConfig
 
 
     // ================= HYPR WORKSPACES (STYLE) =================
-    workspace_heigth: 30,
-    workspace_width: 15,
+    workspace_heigth: 5,
+    workspace_width: 5,
     workspace_different_selected_width: None,
     workspace_text_size: 15,
     workspace_text_color_rgb: (255, 255, 255),
