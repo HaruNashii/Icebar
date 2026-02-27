@@ -171,7 +171,9 @@ fn view(data: &ContextMenuData) -> Element<'_, ContextMenuMessage>
             }
         };
 
-        button(text(text_to_send).align_y(Alignment::Center).align_y(Alignment::Center).font(data.default_font).size(data.ron_config.context_menu_text_size).width(Length::Fill).height(Length::Fill).center()).width(width).height(heigth).on_press(ContextMenuMessage::Action(data.service.to_string(), data.path.to_string(), item.id, item.label.to_string())).style(|_: &Theme, status: button::Status| 
+        let [r, g, b] = data.ron_config.context_menu_text_color_rgb;
+        let color_to_send = Color::from_rgb8(r, g, b);
+        button(text(text_to_send).color(color_to_send).align_y(Alignment::Center).align_y(Alignment::Center).font(data.default_font).size(data.ron_config.context_menu_text_size).width(Length::Fill).height(Length::Fill).center()).width(width).height(heigth).on_press(ContextMenuMessage::Action(data.service.to_string(), data.path.to_string(), item.id, item.label.to_string())).style(|_: &Theme, status: button::Status| 
         {
             let hovered = data.ron_config.context_menu_button_hovered_color_rgb;
             let hovered_text = data.ron_config.context_menu_button_hovered_text_color_rgb;

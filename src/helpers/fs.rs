@@ -133,6 +133,7 @@ BarConfig
 
     // ================= CLOCK (STYLE) =================
     clock_text_size: 15,
+    clock_text_color_rgb: (255, 255, 255),
     clock_text_orientation: Horizontal,
     clock_background_color_rgba: (25, 25, 30, 95),
     clock_button_color_rgb: (50, 45, 60),
@@ -147,6 +148,7 @@ BarConfig
 
     // ================= VOLUME/OUTPUT (STYLE) =================
     volume_output_text_size: 15,
+    volume_output_text_color_rgb: (255, 255, 255),
     volume_output_text_orientation: Horizontal,
     volume_output_background_color_rgba: (30, 30, 36, 95),
     volume_output_button_color_rgb: (55, 45, 65),
@@ -161,6 +163,7 @@ BarConfig
 
     // ================= VOLUME/INPUT (STYLE) =================
     volume_input_text_size: 15,
+    volume_input_text_color_rgb: (255, 255, 255),
     volume_input_text_orientation: Horizontal,
     volume_input_background_color_rgba: (30, 30, 36, 95),
     volume_input_button_color_rgb: (55, 45, 65),
@@ -178,6 +181,7 @@ BarConfig
     workspace_width: 15,
     workspace_different_selected_width: None,
     workspace_text_size: 15,
+    workspace_text_color_rgb: (255, 255, 255),
     workspace_text_orientation: Horizontal,
     workspace_text: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
     workspace_selected_text: Some(["●", "●", "●", "●", "●", "●", "●", "●", "●", "●"]),
@@ -201,6 +205,7 @@ BarConfig
     context_menu_background_border_size: 1.0,
     context_menu_background_border_radius: (3.0, 3.0, 3.0, 3.0),
     context_menu_text_size: 15,
+    context_menu_text_color_rgb: (255, 255, 255),
     context_menu_orientation: Vertical,
     context_menu_size: 300,
     context_menu_item_size: 30,
@@ -222,6 +227,7 @@ BarConfig
 		text: "󰣇",
 		text_orientation: Horizontal,
     		text_size: 15,
+    		text_color_rgb: (255, 255, 255),
 		height: 30,
     		button_color_rgb: (45, 40, 55),
     		button_text_color_rgb: (230, 230, 240),

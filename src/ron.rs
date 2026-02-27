@@ -92,6 +92,7 @@ pub struct BarConfig
 
     // ================= CLOCK (STYLE) =================
     pub clock_text_size: u32,
+    pub clock_text_color_rgb: [u8;3],
     pub clock_text_orientation: TextOrientation,
     pub clock_background_color_rgba: [u8;4],
     pub clock_button_color_rgb: [u8;3],
@@ -106,6 +107,7 @@ pub struct BarConfig
 
     // ================= VOLUME/OUTPUT (STYLE) =================
     pub volume_output_text_size: u32,
+    pub volume_output_text_color_rgb: [u8;3],
     pub volume_output_text_orientation: TextOrientation,
     pub volume_output_background_color_rgba: [u8;4],
     pub volume_output_button_color_rgb: [u8;3],
@@ -120,6 +122,7 @@ pub struct BarConfig
 
     // ================= VOLUME/INPUT (STYLE) =================
     pub volume_input_text_size: u32,
+    pub volume_input_text_color_rgb: [u8;3],
     pub volume_input_text_orientation: TextOrientation,
     pub volume_input_background_color_rgba: [u8;4],
     pub volume_input_button_color_rgb: [u8;3],
@@ -137,8 +140,9 @@ pub struct BarConfig
     pub workspace_width: u16,
     pub workspace_different_selected_width: Option<u16>,
     pub workspace_text_size: u32,
-    pub workspace_text_orientation: TextOrientation,
     pub workspace_text: Vec<String>,
+    pub workspace_text_color_rgb: [u8;3],
+    pub workspace_text_orientation: TextOrientation,
     pub workspace_selected_text: Option<Vec<String>>,
     pub workspace_spacing: u32,
     pub workspace_background_color_rgba: [u8;4],
@@ -161,6 +165,7 @@ pub struct BarConfig
     pub context_menu_background_border_radius: [f32;4],
 
     pub context_menu_text_size: u32,
+    pub context_menu_text_color_rgb: [u8;3],
     pub context_menu_orientation: TextOrientation,
     pub context_menu_size: u32,
     pub context_menu_item_size: u32,
@@ -259,6 +264,7 @@ impl Default for BarConfig
 
             // ================= CLOCK (STYLE) =================
             clock_text_size: 15,
+            clock_text_color_rgb: [255, 255, 255],
             clock_text_orientation: TextOrientation::Horizontal,
             clock_background_color_rgba: [25, 25, 30, 95],
             clock_button_color_rgb: [50, 45, 60],
@@ -273,6 +279,7 @@ impl Default for BarConfig
 
             // ================= VOLUME/OUTPUT (STYLE) =================
             volume_output_text_size: 15,
+            volume_output_text_color_rgb: [255, 255, 255],
             volume_output_text_orientation: TextOrientation::Horizontal,
             volume_output_background_color_rgba: [30, 30, 36, 95],
             volume_output_button_color_rgb: [55, 45, 65],
@@ -287,6 +294,7 @@ impl Default for BarConfig
 
             // ================= VOLUME/INPUT (STYLE) =================
             volume_input_text_size: 15,
+            volume_input_text_color_rgb: [255, 255, 255],
             volume_input_text_orientation: TextOrientation::Horizontal,
             volume_input_background_color_rgba: [30, 30, 36, 95],
             volume_input_button_color_rgb: [55, 45, 65],
@@ -304,6 +312,7 @@ impl Default for BarConfig
             workspace_width: 15,
             workspace_different_selected_width: None,
             workspace_text_size: 15,
+            workspace_text_color_rgb: [255, 255, 255],
             workspace_text_orientation: TextOrientation::Horizontal,
             workspace_text: vec![
                 "1".into(),
@@ -350,6 +359,7 @@ impl Default for BarConfig
             context_menu_background_border_radius: [3.0, 3.0, 3.0, 3.0],
             
             context_menu_text_size: 15,
+            context_menu_text_color_rgb: [255, 255, 255],
             context_menu_orientation: TextOrientation::Vertical,
             context_menu_size: 300,
             context_menu_item_size: 30,

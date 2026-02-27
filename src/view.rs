@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Element, Length, Theme, widget::{button, column, container, image, mouse_area, row, text}};
+use iced::{Alignment, Color, Element, Length, Theme, widget::{button, column, container, image, mouse_area, row, text}};
 
 
 
@@ -79,7 +79,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 match axis 
                 {
                     Axis::Horizontal => row(children).width(Length::Fill).align_y(Alignment::Center).into(),
-                    Axis::Vertical => column(children).width(Length::Shrink).align_x(Alignment::Center).into()
+                    Axis::Vertical => column(children).width(Length::Fill).align_x(Alignment::Center).into()
                 }
             },
 
@@ -109,7 +109,9 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     else 
                     { app.ron_config.workspace_width };
 
-                    button(text(orient_text(&workspace_text.clone(), &app.ron_config.workspace_text_orientation)).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace_text_size).center()).padding(padding_y).on_press(Message::WorkspaceButtonPressed(*i as usize)).style(move |_: &Theme, status: button::Status| 
+                    let [r, g, b] = &app.ron_config.workspace_text_color_rgb;
+                    let color_to_send = Color::from_rgb8(*r, *g, *b);
+                    button(text(orient_text(&workspace_text.clone(), &app.ron_config.workspace_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace_text_size).center()).padding(padding_y).on_press(Message::WorkspaceButtonPressed(*i as usize)).style(move |_: &Theme, status: button::Status| 
                     {
                         let hovered = app.ron_config.workspace_button_hovered_color_rgb;
                         let hovered_text = app.ron_config.workspace_button_hovered_text_color_rgb;
@@ -150,7 +152,9 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
                 };
 
-                let clock_container: Element<'a, Message> = container(mouse_area(button(text(orient_text(&app.modules_data.clock_data.current_time, &app.ron_config.clock_text_orientation)).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.clock_text_size).center()).style(|_: &Theme, status: button::Status| 
+                let [r, g, b] = &app.ron_config.clock_text_color_rgb;
+                let color_to_send = Color::from_rgb8(*r, *g, *b);
+                let clock_container: Element<'a, Message> = container(mouse_area(button(text(orient_text(&app.modules_data.clock_data.current_time, &app.ron_config.clock_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.clock_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
                     let hovered = app.ron_config.clock_button_hovered_color_rgb;
                     let hovered_text = app.ron_config.clock_button_hovered_text_color_rgb;
@@ -187,7 +191,9 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 };
 
-                let volume_output_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.output_volume_level, &app.ron_config.volume_output_text_orientation)).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_output_text_size).center()).style(|_: &Theme, status: button::Status| 
+                let [r, g, b] = &app.ron_config.volume_output_text_color_rgb;
+                let color_to_send = Color::from_rgb8(*r, *g, *b);
+                let volume_output_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.output_volume_level, &app.ron_config.volume_output_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_output_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
                     let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
                     let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
@@ -202,8 +208,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 match axis 
                 {
-                    Axis::Vertical => column([volume_output_container]).width(Length::Fill).align_x(Alignment::Center).into(),
-                    Axis::Horizontal => row([volume_output_container]).width(Length::Shrink).align_y(Alignment::Center).into() 
+                    Axis::Vertical => column([volume_output_container]).width(Length::Fill).align_x(Alignment::Center).spacing(50).into(),
+                    Axis::Horizontal => row([volume_output_container]).width(Length::Fill).align_y(Alignment::Center).spacing(50).into() 
                 }
             }
 
@@ -223,7 +229,9 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false))
 
                 };
-                let volume_input_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.input_volume_level, &app.ron_config.volume_input_text_orientation)).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_input_text_size).center()).style(|_: &Theme, status: button::Status| 
+                let [r, g, b] = &app.ron_config.volume_input_text_color_rgb;
+                let color_to_send = Color::from_rgb8(*r, *g, *b);
+                let volume_input_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.input_volume_level, &app.ron_config.volume_input_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_input_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
                     let hovered = app.ron_config.volume_input_button_hovered_color_rgb;
                     let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
@@ -239,7 +247,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 match axis 
                 {
                     Axis::Vertical => column([volume_input_container]).width(Length::Fill).align_x(Alignment::Center).into(),
-                    Axis::Horizontal => row([volume_input_container]).width(Length::Shrink).align_y(Alignment::Center).into() 
+                    Axis::Horizontal => row([volume_input_container]).width(Length::Fill).align_y(Alignment::Center).into() 
                 }
             }
 
@@ -269,7 +277,9 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     custom_module.text.clone()
                 };
 
-                let element = container(mouse_area(button(text(orient_text(&text_to_render, &custom_module.text_orientation)).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(custom_module.text_size).center()).style(|_, status| 
+                let [r, g, b] = &custom_module.text_color_rgb;
+                let color_to_send = Color::from_rgb8(*r, *g, *b);
+                let element = container(mouse_area(button(text(orient_text(&text_to_render, &custom_module.text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(custom_module.text_size).center()).style(|_, status| 
                 {
                     let hovered = custom_module.button_hovered_color_rgb; 
                     let hovered_text = custom_module.button_hovered_text_color_rgb; 
@@ -295,7 +305,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
     match axis 
     {
         Axis::Vertical => column(children).width(Length::Fill).align_x(Alignment::Center).spacing(app.ron_config.spacing_between_all_modules).into(),
-        Axis::Horizontal => row(children).width(Length::Shrink).align_y(Alignment::Center).spacing(app.ron_config.spacing_between_all_modules).into() 
+        Axis::Horizontal => row(children).width(Length::Fill).align_y(Alignment::Center).spacing(app.ron_config.spacing_between_all_modules).into() 
     }
 }
 
@@ -319,9 +329,9 @@ fn axis_layout<'a>(axis: Axis, start: Element<'a, Message>, center: Element<'a, 
         {
             column!
             [
-                container(start).height(Length::Shrink).align_y(iced::alignment::Vertical::Top).align_x(iced::alignment::Horizontal::Center),
-                container(center).height(Length::Fill).align_y(iced::alignment::Vertical::Center).align_x(iced::alignment::Horizontal::Center),
-                container(end).height(Length::Shrink).align_y(iced::alignment::Vertical::Bottom).align_x(iced::alignment::Horizontal::Center),
+                container(start).height(Length::Fill).align_y(iced::alignment::Vertical::Top).align_x(iced::alignment::Horizontal::Center),
+                container(center).height(Length::Shrink).align_y(iced::alignment::Vertical::Center).align_x(iced::alignment::Horizontal::Center),
+                container(end).height(Length::Fill).align_y(iced::alignment::Vertical::Bottom).align_x(iced::alignment::Horizontal::Center),
             ].width(Length::Fill).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).into()
         }
     }
