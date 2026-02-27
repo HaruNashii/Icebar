@@ -46,12 +46,10 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     if y < 2. { volume::volume(volume::VolumeAction::DecreaseInput(app.ron_config.incremental_steps_input)); }
             }
 
-            println!("hovering: {}", app.is_hovering_workspace);
             if app.is_hovering_workspace
             {
                 let hypr_active = is_active_module(&app.modules_data.active_modules, Modules::HyprWorkspaces);
                 let sway_active = is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces);
-                println!("hypr active: {hypr_active}");
 
                 // === SCROLL UP ===
                 if y > 2. 
@@ -60,7 +58,6 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     {
                         if hypr_active
                         {
-                            println!("scroll up hypr");
                             change_workspace_hypr(UserHyprAction::MoveNext);
                         } 
                         else if sway_active
@@ -70,7 +67,6 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     }
                     else if hypr_active
                     {
-                            println!("scroll up hypr");
                         change_workspace_hypr(UserHyprAction::MovePrev);
                     } 
                     else if sway_active
@@ -86,7 +82,6 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     {
                         if hypr_active
                         {
-                            println!("scroll down hypr");
                             change_workspace_hypr(UserHyprAction::MovePrev);
                         } 
                         else if sway_active
@@ -96,7 +91,6 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     }
                     else if hypr_active
                     {
-                        println!("scroll down hypr");
                         change_workspace_hypr(UserHyprAction::MoveNext);
                     } 
                     else if sway_active
