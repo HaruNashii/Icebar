@@ -41,13 +41,25 @@ pub fn check_if_config_file_exists()
 // WARNING!!!: IS VERY IMPORTANT TO SET THE DISPLAY VARIABLE, NOT SETING IT UP MAY CAUSE UNDEFINED BEHAVIOUR
 // WARNING!!!: MISSING OPTIONS IS FINE AND WILL HAVE FALLBACK TO THE DEFAULT CONFIG, BUT MISSED SYNTAX WILL RESULT IN CRASH!!!
 // WARNING!!!: THE FIELD: "continous_command" MAY GENERATA HIGH CPU USAGE, DEPENDING ON HOW HEAVY IS THE COMMAND YOU PARSED
+// WARNING!!!: THE FIELD: "continous_command" MAY NOT BE SET TO RUN AN LOOP OF ANY KIND, THE PROCESS WILL HANG FOREVER IF YOU RUN AN LOOP WITH IT
+// WARNING!!!: THE OPTION "bar_size: ()" HAS THE TYPE AS: (WIDTH, HEIGTH), IF YOU ARE CREATING AN SIDE BAR, THE VALUE OF 0 IN THE FIRST OPTION IS NOT VALID, AND WILL RESULT IN CRASH OR THE APP HANGING!!!
 
 // ===== TIPS =====
 // All possible modules: ""HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Clock", "Tray".
 //
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
 //
-// Available options for "bar_position" are: "Up" and "Down" (without double quote) ("Left" and "Right" are planned for the future).
+// Available options for "bar_position" are: "Up", "Down", "Left" and "Right" 
+//
+// To configure diffents texts for diferents orientations, how can set the variables "text_orientation:" on any module (excluding "Tray"), with the values:
+//Vertical:
+//|A|
+//|B|
+//|C|
+//
+//Horizontal:
+//|A|B|C|
+//
 //
 // To see the correct "font_family" and "font_style" i recommend using "fc-scan $PATH_TO_FONT_FILE".
 //
@@ -67,8 +79,8 @@ BarConfig
     // ================= GENERAL =================
     display: None,
     bar_position: Up,
-    bar_size: (0, 45),
-    bar_background_color_rgba: (18, 18, 22, 0),
+    bar_size: (0, 35),
+    bar_background_color_rgba: (18, 18, 22, 100),
     font_family: "JetBrains Mono",
     font_style: "Bold",
 
@@ -93,18 +105,20 @@ BarConfig
 
 
     // ================= FORMATS =================
-    output_volume_format: ("    {}% ▁▁▁▁", "󰖀   {}% ▂▁▁▁", "   {}% ▂▃▁▁", "   {}% ▂▃▄▁", "   {}% ▂▃▄▅", "󰝝   {}% ▇▇▇▇"),
+    output_volume_format: 
+    (
+    "   {}%", "󰖀   {}%", "   {}%", "   {}%", "   {}%", "   + {}%"
+    ),
     output_volume_muted_format: "  Muted",
-    input_volume_format: ("   {}% ▁▁▁▁", "  {}% ▅▁▁▁", "  {}% ▅▅▁▁", "  {}% ▅▅▅▁", "  {}% ▅▅▅▅", "󰢴  {}% ⚠️ ▇▇▇▇"),
+    input_volume_format: ("  {}%", "  {}%", "  {}%", "  {}%", "  {}%", "󰢴  {}%"),
     input_volume_muted_format: "  Muted",
     clock_format: "󰥔  %H:%M",
     clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S",
 
 
     // ================= TRAY (STYLE) =================
-    tray_icon_size: 18,
+    tray_icon_size: 20,
     tray_button_size: 5,
-    tray_spacing: 8,
     tray_background_color_rgba: (30, 30, 36, 0),
     tray_button_color_rgb: (60, 50, 70),
     tray_button_text_color_rgb: (220, 220, 230),
@@ -118,6 +132,7 @@ BarConfig
 
     // ================= CLOCK (STYLE) =================
     clock_text_size: 15,
+    clock_text_orientation: Horizontal,
     clock_background_color_rgba: (25, 25, 30, 95),
     clock_button_color_rgb: (50, 45, 60),
     clock_button_text_color_rgb: (235, 235, 240),
@@ -131,6 +146,7 @@ BarConfig
 
     // ================= VOLUME/OUTPUT (STYLE) =================
     volume_output_text_size: 15,
+    volume_output_text_orientation: Horizontal,
     volume_output_background_color_rgba: (30, 30, 36, 95),
     volume_output_button_color_rgb: (55, 45, 65),
     volume_output_button_text_color_rgb: (220, 220, 230),
@@ -144,6 +160,7 @@ BarConfig
 
     // ================= VOLUME/INPUT (STYLE) =================
     volume_input_text_size: 15,
+    volume_input_text_orientation: Horizontal,
     volume_input_background_color_rgba: (30, 30, 36, 95),
     volume_input_button_color_rgb: (55, 45, 65),
     volume_input_button_text_color_rgb: (220, 220, 230),
@@ -156,9 +173,11 @@ BarConfig
 
 
     // ================= HYPR WORKSPACES (STYLE) =================
+    workspace_heigth: 30,
+    workspace_width: 15,
+    workspace_different_selected_width: None,
     workspace_text_size: 15,
-    workspace_width: 5,
-    workspace_different_selected_width: Some(8),
+    workspace_text_orientation: Horizontal,
     workspace_text: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
     workspace_selected_text: Some(["●", "●", "●", "●", "●", "●", "●", "●", "●", "●"]),
     workspace_spacing: 3,
@@ -179,10 +198,11 @@ BarConfig
     context_menu_background_size: 5,
     context_menu_background_border_color_rgba: (255, 255, 255, 100),
     context_menu_background_border_size: 1.0,
-    context_menu_background_border_radius: (6.0, 6.0, 6.0, 6.0),
-
+    context_menu_background_border_radius: (3.0, 3.0, 3.0, 3.0),
     context_menu_text_size: 15,
-    context_menu_width: 200,
+    context_menu_orientation: Vertical,
+    context_menu_size: 300,
+    context_menu_item_size: 30,
     context_menu_button_color_rgb: (45, 40, 55),
     context_menu_button_text_color_rgb: (230, 230, 240),
     context_menu_button_hovered_color_rgb: (150, 40, 80),
@@ -198,7 +218,8 @@ BarConfig
     	//Example of an button that just runs an app or command
 	(
 		name: "Wofi Custom Module",
-		text: "Start Wofi",
+		text: "󰣇",
+		text_orientation: Horizontal,
     		text_size: 15,
 		height: 30,
     		button_color_rgb: (45, 40, 55),

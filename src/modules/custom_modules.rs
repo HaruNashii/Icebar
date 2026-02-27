@@ -1,6 +1,8 @@
 // ============ IMPORTS ============
 use serde::{Deserialize, Serialize};
 
+use crate::helpers::style::TextOrientation;
+
 
 
 
@@ -13,6 +15,7 @@ pub struct CustomModule
     pub name: String,
     pub text: String,
     pub text_size: u32,
+    pub text_orientation: TextOrientation,
     pub height: u32,
     pub background_color_rgba: [u8;4],
     pub button_color_rgb: [u8;3],
@@ -46,6 +49,7 @@ impl Default for CustomModule
             name: "Default Custom Module".to_string(),
             text: "".to_string(),
             text_size: 10,
+            text_orientation: TextOrientation::Horizontal,
             height: 30,
             background_color_rgba: [30, 30, 36, 0],
             button_color_rgb: [60, 50, 70],

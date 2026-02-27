@@ -42,6 +42,17 @@ pub struct ContextMenuData
 
 
 // ============ FUNCTIONS ============
+pub fn smart_popup_position(cursor_x: i32, cursor_y: i32, screen_w: i32, screen_h: i32, popup_w: i32, popup_h: i32) -> (i32, i32) 
+{
+    let mut x = cursor_x - popup_w / 2;
+    let mut y = cursor_y - popup_h / 2;
+    x = x.clamp(0, screen_w - popup_w);
+    y = y.clamp(0, screen_h - popup_h);
+    (x, y)
+}
+
+
+
 pub fn run_context_menu(data: ContextMenuData)
 {
     let start_mode = match data.ron_config.display
@@ -58,9 +69,16 @@ pub fn run_context_menu(data: ContextMenuData)
         BarPosition::Right => Anchor::Right | Anchor::Top, 
     };
 
-    let context_menu_size = get_context_menu_size(&data);
+    let item_count = data.items.len();
+    let menu_item_size = data.ron_config.context_menu_item_size;
+    let context_size = data.ron_config.context_menu_size;
+    let context_menu_size = match data.ron_config.context_menu_orientation
+    {
+        TextOrientation::Horizontal => (((item_count * menu_item_size) as u32), context_size),
+        TextOrientation::Vertical => (context_size, (item_count * menu_item_size) as u32) 
+    };
 
-    let (context_menu_pos_x, context_menu_pos_y) = if let Some(forced_values) = data.ron_config.force_static_position_context_menu
+    let (x, y) = if let Some(forced_values) = data.ron_config.force_static_position_context_menu
     {
         forced_values
     }
@@ -79,7 +97,7 @@ pub fn run_context_menu(data: ContextMenuData)
             keyboard_interactivity: iced_layershell::reexport::KeyboardInteractivity::Exclusive,
             anchor: anchor_position,
             start_mode,
-            margin: (context_menu_pos_y, 0, 0, context_menu_pos_x),
+            margin: (y, 0, 0, x),
             ..Default::default()
         },
         ..Default::default()
@@ -133,9 +151,12 @@ fn update(data: &mut ContextMenuData, popup_message: ContextMenuMessage) -> Task
         }
         ContextMenuMessage::CursorMoved(position) =>
         {
-            let (width, height) = get_context_menu_size(data);
-        
-            data.cursor_is_inside_menu = position.x >= 0.0 && position.y >= 0.0 && position.x <= width as f32 && position.y <= height as f32;
+            let menu_size = (data.items.len() * 37) as f32;
+            data.cursor_is_inside_menu = false;
+            if (position.y >= 0. && position.y <= menu_size) && (position.x >= 0. && position.x <= 200.)
+            {
+                data.cursor_is_inside_menu = true;
+            };
         }
         ContextMenuMessage::MouseButtonClicked =>
         {
@@ -200,7 +221,6 @@ fn view(data: &ContextMenuData) -> Element<'_, ContextMenuMessage>
 }
 
 
-
 fn context_menu_background_button_style(ron_config: &BarConfig) -> iced::widget::container::Style
 {
     let mut background_style = container::Style::default();
@@ -212,8 +232,6 @@ fn context_menu_background_button_style(ron_config: &BarConfig) -> iced::widget:
     background_style
 }
 
-
-
 fn user_style(app: &ContextMenuData, _: &iced::Theme) -> Style
 {
     Style
@@ -222,41 +240,3 @@ fn user_style(app: &ContextMenuData, _: &iced::Theme) -> Style
         text_color: Color::from_rgb8(255, 255, 255)
     }
 }
-
-
-
-pub fn smart_popup_position(cursor_x: i32, cursor_y: i32, screen_w: i32, screen_h: i32, popup_w: i32, popup_h: i32) -> (i32, i32) 
-{
-    let mut x = cursor_x - popup_w / 2;
-    let mut y = cursor_y - popup_h / 2;
-    let max_x = (screen_w - popup_w).max(0);
-    let max_y = (screen_h - popup_h).max(0);
-    x = x.clamp(0, max_x);
-    y = y.clamp(0, max_y);
-    (x, y)
-}
-
-
-
-pub fn get_context_menu_size(data: &ContextMenuData) -> (u32, u32)
-{
-    let item_count = data.items.len() as u32;
-    let menu_item_size = data.ron_config.context_menu_item_size;
-    let context_size = data.ron_config.context_menu_size;
-    let context_background_size = data.ron_config.context_menu_background_size as u32;
-    match data.ron_config.context_menu_orientation
-    {
-        TextOrientation::Horizontal => 
-        (
-            (item_count * menu_item_size) + context_background_size * 2,
-            context_size + context_background_size * 2
-        ),
-        TextOrientation::Vertical => 
-        (
-            context_size + context_background_size * 2,
-            (item_count * menu_item_size) + context_background_size * 2
-        ) 
-    }
-}
-
-

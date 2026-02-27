@@ -8,7 +8,7 @@ use iced_layershell::{application, settings::{LayerShellSettings, Settings, Star
 
 
 // ============ CRATES ============
-use crate::modules::{clock::ClockData, data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}, volume::VolumeData };
+use crate::{modules::{clock::ClockData, data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}, volume::VolumeData }, ron::BarPosition};
 use crate::helpers::{misc::is_active_module, style::{style, set_style, UserStyle}, string::weight_from_str, workspaces::WorkspaceData, fs::check_if_config_file_exists, monitor::get_monitor_res, };
 use crate::ron::{read_ron_config, BarConfig};
 use crate::subscription::subscription;
@@ -111,13 +111,18 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         modules_data,
     };
 
+    let exclusive_zone = match ron_config.bar_position 
+    {
+        BarPosition::Up | BarPosition::Down => ron_config.bar_size[1],
+        BarPosition::Left | BarPosition::Right => ron_config.bar_size[0]
+    };
     let default_font = app_data.default_font;
     application(move || app_data.clone(), namespace, update, view).default_font(default_font).style(style).subscription(subscription).settings(Settings
     {
         layer_settings: LayerShellSettings
         {
             size: Some((ron_config.bar_size[0], ron_config.bar_size[1])),
-            exclusive_zone: ron_config.bar_size[1] as i32,
+            exclusive_zone: exclusive_zone as i32,
             anchor: anchor_position,
             start_mode,
             ..Default::default()

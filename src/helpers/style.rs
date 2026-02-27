@@ -1,4 +1,5 @@
 // ============ IMPORTS ============
+use serde::{Serialize, Deserialize};
 use iced::{Color, border::Radius, theme::Style, widget::button};
 
 
@@ -13,6 +14,13 @@ use crate::AppData;
 
 
 // ============ ENUM/STRUCT, ETC ============
+#[derive(Default, Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub enum TextOrientation
+{
+    #[default] Horizontal,
+    Vertical
+}
+
 pub struct UserStyle
 {
     pub status: iced::widget::button::Status, 
@@ -66,4 +74,15 @@ pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
     style.border.width = user_style.border_size;
     style.border.radius = Radius { top_left: user_style.border_radius[0], top_right: user_style.border_radius[1], bottom_left: user_style.border_radius[2], bottom_right: user_style.border_radius[3]};
     style
+}
+
+
+
+pub fn orient_text(input: &str, orientation: &TextOrientation) -> String 
+{
+    match orientation 
+    {
+        TextOrientation::Horizontal => input.to_string(),
+        TextOrientation::Vertical => input.chars().map(|c| { if c == ' ' { " ".to_string() } else { c.to_string() } }).collect::<Vec<_>>().join("\n").trim_end().to_string()
+    }
 }

@@ -8,18 +8,20 @@ use std::fs;
 
 
 // ============ CRATES ============
-use crate::modules::{custom_modules::CustomModule, data::Modules};
+use crate::{helpers::style::TextOrientation, modules::{custom_modules::CustomModule, data::Modules}};
 
 
 
 
 
 // ============ STRUCTS/ENUM'S ============
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum BarPosition
 {
     Up,
-    Down
+    Down,
+    Left, 
+    Right
 }
 
 
@@ -74,10 +76,8 @@ pub struct BarConfig
 
 
     // ================= TRAY (STYLE) =================
-    pub tray_height: u32,
     pub tray_icon_size: u32,
     pub tray_button_size: u16,
-    pub tray_spacing: u32,
     pub tray_background_color_rgba: [u8;4],
     pub tray_button_color_rgb: [u8;3],
     pub tray_button_text_color_rgb: [u8;3],
@@ -90,8 +90,8 @@ pub struct BarConfig
 
 
     // ================= CLOCK (STYLE) =================
-    pub clock_height: u32,
     pub clock_text_size: u32,
+    pub clock_text_orientation: TextOrientation,
     pub clock_background_color_rgba: [u8;4],
     pub clock_button_color_rgb: [u8;3],
     pub clock_button_text_color_rgb: [u8;3],
@@ -104,8 +104,8 @@ pub struct BarConfig
 
 
     // ================= VOLUME/OUTPUT (STYLE) =================
-    pub volume_output_height: u32,
     pub volume_output_text_size: u32,
+    pub volume_output_text_orientation: TextOrientation,
     pub volume_output_background_color_rgba: [u8;4],
     pub volume_output_button_color_rgb: [u8;3],
     pub volume_output_button_text_color_rgb: [u8;3],
@@ -118,8 +118,8 @@ pub struct BarConfig
 
 
     // ================= VOLUME/INPUT (STYLE) =================
-    pub volume_input_height: u32,
     pub volume_input_text_size: u32,
+    pub volume_input_text_orientation: TextOrientation,
     pub volume_input_background_color_rgba: [u8;4],
     pub volume_input_button_color_rgb: [u8;3],
     pub volume_input_button_text_color_rgb: [u8;3],
@@ -136,6 +136,7 @@ pub struct BarConfig
     pub workspace_width: u16,
     pub workspace_different_selected_width: Option<u16>,
     pub workspace_text_size: u32,
+    pub workspace_text_orientation: TextOrientation,
     pub workspace_text: Vec<String>,
     pub workspace_selected_text: Option<Vec<String>>,
     pub workspace_spacing: u32,
@@ -159,7 +160,9 @@ pub struct BarConfig
     pub context_menu_background_border_radius: [f32;4],
 
     pub context_menu_text_size: u32,
-    pub context_menu_width: u32,
+    pub context_menu_orientation: TextOrientation,
+    pub context_menu_size: u32,
+    pub context_menu_item_size: u32,
     pub context_menu_button_color_rgb: [u8;3],
     pub context_menu_button_text_color_rgb: [u8;3],
     pub context_menu_button_hovered_color_rgb: [u8;3],
@@ -185,6 +188,7 @@ impl Default for BarConfig
     {
          Self 
         {
+            // ================= GENERAL =================
             display: None,
             bar_position: BarPosition::Up,
             bar_size: [0, 45],
@@ -192,10 +196,13 @@ impl Default for BarConfig
             font_family: "JetBrains Mono".into(),
             font_style: "Normal".into(),
 
+            // ================= MODULES =================
             left_modules: vec![],
             center_modules: vec![Modules::Clock],
             right_modules: vec![Modules::Tray, Modules::VolumeOutput, Modules::VolumeInput],
 
+
+            // ================= MODULES CONFIGS =================
             force_static_position_context_menu: None,
             reverse_scroll_on_workspace: false,
             persistent_workspaces: None,
@@ -208,6 +215,8 @@ impl Default for BarConfig
             action_on_left_click_volume_input: ActionOnClick::DefaultAction, 
             action_on_right_click_volume_input: ActionOnClick::DefaultAction, 
 
+
+            // ================= FORMATS =================
             output_volume_format: 
             [
                 "{}%".to_string(),
@@ -217,7 +226,6 @@ impl Default for BarConfig
                 "{}%".to_string(),
                 "{}%".to_string(),
             ],
-            output_volume_muted_format: "Muted".into(),
             input_volume_format:
             [
                 "{}%".to_string(),
@@ -227,17 +235,15 @@ impl Default for BarConfig
                 "{}%".to_string(),
                 "{}%".to_string(),
             ],
+            output_volume_muted_format: "Muted".into(),
             input_volume_muted_format: "Muted".into(),
-
             clock_format: "󰥔  %H:%M".into(),
             clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S".into(),
 
 
             // ================= TRAY (STYLE) =================
-            tray_height: 30,
             tray_icon_size: 18,
             tray_button_size: 5,
-            tray_spacing: 8,
             tray_background_color_rgba: [30, 30, 36, 0],
             tray_button_color_rgb: [60, 50, 70],
             tray_button_text_color_rgb: [220, 220, 230],
@@ -248,9 +254,10 @@ impl Default for BarConfig
             tray_border_size: 1.0,
             tray_border_radius: [3.0, 3.0, 3.0, 3.0],
         
+
             // ================= CLOCK (STYLE) =================
-            clock_height: 30,
             clock_text_size: 15,
+            clock_text_orientation: TextOrientation::Horizontal,
             clock_background_color_rgba: [25, 25, 30, 95],
             clock_button_color_rgb: [50, 45, 60],
             clock_button_text_color_rgb: [235, 235, 240],
@@ -261,9 +268,10 @@ impl Default for BarConfig
             clock_border_size: 1.0,
             clock_border_radius: [3.0, 3.0, 3.0, 3.0],
             
+
             // ================= VOLUME/OUTPUT (STYLE) =================
-            volume_output_height: 30,
             volume_output_text_size: 15,
+            volume_output_text_orientation: TextOrientation::Horizontal,
             volume_output_background_color_rgba: [30, 30, 36, 95],
             volume_output_button_color_rgb: [55, 45, 65],
             volume_output_button_text_color_rgb: [220, 220, 230],
@@ -274,9 +282,10 @@ impl Default for BarConfig
             volume_output_border_size: 1.0,
             volume_output_border_radius: [3.0, 3.0, 3.0, 3.0],
             
+
             // ================= VOLUME/INPUT (STYLE) =================
-            volume_input_height: 30,
             volume_input_text_size: 15,
+            volume_input_text_orientation: TextOrientation::Horizontal,
             volume_input_background_color_rgba: [30, 30, 36, 95],
             volume_input_button_color_rgb: [55, 45, 65],
             volume_input_button_text_color_rgb: [220, 220, 230],
@@ -287,11 +296,13 @@ impl Default for BarConfig
             volume_input_border_size: 1.0,
             volume_input_border_radius: [3.0, 3.0, 3.0, 3.0],
             
+
             // ================= HYPR WORKSPACES (STYLE) =================
             workspace_height: 30,
             workspace_width: 15,
             workspace_different_selected_width: None,
             workspace_text_size: 15,
+            workspace_text_orientation: TextOrientation::Horizontal,
             workspace_text: vec![
                 "1".into(),
                 "2".into(),
@@ -337,7 +348,9 @@ impl Default for BarConfig
             context_menu_background_border_radius: [3.0, 3.0, 3.0, 3.0],
             
             context_menu_text_size: 15,
-            context_menu_width: 200,
+            context_menu_orientation: TextOrientation::Vertical,
+            context_menu_size: 300,
+            context_menu_item_size: 30,
             context_menu_button_color_rgb: [45, 40, 55],
             context_menu_button_text_color_rgb: [230, 230, 240],
             context_menu_button_hovered_color_rgb: [150, 40, 80],
@@ -346,6 +359,7 @@ impl Default for BarConfig
             context_menu_border_color_rgba: [130, 90, 140, 100],
             context_menu_border_size: 1.0,
             context_menu_border_radius: [3.0, 3.0, 3.0, 3.0],
+
 
             // ================= CUSTOM MODULES =================
             custom_modules_spacing: 10,
@@ -378,6 +392,8 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<Modules>)
     {
         BarPosition::Up => Anchor::Top | Anchor::Left | Anchor::Right,
         BarPosition::Down => Anchor::Bottom | Anchor::Left | Anchor::Right,
+        BarPosition::Left => Anchor::Left | Anchor::Top | Anchor::Bottom,
+        BarPosition::Right => Anchor::Right | Anchor::Top | Anchor::Bottom,
     };
 
     let mut active_modules: Vec<Modules> = Vec::new();
