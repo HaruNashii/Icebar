@@ -67,6 +67,8 @@ pub struct BarConfig
     pub incremental_steps_input: u8,
     pub action_on_left_click_clock: ActionOnClick, 
     pub action_on_right_click_clock: ActionOnClick, 
+    pub action_on_left_click_network: ActionOnClick, 
+    pub action_on_right_click_network: ActionOnClick, 
     pub action_on_left_click_volume_output: ActionOnClick, 
     pub action_on_right_click_volume_output: ActionOnClick, 
     pub action_on_left_click_volume_input: ActionOnClick, 
@@ -74,6 +76,8 @@ pub struct BarConfig
 
 
     // ================= FORMATS =================
+    pub network_level_format: [String;4], 
+    pub network_connection_type_icons: [String;3],
     pub output_volume_format: [String;6],
     pub output_volume_muted_format: String,
     pub input_volume_format: [String;6],
@@ -95,6 +99,22 @@ pub struct BarConfig
     pub tray_border_color_rgba: [u8;4],
     pub tray_border_size: f32,
     pub tray_border_radius: [f32;4],
+
+
+    // ================= NETWORK (STYLE) =================
+    pub network_module_format: String,
+    pub network_text_size: u32,
+    pub network_text_color_rgb: [u8;3],
+    pub network_text_orientation: TextOrientation,
+    pub network_background_color_rgba: [u8;4],
+    pub network_button_color_rgb: [u8;3],
+    pub network_button_text_color_rgb: [u8;3],
+    pub network_button_hovered_color_rgb: [u8;3],
+    pub network_button_hovered_text_color_rgb: [u8;3],
+    pub network_button_pressed_color_rgb: [u8;3],
+    pub network_border_color_rgba: [u8;4],
+    pub network_border_size: f32,
+    pub network_border_radius: [f32;4],
 
 
     // ================= CLOCK (STYLE) =================
@@ -205,12 +225,12 @@ impl Default for BarConfig
             display: None,
             bar_position: BarPosition::Up,
             floating_space: 0,
+            increased_exclusive_bar_zone: 0,
             bar_side_spaces_size: 0,
-            bar_size: [0, 45],
+            bar_size: [0, 35],
             bar_border_radius: [0., 0., 0., 0.],
             bar_border_size: 1.0,
             bar_border_color_rgba: [90, 70, 100, 100],
-            increased_exclusive_bar_zone: 0,
             bar_background_color_rgba: [18, 18, 22, 92],
             font_family: "JetBrains Mono".into(),
             font_style: "Normal".into(),
@@ -218,7 +238,7 @@ impl Default for BarConfig
             // ================= MODULES =================
             left_modules: vec![],
             center_modules: vec![Modules::Clock],
-            right_modules: vec![Modules::Tray, Modules::VolumeOutput, Modules::VolumeInput],
+            right_modules: vec![Modules::Tray, Modules::Network, Modules::VolumeOutput, Modules::VolumeInput],
 
 
             // ================= MODULES CONFIGS =================
@@ -230,6 +250,8 @@ impl Default for BarConfig
             incremental_steps_input: 10,
             action_on_left_click_clock: ActionOnClick::DefaultAction, 
             action_on_right_click_clock: ActionOnClick::DefaultAction, 
+            action_on_left_click_network: ActionOnClick::DefaultAction, 
+            action_on_right_click_network: ActionOnClick::DefaultAction, 
             action_on_left_click_volume_output: ActionOnClick::DefaultAction, 
             action_on_right_click_volume_output: ActionOnClick::DefaultAction, 
             action_on_left_click_volume_input: ActionOnClick::DefaultAction, 
@@ -237,26 +259,40 @@ impl Default for BarConfig
 
 
             // ================= FORMATS =================
+            network_module_format: "{level} | {connection_type} | {id}".to_string(),
+            network_level_format: 
+            [
+                "󰖩".to_string(),
+                "󱚵".to_string(),
+                "󱚼".to_string(),
+                "󰖪".to_string()
+            ],
+            network_connection_type_icons: 
+            [
+                "󰈀".to_string(), 
+                "".to_string(), 
+                "?".to_string()
+            ],
             output_volume_format: 
             [
-                "{}%".to_string(),
-                "{}%".to_string(),
-                "{}%".to_string(),
-                "{}%".to_string(),
-                "{}%".to_string(),
-                "{}%".to_string(),
+                "   {}%".to_string(), 
+                "󰖀   {}%".to_string(), 
+                "   {}%".to_string(), 
+                "   {}%".to_string(), 
+                "   {}%".to_string(), 
+                "   + {}%".to_string()
             ],
             input_volume_format:
             [
-                "{}%".to_string(),
-                "{}%".to_string(),
-                "{}%".to_string(),
-                "{}%".to_string(),
-                "{}%".to_string(),
-                "{}%".to_string(),
+                "   {}%".to_string(), 
+                "  {}%".to_string(), 
+                "  {}%".to_string(), 
+                "  {}%".to_string(), 
+                "  {}%".to_string(), 
+                "󰢴  {}%".to_string()
             ],
-            output_volume_muted_format: "Muted".into(),
-            input_volume_muted_format: "Muted".into(),
+            output_volume_muted_format: "   Muted".into(),
+            input_volume_muted_format: "   Muted".into(),
             clock_format: "󰥔  %H:%M".into(),
             clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S".into(),
 
@@ -275,6 +311,21 @@ impl Default for BarConfig
             tray_border_size: 1.0,
             tray_border_radius: [3.0, 3.0, 3.0, 3.0],
         
+
+            // ================= NETWORK (STYLE) =================
+            network_text_size: 15,
+            network_text_color_rgb: [255, 255, 255],
+            network_text_orientation: TextOrientation::Horizontal,
+            network_background_color_rgba: [25, 25, 30, 95],
+            network_button_color_rgb: [50, 45, 60],
+            network_button_text_color_rgb: [235, 235, 240],
+            network_button_hovered_color_rgb: [130, 35, 70],
+            network_button_hovered_text_color_rgb: [255, 255, 255],
+            network_button_pressed_color_rgb: [80, 25, 45],
+            network_border_color_rgba: [120, 80, 130, 100],
+            network_border_size: 1.0,
+            network_border_radius: [3.0, 3.0, 3.0, 3.0],
+
 
             // ================= CLOCK (STYLE) =================
             clock_text_size: 15,
@@ -328,7 +379,8 @@ impl Default for BarConfig
             workspace_text_size: 15,
             workspace_text_color_rgb: [255, 255, 255],
             workspace_text_orientation: TextOrientation::Horizontal,
-            workspace_text: vec![
+            workspace_text: vec!
+            [
                 "1".into(),
                 "2".into(),
                 "3".into(),
@@ -340,7 +392,8 @@ impl Default for BarConfig
                 "9".into(),
                 "10".into(),
             ],
-            workspace_selected_text: Some(vec![
+            workspace_selected_text: Some(vec!
+            [
                 "●".into(),
                 "●".into(),
                 "●".into(),
@@ -423,7 +476,7 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<Modules>)
     };
 
     let mut active_modules: Vec<Modules> = Vec::new();
-    let all_possible_default_modules = [Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
+    let all_possible_default_modules = [Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
     let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
     for position in all_possible_position
     {

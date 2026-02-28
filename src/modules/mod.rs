@@ -1,4 +1,5 @@
 pub mod custom_modules;
+pub mod network;
 pub mod volume;
 pub mod clock;
 pub mod tray;

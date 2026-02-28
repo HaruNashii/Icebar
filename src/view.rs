@@ -178,6 +178,59 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
 
 
+            Modules::Network => 
+            {
+                let left_click_message: Message = match &app.ron_config.action_on_left_click_clock
+                {
+                    ActionOnClick::DefaultAction => Message::Nothing,
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false))
+                };
+                let right_click_message: Message = match &app.ron_config.action_on_right_click_clock
+                {
+                    ActionOnClick::DefaultAction => Message::Nothing,
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false))
+                };
+
+                let [r, g, b] = &app.ron_config.network_text_color_rgb;
+                let color_to_send = Color::from_rgb8(*r, *g, *b);
+                let network_level = match &app.modules_data.network_data.network_level
+                {
+                    4 => &app.ron_config.network_level_format[0],
+                    3 => &app.ron_config.network_level_format[1],
+                    2 => &app.ron_config.network_level_format[2],
+                    _ => &app.ron_config.network_level_format[3],
+                };
+
+                let connection_type = match &app.modules_data.network_data.connection_type
+                {
+                    1 => &app.ron_config.network_connection_type_icons[0],
+                    2 => &app.ron_config.network_connection_type_icons[1],
+                    _ => &app.ron_config.network_connection_type_icons[2],
+                };
+
+                let text_to_send = app.ron_config.network_module_format.replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
+                let network_container: Element<'a, Message> = container(mouse_area(button(text(orient_text(&text_to_send, &app.ron_config.network_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.network_text_size).center()).style(|_: &Theme, status: button::Status| 
+                {
+                    let hovered =           app.ron_config.network_button_hovered_color_rgb;
+                    let hovered_text =      app.ron_config.network_button_hovered_text_color_rgb;
+                    let pressed =           app.ron_config.network_button_pressed_color_rgb;
+                    let normal =            app.ron_config.network_button_color_rgb;
+                    let normal_text =       app.ron_config.network_button_text_color_rgb;
+                    let border_size =           app.ron_config.network_border_size;
+                    let border_color_rgba = app.ron_config.network_border_color_rgba;
+                    let border_radius =    app.ron_config.network_border_radius;
+                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                })).on_press(left_click_message).on_right_press(right_click_message)).align_y(Alignment::Center).into();
+
+                match axis 
+                {
+                    Axis::Horizontal => row([network_container]).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column([network_container]).align_x(Alignment::Center).into()
+                }
+            }
+
+
+
             Modules::VolumeOutput =>
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_output

@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{event, mouse, time};
+use iced::{Subscription, event, mouse, time};
 use std::time::Duration;
 
 
@@ -7,7 +7,7 @@ use std::time::Duration;
 
 
 // ============ CRATES ============
-use crate::{AppData, Message, helpers::misc::is_active_module, modules::{data::Modules, tray::{TraySubscription, tray_stream}}};
+use crate::{AppData, Message, helpers::misc::is_active_module, modules::{data::Modules, network::{network_stream, NetworkSubscription}, tray::{TraySubscription, tray_stream}}};
 
 
 
@@ -26,11 +26,14 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
         }
     });
 
+
     let mut subs = vec!
     [
+        Subscription::run_with(NetworkSubscription, |_| network_stream()),
         time::every(Duration::from_millis(150)).map(|_| Message::Tick),
         event_reader,
     ];
+
 
     if is_active_module(&app.modules_data.active_modules, Modules::Tray) 
     {

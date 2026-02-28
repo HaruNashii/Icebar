@@ -1,4 +1,4 @@
-// ============ IMPORTS ============
+// ============ imports ============
 use iced::{Font, font::Family, mouse::ScrollDelta};
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
 
@@ -8,7 +8,7 @@ use iced_layershell::{application, settings::{LayerShellSettings, Settings, Star
 
 
 // ============ CRATES ============
-use crate::{modules::{clock::ClockData, data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}, volume::VolumeData }, ron::BarPosition};
+use crate::{modules::{clock::ClockData, data::{Modules, ModulesData}, network::NetworkData, tray::{self, TrayEvent, start_tray}, volume::VolumeData }, ron::BarPosition};
 use crate::helpers::{misc::is_active_module, style::{style, set_style, UserStyle}, string::weight_from_str, workspaces::WorkspaceData, fs::check_if_config_file_exists, monitor::get_monitor_res, };
 use crate::ron::{read_ron_config, BarConfig};
 use crate::subscription::subscription;
@@ -44,6 +44,7 @@ pub enum Message
     WorkspaceButtonPressed(usize),
     IsHoveringVolumeOutput(bool),
     IsHoveringVolumeInput(bool),
+    NetworkUpdated(NetworkData),
     IsHoveringWorkspace(bool),
     CursorMoved(iced::Point),
     TrayIconClicked(usize),
@@ -91,10 +92,11 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let modules_data = ModulesData
     {
         workspace_data: WorkspaceData::default(),
+        network_data: NetworkData::default(),
         volume_data: VolumeData::default(), 
         clock_data: ClockData::default(), 
         tray_icons: Vec::new(),
-        active_modules
+        active_modules: active_modules.clone()
     };
     let app_data = AppData
     {

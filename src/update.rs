@@ -29,7 +29,7 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
         Message::CommandFinished(index, text) => { if app.cached_command_outputs.len() <= index { app.cached_command_outputs.resize(index + 1, String::new()); } app.cached_command_outputs[index] = text; }
         Message::WorkspaceButtonPressed(id) => { if is_active_module(&app.modules_data.active_modules,  Modules::HyprWorkspaces) { change_workspace_hypr(UserHyprAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces) { change_workspace_sway(UserSwayAction::ChangeWithIndex(id)); } }
-
+        Message::NetworkUpdated(data) => { app.modules_data.network_data = data }
 
 
         Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>

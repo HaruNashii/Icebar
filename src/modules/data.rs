@@ -7,7 +7,7 @@ use iced::widget::image;
 
 
 // ============ CRATES ============
-use crate::{helpers::workspaces::WorkspaceData, modules::{clock::ClockData, volume::VolumeData}};
+use crate::{helpers::workspaces::WorkspaceData, modules::{clock::ClockData, network::NetworkData, volume::VolumeData}};
 
 
 
@@ -22,6 +22,7 @@ pub enum Modules
     SwayWorkspaces,
     VolumeOutput,
     VolumeInput,
+    Network,
     Clock,
     Tray,
 }
@@ -32,6 +33,7 @@ pub struct ModulesData
     pub tray_icons: Vec<(Option<image::Handle>, String)>,
     pub workspace_data: WorkspaceData,
     pub active_modules: Vec<Modules>,
+    pub network_data: NetworkData,
     pub volume_data: VolumeData,
     pub clock_data: ClockData
 }

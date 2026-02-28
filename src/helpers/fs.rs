@@ -45,7 +45,7 @@ pub fn check_if_config_file_exists()
 // WARNING!!!: THE OPTION "bar_size: ()" HAS THE TYPE AS: (WIDTH, HEIGTH), IF YOU ARE CREATING AN SIDE BAR, THE VALUE OF 0 IN THE FIRST OPTION IS NOT VALID, AND WILL RESULT IN CRASH OR THE APP HANGING!!!
 
 // ===== TIPS =====
-// All possible modules: ""HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Clock", "Tray".
+// All possible modules: ""HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Network", "Clock", "Tray".
 //
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
 //
@@ -83,6 +83,9 @@ BarConfig
     increased_exclusive_bar_zone: 0,
     bar_side_spaces_size: 0,
     bar_size: (0, 35),
+    bar_border_radius: (0., 0., 0., 0.),
+    bar_border_size: 1.0,
+    bar_border_color_rgba: (90, 70, 100, 100),
     bar_background_color_rgba: (18, 18, 22, 100),
     font_family: "JetBrains Mono",
     font_style: "Bold",
@@ -91,7 +94,7 @@ BarConfig
     // ================= MODULES =================
     left_modules: [CustomModule(0)],
     center_modules: [Clock],
-    right_modules: [Tray, VolumeOutput, VolumeInput],
+    right_modules: [Tray, Network, VolumeOutput, VolumeInput],
 
 
     // ================= MODULES CONFIGS =================
@@ -103,18 +106,48 @@ BarConfig
     incremental_steps_input: 10,
     action_on_left_click_clock: DefaultAction,
     action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo 'Press Enter To Exit' && read -n 1"]), 
+    action_on_left_click_network: DefaultAction, 
+    action_on_right_click_network: DefaultAction, 
+    action_on_left_click_volume_output: DefaultAction, 
     action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]), 
+    action_on_left_click_volume_input: DefaultAction, 
     action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]), 
 
 
-
     // ================= FORMATS =================
+    network_module_format: "{level} | {connection_type} | {id}",
+    network_level_format: 
+    (
+        "󰖩",
+        "󱚵",
+        "󱚼",
+        "󰖪"
+    ),
+    network_connection_type_icons: 
+    (
+        "󰈀", 
+        "", 
+        "?"
+    ),
     output_volume_format: 
     (
-    "   {}%", "󰖀   {}%", "   {}%", "   {}%", "   {}%", "   + {}%"
+        "   {}%", 
+        "󰖀   {}%", 
+        "   {}%", 
+        "   {}%", 
+        "   {}%", 
+        "   + {}%"
+    ),
+    input_volume_format: 
+    (
+        "   {}%", 
+        "  {}%", 
+        "  {}%", 
+        "  {}%", 
+        "  {}%", 
+        "󰢴  {}%"
     ),
     output_volume_muted_format: "   Muted",
-    input_volume_format: ("   {}%", "  {}%", "  {}%", "  {}%", "  {}%", "󰢴  {}%"),
     input_volume_muted_format: "   Muted",
     clock_format: "󰥔  %H:%M",
     clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S",
@@ -133,6 +166,21 @@ BarConfig
     tray_border_color_rgba: (90, 70, 100, 100),
     tray_border_size: 1.0,
     tray_border_radius: (3.0, 3.0, 3.0, 3.0),
+
+
+    // ================= NETWORK (STYLE) =================
+    network_text_size: 15,
+    network_text_color_rgb: (255, 255, 255),
+    network_text_orientation: Horizontal,
+    network_background_color_rgba: (25, 25, 30, 95),
+    network_button_color_rgb: (50, 45, 60),
+    network_button_text_color_rgb: (235, 235, 240),
+    network_button_hovered_color_rgb: (130, 35, 70),
+    network_button_hovered_text_color_rgb: (255, 255, 255),
+    network_button_pressed_color_rgb: (80, 25, 45),
+    network_border_color_rgba: (120, 80, 130, 100),
+    network_border_size: 1.0,
+    network_border_radius: (3.0, 3.0, 3.0, 3.0),
 
 
     // ================= CLOCK (STYLE) =================
@@ -187,8 +235,32 @@ BarConfig
     workspace_text_size: 15,
     workspace_text_color_rgb: (255, 255, 255),
     workspace_text_orientation: Horizontal,
-    workspace_text: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-    workspace_selected_text: Some(["●", "●", "●", "●", "●", "●", "●", "●", "●", "●"]),
+    workspace_text: 
+    [
+        "1", 
+        "2", 
+        "3", 
+        "4", 
+        "5", 
+        "6", 
+        "7", 
+        "8", 
+        "9", 
+        "10"
+    ],
+    workspace_selected_text: Some(
+    [
+        "●", 
+        "●", 
+        "●", 
+        "●", 
+        "●", 
+        "●", 
+        "●", 
+        "●", 
+        "●", 
+        "●"
+    ]),
     workspace_spacing: 3,
     workspace_background_color_rgba: (28, 28, 34, 95),
     workspace_button_color_rgb: (45, 40, 55),
@@ -229,9 +301,9 @@ BarConfig
 	(
 		name: "Wofi Custom Module",
 		text: "󰣇 ",
+                text_size: 15,
+                text_color_rgb: (255, 255, 255),
 		text_orientation: Horizontal,
-    		text_size: 15,
-    		text_color_rgb: (255, 255, 255),
 		height: 30,
     		button_color_rgb: (45, 40, 55),
     		button_text_color_rgb: (230, 230, 240),
@@ -241,8 +313,13 @@ BarConfig
     		border_color_rgba: (130, 90, 140, 100),
     		border_size: 1.0,
     		border_radius: (3.0, 3.0, 3.0, 3.0),
+                use_output_as_text: false,
+                use_continous_output_as_text: false,
+                all_output_as_text_format: "",
+                output_text_limit_len: 0,
 		command_to_exec_on_left_click: ["wofi", "--show", "drun"],
 		command_to_exec_on_right_click: ["wofi", "--show", "run"],
+                continous_command: []
 	),
 	// Example of an button that displays the output on click
 	//(
