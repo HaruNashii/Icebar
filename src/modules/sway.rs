@@ -47,7 +47,8 @@ pub fn workspace_count() -> Vec<i32>
         let result_workspace_data = connection.get_workspaces();
         if let Ok(workspace_data) = result_workspace_data
         {
-            let workspace_num: Vec<i32> = workspace_data.iter().map(|item| item.num).collect();
+            let mut workspace_num: Vec<i32> = workspace_data.iter().map(|item| item.num).collect();
+            workspace_num.retain(|&x| x != 0);
             return workspace_num;
         };
     }
