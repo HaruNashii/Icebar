@@ -1,8 +1,6 @@
 // ============ IMPORTS ============
 use serde::{Serialize, Deserialize};
-use iced::{Color, border::Radius, theme::Style, widget::button};
-
-
+use iced::{Color, border::Radius, Border, Theme, theme::Style, widget::{button, container}};
 
 
 
@@ -39,11 +37,11 @@ pub struct UserStyle
 
 
 // ============ FUNCTIONS ============
-pub fn style(app: &AppData, _: &iced::Theme) -> Style
+pub fn style(_: &AppData, _: &iced::Theme) -> Style
 {
     Style
     {
-        background_color: Color::from_rgba8(app.ron_config.bar_background_color_rgba[0],app.ron_config.bar_background_color_rgba[1],app.ron_config.bar_background_color_rgba[2],app.ron_config.bar_background_color_rgba[3] as f32 / 100.),
+        background_color: Color::from_rgba8(0, 0, 0, 0.),
         text_color: Color::WHITE
     }
 }
@@ -84,5 +82,31 @@ pub fn orient_text(input: &str, orientation: &TextOrientation) -> String
     {
         TextOrientation::Horizontal => input.to_string(),
         TextOrientation::Vertical => input.chars().map(|c| { if c == ' ' { " ".to_string() } else { c.to_string() } }).collect::<Vec<_>>().join("\n").trim_end().to_string()
+    }
+}
+
+
+pub fn bar_style(app: &AppData) -> impl Fn(&Theme) -> container::Style
+{
+    let color = Color::from_rgba8(app.ron_config.bar_background_color_rgba[0], app.ron_config.bar_background_color_rgba[1],app.ron_config.bar_background_color_rgba[2], app.ron_config.bar_background_color_rgba[3] as f32 / 100.);
+    let bar_style: container::Style = 
+    {
+        container::Style 
+        {
+            border: Border 
+            {
+                radius: Radius { top_left: app.ron_config.bar_border_radius[0], top_right: app.ron_config.bar_border_radius[1], bottom_left: app.ron_config.bar_border_radius[2], bottom_right: app.ron_config.bar_border_radius[3]},
+                width: app.ron_config.bar_border_size, 
+                color: Color::from_rgba8(app.ron_config.bar_border_color_rgba[0], app.ron_config.bar_border_color_rgba[1], app.ron_config.bar_border_color_rgba[2], app.ron_config.bar_border_color_rgba[3] as f32)
+            },
+            background: { Some(iced::Background::Color(color)) },
+            text_color: None,
+            ..Default::default()
+        }
+    };
+
+    move |_theme: &Theme| 
+    {
+        bar_style
     }
 }

@@ -81,6 +81,7 @@ BarConfig
     bar_position: Up,
     floating_space: 0,
     increased_exclusive_bar_zone: 0,
+    bar_side_spaces_size: 0,
     bar_size: (0, 35),
     bar_background_color_rgba: (18, 18, 22, 100),
     font_family: "JetBrains Mono",

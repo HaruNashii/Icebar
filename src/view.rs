@@ -6,7 +6,7 @@ use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, col
 
 
 // ============ CRATES ============
-use crate::{helpers::{string::ellipsize, style::{UserStyle, orient_text, set_style}}, modules::data::Modules, ron::BarPosition};
+use crate::{helpers::{string::ellipsize, style::{UserStyle, bar_style, orient_text, set_style}}, modules::data::Modules, ron::BarPosition};
 use crate::ron::ActionOnClick;
 use crate::{AppData, Message};
 
@@ -39,7 +39,9 @@ pub fn view(app: &AppData) -> Element<'_, Message>
     let center = build_modules(&app.ron_config.center_modules, app, axis);
     let end    = build_modules(&app.ron_config.right_modules, app, axis);
 
-    axis_layout(axis, start, center, end)
+    let content = axis_layout(app.ron_config.bar_side_spaces_size, axis, start, center, end);
+
+    container(content).height(Length::Fill).width(Length::Fill).style(bar_style(app)).into()
 }
 
 
@@ -78,8 +80,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             
                 match axis 
                 {
-                    Axis::Horizontal => row(children).spacing(app.ron_config.tray_spacing).width(Length::Shrink).align_y(Alignment::Center).into(),
-                    Axis::Vertical => column(children).spacing(app.ron_config.tray_spacing).width(Length::Shrink).align_x(Alignment::Center).into()
+                    Axis::Horizontal => row(children).spacing(app.ron_config.tray_spacing).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column(children).spacing(app.ron_config.tray_spacing).align_x(Alignment::Center).into()
                 }
             },
 
@@ -130,8 +132,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 match axis 
                 {
-                    Axis::Horizontal => row(workspace_buttons).width(Length::Shrink).align_y(Alignment::Center).spacing(app.ron_config.workspace_spacing).into(),
-                    Axis::Vertical => column(workspace_buttons).width(Length::Shrink).align_x(Alignment::Center).spacing(app.ron_config.workspace_spacing).into(),
+                    Axis::Horizontal => row(workspace_buttons).align_y(Alignment::Center).spacing(app.ron_config.workspace_spacing).into(),
+                    Axis::Vertical => column(workspace_buttons).align_x(Alignment::Center).spacing(app.ron_config.workspace_spacing).into(),
                 }
             }
 
@@ -169,8 +171,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 match axis 
                 {
-                    Axis::Horizontal => row([clock_container]).width(Length::Shrink).align_y(Alignment::Center).into(),
-                    Axis::Vertical => column([clock_container]).width(Length::Shrink).align_x(Alignment::Center).into()
+                    Axis::Horizontal => row([clock_container]).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column([clock_container]).align_x(Alignment::Center).into()
                 }
             }
 
@@ -208,8 +210,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 match axis 
                 {
-                    Axis::Horizontal => row([volume_output_container]).width(Length::Shrink).align_y(Alignment::Center).into(),
-                    Axis::Vertical => column([volume_output_container]).width(Length::Shrink).align_x(Alignment::Center).into()
+                    Axis::Horizontal => row([volume_output_container]).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column([volume_output_container]).align_x(Alignment::Center).into()
                 }
             }
 
@@ -246,8 +248,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 
                 match axis 
                 {
-                    Axis::Vertical => column([volume_input_container]).width(Length::Shrink).align_x(Alignment::Center).into(),
-                    Axis::Horizontal => row([volume_input_container]).width(Length::Shrink).align_y(Alignment::Center).into() 
+                    Axis::Vertical => column([volume_input_container]).align_x(Alignment::Center).into(),
+                    Axis::Horizontal => row([volume_input_container]).align_y(Alignment::Center).into() 
                 }
             }
 
@@ -294,8 +296,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 
                 match axis 
                 {
-                    Axis::Vertical => column![element].width(Length::Shrink).align_x(Alignment::Center).into(),
-                    Axis::Horizontal => row![element].width(Length::Shrink).align_y(Alignment::Center).into() 
+                    Axis::Horizontal => row![element].align_y(Alignment::Center).into(),
+                    Axis::Vertical => column![element].align_x(Alignment::Center).into()
                 }
             }
         };
@@ -311,7 +313,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
 
 
-fn axis_layout<'a>(axis: Axis, start: Element<'a, Message>, center: Element<'a, Message>, end: Element<'a, Message>) -> Element<'a, Message> 
+fn axis_layout<'a>(padding: u32, axis: Axis, start: Element<'a, Message>, center: Element<'a, Message>, end: Element<'a, Message>) -> Element<'a, Message> 
 {
     match axis 
     {
@@ -319,23 +321,27 @@ fn axis_layout<'a>(axis: Axis, start: Element<'a, Message>, center: Element<'a, 
         {
             row!
             [
-                container(start).align_y(iced::alignment::Vertical::Center),
+                Space::new().width(padding),
+                container(start).height(Length::Fill).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Center),
                 Space::new().width(Length::Fill),
-                container(center).width(Length::Shrink).align_y(iced::alignment::Vertical::Center),
+                container(center).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Center),
                 Space::new().width(Length::Fill),
-                container(end).align_y(iced::alignment::Vertical::Center),
-            ].width(Length::Fill).height(Length::Fill).align_y(iced::alignment::Vertical::Center).into()
+                container(end).height(Length::Fill).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Center),
+                Space::new().width(padding),
+            ].width(Length::Fill).height(Length::Fill).into()
         }
 
         Axis::Vertical => 
         {
             column!
             [
-                container(start).align_y(iced::alignment::Vertical::Center).align_x(iced::alignment::Horizontal::Center),
+                Space::new().height(padding),
+                container(start).height(Length::Fill).align_x(iced::alignment::Horizontal::Center),
                 Space::new().height(Length::Fill),
-                container(center).align_y(iced::alignment::Vertical::Center).align_x(iced::alignment::Horizontal::Center),
+                container(center).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Center),
                 Space::new().height(Length::Fill),
-                container(end).align_y(iced::alignment::Vertical::Center).align_x(iced::alignment::Horizontal::Center),
+                container(end).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Bottom),
+                Space::new().height(padding),
             ].width(Length::Fill).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).into()
         }
     }
