@@ -8,8 +8,8 @@ use iced::{Font, font::Family};
 
 
 // ============ CRATES ============
-use crate::helpers::{misc::is_active_module, style::{style, set_style, UserStyle}, string::weight_from_str, workspaces::WorkspaceData, fs::check_if_config_file_exists, monitor::get_monitor_res, };
-use crate::modules::{clock::ClockData, data::{Modules, ModulesData}, media_player::MediaPlayerData, network::NetworkData, tray::{self, TrayEvent, start_tray}, volume::VolumeData };
+use crate::helpers::{misc::is_active_module, style::{style, set_style, UserStyle}, string::weight_from_str, fs::check_if_config_file_exists, monitor::get_monitor_res, };
+use crate::modules::{data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{BarPosition, read_ron_config, BarConfig};
 use crate::subscription::subscription;
 use crate::update::update;
@@ -68,27 +68,16 @@ pub async fn main() -> Result<(), iced_layershell::Error>
 
     let modules_data = ModulesData
     {
-        media_player_data: MediaPlayerData::default(),
-        workspace_data: WorkspaceData::default(),
-        network_data: NetworkData::default(),
-        volume_data: VolumeData::default(), 
-        clock_data: ClockData::default(), 
-        tray_icons: Vec::new(),
-        active_modules: active_modules.clone()
+        active_modules: active_modules.clone(),
+        ..Default::default()
     };
     let app_data = AppData
     {
         default_font: Font { family: Family::Name(Box::leak(font_name.into_boxed_str())), weight: weight_from_str(&ron_config.font_style), ..iced::Font::DEFAULT}, 
         monitor_size: (monitor_res.0, monitor_res.1),
-        cached_continuous_outputs: Vec::new(),
-        cached_command_outputs: Vec::new(),
-        is_hovering_volume_output: false, 
-        is_hovering_volume_input: false, 
-        is_hovering_workspace: false, 
         ron_config: ron_config_clone, 
-        is_showing_alt_clock: false,
-        mouse_position: (0, 0),
         modules_data,
+        ..Default::default()
     };
 
     let (exclusive_zone, (floating_space_up, floating_space_right, floating_space_down, floating_space_left)) = match ron_config.bar_position 
@@ -114,6 +103,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
             (ron_config.bar_size[0] + ron_config.increased_exclusive_bar_zone, (0, 0, 0, ron_config.floating_space))
         }
     };
+
     let default_font = app_data.default_font;
     application(move || app_data.clone(), namespace, update, view).default_font(default_font).style(style).subscription(subscription).settings(Settings
     {
