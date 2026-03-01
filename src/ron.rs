@@ -8,7 +8,8 @@ use std::fs;
 
 
 // ============ CRATES ============
-use crate::{helpers::style::TextOrientation, modules::{custom_modules::CustomModule, data::Modules}};
+use crate::modules::{custom_modules::CustomModule, data::Modules};
+use crate::helpers::style::TextOrientation;
 
 
 

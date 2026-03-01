@@ -7,7 +7,10 @@ use std::time::Duration;
 
 
 // ============ CRATES ============
-use crate::{AppData, Message, helpers::misc::is_active_module, modules::{data::Modules, network::{network_stream, NetworkSubscription}, tray::{TraySubscription, tray_stream}}};
+use crate::modules::{data::Modules, network::{network_stream, NetworkSubscription}, tray::{TraySubscription, tray_stream}};
+use crate::helpers::misc::is_active_module;
+use crate::update::Message;
+use crate::AppData;
 
 
 

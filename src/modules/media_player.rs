@@ -7,10 +7,10 @@ use iced::widget::button;
 
 
 // ============ CRATES ============
-use crate::{AppData, Message};
-use crate::helpers::string::ellipsize;
-use crate::helpers::style::{UserStyle, orient_text, set_style};
+use crate::helpers::{string::ellipsize, style::{UserStyle, orient_text, set_style}};
+use crate::update::Message;
 use crate::ron::BarConfig;
+use crate::AppData;
 
 
 

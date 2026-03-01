@@ -7,7 +7,8 @@ use iced::widget::image;
 
 
 // ============ CRATES ============
-use crate::{helpers::workspaces::WorkspaceData, modules::{clock::ClockData, media_player::MediaPlayerData, network::NetworkData, volume::VolumeData}};
+use crate::modules::{clock::ClockData, media_player::MediaPlayerData, network::NetworkData, volume::VolumeData};
+use crate::helpers::workspaces::WorkspaceData;
 
 
 

@@ -1,6 +1,6 @@
 // ============ IMPORTS ============
-use iced::{Font, font::Family, mouse::ScrollDelta};
-use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}, to_layer_message};
+use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}};
+use iced::{Font, font::Family};
 
 
 
@@ -8,9 +8,9 @@ use iced_layershell::{application, settings::{LayerShellSettings, Settings, Star
 
 
 // ============ CRATES ============
-use crate::{modules::{clock::ClockData, data::{Modules, ModulesData}, media_player::MediaPlayerData, network::NetworkData, tray::{self, TrayEvent, start_tray}, volume::VolumeData }, ron::BarPosition};
 use crate::helpers::{misc::is_active_module, style::{style, set_style, UserStyle}, string::weight_from_str, workspaces::WorkspaceData, fs::check_if_config_file_exists, monitor::get_monitor_res, };
-use crate::ron::{read_ron_config, BarConfig};
+use crate::modules::{clock::ClockData, data::{Modules, ModulesData}, media_player::MediaPlayerData, network::NetworkData, tray::{self, TrayEvent, start_tray}, volume::VolumeData };
+use crate::ron::{BarPosition, read_ron_config, BarConfig};
 use crate::subscription::subscription;
 use crate::update::update;
 use crate::view::view;
@@ -33,32 +33,6 @@ mod ron;
 
 
 // ============ ENUM/STRUCT, ETC ============
-#[to_layer_message]
-#[derive(Debug, Clone)]
-pub enum Message
-{
-    CreateCustomModuleCommand((Option<usize>, Vec<String>, String, bool, bool)),
-    MenuLoaded(String, String, Vec<tray::MenuItem>),
-    MouseWheelScrolled(ScrollDelta),
-    CommandFinished(usize, String),
-    WorkspaceButtonPressed(usize),
-    IsHoveringVolumeOutput(bool),
-    IsHoveringVolumeInput(bool),
-    NetworkUpdated(NetworkData),
-    IsHoveringWorkspace(bool),
-    MediaPlayerClickPlayPause,
-    CursorMoved(iced::Point),
-    TrayIconClicked(usize),
-    MuteAudioPressedOutput,
-    MuteAudioPressedInput,
-    MediaPlayerClickNext,
-    MediaPlayerClickPrev,
-    TrayEvent(TrayEvent),
-    ToggleAltClock,
-    Nothing,
-    Tick
-}
-
 #[derive(Default, Clone)]
 struct AppData
 {

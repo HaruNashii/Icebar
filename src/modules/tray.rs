@@ -1,10 +1,9 @@
 // ============ IMPORTS ============
-use std::{collections::{HashMap, HashSet}, process::Command, sync::Mutex};
 use zbus::{Connection, fdo::DBusProxy, interface, message::Header, object_server::SignalEmitter};
+use std::{pin::Pin, collections::{HashMap, HashSet}, process::Command, sync::Mutex};
 use iced::{widget::button, futures::{Stream, StreamExt}};
 use tokio::sync::mpsc::{self, Sender};
 use once_cell::sync::Lazy;
-use std::pin::Pin;
 
 
 
@@ -13,8 +12,8 @@ use std::pin::Pin;
 
 // ============ CRATES ============
 use crate::helpers::{icons::fetch_icon, style::{UserStyle, set_style}};
+use crate::update::Message;
 use crate::AppData;
-use crate::Message;
 
 
 
@@ -129,7 +128,7 @@ impl StatusNotifierWatcher
         let combined = format!("{dest}|{path}");
         let ctxt = SignalEmitter::new(&self.connection, "/StatusNotifierWatcher").unwrap();
         StatusNotifierWatcher::status_notifier_item_registered(&ctxt, &combined).await.unwrap();
-        println!("\n=== Tray item registered ===\n{combined}");
+        println!("\n=== Tray item registered ===\nService: '{dest}'\nPath: {path}");
         let _ = self.sender.send(TrayEvent::ItemRegistered(combined.clone())).await;
         OWNER_MAP.lock().unwrap().insert(sender.clone(), combined.clone());
         if let Ok(icon) = fetch_icon(&self.connection, &combined).await 

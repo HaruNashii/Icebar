@@ -6,9 +6,11 @@ use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, col
 
 
 // ============ CRATES ============
-use crate::{helpers::{media_buttons::create_media_button, style::{bar_style, orient_text}}, modules::{clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_padding, define_workspaces_style, define_workspaces_text}}, ron::BarPosition};
-use crate::ron::ActionOnClick;
-use crate::{AppData, Message};
+use crate::helpers::{media_buttons::create_media_button, style::{bar_style, orient_text}};
+use crate::modules::{clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_padding, define_workspaces_style, define_workspaces_text}};
+use crate::ron::{ActionOnClick, BarPosition};
+use crate::update::Message;
+use crate::AppData;
 
 
 

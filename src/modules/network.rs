@@ -11,7 +11,8 @@ use anyhow::Result;
 
 // ============ CRATES ============
 use crate::helpers::style::{UserStyle, set_style};
-use crate::{AppData, Message};
+use crate::update::Message;
+use crate::AppData;
 
 
 

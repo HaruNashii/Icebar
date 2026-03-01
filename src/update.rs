@@ -1,15 +1,47 @@
 // ============ IMPORTS ============
 use iced::{Task as Command, mouse::ScrollDelta, widget::image};
+use iced_layershell::to_layer_message;
 
 
 
 
 
 // ============ CRATES ============
-use crate::modules::{clock::get_current_time, data::Modules, hypr::{self, UserHyprAction, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, sway::{self, UserSwayAction, change_workspace_sway}, tray::TrayEvent, volume::{self, VolumeAction} };
+use crate::modules::{clock::get_current_time, data::Modules, hypr::{self, UserHyprAction, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, sway::{self, UserSwayAction, change_workspace_sway}, tray::{TrayEvent, MenuItem}, volume::{self, VolumeAction} };
 use crate::helpers::{misc::is_active_module, workspaces::build_workspace_list };
 use crate::context_menu::run_context_menu;
-use crate::{AppData, Message};
+use crate::AppData;
+
+
+
+
+
+// ============ ENUM/STRUCT, ETC ============
+#[to_layer_message]
+#[derive(Debug, Clone)]
+pub enum Message
+{
+    CreateCustomModuleCommand((Option<usize>, Vec<String>, String, bool, bool)),
+    MenuLoaded(String, String, Vec<MenuItem>),
+    MouseWheelScrolled(ScrollDelta),
+    CommandFinished(usize, String),
+    WorkspaceButtonPressed(usize),
+    IsHoveringVolumeOutput(bool),
+    IsHoveringVolumeInput(bool),
+    NetworkUpdated(NetworkData),
+    IsHoveringWorkspace(bool),
+    MediaPlayerClickPlayPause,
+    CursorMoved(iced::Point),
+    TrayIconClicked(usize),
+    MuteAudioPressedOutput,
+    MuteAudioPressedInput,
+    MediaPlayerClickNext,
+    MediaPlayerClickPrev,
+    TrayEvent(TrayEvent),
+    ToggleAltClock,
+    Nothing,
+    Tick
+}
 
 
 

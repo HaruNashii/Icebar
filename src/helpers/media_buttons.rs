@@ -1,13 +1,14 @@
 // ============ IMPORTS ============
-use iced::{Element, widget::{container, mouse_area}};
-use iced::{Alignment, Theme, widget::{button, text}};
+use iced::{Element, widget::{container, mouse_area}, Alignment, Theme, widget::{button, text}};
 
 
 
 
 
 // ============ CRATES ============
-use crate::{AppData, Message, modules::media_player::define_media_player_buttons_style};
+use crate::modules::media_player::define_media_player_buttons_style;
+use crate::update::Message;
+use crate::AppData;
 
 
 

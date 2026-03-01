@@ -7,8 +7,8 @@ use chrono::Local;
 
 
 // ============ CRATES ============
-use crate::AppData;
 use crate::helpers::style::{UserStyle, set_style};
+use crate::AppData;
 
 
 
