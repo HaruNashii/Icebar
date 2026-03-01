@@ -150,17 +150,18 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 {
                     metadata = &app.ron_config.text_when_metadata_is_empty;
                 }
+                let formated_metadata = &ellipsize(metadata, app.ron_config.media_player_metadata_text_limit_len);
     
 
                 let left_click_metadata_message: Message = match &app.ron_config.action_on_left_click_media_player_metadata { ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
                 let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
 
-
+                
                 let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let media_player_metadata_container: Element<'a, Message> = container
                 (   
-                    mouse_area(button(text(orient_text(metadata, &app.ron_config.media_player_metadata_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_metadata_text_size).center()).style(|_: &Theme, status: button::Status| 
+                    mouse_area(button(text(orient_text(formated_metadata, &app.ron_config.media_player_metadata_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_metadata_text_size).center()).style(|_: &Theme, status: button::Status| 
                     {
                         let hovered =              app.ron_config.media_player_metadata_button_hovered_color_rgb;
                         let hovered_text =         app.ron_config.media_player_metadata_button_hovered_text_color_rgb;

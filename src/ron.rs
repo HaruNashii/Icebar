@@ -84,6 +84,7 @@ pub struct BarConfig
     pub media_player_buttons_format: [String;4],
     pub media_player_metadata_format: String, 
     pub media_player_button_status_format: [String;3],
+    pub media_player_metadata_text_limit_len: usize,
     pub network_level_format: [String;4], 
     pub network_connection_type_icons: [String;3],
     pub output_volume_format: [String;6],
@@ -256,7 +257,7 @@ impl Default for BarConfig
 {
     fn default() -> Self
     {
-         Self 
+        Self 
         {
             // ================= GENERAL =================
             display: None,
@@ -282,6 +283,7 @@ impl Default for BarConfig
             player: "spotify".to_string(),
             dont_show_metadata_if_empty: false,
             text_when_metadata_is_empty: "No Media Playing!!!".to_string(),
+            media_player_metadata_text_limit_len: 25,
             spacing_between_all_modules: 5,
             force_static_position_context_menu: None,
             reverse_scroll_on_workspace: false,

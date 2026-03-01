@@ -101,6 +101,7 @@ BarConfig
     player: "spotify",
     dont_show_metadata_if_empty: true,
     text_when_metadata_is_empty: "No Media Found.",
+    media_player_metadata_text_limit_len: 25,
     spacing_between_all_modules: 5,
     force_static_position_context_menu: None,
     reverse_scroll_on_workspace: false,
