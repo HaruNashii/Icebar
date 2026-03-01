@@ -1,7 +1,8 @@
 // ============ IMPORTS ============
 use zbus::{zvariant::OwnedObjectPath, Connection, Proxy};
-use futures_util::{Stream, StreamExt};
-use iced::widget::button;
+use futures_util::StreamExt;
+use futures::stream::BoxStream;
+use iced::{Subscription, widget::button};
 use async_stream::stream;
 use anyhow::Result;
 
@@ -19,9 +20,6 @@ use crate::AppData;
 
 
 // ============ ENUM/STRUCT, ETC ============
-#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
-pub struct NetworkSubscription;
-
 #[derive(Default, Debug, Clone)]
 pub struct NetworkData
 {
@@ -33,50 +31,81 @@ pub struct NetworkData
 
 
 
-
 // ============ FUNCTIONS ============
-pub fn network_stream() -> impl Stream<Item = Message> 
+pub fn network_subscription(no_conn_string: String) -> Subscription<Message> { Subscription::run_with(no_conn_string, network_stream) }
+pub fn network_stream(no_conn_string: &String) -> BoxStream<'static, Message>
 {
+    let no_conn_string = no_conn_string.to_owned();
     stream! 
     {
-        let connection = match Connection::system().await 
+        loop 
         {
-            Ok(c) => c,
-            Err(e) => { eprintln!("DBus error: {e}"); return; }
-        };
-
-        // initial update
-        if let Ok(Some(data)) = return_network_state(&connection).await 
-        {
-            yield Message::NetworkUpdated(data);
-        }
-
-        let proxy = Proxy::new(&connection, "org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager", "org.freedesktop.DBus.Properties").await.unwrap();
-
-        let mut signals = proxy.receive_signal("PropertiesChanged").await.unwrap();
-
-        while signals.next().await.is_some() 
-        {
+            let connection = match Connection::system().await 
+            {
+                Ok(c) => c,
+                Err(e) => 
+                {
+                    eprintln!("DBus error: {e}");
+                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    continue;
+                }
+            };
+    
             if let Ok(Some(data)) = return_network_state(&connection).await 
             {
+                println!("\n=== Start Network Module ===");
+                println!("Fetched Network Data.\n");
                 yield Message::NetworkUpdated(data);
             }
+    
+            let proxy = match Proxy::new(&connection, "org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager", "org.freedesktop.DBus.Properties").await 
+            {
+                Ok(p) => p,
+                Err(e) => 
+                {
+                    eprintln!("Proxy error: {e}");
+                    continue;
+                }
+            };
+    
+            let mut signals = match proxy.receive_signal("PropertiesChanged").await 
+            {
+                    Ok(s) => s,
+                    Err(e) => 
+                    {
+                        eprintln!("Signal error: {e}");
+                        continue;
+                    }
+                };
+    
+            while signals.next().await.is_some() 
+            {
+                match  return_network_state(&connection).await 
+                {
+                    Ok(result_data) =>
+                    {
+                        match result_data 
+                        {
+                            Some(data) => yield Message::NetworkUpdated(data),
+                            None => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone() }) 
+                        }
+                    },
+                    Err(_) => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone() }) 
+                }
+            }
+    
+            println!("Signal stream ended, reconnecting...");
         }
-    }
+    }.boxed()
 }
 
 async fn return_network_state(connection: &Connection) -> Result<Option<NetworkData>> 
 {
     let nm = Proxy::new(connection, "org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager", "org.freedesktop.NetworkManager").await?;
-
     let connectivity: u32 = nm.get_property("Connectivity").await?;
-
     let primary: OwnedObjectPath = nm.get_property("PrimaryConnection").await?;
-
     if primary.as_str() == "/" { return Ok(None); }
-
     let active = Proxy::new(connection, "org.freedesktop.NetworkManager", primary.as_str(), "org.freedesktop.NetworkManager.Connection.Active").await?;
-
     let id: String = active.get_property("Id").await?;
     let conn_type: String = active.get_property("Type").await?;
 

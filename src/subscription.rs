@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{Subscription, event, mouse, time};
+use iced::{event, mouse, time};
 use std::time::Duration;
 
 
@@ -7,7 +7,7 @@ use std::time::Duration;
 
 
 // ============ CRATES ============
-use crate::modules::{data::Modules, network::{network_stream, NetworkSubscription}, tray::{TraySubscription, tray_stream}};
+use crate::modules::{data::Modules, network::{network_subscription}, tray::{TraySubscription, tray_stream}};
 use crate::helpers::misc::is_active_module;
 use crate::update::Message;
 use crate::AppData;
@@ -43,7 +43,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
     };
     if is_active_module(&app.modules_data.active_modules, Modules::Network) 
     {
-        subs.push(Subscription::run_with(NetworkSubscription, |_| network_stream()));
+        subs.push(network_subscription(app.ron_config.network_disconnected_text.clone()));
     };
 
     iced::Subscription::batch(subs)

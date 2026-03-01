@@ -124,6 +124,7 @@ BarConfig
     media_player_buttons_format: ("󰒮", "⏸", "▶", "󰒭"),
     media_player_metadata_format: "{{artist}} | {{album}} | {{title}}",
     media_player_button_status_format: ("Playing", "Paused", "Stopped"),
+    network_disconnected_text: "No Connection Found.",
     network_module_format: "{level} | {connection_type} | {id}",
     network_level_format: 
     (

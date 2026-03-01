@@ -86,6 +86,7 @@ pub struct BarConfig
     pub media_player_metadata_format: String, 
     pub media_player_button_status_format: [String;3],
     pub media_player_metadata_text_limit_len: usize,
+    pub network_disconnected_text: String,
     pub network_level_format: [String;4], 
     pub network_connection_type_icons: [String;3],
     pub output_volume_format: [String;6],
@@ -307,6 +308,7 @@ impl Default for BarConfig
             media_player_buttons_format: ["󰒮".to_string(), "⏸".to_string(), "▶".to_string(), "󰒭".to_string()],
             media_player_metadata_format: "{{artist}} | {{album}} | {{title}}".to_string(),
             media_player_button_status_format: ["Playing".to_string(), "Paused".to_string(), "Stopped".to_string()],
+            network_disconnected_text: "No Connection Found.".to_string(),
             network_module_format: "{level} | {connection_type} | {id}".to_string(),
             network_level_format: 
             [
