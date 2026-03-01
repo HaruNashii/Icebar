@@ -1,7 +1,13 @@
 // ============ IMPORTS ============
 use serde::{Deserialize, Serialize};
+use iced::widget::button;
 
-use crate::helpers::style::TextOrientation;
+
+
+
+
+// ============ CRATES ============
+use crate::helpers::style::{TextOrientation, UserStyle, set_style};
 
 
 
@@ -69,4 +75,19 @@ impl Default for CustomModule
             continous_command: vec![]
         }
     }
+}
+
+
+
+pub fn define_custom_module_style(custom_module: &CustomModule, status: button::Status) -> iced::widget::button::Style
+{
+    let hovered = custom_module.button_hovered_color_rgb; 
+    let hovered_text = custom_module.button_hovered_text_color_rgb; 
+    let pressed = custom_module.button_pressed_color_rgb; 
+    let normal = custom_module.button_color_rgb; 
+    let normal_text = custom_module.button_text_color_rgb; 
+    let border_size = custom_module.border_size; 
+    let border_color_rgba = custom_module.border_color_rgba; 
+    let border_radius = custom_module.border_radius;
+    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
 }

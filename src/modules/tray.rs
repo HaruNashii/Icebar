@@ -1,7 +1,7 @@
 // ============ IMPORTS ============
 use std::{collections::{HashMap, HashSet}, process::Command, sync::Mutex};
 use zbus::{Connection, fdo::DBusProxy, interface, message::Header, object_server::SignalEmitter};
-use iced::futures::{Stream, StreamExt};
+use iced::{widget::button, futures::{Stream, StreamExt}};
 use tokio::sync::mpsc::{self, Sender};
 use once_cell::sync::Lazy;
 use std::pin::Pin;
@@ -10,8 +10,10 @@ use std::pin::Pin;
 
 
 
+
 // ============ CRATES ============
-use crate::helpers::icons::fetch_icon;
+use crate::helpers::{icons::fetch_icon, style::{UserStyle, set_style}};
+use crate::AppData;
 use crate::Message;
 
 
@@ -249,4 +251,19 @@ pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus
 {
     Command::new("busctl").args(["--user", "call", service, menu_path, "com.canonical.dbusmenu", "Event", "isvu", &id.to_string(), "clicked", "i", "0", "0", ]).status()?;
     Ok(())
+}
+
+
+
+pub fn define_tray_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
+{
+    let hovered = app.ron_config.tray_button_hovered_color_rgb;
+    let hovered_text = app.ron_config.tray_button_hovered_text_color_rgb;
+    let pressed = app.ron_config.tray_button_pressed_color_rgb;
+    let normal = app.ron_config.tray_button_color_rgb;
+    let normal_text = app.ron_config.tray_button_text_color_rgb;
+    let border_size = app.ron_config.tray_border_size;
+    let border_color_rgba = app.ron_config.tray_border_color_rgba;
+    let border_radius = app.ron_config.tray_border_radius;
+    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius})
 }

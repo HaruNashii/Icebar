@@ -6,7 +6,7 @@ use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, col
 
 
 // ============ CRATES ============
-use crate::{helpers::{string::ellipsize, style::{UserStyle, bar_style, orient_text, set_style}}, modules::data::Modules, ron::BarPosition};
+use crate::{helpers::{string::ellipsize, style::{bar_style, orient_text}}, modules::{clock::define_clock_style, custom_modules::define_custom_module_style, data::Modules, media_player::{define_media_player_buttons_style, define_media_player_metadata_style}, network::define_network_style, tray::define_tray_style, volume::{define_volume_input_style, define_volume_output_style}, workspaces::define_workspaces_style}, ron::BarPosition};
 use crate::ron::ActionOnClick;
 use crate::{AppData, Message};
 
@@ -59,22 +59,14 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let children: Vec<Element<_>> =
                     app.modules_data.tray_icons.iter().enumerate().map(|(i, (icon, _))| 
                     {
-                        let content: Element<_> = if let Some(icon) = icon 
+                        let button_content: Element<_> = if let Some(icon) = icon 
                         { image(icon.clone()).width(app.ron_config.tray_icon_size).height(app.ron_config.tray_icon_size).into() } 
                         else
                         { text("?").into() };
             
-                        button(content) .style(|_: &Theme, status: button::Status|
+                        button(button_content).style(|_: &Theme, status: button::Status|
                         {
-                            let hovered = app.ron_config.tray_button_hovered_color_rgb;
-                            let hovered_text = app.ron_config.tray_button_hovered_text_color_rgb;
-                            let pressed = app.ron_config.tray_button_pressed_color_rgb;
-                            let normal = app.ron_config.tray_button_color_rgb;
-                            let normal_text = app.ron_config.tray_button_text_color_rgb;
-                            let border_size = app.ron_config.tray_border_size;
-                            let border_color_rgba = app.ron_config.tray_border_color_rgba;
-                            let border_radius = app.ron_config.tray_border_radius;
-                            set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius})
+                            define_tray_style(app, status)
                         }).padding(app.ron_config.tray_button_size).on_press(Message::TrayIconClicked(i)).into()
                     }).collect();
             
@@ -115,18 +107,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     let color_to_send = Color::from_rgb8(*r, *g, *b);
                     mouse_area(button(text(orient_text(&workspace_text.clone(), &app.ron_config.workspace_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace_text_size).center()).padding(padding_y).style(move |_: &Theme, status: button::Status| 
                     {
-                        let hovered = app.ron_config.workspace_button_hovered_color_rgb;
-                        let hovered_text = app.ron_config.workspace_button_hovered_text_color_rgb;
-                        let pressed = app.ron_config.workspace_button_pressed_color_rgb;
-                        let normal = if app.modules_data.workspace_data.current_workspace == *i 
-                        { app.ron_config.workspace_button_selected_color_rgb }
-                        else 
-                        { app.ron_config.workspace_button_color_rgb };
-                        let normal_text = app.ron_config.workspace_button_text_color_rgb;
-                        let border_size = app.ron_config.workspace_border_size;
-                        let border_color_rgba = app.ron_config.workspace_border_color_rgba;
-                        let border_radius = app.ron_config.workspace_border_radius;
-                        set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius})
+                        define_workspaces_style(app, status, i)
                      }).padding([app.ron_config.workspace_width, padding_y * 2])).on_press(Message::WorkspaceButtonPressed(*i as usize)).on_enter(Message::IsHoveringWorkspace(true)).on_exit(Message::IsHoveringWorkspace(false)).into()
                  });
 
@@ -163,15 +144,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 (   
                     mouse_area(button(text(orient_text(formated_metadata, &app.ron_config.media_player_metadata_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_metadata_text_size).center()).style(|_: &Theme, status: button::Status| 
                     {
-                        let hovered =              app.ron_config.media_player_metadata_button_hovered_color_rgb;
-                        let hovered_text =         app.ron_config.media_player_metadata_button_hovered_text_color_rgb;
-                        let pressed =              app.ron_config.media_player_metadata_button_pressed_color_rgb;
-                        let normal =               app.ron_config.media_player_metadata_button_color_rgb;
-                        let normal_text =          app.ron_config.media_player_metadata_button_text_color_rgb;
-                        let border_size =              app.ron_config.media_player_metadata_border_size;
-                        let border_color_rgba =    app.ron_config.media_player_metadata_border_color_rgba;
-                        let border_radius =       app.ron_config.media_player_metadata_border_radius;
-                        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                        define_media_player_metadata_style(app, status)
                     })).on_press(left_click_metadata_message).on_right_press(right_click_metadata_message)
 
                 ).align_y(Alignment::Center).into();
@@ -204,21 +177,11 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
-
-
                 let media_player_button_prev_container: Element<'a, Message> = container
                 (   
                     mouse_area(button(text(orient_text(&app.ron_config.media_player_buttons_format[0], &app.ron_config.media_player_button_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_button_text_size).center()).style(|_: &Theme, status: button::Status| 
                     {
-                        let hovered =              app.ron_config.media_player_button_hovered_color_rgb;
-                        let hovered_text =         app.ron_config.media_player_button_hovered_text_color_rgb;
-                        let pressed =              app.ron_config.media_player_button_pressed_color_rgb;
-                        let normal =               app.ron_config.media_player_button_color_rgb;
-                        let normal_text =          app.ron_config.media_player_button_text_color_rgb;
-                        let border_size =              app.ron_config.media_player_button_border_size;
-                        let border_color_rgba =    app.ron_config.media_player_button_border_color_rgba;
-                        let border_radius =       app.ron_config.media_player_button_border_radius;
-                        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                        define_media_player_buttons_style(app, status)
                     })).on_press(Message::MediaPlayerClickPrev)
                 ).align_y(Alignment::Center).into();
 
@@ -226,15 +189,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 (   
                     mouse_area(button(text(play_pause_text).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_button_text_size).center()).style(|_: &Theme, status: button::Status| 
                     {
-                        let hovered =              app.ron_config.media_player_button_hovered_color_rgb;
-                        let hovered_text =         app.ron_config.media_player_button_hovered_text_color_rgb;
-                        let pressed =              app.ron_config.media_player_button_pressed_color_rgb;
-                        let normal =               app.ron_config.media_player_button_color_rgb;
-                        let normal_text =          app.ron_config.media_player_button_text_color_rgb;
-                        let border_size =              app.ron_config.media_player_button_border_size;
-                        let border_color_rgba =    app.ron_config.media_player_button_border_color_rgba;
-                        let border_radius =       app.ron_config.media_player_button_border_radius;
-                        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                        define_media_player_buttons_style(app, status)
                     })).on_press(Message::MediaPlayerClickPlayPause)
                 ).align_y(Alignment::Center).into();
 
@@ -242,15 +197,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 (   
                     mouse_area(button(text(&app.ron_config.media_player_buttons_format[3]).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_button_text_size).center()).style(|_: &Theme, status: button::Status| 
                     {
-                        let hovered =              app.ron_config.media_player_button_hovered_color_rgb;
-                        let hovered_text =         app.ron_config.media_player_button_hovered_text_color_rgb;
-                        let pressed =              app.ron_config.media_player_button_pressed_color_rgb;
-                        let normal =               app.ron_config.media_player_button_color_rgb;
-                        let normal_text =          app.ron_config.media_player_button_text_color_rgb;
-                        let border_size =              app.ron_config.media_player_button_border_size;
-                        let border_color_rgba =    app.ron_config.media_player_button_border_color_rgba;
-                        let border_radius =       app.ron_config.media_player_button_border_radius;
-                        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                        define_media_player_buttons_style(app, status)
                     })).on_press(Message::MediaPlayerClickNext)
                 ).align_y(Alignment::Center).into();
 
@@ -282,15 +229,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let clock_container: Element<'a, Message> = container(mouse_area(button(text(orient_text(&app.modules_data.clock_data.current_time, &app.ron_config.clock_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.clock_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
-                    let hovered = app.ron_config.clock_button_hovered_color_rgb;
-                    let hovered_text = app.ron_config.clock_button_hovered_text_color_rgb;
-                    let pressed = app.ron_config.clock_button_pressed_color_rgb;
-                    let normal = app.ron_config.clock_button_color_rgb;
-                    let normal_text = app.ron_config.clock_button_text_color_rgb;
-                    let border_size = app.ron_config.clock_border_size;
-                    let border_color_rgba = app.ron_config.clock_border_color_rgba;
-                    let border_radius = app.ron_config.clock_border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                    define_clock_style(app, status)
                 })).on_press(left_click_message).on_right_press(right_click_message)).align_y(Alignment::Center).into();
 
                 match axis 
@@ -335,15 +274,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let text_to_send = app.ron_config.network_module_format.replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
                 let network_container: Element<'a, Message> = container(mouse_area(button(text(orient_text(&text_to_send, &app.ron_config.network_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.network_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
-                    let hovered =           app.ron_config.network_button_hovered_color_rgb;
-                    let hovered_text =      app.ron_config.network_button_hovered_text_color_rgb;
-                    let pressed =           app.ron_config.network_button_pressed_color_rgb;
-                    let normal =            app.ron_config.network_button_color_rgb;
-                    let normal_text =       app.ron_config.network_button_text_color_rgb;
-                    let border_size =           app.ron_config.network_border_size;
-                    let border_color_rgba = app.ron_config.network_border_color_rgba;
-                    let border_radius =    app.ron_config.network_border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                    define_network_style(app, status)
                 })).on_press(left_click_message).on_right_press(right_click_message)).align_y(Alignment::Center).into();
 
                 match axis 
@@ -374,15 +305,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let volume_output_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.output_volume_level, &app.ron_config.volume_output_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_output_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
-                    let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
-                    let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
-                    let pressed = app.ron_config.volume_output_button_pressed_color_rgb;
-                    let normal = app.ron_config.volume_output_button_color_rgb;
-                    let normal_text = app.ron_config.volume_output_button_text_color_rgb;
-                    let border_size = app.ron_config.volume_output_border_size;
-                    let border_color_rgba = app.ron_config.volume_output_border_color_rgba;
-                    let border_radius = app.ron_config.volume_output_border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                    define_volume_output_style(app, status)
                 })).on_press(left_click_message).on_right_press(right_click_message).on_enter(Message::IsHoveringVolumeOutput(true)).on_exit(Message::IsHoveringVolumeOutput(false))).align_y(Alignment::Center).into();
 
                 match axis 
@@ -412,15 +335,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let volume_input_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.input_volume_level, &app.ron_config.volume_input_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_input_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
-                    let hovered = app.ron_config.volume_input_button_hovered_color_rgb;
-                    let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
-                    let pressed = app.ron_config.volume_input_button_pressed_color_rgb;
-                    let normal = app.ron_config.volume_input_button_color_rgb;
-                    let normal_text = app.ron_config.volume_input_button_text_color_rgb;
-                    let border_size = app.ron_config.volume_input_border_size;
-                    let border_color_rgba = app.ron_config.volume_input_border_color_rgba;
-                    let border_radius = app.ron_config.volume_input_border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                    define_volume_input_style(app, status)
                 })).on_press(left_click_message).on_right_press(right_click_message).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).align_y(Alignment::Center).into();
                 
                 match axis 
@@ -460,15 +375,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let element = container(mouse_area(button(text(orient_text(&text_to_render, &custom_module.text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(custom_module.text_size).center()).style(|_, status| 
                 {
-                    let hovered = custom_module.button_hovered_color_rgb; 
-                    let hovered_text = custom_module.button_hovered_text_color_rgb; 
-                    let pressed = custom_module.button_pressed_color_rgb; 
-                    let normal = custom_module.button_color_rgb; 
-                    let normal_text = custom_module.button_text_color_rgb; 
-                    let border_size = custom_module.border_size; 
-                    let border_color_rgba = custom_module.border_color_rgba; 
-                    let border_radius = custom_module.border_radius;
-                    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                    define_custom_module_style(custom_module, status)
                 })).on_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true, custom_module.use_output_as_text,))).on_right_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false, custom_module.use_output_as_text)))).align_y(Alignment::Center);
                 
                 match axis 
