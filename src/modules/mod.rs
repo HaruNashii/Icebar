@@ -1,4 +1,5 @@
 pub mod custom_modules;
+pub mod media_player;
 pub mod network;
 pub mod volume;
 pub mod clock;

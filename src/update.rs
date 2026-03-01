@@ -6,7 +6,7 @@ use iced::{Task as Command, mouse::ScrollDelta, widget::image};
 
 
 // ============ CRATES ============
-use crate::modules::{clock::get_current_time, data::Modules, hypr::{self, UserHyprAction, change_workspace_hypr}, sway::{self, UserSwayAction, change_workspace_sway}, tray::TrayEvent, volume::{self, VolumeAction} };
+use crate::modules::{clock::get_current_time, data::Modules, hypr::{self, UserHyprAction, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, sway::{self, UserSwayAction, change_workspace_sway}, tray::TrayEvent, volume::{self, VolumeAction} };
 use crate::helpers::{misc::is_active_module, workspaces::build_workspace_list };
 use crate::context_menu::run_context_menu;
 use crate::{AppData, Message};
@@ -30,7 +30,9 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::CommandFinished(index, text) => { if app.cached_command_outputs.len() <= index { app.cached_command_outputs.resize(index + 1, String::new()); } app.cached_command_outputs[index] = text; }
         Message::WorkspaceButtonPressed(id) => { if is_active_module(&app.modules_data.active_modules,  Modules::HyprWorkspaces) { change_workspace_hypr(UserHyprAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces) { change_workspace_sway(UserSwayAction::ChangeWithIndex(id)); } }
         Message::NetworkUpdated(data) => { app.modules_data.network_data = data }
-
+        Message::MediaPlayerClickNext => media_player_action(&app.ron_config.player, MediaPlayerAction::Next),
+        Message::MediaPlayerClickPlayPause => media_player_action(&app.ron_config.player, MediaPlayerAction::PlayPause),
+        Message::MediaPlayerClickPrev => media_player_action(&app.ron_config.player, MediaPlayerAction::Prev),
 
         Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>
         {
@@ -114,6 +116,7 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     Modules::VolumeInput => app.modules_data.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format))),
                     Modules::HyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); }
                     Modules::SwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); }
+                    Modules::MediaPlayerMetaData => { app.modules_data.media_player_data = get_player_data_with_format(&app.ron_config); }
                     Modules::CustomModule(borrowed_index) =>
                     {
                         let index = *borrowed_index;

@@ -59,12 +59,17 @@ pub struct BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    pub player: String, 
+    pub dont_show_metadata_if_empty: bool,
+    pub text_when_metadata_is_empty: String,
     pub spacing_between_all_modules: u32,
     pub force_static_position_context_menu: Option<(i32, i32)>,
     pub reverse_scroll_on_workspace: bool,
     pub persistent_workspaces: Option<u8>,
     pub incremental_steps_output: u8,
     pub incremental_steps_input: u8,
+    pub action_on_left_click_media_player_metadata: ActionOnClick, 
+    pub action_on_right_click_media_player_metadata: ActionOnClick, 
     pub action_on_left_click_clock: ActionOnClick, 
     pub action_on_right_click_clock: ActionOnClick, 
     pub action_on_left_click_network: ActionOnClick, 
@@ -76,6 +81,9 @@ pub struct BarConfig
 
 
     // ================= FORMATS =================
+    pub media_player_buttons_format: [String;4],
+    pub media_player_metadata_format: String, 
+    pub media_player_button_status_format: [String;3],
     pub network_level_format: [String;4], 
     pub network_connection_type_icons: [String;3],
     pub output_volume_format: [String;6],
@@ -99,6 +107,35 @@ pub struct BarConfig
     pub tray_border_color_rgba: [u8;4],
     pub tray_border_size: f32,
     pub tray_border_radius: [f32;4],
+
+
+    // ================= MEDIA PLAYER (STYLE) =================
+    pub media_player_metadata_text_size: u32,
+    pub media_player_metadata_text_color_rgb: [u8;3],
+    pub media_player_metadata_text_orientation: TextOrientation,
+    pub media_player_metadata_background_color_rgba: [u8;4],
+    pub media_player_metadata_button_color_rgb: [u8;3],
+    pub media_player_metadata_button_text_color_rgb: [u8;3],
+    pub media_player_metadata_button_hovered_color_rgb: [u8;3],
+    pub media_player_metadata_button_hovered_text_color_rgb: [u8;3],
+    pub media_player_metadata_button_pressed_color_rgb: [u8;3],
+    pub media_player_metadata_border_color_rgba: [u8;4],
+    pub media_player_metadata_border_size: f32,
+    pub media_player_metadata_border_radius: [f32;4],
+
+
+    // ================= MEDIA PLAYER BUTTONS (STYLE) =================
+    pub media_player_button_text_size: u32,
+    pub media_player_button_text_orientation: TextOrientation,
+    pub media_player_button_background_color_rgba: [u8;4],
+    pub media_player_button_color_rgb: [u8;3],
+    pub media_player_button_text_color_rgb: [u8;3],
+    pub media_player_button_hovered_color_rgb: [u8;3],
+    pub media_player_button_hovered_text_color_rgb: [u8;3],
+    pub media_player_button_pressed_color_rgb: [u8;3],
+    pub media_player_button_border_color_rgba: [u8;4],
+    pub media_player_button_border_size: f32,
+    pub media_player_button_border_radius: [f32;4],
 
 
     // ================= NETWORK (STYLE) =================
@@ -242,12 +279,17 @@ impl Default for BarConfig
 
 
             // ================= MODULES CONFIGS =================
+            player: "spotify".to_string(),
+            dont_show_metadata_if_empty: false,
+            text_when_metadata_is_empty: "No Media Playing!!!".to_string(),
             spacing_between_all_modules: 5,
             force_static_position_context_menu: None,
             reverse_scroll_on_workspace: false,
             persistent_workspaces: None,
             incremental_steps_output: 10,
             incremental_steps_input: 10,
+            action_on_left_click_media_player_metadata: ActionOnClick::DefaultAction, 
+            action_on_right_click_media_player_metadata: ActionOnClick::DefaultAction, 
             action_on_left_click_clock: ActionOnClick::DefaultAction, 
             action_on_right_click_clock: ActionOnClick::DefaultAction, 
             action_on_left_click_network: ActionOnClick::DefaultAction, 
@@ -259,6 +301,9 @@ impl Default for BarConfig
 
 
             // ================= FORMATS =================
+            media_player_buttons_format: ["󰒮".to_string(), "⏸".to_string(), "▶".to_string(), "󰒭".to_string()],
+            media_player_metadata_format: "{{artist}} | {{album}} | {{title}}".to_string(),
+            media_player_button_status_format: ["Playing".to_string(), "Paused".to_string(), "Stopped".to_string()],
             network_module_format: "{level} | {connection_type} | {id}".to_string(),
             network_level_format: 
             [
@@ -310,6 +355,33 @@ impl Default for BarConfig
             tray_border_color_rgba: [90, 70, 100, 100],
             tray_border_size: 1.0,
             tray_border_radius: [3.0, 3.0, 3.0, 3.0],
+
+            // ================= MEDIA PLAYER (STYLE) =================
+            media_player_metadata_text_size: 15,
+            media_player_metadata_text_color_rgb: [255, 255, 255],
+            media_player_metadata_text_orientation: TextOrientation::Horizontal,
+            media_player_metadata_background_color_rgba: [25, 25, 30, 95],
+            media_player_metadata_button_color_rgb: [50, 45, 60],
+            media_player_metadata_button_text_color_rgb: [235, 235, 240],
+            media_player_metadata_button_hovered_color_rgb: [130, 35, 70],
+            media_player_metadata_button_hovered_text_color_rgb: [255, 255, 255],
+            media_player_metadata_button_pressed_color_rgb: [80, 25, 45],
+            media_player_metadata_border_color_rgba: [120, 80, 130, 100],
+            media_player_metadata_border_size: 1.0,
+            media_player_metadata_border_radius: [3.0, 3.0, 3.0, 3.0],
+
+            // ================= MEDIA PLAYER BUTTONS (STYLE) =================
+            media_player_button_text_size: 15,
+            media_player_button_text_color_rgb: [255, 255, 255],
+            media_player_button_text_orientation: TextOrientation::Horizontal,
+            media_player_button_background_color_rgba: [25, 25, 30, 95],
+            media_player_button_color_rgb: [50, 45, 60],
+            media_player_button_hovered_color_rgb: [130, 35, 70],
+            media_player_button_hovered_text_color_rgb: [255, 255, 255],
+            media_player_button_pressed_color_rgb: [80, 25, 45],
+            media_player_button_border_color_rgba: [120, 80, 130, 100],
+            media_player_button_border_size: 1.0,
+            media_player_button_border_radius: [3.0, 3.0, 3.0, 3.0],
         
 
             // ================= NETWORK (STYLE) =================
@@ -476,7 +548,7 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<Modules>)
     };
 
     let mut active_modules: Vec<Modules> = Vec::new();
-    let all_possible_default_modules = [Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
+    let all_possible_default_modules = [Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
     let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
     for position in all_possible_position
     {

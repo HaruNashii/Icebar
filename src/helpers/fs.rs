@@ -45,7 +45,7 @@ pub fn check_if_config_file_exists()
 // WARNING!!!: THE OPTION "bar_size: ()" HAS THE TYPE AS: (WIDTH, HEIGTH), IF YOU ARE CREATING AN SIDE BAR, THE VALUE OF 0 IN THE FIRST OPTION IS NOT VALID, AND WILL RESULT IN CRASH OR THE APP HANGING!!!
 
 // ===== TIPS =====
-// All possible modules: ""HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Network", "Clock", "Tray".
+// All possible modules: "MediaPlayerMetaData", "MediaPlayerButtons", "HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Network", "Clock", "Tray".
 //
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
 //
@@ -98,12 +98,17 @@ BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    player: "spotify",
+    dont_show_metadata_if_empty: true,
+    text_when_metadata_is_empty: "No Media Found.",
     spacing_between_all_modules: 5,
     force_static_position_context_menu: None,
     reverse_scroll_on_workspace: false,
     persistent_workspaces: Some(5),
     incremental_steps_output: 10,
     incremental_steps_input: 10,
+    action_on_left_click_media_player_metadata: DefaultAction, 
+    action_on_right_click_media_player_metadata: DefaultAction, 
     action_on_left_click_clock: DefaultAction,
     action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo 'Press Enter To Exit' && read -n 1"]), 
     action_on_left_click_network: DefaultAction, 
@@ -115,6 +120,9 @@ BarConfig
 
 
     // ================= FORMATS =================
+    media_player_buttons_format: ("󰒮", "⏸", "▶", "󰒭"),
+    media_player_metadata_format: "{{artist}} | {{album}} | {{title}}",
+    media_player_button_status_format: ("Playing", "Paused", "Stopped"),
     network_module_format: "{level} | {connection_type} | {id}",
     network_level_format: 
     (
@@ -166,6 +174,35 @@ BarConfig
     tray_border_color_rgba: (90, 70, 100, 100),
     tray_border_size: 1.0,
     tray_border_radius: (3.0, 3.0, 3.0, 3.0),
+
+    
+    // ================= MEDIA PLAYER (STYLE) =================
+    media_player_metadata_text_size: 15,
+    media_player_metadata_text_color_rgb: (255, 255, 255),
+    media_player_metadata_text_orientation: Horizontal,
+    media_player_metadata_background_color_rgba: (25, 25, 30, 95),
+    media_player_metadata_button_color_rgb: (50, 45, 60),
+    media_player_metadata_button_text_color_rgb: (235, 235, 240),
+    media_player_metadata_button_hovered_color_rgb: (130, 35, 70),
+    media_player_metadata_button_hovered_text_color_rgb: (255, 255, 255),
+    media_player_metadata_button_pressed_color_rgb: (80, 25, 45),
+    media_player_metadata_border_color_rgba: (120, 80, 130, 100),
+    media_player_metadata_border_size: 1.0,
+    media_player_metadata_border_radius: (3.0, 3.0, 3.0, 3.0),
+
+
+    // ================= MEDIA PLAYER BUTTONS (STYLE) =================
+    media_player_button_text_size: 15,
+    media_player_button_text_color_rgb: (255, 255, 255),
+    media_player_button_text_orientation: Horizontal,
+    media_player_button_background_color_rgba: (25, 25, 30, 95),
+    media_player_button_color_rgb: (50, 45, 60),
+    media_player_button_hovered_color_rgb: (130, 35, 70),
+    media_player_button_hovered_text_color_rgb: (255, 255, 255),
+    media_player_button_pressed_color_rgb: (80, 25, 45),
+    media_player_button_border_color_rgba: (120, 80, 130, 100),
+    media_player_button_border_size: 1.0,
+    media_player_button_border_radius: (3.0, 3.0, 3.0, 3.0),
 
 
     // ================= NETWORK (STYLE) =================
@@ -296,7 +333,8 @@ BarConfig
 
     // ================= CUSTOM MODULES =================
     custom_modules_spacing: 10,
-    custom_modules: [
+    custom_modules: 
+    [
     	//Example of an button that just runs an app or command
 	(
 		name: "Wofi Custom Module",
@@ -343,7 +381,7 @@ BarConfig
 	// Example of an button that displays the continous output
 	//(
 	//	name: "Playerctl Status - Artist - Media",
-	//	text: "Continous Output:",
+	//	text: "",
     	//	text_size: 15,
 	//	height: 30,
     	//	button_color_rgb: (255, 40, 55),
@@ -357,57 +395,9 @@ BarConfig
 	//	use_output_as_text: false,
 	//	use_continous_output_as_text: true,
 	//	all_output_as_text_format: "    {continous_output}",
-        //      	output_text_limit_len: 50,
+        //      output_text_limit_len: 50,
 	//	continous_command: ["playerctl", "--player=spotify", "metadata", "--format", "{{ artist }} - {{ title }}"]
 	//),
-	//(
-	//	name: "Playerctl Previous Button",
-	//	text: "󰒮",
-    	//	text_size: 15,
-	//	height: 30,
-    	//	button_color_rgb: (45, 40, 55),
-    	//	button_text_color_rgb: (230, 230, 240),
-    	//	button_hovered_color_rgb: (150, 40, 80),
-    	//	button_hovered_text_color_rgb: (255, 255, 255),
-    	//	button_pressed_color_rgb: (85, 30, 55),
-    	//	border_color_rgba: (130, 90, 140, 100),
-    	//	border_size: 1.0,
-    	//	border_radius: (3.0, 3.0, 3.0, 3.0),
-	//	command_to_exec_on_left_click: ["playerctl", "--player=spotify", "previous"],
-	//),
-	//(
-	//	name: "Playerctl Play-Pause Button",
-	//	text: "󰏤",
-    	//	text_size: 15,
-	//	height: 30,
-    	//	button_color_rgb: (45, 40, 55),
-    	//	button_text_color_rgb: (230, 230, 240),
-    	//	button_hovered_color_rgb: (150, 40, 80),
-    	//	button_hovered_text_color_rgb: (255, 255, 255),
-    	//	button_pressed_color_rgb: (85, 30, 55),
-    	//	border_color_rgba: (130, 90, 140, 100),
-	//	border_size: 1.0,
-	//	border_radius: (3.0, 3.0, 3.0, 3.0),
-	//	all_output_as_text_format: "{continous_output}",
-	//	use_continous_output_as_text: true,
-	//	continous_command: ["bash", "-c", "case \"$(playerctl --player=spotify status 2>/dev/null)\" in Playing) printf \" ⏸ \" ;; Paused) printf \"▶\" ;; *) printf \"▶\" ;; esac"],
-	//	command_to_exec_on_left_click: ["playerctl", "--player=spotify", "play-pause"],
-	//),
-	//(
-	//	name: "Playerctl Next Button",
-	//	text: "󰒭",
-    	//	text_size: 15,
-	//	height: 30,
-    	//	button_color_rgb: (45, 40, 55),
-    	//	button_text_color_rgb: (230, 230, 240),
-    	//	button_hovered_color_rgb: (150, 40, 80),
-    	//	button_hovered_text_color_rgb: (255, 255, 255),
-    	//	button_pressed_color_rgb: (85, 30, 55),
-    	//	border_color_rgba: (130, 90, 140, 100),
-    	//	border_size: 1.0,
-    	//	border_radius: (3.0, 3.0, 3.0, 3.0),
-	//	command_to_exec_on_left_click: ["playerctl", "--player=spotify", "next"],
-	//)
     ],
 )"#;
         let mut file = File::create(ron_file_config_path).expect("Couldn't Create Default Config File");

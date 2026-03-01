@@ -7,7 +7,7 @@ use iced::widget::image;
 
 
 // ============ CRATES ============
-use crate::{helpers::workspaces::WorkspaceData, modules::{clock::ClockData, network::NetworkData, volume::VolumeData}};
+use crate::{helpers::workspaces::WorkspaceData, modules::{clock::ClockData, media_player::MediaPlayerData, network::NetworkData, volume::VolumeData}};
 
 
 
@@ -21,6 +21,8 @@ pub enum Modules
     HyprWorkspaces,
     SwayWorkspaces,
     VolumeOutput,
+    MediaPlayerMetaData,
+    MediaPlayerButtons,
     VolumeInput,
     Network,
     Clock,
@@ -31,6 +33,7 @@ pub enum Modules
 pub struct ModulesData
 {
     pub tray_icons: Vec<(Option<image::Handle>, String)>,
+    pub media_player_data: MediaPlayerData,
     pub workspace_data: WorkspaceData,
     pub active_modules: Vec<Modules>,
     pub network_data: NetworkData,

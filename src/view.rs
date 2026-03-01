@@ -139,6 +139,129 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
 
 
+            Modules::MediaPlayerMetaData => 
+            {
+                let mut metadata = &app.modules_data.media_player_data.metadata;
+                if app.ron_config.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
+                {
+                    continue;
+                }
+                else if !app.ron_config.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
+                {
+                    metadata = &app.ron_config.text_when_metadata_is_empty;
+                }
+    
+
+                let left_click_metadata_message: Message = match &app.ron_config.action_on_left_click_media_player_metadata { ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
+                let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
+
+
+                let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
+                let color_to_send = Color::from_rgb8(*r, *g, *b);
+                let media_player_metadata_container: Element<'a, Message> = container
+                (   
+                    mouse_area(button(text(orient_text(metadata, &app.ron_config.media_player_metadata_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_metadata_text_size).center()).style(|_: &Theme, status: button::Status| 
+                    {
+                        let hovered =              app.ron_config.media_player_metadata_button_hovered_color_rgb;
+                        let hovered_text =         app.ron_config.media_player_metadata_button_hovered_text_color_rgb;
+                        let pressed =              app.ron_config.media_player_metadata_button_pressed_color_rgb;
+                        let normal =               app.ron_config.media_player_metadata_button_color_rgb;
+                        let normal_text =          app.ron_config.media_player_metadata_button_text_color_rgb;
+                        let border_size =              app.ron_config.media_player_metadata_border_size;
+                        let border_color_rgba =    app.ron_config.media_player_metadata_border_color_rgba;
+                        let border_radius =       app.ron_config.media_player_metadata_border_radius;
+                        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                    })).on_press(left_click_metadata_message).on_right_press(right_click_metadata_message)
+
+                ).align_y(Alignment::Center).into();
+
+                match axis 
+                {
+                    Axis::Horizontal => row([media_player_metadata_container]).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column([media_player_metadata_container]).align_x(Alignment::Center).into()
+                }
+            }
+
+
+
+            Modules::MediaPlayerButtons =>
+            {
+                if app.ron_config.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
+                {
+                    continue;
+                }
+    
+
+                let play_pause_text = if app.modules_data.media_player_data.status.contains("Playing")
+                {
+                    &app.ron_config.media_player_buttons_format[1]
+                }
+                else
+                {
+                    &app.ron_config.media_player_buttons_format[2]
+                };
+
+                let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
+                let color_to_send = Color::from_rgb8(*r, *g, *b);
+
+
+                let media_player_button_prev_container: Element<'a, Message> = container
+                (   
+                    mouse_area(button(text(orient_text(&app.ron_config.media_player_buttons_format[0], &app.ron_config.media_player_button_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_button_text_size).center()).style(|_: &Theme, status: button::Status| 
+                    {
+                        let hovered =              app.ron_config.media_player_button_hovered_color_rgb;
+                        let hovered_text =         app.ron_config.media_player_button_hovered_text_color_rgb;
+                        let pressed =              app.ron_config.media_player_button_pressed_color_rgb;
+                        let normal =               app.ron_config.media_player_button_color_rgb;
+                        let normal_text =          app.ron_config.media_player_button_text_color_rgb;
+                        let border_size =              app.ron_config.media_player_button_border_size;
+                        let border_color_rgba =    app.ron_config.media_player_button_border_color_rgba;
+                        let border_radius =       app.ron_config.media_player_button_border_radius;
+                        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                    })).on_press(Message::MediaPlayerClickPrev)
+                ).align_y(Alignment::Center).into();
+
+                let media_player_button_play_pause_container: Element<'a, Message> = container
+                (   
+                    mouse_area(button(text(play_pause_text).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_button_text_size).center()).style(|_: &Theme, status: button::Status| 
+                    {
+                        let hovered =              app.ron_config.media_player_button_hovered_color_rgb;
+                        let hovered_text =         app.ron_config.media_player_button_hovered_text_color_rgb;
+                        let pressed =              app.ron_config.media_player_button_pressed_color_rgb;
+                        let normal =               app.ron_config.media_player_button_color_rgb;
+                        let normal_text =          app.ron_config.media_player_button_text_color_rgb;
+                        let border_size =              app.ron_config.media_player_button_border_size;
+                        let border_color_rgba =    app.ron_config.media_player_button_border_color_rgba;
+                        let border_radius =       app.ron_config.media_player_button_border_radius;
+                        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                    })).on_press(Message::MediaPlayerClickPlayPause)
+                ).align_y(Alignment::Center).into();
+
+                let media_player_button_next_container: Element<'a, Message> = container
+                (   
+                    mouse_area(button(text(&app.ron_config.media_player_buttons_format[3]).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_button_text_size).center()).style(|_: &Theme, status: button::Status| 
+                    {
+                        let hovered =              app.ron_config.media_player_button_hovered_color_rgb;
+                        let hovered_text =         app.ron_config.media_player_button_hovered_text_color_rgb;
+                        let pressed =              app.ron_config.media_player_button_pressed_color_rgb;
+                        let normal =               app.ron_config.media_player_button_color_rgb;
+                        let normal_text =          app.ron_config.media_player_button_text_color_rgb;
+                        let border_size =              app.ron_config.media_player_button_border_size;
+                        let border_color_rgba =    app.ron_config.media_player_button_border_color_rgba;
+                        let border_radius =       app.ron_config.media_player_button_border_radius;
+                        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+                    })).on_press(Message::MediaPlayerClickNext)
+                ).align_y(Alignment::Center).into();
+
+                let container_list = [media_player_button_prev_container, media_player_button_play_pause_container, media_player_button_next_container];
+                match axis 
+                {
+                    Axis::Horizontal => row(container_list).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column(container_list).align_x(Alignment::Center).into()
+                }
+            }
+
+
 
 
             Modules::Clock => 
@@ -180,12 +303,12 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
             Modules::Network => 
             {
-                let left_click_message: Message = match &app.ron_config.action_on_left_click_clock
+                let left_click_message: Message = match &app.ron_config.action_on_left_click_network
                 {
                     ActionOnClick::DefaultAction => Message::Nothing,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false))
                 };
-                let right_click_message: Message = match &app.ron_config.action_on_right_click_clock
+                let right_click_message: Message = match &app.ron_config.action_on_right_click_network
                 {
                     ActionOnClick::DefaultAction => Message::Nothing,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false))

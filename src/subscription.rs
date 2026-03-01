@@ -29,7 +29,6 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
 
     let mut subs = vec!
     [
-        Subscription::run_with(NetworkSubscription, |_| network_stream()),
         time::every(Duration::from_millis(150)).map(|_| Message::Tick),
         event_reader,
     ];
@@ -38,6 +37,10 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
     if is_active_module(&app.modules_data.active_modules, Modules::Tray) 
     {
         subs.push(iced::Subscription::run_with(TraySubscription, tray_stream));
+    };
+    if is_active_module(&app.modules_data.active_modules, Modules::Network) 
+    {
+        subs.push(Subscription::run_with(NetworkSubscription, |_| network_stream()));
     };
 
     iced::Subscription::batch(subs)
