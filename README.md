@@ -123,6 +123,10 @@ bar {
 ```
 src/
 ├── main.rs             → application entry point
+├── subscription.rs     → iced subscriptions
+├── update.rs           → iced message handler
+├── view.rs             → iced renderer handler
+├── ron.rs              → ron configuration handler
 ├── tray.rs             → StatusNotifier watcher
 ├── context_menu.rs     → context menu UI + logic
 ├── modules/            → bar components

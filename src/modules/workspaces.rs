@@ -1,8 +1,18 @@
+// ============ IMPORTS ============
 use iced::widget::button;
 
+
+
+
+
+// ============ CRATES ============
 use crate::{AppData, helpers::style::{UserStyle, set_style}};
 
 
+
+
+
+// ============ FUNCTIONS ============
 pub fn define_workspaces_style(app: &AppData, status: button::Status, i: &i32) -> iced::widget::button::Style
 {
     let hovered = app.ron_config.workspace_button_hovered_color_rgb;
@@ -17,5 +27,39 @@ pub fn define_workspaces_style(app: &AppData, status: button::Status, i: &i32) -
     let border_color_rgba = app.ron_config.workspace_border_color_rgba;
     let border_radius = app.ron_config.workspace_border_radius;
     set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius})
+}
+
+
+pub fn define_workspaces_text(app: &AppData, id: i32) -> String
+{
+    if id == app.modules_data.workspace_data.current_workspace 
+    {
+        if let Some(selected) = &app.ron_config.workspace_selected_text 
+        {
+            selected.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
+        } 
+        else 
+        {
+            id.to_string() 
+        }
+    } 
+    else 
+    { 
+        app.ron_config.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
+    }
+}
+
+
+
+pub fn define_workspaces_padding(app: &AppData, id: i32) -> u16
+{
+    if let Some(value) = app.ron_config.workspace_different_selected_width && id == app.modules_data.workspace_data.current_workspace
+    {
+        value 
+    } 
+    else 
+    {
+        app.ron_config.workspace_width 
+    }
 }
 

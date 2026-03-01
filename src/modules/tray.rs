@@ -267,3 +267,20 @@ pub fn define_tray_style(app: &AppData, status: button::Status) -> iced::widget:
     let border_radius = app.ron_config.tray_border_radius;
     set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius})
 }
+
+
+// ============ IMPORTS ============
+use iced::{Element, widget::{image, text}};
+
+pub fn define_tray_icon<'a>(app: &'a AppData, icon: &'a Option<iced::widget::image::Handle>) ->  Element<'a, Message>
+{
+    let element_to_send: Element<_> = if let Some(icon) = icon 
+    {
+        image(icon.clone()).width(app.ron_config.tray_icon_size).height(app.ron_config.tray_icon_size).into() 
+    } 
+    else
+    { 
+        text("?").into() 
+    };
+    element_to_send
+}

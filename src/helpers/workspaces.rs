@@ -10,6 +10,7 @@ pub struct WorkspaceData
 
 
 
+// ============ FUNCTIONS ============
 pub fn build_workspace_list(real: &[i32], persistent: Option<u8>) -> Vec<i32> 
 {
     let mut result = Vec::new();

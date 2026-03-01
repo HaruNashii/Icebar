@@ -1,12 +1,12 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, column, container, image, mouse_area, row, text}};
+use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, column, container, mouse_area, row, text}};
 
 
 
 
 
 // ============ CRATES ============
-use crate::{helpers::{string::ellipsize, style::{bar_style, orient_text}}, modules::{clock::define_clock_style, custom_modules::define_custom_module_style, data::Modules, media_player::{define_media_player_buttons_style, define_media_player_metadata_style}, network::define_network_style, tray::define_tray_style, volume::{define_volume_input_style, define_volume_output_style}, workspaces::define_workspaces_style}, ron::BarPosition};
+use crate::{helpers::{media_buttons::create_media_button, style::{bar_style, orient_text}}, modules::{clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_padding, define_workspaces_style, define_workspaces_text}}, ron::BarPosition};
 use crate::ron::ActionOnClick;
 use crate::{AppData, Message};
 
@@ -56,19 +56,14 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::Tray =>
             {
                 // ---------- build tray buttons ----------
-                let children: Vec<Element<_>> =
-                    app.modules_data.tray_icons.iter().enumerate().map(|(i, (icon, _))| 
+                let children: Vec<Element<_>> = app.modules_data.tray_icons.iter().enumerate().map(|(i, (icon, _))| 
+                {
+                    let button_content = define_tray_icon(app, icon);
+                    button(button_content).style(|_: &Theme, status: button::Status|
                     {
-                        let button_content: Element<_> = if let Some(icon) = icon 
-                        { image(icon.clone()).width(app.ron_config.tray_icon_size).height(app.ron_config.tray_icon_size).into() } 
-                        else
-                        { text("?").into() };
-            
-                        button(button_content).style(|_: &Theme, status: button::Status|
-                        {
-                            define_tray_style(app, status)
-                        }).padding(app.ron_config.tray_button_size).on_press(Message::TrayIconClicked(i)).into()
-                    }).collect();
+                        define_tray_style(app, status)
+                    }).padding(app.ron_config.tray_button_size).on_press(Message::TrayIconClicked(i)).into()
+                }).collect();
             
                 match axis 
                 {
@@ -77,32 +72,12 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 }
             },
 
-
-
             Modules::HyprWorkspaces | Modules::SwayWorkspaces =>
             {
                 let workspace_buttons = app.modules_data.workspace_data.visible_workspaces.iter().map(|i| 
                 {
-                    let id = *i;
-
-                    // ================= TEXT RESOLUTION =================
-                    let workspace_text = if id == app.modules_data.workspace_data.current_workspace 
-                    {
-                        if let Some(selected) = &app.ron_config.workspace_selected_text 
-                        { selected.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) } 
-                        else 
-                        { id.to_string() }
-                    } 
-                    else 
-                    { 
-                        app.ron_config.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
-                    };
-
-                    let padding_y = if let Some(value) = app.ron_config.workspace_different_selected_width && id == app.modules_data.workspace_data.current_workspace
-                    { value } 
-                    else 
-                    { app.ron_config.workspace_width };
-
+                    let workspace_text = define_workspaces_text(app, *i);
+                    let padding_y = define_workspaces_padding(app, *i);
                     let [r, g, b] = &app.ron_config.workspace_text_color_rgb;
                     let color_to_send = Color::from_rgb8(*r, *g, *b);
                     mouse_area(button(text(orient_text(&workspace_text.clone(), &app.ron_config.workspace_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace_text_size).center()).padding(padding_y).style(move |_: &Theme, status: button::Status| 
@@ -118,31 +93,22 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 }
             }
 
-
-
             Modules::MediaPlayerMetaData => 
             {
-                let mut metadata = &app.modules_data.media_player_data.metadata;
                 if app.ron_config.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
                 {
                     continue;
                 }
-                else if !app.ron_config.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
-                {
-                    metadata = &app.ron_config.text_when_metadata_is_empty;
-                }
-                let formated_metadata = &ellipsize(metadata, app.ron_config.media_player_metadata_text_limit_len);
-    
 
+                let formated_metadata = define_media_player_metadata_text(app);
                 let left_click_metadata_message: Message = match &app.ron_config.action_on_left_click_media_player_metadata { ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
                 let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
-
-                
                 let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
+
                 let media_player_metadata_container: Element<'a, Message> = container
                 (   
-                    mouse_area(button(text(orient_text(formated_metadata, &app.ron_config.media_player_metadata_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_metadata_text_size).center()).style(|_: &Theme, status: button::Status| 
+                    mouse_area(button(text(orient_text(&formated_metadata, &app.ron_config.media_player_metadata_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_metadata_text_size).center()).style(|_: &Theme, status: button::Status| 
                     {
                         define_media_player_metadata_style(app, status)
                     })).on_press(left_click_metadata_message).on_right_press(right_click_metadata_message)
@@ -164,48 +130,17 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 {
                     continue;
                 }
-    
 
-                let play_pause_text = if app.modules_data.media_player_data.status.contains("Playing")
-                {
-                    &app.ron_config.media_player_buttons_format[1]
-                }
-                else
-                {
-                    &app.ron_config.media_player_buttons_format[2]
-                };
-
+                let (previous_text, play_pause_text, next_text) = define_media_player_buttons_text(app);
+                let button_data = define_button_data(previous_text, play_pause_text, next_text);
                 let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let media_player_button_prev_container: Element<'a, Message> = container
-                (   
-                    mouse_area(button(text(orient_text(&app.ron_config.media_player_buttons_format[0], &app.ron_config.media_player_button_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_button_text_size).center()).style(|_: &Theme, status: button::Status| 
-                    {
-                        define_media_player_buttons_style(app, status)
-                    })).on_press(Message::MediaPlayerClickPrev)
-                ).align_y(Alignment::Center).into();
+                let media_buttons: Vec<Element<Message>> = button_data.into_iter().map(|(label, message)| { create_media_button(app, label, message, color_to_send) }).collect();
 
-                let media_player_button_play_pause_container: Element<'a, Message> = container
-                (   
-                    mouse_area(button(text(play_pause_text).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_button_text_size).center()).style(|_: &Theme, status: button::Status| 
-                    {
-                        define_media_player_buttons_style(app, status)
-                    })).on_press(Message::MediaPlayerClickPlayPause)
-                ).align_y(Alignment::Center).into();
-
-                let media_player_button_next_container: Element<'a, Message> = container
-                (   
-                    mouse_area(button(text(&app.ron_config.media_player_buttons_format[3]).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_button_text_size).center()).style(|_: &Theme, status: button::Status| 
-                    {
-                        define_media_player_buttons_style(app, status)
-                    })).on_press(Message::MediaPlayerClickNext)
-                ).align_y(Alignment::Center).into();
-
-                let container_list = [media_player_button_prev_container, media_player_button_play_pause_container, media_player_button_next_container];
                 match axis 
                 {
-                    Axis::Horizontal => row(container_list).align_y(Alignment::Center).into(),
-                    Axis::Vertical => column(container_list).align_x(Alignment::Center).into()
+                    Axis::Horizontal => row(media_buttons).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column(media_buttons).align_x(Alignment::Center).into()
                 }
             }
 
@@ -256,22 +191,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 let [r, g, b] = &app.ron_config.network_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let network_level = match &app.modules_data.network_data.network_level
-                {
-                    4 => &app.ron_config.network_level_format[0],
-                    3 => &app.ron_config.network_level_format[1],
-                    2 => &app.ron_config.network_level_format[2],
-                    _ => &app.ron_config.network_level_format[3],
-                };
+                let text_to_send = define_network_text(app);
 
-                let connection_type = match &app.modules_data.network_data.connection_type
-                {
-                    1 => &app.ron_config.network_connection_type_icons[0],
-                    2 => &app.ron_config.network_connection_type_icons[1],
-                    _ => &app.ron_config.network_connection_type_icons[2],
-                };
-
-                let text_to_send = app.ron_config.network_module_format.replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
                 let network_container: Element<'a, Message> = container(mouse_area(button(text(orient_text(&text_to_send, &app.ron_config.network_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.network_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
                     define_network_style(app, status)
@@ -331,6 +252,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false))
 
                 };
+
                 let [r, g, b] = &app.ron_config.volume_input_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let volume_input_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.input_volume_level, &app.ron_config.volume_input_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_input_text_size).center()).style(|_: &Theme, status: button::Status| 
@@ -351,28 +273,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             {
                 let index = *borrowed_index;
                 let custom_module = &app.ron_config.custom_modules[index];
-
-                // TEXT RESOLUTION // COMMAND_OUTPUT
-                let text_to_render = if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()
-                {
-                    let output_text = app.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
-                    let output_text = ellipsize(output_text, custom_module.output_text_limit_len);
-                    custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
-                }
-                // CONTINOUS_OUTPUT
-                else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
-                {
-                    let output_text = ellipsize(&app.cached_continuous_outputs[index], custom_module.output_text_limit_len);
-                    custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{continous_output}", &output_text).replace('\n', "")
-                }
-                // NO OUTPUT JUST TEXT
-                else 
-                {
-                    custom_module.text.clone()
-                };
-
+                let text_to_render = define_custom_module_text(index, custom_module, app);
                 let [r, g, b] = &custom_module.text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
+
                 let element = container(mouse_area(button(text(orient_text(&text_to_render, &custom_module.text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(custom_module.text_size).center()).style(|_, status| 
                 {
                     define_custom_module_style(custom_module, status)

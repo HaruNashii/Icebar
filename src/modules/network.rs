@@ -1,4 +1,4 @@
-// ============ imports ============
+// ============ IMPORTS ============
 use zbus::{zvariant::OwnedObjectPath, Connection, Proxy};
 use futures_util::{Stream, StreamExt};
 use iced::widget::button;
@@ -107,4 +107,26 @@ pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widg
     let border_color_rgba = app.ron_config.network_border_color_rgba;
     let border_radius =     app.ron_config.network_border_radius;
     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+}
+
+
+
+pub fn define_network_text(app: &AppData) -> String
+{
+    let network_level = match &app.modules_data.network_data.network_level
+    {
+        4 => &app.ron_config.network_level_format[0],
+        3 => &app.ron_config.network_level_format[1],
+        2 => &app.ron_config.network_level_format[2],
+        _ => &app.ron_config.network_level_format[3],
+    };
+
+    let connection_type = match &app.modules_data.network_data.connection_type
+    {
+        1 => &app.ron_config.network_connection_type_icons[0],
+        2 => &app.ron_config.network_connection_type_icons[1],
+        _ => &app.ron_config.network_connection_type_icons[2],
+    };
+
+    app.ron_config.network_module_format.replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id)
 }

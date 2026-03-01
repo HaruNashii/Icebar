@@ -7,7 +7,8 @@ use iced::widget::button;
 
 
 // ============ CRATES ============
-use crate::helpers::style::{TextOrientation, UserStyle, set_style};
+use crate::helpers::{string::ellipsize, style::{TextOrientation, UserStyle, set_style}};
+use crate::AppData;
 
 
 
@@ -90,4 +91,28 @@ pub fn define_custom_module_style(custom_module: &CustomModule, status: button::
     let border_color_rgba = custom_module.border_color_rgba; 
     let border_radius = custom_module.border_radius;
     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+}
+
+
+
+pub fn define_custom_module_text(index: usize, custom_module: &CustomModule, app: &AppData) -> String
+{
+    // COMMAND_OUTPUT
+    if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()
+    {
+        let output_text = app.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
+        let output_text = ellipsize(output_text, custom_module.output_text_limit_len);
+        custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
+    }
+    // CONTINOUS_OUTPUT
+    else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
+    {
+        let output_text = ellipsize(&app.cached_continuous_outputs[index], custom_module.output_text_limit_len);
+        custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{continous_output}", &output_text).replace('\n', "")
+    }
+    // NO OUTPUT JUST TEXT
+    else 
+    {
+        custom_module.text.clone()
+    }
 }

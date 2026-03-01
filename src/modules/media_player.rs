@@ -1,4 +1,4 @@
-// ============ imports ============
+// ============ IMPORTS ============
 use std::process::Command;
 use iced::widget::button;
 
@@ -7,8 +7,9 @@ use iced::widget::button;
 
 
 // ============ CRATES ============
-use crate::AppData;
-use crate::helpers::style::{UserStyle, set_style};
+use crate::{AppData, Message};
+use crate::helpers::string::ellipsize;
+use crate::helpers::style::{UserStyle, orient_text, set_style};
 use crate::ron::BarConfig;
 
 
@@ -105,4 +106,59 @@ pub fn define_media_player_buttons_style(app: &AppData, status: button::Status) 
     let border_color_rgba =    app.ron_config.media_player_button_border_color_rgba;
     let border_radius =       app.ron_config.media_player_button_border_radius;
     set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+}
+
+
+
+pub fn define_media_player_metadata_text(app: &AppData) -> String
+{
+    let mut metadata = &app.modules_data.media_player_data.metadata;
+    if !app.ron_config.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
+    {
+        metadata = &app.ron_config.text_when_metadata_is_empty;
+    }
+    ellipsize(metadata, app.ron_config.media_player_metadata_text_limit_len)
+}
+
+
+
+pub fn define_media_player_buttons_text(app: &AppData) -> (String, String, String)
+{
+    let previous_text = &app.ron_config.media_player_buttons_format[0];
+    let play_pause_text = if app.modules_data.media_player_data.status.contains("Playing")
+    {
+        &app.ron_config.media_player_buttons_format[1]
+    }
+    else
+    {
+        &app.ron_config.media_player_buttons_format[2]
+    };
+    let next_text = &app.ron_config.media_player_buttons_format[3];
+
+    (
+        orient_text(previous_text,     &app.ron_config.media_player_button_text_orientation),
+        orient_text(play_pause_text,   &app.ron_config.media_player_button_text_orientation),
+        orient_text(next_text,         &app.ron_config.media_player_button_text_orientation)
+    ) 
+}
+
+
+
+pub fn define_button_data(previous_text: String, play_pause_text: String, next_text: String) -> Vec<(String, Message)>
+{
+    vec!
+    [
+        (
+            previous_text,
+            Message::MediaPlayerClickPrev
+        ),
+        (
+            play_pause_text,
+            Message::MediaPlayerClickPlayPause
+        ),
+        (
+            next_text,
+            Message::MediaPlayerClickNext
+        ),
+    ]
 }
