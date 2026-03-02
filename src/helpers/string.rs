@@ -25,7 +25,7 @@ pub fn weight_from_str(s: &str) -> Weight
 
 
 
-pub fn ellipsize(text: &str, limit: usize) -> String 
+pub fn ellipsize(ellipsis: &String, text: &str, limit: usize) -> String 
 {
     if text.chars().count() <= limit 
     {
@@ -33,6 +33,6 @@ pub fn ellipsize(text: &str, limit: usize) -> String
     } 
     else 
     {
-        format!("{}...", text.chars().take(limit).collect::<String>())
+        format!("{}{}", text.chars().take(limit).collect::<String>(), ellipsis)
     }
 }

@@ -98,6 +98,7 @@ BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    ellipsis_text: "...",
     player: "spotify",
     dont_show_metadata_if_empty: true,
     text_when_metadata_is_empty: "No Media Found.",

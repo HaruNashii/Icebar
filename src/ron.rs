@@ -60,6 +60,7 @@ pub struct BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    pub ellipsis_text: String,
     pub player: String, 
     pub dont_show_metadata_if_empty: bool,
     pub text_when_metadata_is_empty: String,
@@ -331,6 +332,7 @@ impl Default for BarConfig
 
 
             // ================= MODULES CONFIGS =================
+            ellipsis_text: "...".to_string(),
             player: "spotify".to_string(),
             dont_show_metadata_if_empty: false,
             text_when_metadata_is_empty: "No Media Playing!!!".to_string(),

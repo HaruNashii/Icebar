@@ -101,13 +101,13 @@ pub fn define_custom_module_text(index: usize, custom_module: &CustomModule, app
     if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()
     {
         let output_text = app.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
-        let output_text = ellipsize(output_text, custom_module.output_text_limit_len);
+        let output_text = ellipsize(&app.ron_config.ellipsis_text, output_text, custom_module.output_text_limit_len);
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
     }
     // CONTINOUS_OUTPUT
     else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
     {
-        let output_text = ellipsize(&app.cached_continuous_outputs[index], custom_module.output_text_limit_len);
+        let output_text = ellipsize(&app.ron_config.ellipsis_text, &app.cached_continuous_outputs[index], custom_module.output_text_limit_len);
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{continous_output}", &output_text).replace('\n', "")
     }
     // NO OUTPUT JUST TEXT
