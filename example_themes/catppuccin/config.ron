@@ -139,6 +139,7 @@ BarConfig
 
 
     // ================= MEDIA PLAYER BUTTONS (STYLE) =================
+    media_player_button_spacing: 5,
     media_player_button_text_size: 15,
     media_player_button_text_color_rgb: (205, 214, 244),
     media_player_button_color_rgb: (49, 50, 68),

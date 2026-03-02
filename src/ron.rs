@@ -127,6 +127,7 @@ pub struct BarConfig
 
 
     // ================= MEDIA PLAYER BUTTONS (STYLE) =================
+    pub media_player_button_spacing: u32,
     pub media_player_button_text_size: u32,
     pub media_player_button_text_orientation: TextOrientation,
     pub media_player_button_color_rgb: [u8;3],
@@ -423,6 +424,7 @@ impl Default for BarConfig
             media_player_metadata_border_radius: [3.0, 3.0, 3.0, 3.0],
 
             // ================= MEDIA PLAYER BUTTONS (STYLE) =================
+            media_player_button_spacing: 5,
             media_player_button_text_size: 15,
             media_player_button_text_color_rgb: [255, 255, 255],
             media_player_button_text_orientation: TextOrientation::Horizontal,

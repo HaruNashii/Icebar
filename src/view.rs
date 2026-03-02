@@ -143,8 +143,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 match axis 
                 {
-                    Axis::Horizontal => row(media_buttons).align_y(Alignment::Center).into(),
-                    Axis::Vertical => column(media_buttons).align_x(Alignment::Center).into()
+                    Axis::Horizontal => row(media_buttons).spacing(app.ron_config.media_player_button_spacing).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column(media_buttons).spacing(app.ron_config.media_player_button_spacing).align_x(Alignment::Center).into()
                 }
             }
 
