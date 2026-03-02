@@ -1,38 +1,4 @@
-// ============ IMPORTS ============
-use std::{io::Write, fs, fs::File, path::Path};
-
-
-
-
-
-// ============ FUNCTIONS ============
-pub fn check_if_config_file_exists()
-{
-    println!("\n=== FS CHECK RUNNING... ===");
-    let home_path = home::home_dir().expect("Failed To Get Home Directory").display().to_string();
-    let ron_config_dir = format!("{}/.config/icebar", home_path);
-    let ron_config_file_dir = format!("{}/config.ron", ron_config_dir);
-    let ron_file_config_path = Path::new(&ron_config_file_dir);
-    let ron_config_path = Path::new(&ron_config_dir);
-
-    if Path::exists(ron_config_path)
-    {
-        println!("Ron Config Directory Exists!!!");
-    }
-    else
-    {
-        println!("Ron config directory doesn't exist, Creating...");
-        fs::create_dir_all(ron_config_path).expect("Couldn't Create Ron Config Directory");
-    };
-
-    if Path::exists(ron_file_config_path)
-    {
-        println!("Ron Config File Exists!!!");
-    }
-    else
-    {
-        println!("Ron config file doesn't exist, Creating...");
-        let ron_default_data = r#"// This File Is Auto-Generated When Icebar Detects That The Config File Or Config Directory Doesn't Exists.
+// This File Is Auto-Generated When Icebar Detects That The Config File Or Config Directory Doesn't Exists.
 
 // ===== WARNINGS =====
 // WARNING!!!: THE ALPHA OF THE RGBA HAS THE RANGE BETWEEN 0 TO 100, PARSING MORE THAN 100 WILL RESULT IN CRASH
@@ -448,8 +414,4 @@ BarConfig
 	//	continous_command: ["playerctl", "--player=spotify", "metadata", "--format", "{{ artist }} - {{ title }}"]
 	//),
     ],
-)"#;
-        let mut file = File::create(ron_file_config_path).expect("Couldn't Create Default Config File");
-        file.write_all(ron_default_data.as_bytes()).expect("Couldn't Create Default Config File");
-    };
-}
+)

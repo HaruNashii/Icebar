@@ -84,8 +84,9 @@ pub struct BarConfig
     // ================= FORMATS =================
     pub media_player_buttons_format: [String;4],
     pub media_player_metadata_format: String, 
-    pub media_player_button_status_format: [String;3],
     pub media_player_metadata_text_limit_len: usize,
+    pub network_module_format: String,
+    pub alt_network_module_format: String,
     pub network_disconnected_text: String,
     pub network_level_format: [String;4], 
     pub network_connection_type_icons: [String;3],
@@ -101,7 +102,6 @@ pub struct BarConfig
     pub tray_icon_size: u32,
     pub tray_spacing: u32,
     pub tray_button_size: u16,
-    pub tray_background_color_rgba: [u8;4],
     pub tray_button_color_rgb: [u8;3],
     pub tray_button_text_color_rgb: [u8;3],
     pub tray_button_hovered_color_rgb: [u8;3],
@@ -116,7 +116,6 @@ pub struct BarConfig
     pub media_player_metadata_text_size: u32,
     pub media_player_metadata_text_color_rgb: [u8;3],
     pub media_player_metadata_text_orientation: TextOrientation,
-    pub media_player_metadata_background_color_rgba: [u8;4],
     pub media_player_metadata_button_color_rgb: [u8;3],
     pub media_player_metadata_button_text_color_rgb: [u8;3],
     pub media_player_metadata_button_hovered_color_rgb: [u8;3],
@@ -130,7 +129,6 @@ pub struct BarConfig
     // ================= MEDIA PLAYER BUTTONS (STYLE) =================
     pub media_player_button_text_size: u32,
     pub media_player_button_text_orientation: TextOrientation,
-    pub media_player_button_background_color_rgba: [u8;4],
     pub media_player_button_color_rgb: [u8;3],
     pub media_player_button_text_color_rgb: [u8;3],
     pub media_player_button_hovered_color_rgb: [u8;3],
@@ -142,11 +140,9 @@ pub struct BarConfig
 
 
     // ================= NETWORK (STYLE) =================
-    pub network_module_format: String,
     pub network_text_size: u32,
     pub network_text_color_rgb: [u8;3],
     pub network_text_orientation: TextOrientation,
-    pub network_background_color_rgba: [u8;4],
     pub network_button_color_rgb: [u8;3],
     pub network_button_text_color_rgb: [u8;3],
     pub network_button_hovered_color_rgb: [u8;3],
@@ -157,11 +153,24 @@ pub struct BarConfig
     pub network_border_radius: [f32;4],
 
 
+    // ================= ALT NETWORK (STYLE) =================
+    pub alt_network_text_size: u32,
+    pub alt_network_text_color_rgb: [u8;3],
+    pub alt_network_text_orientation: TextOrientation,
+    pub alt_network_button_color_rgb: [u8;3],
+    pub alt_network_button_text_color_rgb: [u8;3],
+    pub alt_network_button_hovered_color_rgb: [u8;3],
+    pub alt_network_button_hovered_text_color_rgb: [u8;3],
+    pub alt_network_button_pressed_color_rgb: [u8;3],
+    pub alt_network_border_color_rgba: [u8;4],
+    pub alt_network_border_size: f32,
+    pub alt_network_border_radius: [f32;4],
+
+
     // ================= CLOCK (STYLE) =================
     pub clock_text_size: u32,
     pub clock_text_color_rgb: [u8;3],
     pub clock_text_orientation: TextOrientation,
-    pub clock_background_color_rgba: [u8;4],
     pub clock_button_color_rgb: [u8;3],
     pub clock_button_text_color_rgb: [u8;3],
     pub clock_button_hovered_color_rgb: [u8;3],
@@ -172,11 +181,24 @@ pub struct BarConfig
     pub clock_border_radius: [f32;4],
 
 
+    // ================= ALT CLOCK (STYLE) =================
+    pub alt_clock_text_size: u32,
+    pub alt_clock_text_color_rgb: [u8;3],
+    pub alt_clock_text_orientation: TextOrientation,
+    pub alt_clock_button_color_rgb: [u8;3],
+    pub alt_clock_button_text_color_rgb: [u8;3],
+    pub alt_clock_button_hovered_color_rgb: [u8;3],
+    pub alt_clock_button_hovered_text_color_rgb: [u8;3],
+    pub alt_clock_button_pressed_color_rgb: [u8;3],
+    pub alt_clock_border_color_rgba: [u8;4],
+    pub alt_clock_border_size: f32,
+    pub alt_clock_border_radius: [f32;4],
+
+
     // ================= VOLUME/OUTPUT (STYLE) =================
     pub volume_output_text_size: u32,
     pub volume_output_text_color_rgb: [u8;3],
     pub volume_output_text_orientation: TextOrientation,
-    pub volume_output_background_color_rgba: [u8;4],
     pub volume_output_button_color_rgb: [u8;3],
     pub volume_output_button_text_color_rgb: [u8;3],
     pub volume_output_button_hovered_color_rgb: [u8;3],
@@ -187,11 +209,24 @@ pub struct BarConfig
     pub volume_output_border_radius: [f32;4],
 
 
+    // ================= MUTED VOLUME/OUTPUT (STYLE) =================
+    pub muted_volume_output_text_size: u32,
+    pub muted_volume_output_text_color_rgb: [u8;3],
+    pub muted_volume_output_text_orientation: TextOrientation,
+    pub muted_volume_output_button_color_rgb: [u8;3],
+    pub muted_volume_output_button_text_color_rgb: [u8;3],
+    pub muted_volume_output_button_hovered_color_rgb: [u8;3],
+    pub muted_volume_output_button_hovered_text_color_rgb: [u8;3],
+    pub muted_volume_output_button_pressed_color_rgb: [u8;3],
+    pub muted_volume_output_border_color_rgba: [u8;4],
+    pub muted_volume_output_border_size: f32,
+    pub muted_volume_output_border_radius: [f32;4],
+
+
     // ================= VOLUME/INPUT (STYLE) =================
     pub volume_input_text_size: u32,
     pub volume_input_text_color_rgb: [u8;3],
     pub volume_input_text_orientation: TextOrientation,
-    pub volume_input_background_color_rgba: [u8;4],
     pub volume_input_button_color_rgb: [u8;3],
     pub volume_input_button_text_color_rgb: [u8;3],
     pub volume_input_button_hovered_color_rgb: [u8;3],
@@ -200,6 +235,20 @@ pub struct BarConfig
     pub volume_input_border_color_rgba: [u8;4],
     pub volume_input_border_size: f32,
     pub volume_input_border_radius: [f32;4],
+
+
+    // ================= VOLUME/INPUT (STYLE) =================
+    pub muted_volume_input_text_size: u32,
+    pub muted_volume_input_text_color_rgb: [u8;3],
+    pub muted_volume_input_text_orientation: TextOrientation,
+    pub muted_volume_input_button_color_rgb: [u8;3],
+    pub muted_volume_input_button_text_color_rgb: [u8;3],
+    pub muted_volume_input_button_hovered_color_rgb: [u8;3],
+    pub muted_volume_input_button_hovered_text_color_rgb: [u8;3],
+    pub muted_volume_input_button_pressed_color_rgb: [u8;3],
+    pub muted_volume_input_border_color_rgba: [u8;4],
+    pub muted_volume_input_border_size: f32,
+    pub muted_volume_input_border_radius: [f32;4],
 
 
     // ================= HYPR/SWAY WORKSPACES (STYLE) =================
@@ -212,7 +261,6 @@ pub struct BarConfig
     pub workspace_text_orientation: TextOrientation,
     pub workspace_selected_text: Option<Vec<String>>,
     pub workspace_spacing: u32,
-    pub workspace_background_color_rgba: [u8;4],
     pub workspace_button_color_rgb: [u8;3],
     pub workspace_button_text_color_rgb: [u8;3],
     pub workspace_button_selected_color_rgb: [u8;3],
@@ -292,7 +340,6 @@ impl Default for BarConfig
             persistent_workspaces: None,
             incremental_steps_output: 10,
             incremental_steps_input: 10,
-            // - click -
             action_on_left_click_media_player_metadata: ActionOnClick::DefaultAction, 
             action_on_right_click_media_player_metadata: ActionOnClick::DefaultAction, 
             action_on_left_click_clock: ActionOnClick::DefaultAction, 
@@ -309,9 +356,9 @@ impl Default for BarConfig
             // ================= FORMATS =================
             media_player_buttons_format: ["󰒮".to_string(), "⏸".to_string(), "▶".to_string(), "󰒭".to_string()],
             media_player_metadata_format: "{{artist}} | {{album}} | {{title}}".to_string(),
-            media_player_button_status_format: ["Playing".to_string(), "Paused".to_string(), "Stopped".to_string()],
             network_disconnected_text: "No Connection Found.".to_string(),
-            network_module_format: "{level} | {connection_type} | {id}".to_string(),
+            network_module_format: "{level} ".to_string(),
+            alt_network_module_format: "{level} | {connection_type} | {id}".to_string(),
             network_level_format: 
             [
                 "󰖩".to_string(),
@@ -353,7 +400,6 @@ impl Default for BarConfig
             tray_icon_size: 18,
             tray_spacing: 5,
             tray_button_size: 5,
-            tray_background_color_rgba: [30, 30, 36, 0],
             tray_button_color_rgb: [60, 50, 70],
             tray_button_text_color_rgb: [220, 220, 230],
             tray_button_hovered_color_rgb: [110, 40, 80],
@@ -367,7 +413,6 @@ impl Default for BarConfig
             media_player_metadata_text_size: 15,
             media_player_metadata_text_color_rgb: [255, 255, 255],
             media_player_metadata_text_orientation: TextOrientation::Horizontal,
-            media_player_metadata_background_color_rgba: [25, 25, 30, 95],
             media_player_metadata_button_color_rgb: [50, 45, 60],
             media_player_metadata_button_text_color_rgb: [235, 235, 240],
             media_player_metadata_button_hovered_color_rgb: [130, 35, 70],
@@ -381,7 +426,6 @@ impl Default for BarConfig
             media_player_button_text_size: 15,
             media_player_button_text_color_rgb: [255, 255, 255],
             media_player_button_text_orientation: TextOrientation::Horizontal,
-            media_player_button_background_color_rgba: [25, 25, 30, 95],
             media_player_button_color_rgb: [50, 45, 60],
             media_player_button_hovered_color_rgb: [130, 35, 70],
             media_player_button_hovered_text_color_rgb: [255, 255, 255],
@@ -395,7 +439,6 @@ impl Default for BarConfig
             network_text_size: 15,
             network_text_color_rgb: [255, 255, 255],
             network_text_orientation: TextOrientation::Horizontal,
-            network_background_color_rgba: [25, 25, 30, 95],
             network_button_color_rgb: [50, 45, 60],
             network_button_text_color_rgb: [235, 235, 240],
             network_button_hovered_color_rgb: [130, 35, 70],
@@ -406,11 +449,24 @@ impl Default for BarConfig
             network_border_radius: [3.0, 3.0, 3.0, 3.0],
 
 
+            // ================= NETWORK (STYLE) =================
+            alt_network_text_size: 15,
+            alt_network_text_color_rgb: [255, 255, 255],
+            alt_network_text_orientation: TextOrientation::Horizontal,
+            alt_network_button_color_rgb: [150, 50, 80],
+            alt_network_button_text_color_rgb: [235, 235, 240],
+            alt_network_button_hovered_color_rgb: [130, 35, 70],
+            alt_network_button_hovered_text_color_rgb: [255, 255, 255],
+            alt_network_button_pressed_color_rgb: [80, 25, 45],
+            alt_network_border_color_rgba: [120, 80, 130, 100],
+            alt_network_border_size: 1.0,
+            alt_network_border_radius: [3.0, 3.0, 3.0, 3.0],
+
+
             // ================= CLOCK (STYLE) =================
             clock_text_size: 15,
             clock_text_color_rgb: [255, 255, 255],
             clock_text_orientation: TextOrientation::Horizontal,
-            clock_background_color_rgba: [25, 25, 30, 95],
             clock_button_color_rgb: [50, 45, 60],
             clock_button_text_color_rgb: [235, 235, 240],
             clock_button_hovered_color_rgb: [130, 35, 70],
@@ -419,13 +475,25 @@ impl Default for BarConfig
             clock_border_color_rgba: [120, 80, 130, 100],
             clock_border_size: 1.0,
             clock_border_radius: [3.0, 3.0, 3.0, 3.0],
+
+            // ================= ALT CLOCK (STYLE) =================
+            alt_clock_text_size: 15,
+            alt_clock_text_color_rgb: [255, 255, 255],
+            alt_clock_text_orientation: TextOrientation::Horizontal,
+            alt_clock_button_color_rgb: [150, 40, 80],
+            alt_clock_button_text_color_rgb: [235, 235, 240],
+            alt_clock_button_hovered_color_rgb: [130, 35, 70],
+            alt_clock_button_hovered_text_color_rgb: [255, 255, 255],
+            alt_clock_button_pressed_color_rgb: [80, 25, 45],
+            alt_clock_border_color_rgba: [120, 80, 130, 100],
+            alt_clock_border_size: 1.0,
+            alt_clock_border_radius: [3.0, 3.0, 3.0, 3.0],
             
 
             // ================= VOLUME/OUTPUT (STYLE) =================
             volume_output_text_size: 15,
             volume_output_text_color_rgb: [255, 255, 255],
             volume_output_text_orientation: TextOrientation::Horizontal,
-            volume_output_background_color_rgba: [30, 30, 36, 95],
             volume_output_button_color_rgb: [55, 45, 65],
             volume_output_button_text_color_rgb: [220, 220, 230],
             volume_output_button_hovered_color_rgb: [150, 45, 85],
@@ -434,13 +502,25 @@ impl Default for BarConfig
             volume_output_border_color_rgba: [110, 80, 120, 100],
             volume_output_border_size: 1.0,
             volume_output_border_radius: [3.0, 3.0, 3.0, 3.0],
+
+            // ================= MUTED VOLUME/OUTPUT (STYLE) =================
+            muted_volume_output_text_size: 15,
+            muted_volume_output_text_color_rgb: [255, 255, 255],
+            muted_volume_output_text_orientation: TextOrientation::Horizontal,
+            muted_volume_output_button_color_rgb: [150, 40, 80],
+            muted_volume_output_button_text_color_rgb: [220, 220, 230],
+            muted_volume_output_button_hovered_color_rgb: [150, 45, 85],
+            muted_volume_output_button_hovered_text_color_rgb: [255, 255, 255],
+            muted_volume_output_button_pressed_color_rgb: [85, 30, 50],
+            muted_volume_output_border_color_rgba: [110, 80, 120, 100],
+            muted_volume_output_border_size: 1.0,
+            muted_volume_output_border_radius: [3.0, 3.0, 3.0, 3.0],
             
 
             // ================= VOLUME/INPUT (STYLE) =================
             volume_input_text_size: 15,
             volume_input_text_color_rgb: [255, 255, 255],
             volume_input_text_orientation: TextOrientation::Horizontal,
-            volume_input_background_color_rgba: [30, 30, 36, 95],
             volume_input_button_color_rgb: [55, 45, 65],
             volume_input_button_text_color_rgb: [220, 220, 230],
             volume_input_button_hovered_color_rgb: [150, 45, 85],
@@ -449,6 +529,20 @@ impl Default for BarConfig
             volume_input_border_color_rgba: [110, 80, 120, 100],
             volume_input_border_size: 1.0,
             volume_input_border_radius: [3.0, 3.0, 3.0, 3.0],
+
+
+            // ================= VOLUME/INPUT (STYLE) =================
+            muted_volume_input_text_size: 15,
+            muted_volume_input_text_color_rgb: [255, 255, 255],
+            muted_volume_input_text_orientation: TextOrientation::Horizontal,
+            muted_volume_input_button_color_rgb: [150, 40, 80],
+            muted_volume_input_button_text_color_rgb: [220, 220, 230],
+            muted_volume_input_button_hovered_color_rgb: [150, 45, 85],
+            muted_volume_input_button_hovered_text_color_rgb: [255, 255, 255],
+            muted_volume_input_button_pressed_color_rgb: [85, 30, 50],
+            muted_volume_input_border_color_rgba: [110, 80, 120, 100],
+            muted_volume_input_border_size: 1.0,
+            muted_volume_input_border_radius: [3.0, 3.0, 3.0, 3.0],
             
 
             // ================= HYPR WORKSPACES (STYLE) =================
@@ -485,7 +579,6 @@ impl Default for BarConfig
                 "●".into(),
             ]),
             workspace_spacing: 3,
-            workspace_background_color_rgba: [28, 28, 34, 95],
             workspace_button_color_rgb: [45, 40, 55],
             workspace_button_text_color_rgb: [200, 200, 210],
             workspace_button_selected_color_rgb: [150, 40, 80],

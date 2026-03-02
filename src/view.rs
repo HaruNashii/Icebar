@@ -108,6 +108,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
 
+
+
                 let media_player_metadata_container: Element<'a, Message> = container
                 (   
                     mouse_area(button(text(orient_text(&formated_metadata, &app.ron_config.media_player_metadata_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_metadata_text_size).center()).style(|_: &Theme, status: button::Status| 
@@ -162,9 +164,18 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
                 };
 
-                let [r, g, b] = &app.ron_config.clock_text_color_rgb;
-                let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let clock_container: Element<'a, Message> = container(mouse_area(button(text(orient_text(&app.modules_data.clock_data.current_time, &app.ron_config.clock_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.clock_text_size).center()).style(|_: &Theme, status: button::Status| 
+                let (text_orientation, color_to_send) = if app.is_showing_alt_clock
+                {
+                    let [r, g, b] = &app.ron_config.alt_clock_text_color_rgb;
+                    (&app.ron_config.alt_clock_text_orientation, Color::from_rgb8(*r, *g, *b))
+                }
+                else
+                {
+                    let [r, g, b] = &app.ron_config.clock_text_color_rgb;
+                    (&app.ron_config.clock_text_orientation, Color::from_rgb8(*r, *g, *b))
+                };
+
+                let clock_container: Element<'a, Message> = container(mouse_area(button(text(orient_text(&app.modules_data.clock_data.current_time, text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.clock_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
                     define_clock_style(app, status)
                 })).on_press(left_click_message).on_right_press(right_click_message)).align_y(Alignment::Center).into();
@@ -182,7 +193,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_network
                 {
-                    ActionOnClick::DefaultAction => Message::Nothing,
+                    ActionOnClick::DefaultAction => Message::ToggleAltNetwork,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false))
                 };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_network
@@ -191,11 +202,20 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false))
                 };
 
-                let [r, g, b] = &app.ron_config.network_text_color_rgb;
-                let color_to_send = Color::from_rgb8(*r, *g, *b);
+                let (text_orientation, color_to_send) = if app.is_showing_alt_network_module
+                {
+                    let [r, g, b] = &app.ron_config.alt_network_text_color_rgb;
+                    (&app.ron_config.alt_network_text_orientation, Color::from_rgb8(*r, *g, *b))
+                }
+                else
+                {
+                    let [r, g, b] = &app.ron_config.network_text_color_rgb;
+                    (&app.ron_config.network_text_orientation, Color::from_rgb8(*r, *g, *b))
+                };
+
                 let text_to_send = define_network_text(app);
 
-                let network_container: Element<'a, Message> = container(mouse_area(button(text(orient_text(&text_to_send, &app.ron_config.network_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.network_text_size).center()).style(|_: &Theme, status: button::Status| 
+                let network_container: Element<'a, Message> = container(mouse_area(button(text(orient_text(&text_to_send, text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.network_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
                     define_network_style(app, status)
                 })).on_press(left_click_message).on_right_press(right_click_message)).align_y(Alignment::Center).into();
@@ -224,9 +244,18 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 };
 
-                let [r, g, b] = &app.ron_config.volume_output_text_color_rgb;
-                let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let volume_output_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.output_volume_level, &app.ron_config.volume_output_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_output_text_size).center()).style(|_: &Theme, status: button::Status| 
+                let (text_orientation, color_to_send) = if app.volume_output_is_muted
+                {
+                    let [r, g, b] = &app.ron_config.muted_volume_output_text_color_rgb;
+                    (&app.ron_config.muted_volume_output_text_orientation, Color::from_rgb8(*r, *g, *b))
+                }
+                else
+                {
+                    let [r, g, b] = &app.ron_config.volume_output_text_color_rgb;
+                    (&app.ron_config.volume_output_text_orientation, Color::from_rgb8(*r, *g, *b))
+                };
+
+                let volume_output_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.output_volume_level, text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_output_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
                     define_volume_output_style(app, status)
                 })).on_press(left_click_message).on_right_press(right_click_message).on_enter(Message::IsHoveringVolumeOutput(true)).on_exit(Message::IsHoveringVolumeOutput(false))).align_y(Alignment::Center).into();
@@ -255,9 +284,18 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 };
 
-                let [r, g, b] = &app.ron_config.volume_input_text_color_rgb;
-                let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let volume_input_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.input_volume_level, &app.ron_config.volume_input_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_input_text_size).center()).style(|_: &Theme, status: button::Status| 
+                let (text_orientation, color_to_send) = if app.volume_input_is_muted
+                {
+                    let [r, g, b] = &app.ron_config.muted_volume_input_text_color_rgb;
+                    (&app.ron_config.muted_volume_input_text_orientation, Color::from_rgb8(*r, *g, *b))
+                }
+                else
+                {
+                    let [r, g, b] = &app.ron_config.volume_input_text_color_rgb;
+                    (&app.ron_config.volume_output_text_orientation, Color::from_rgb8(*r, *g, *b))
+                };
+
+                let volume_input_container = container(mouse_area ( button (text(orient_text(&app.modules_data.volume_data.input_volume_level, text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.volume_input_text_size).center()).style(|_: &Theme, status: button::Status| 
                 {
                     define_volume_input_style(app, status)
                 })).on_press(left_click_message).on_right_press(right_click_message).on_enter(Message::IsHoveringVolumeInput(true)).on_exit(Message::IsHoveringVolumeInput(false))).align_y(Alignment::Center).into();

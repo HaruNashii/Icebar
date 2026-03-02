@@ -128,15 +128,30 @@ async fn return_network_state(connection: &Connection) -> Result<Option<NetworkD
 
 pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {   
-    let hovered =           app.ron_config.network_button_hovered_color_rgb;
-    let hovered_text =      app.ron_config.network_button_hovered_text_color_rgb;
-    let pressed =           app.ron_config.network_button_pressed_color_rgb;
-    let normal =            app.ron_config.network_button_color_rgb;
-    let normal_text =       app.ron_config.network_button_text_color_rgb;
-    let border_size =       app.ron_config.network_border_size;
-    let border_color_rgba = app.ron_config.network_border_color_rgba;
-    let border_radius =     app.ron_config.network_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+    if app.is_showing_alt_network_module
+    {
+        let hovered =           app.ron_config.alt_network_button_hovered_color_rgb;
+        let hovered_text =      app.ron_config.alt_network_button_hovered_text_color_rgb;
+        let pressed =           app.ron_config.alt_network_button_pressed_color_rgb;
+        let normal =            app.ron_config.alt_network_button_color_rgb;
+        let normal_text =       app.ron_config.alt_network_button_text_color_rgb;
+        let border_size =           app.ron_config.alt_network_border_size;
+        let border_color_rgba = app.ron_config.alt_network_border_color_rgba;
+        let border_radius =    app.ron_config.alt_network_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+    }
+    else
+    {
+        let hovered =           app.ron_config.network_button_hovered_color_rgb;
+        let hovered_text =      app.ron_config.network_button_hovered_text_color_rgb;
+        let pressed =           app.ron_config.network_button_pressed_color_rgb;
+        let normal =            app.ron_config.network_button_color_rgb;
+        let normal_text =       app.ron_config.network_button_text_color_rgb;
+        let border_size =           app.ron_config.network_border_size;
+        let border_color_rgba = app.ron_config.network_border_color_rgba;
+        let border_radius =    app.ron_config.network_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+    }
 }
 
 
@@ -158,5 +173,12 @@ pub fn define_network_text(app: &AppData) -> String
         _ => &app.ron_config.network_connection_type_icons[2],
     };
 
-    app.ron_config.network_module_format.replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id)
+    if app.is_showing_alt_network_module
+    {
+        app.ron_config.alt_network_module_format.replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id)
+    }
+    else
+    {
+        app.ron_config.network_module_format.replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id)
+    }
 }

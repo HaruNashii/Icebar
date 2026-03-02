@@ -39,6 +39,7 @@ pub enum Message
     MediaPlayerClickNext,
     MediaPlayerClickPrev,
     TrayEvent(TrayEvent),
+    ToggleAltNetwork,
     ToggleAltClock,
     Nothing,
     Tick
@@ -59,6 +60,7 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::IsHoveringMediaPlayerMetaData(bool) => { app.is_hovering_media_player_meta_data = bool; }
         Message::MuteAudioPressedOutput => { volume::volume( volume::VolumeAction::MuteOutput); }
         Message::MuteAudioPressedInput => { volume::volume( volume::VolumeAction::MuteInput); }
+        Message::ToggleAltNetwork => { app.is_showing_alt_network_module = !app.is_showing_alt_network_module; }
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
         Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
         Message::CommandFinished(index, text) => { if app.cached_command_outputs.len() <= index { app.cached_command_outputs.resize(index + 1, String::new()); } app.cached_command_outputs[index] = text; }
@@ -152,11 +154,24 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                 match module_name
                 {
                     Modules::Clock => {let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format }; app.modules_data.clock_data.current_time = get_current_time(format_to_send)},
-                    Modules::VolumeOutput => app.modules_data.volume_data.output_volume_level = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format))),
-                    Modules::VolumeInput => app.modules_data.volume_data.input_volume_level = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format))),
                     Modules::HyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); }
                     Modules::SwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); }
                     Modules::MediaPlayerMetaData => { app.modules_data.media_player_data = get_player_data_with_format(&app.ron_config); }
+
+                    Modules::VolumeOutput => 
+                    {
+                        let (volume_output, is_muted) = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format)));
+                        app.modules_data.volume_data.output_volume_level = volume_output;
+                        app.volume_output_is_muted = is_muted;
+                    }
+
+                    Modules::VolumeInput => 
+                    {
+                        let (volume_input, is_muted) = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format)));
+                        app.modules_data.volume_data.input_volume_level = volume_input;
+                        app.volume_input_is_muted = is_muted;
+                    }
+
                     Modules::CustomModule(borrowed_index) =>
                     {
                         let index = *borrowed_index;
