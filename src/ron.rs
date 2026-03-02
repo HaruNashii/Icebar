@@ -292,6 +292,7 @@ impl Default for BarConfig
             persistent_workspaces: None,
             incremental_steps_output: 10,
             incremental_steps_input: 10,
+            // - click -
             action_on_left_click_media_player_metadata: ActionOnClick::DefaultAction, 
             action_on_right_click_media_player_metadata: ActionOnClick::DefaultAction, 
             action_on_left_click_clock: ActionOnClick::DefaultAction, 
@@ -302,6 +303,7 @@ impl Default for BarConfig
             action_on_right_click_volume_output: ActionOnClick::DefaultAction, 
             action_on_left_click_volume_input: ActionOnClick::DefaultAction, 
             action_on_right_click_volume_input: ActionOnClick::DefaultAction, 
+
 
 
             // ================= FORMATS =================

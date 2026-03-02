@@ -23,6 +23,7 @@ pub enum Message
 {
     CreateCustomModuleCommand((Option<usize>, Vec<String>, String, bool, bool)),
     MenuLoaded(String, String, Vec<MenuItem>),
+    IsHoveringMediaPlayerMetaData(bool),
     MouseWheelScrolled(ScrollDelta),
     CommandFinished(usize, String),
     WorkspaceButtonPressed(usize),
@@ -55,6 +56,7 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::IsHoveringVolumeOutput(bool) => { app.is_hovering_volume_output = bool; }
         Message::IsHoveringVolumeInput(bool) => { app.is_hovering_volume_input = bool; }
         Message::IsHoveringWorkspace(bool) => { app.is_hovering_workspace = bool; }
+        Message::IsHoveringMediaPlayerMetaData(bool) => { app.is_hovering_media_player_meta_data = bool; }
         Message::MuteAudioPressedOutput => { volume::volume( volume::VolumeAction::MuteOutput); }
         Message::MuteAudioPressedInput => { volume::volume( volume::VolumeAction::MuteInput); }
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
@@ -68,16 +70,22 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
 
         Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>
         {
+            if app.is_hovering_media_player_meta_data
+            {
+                if y > 2. { media_player_action(&app.ron_config.player, MediaPlayerAction::VolumeUp); }
+                if y < 2. { media_player_action(&app.ron_config.player, MediaPlayerAction::VolumeDown); }
+            }
+
             if app.is_hovering_volume_output
             {
-                    if y > 2. { volume::volume(volume::VolumeAction::IncreaseOutput(app.ron_config.incremental_steps_output)); }
-                    if y < 2. { volume::volume(volume::VolumeAction::DecreaseOutput(app.ron_config.incremental_steps_output)); }
+                if y > 2. { volume::volume(volume::VolumeAction::IncreaseOutput(app.ron_config.incremental_steps_output)); }
+                if y < 2. { volume::volume(volume::VolumeAction::DecreaseOutput(app.ron_config.incremental_steps_output)); }
             }
 
             if app.is_hovering_volume_input
             {
-                    if y > 2. { volume::volume(volume::VolumeAction::IncreaseInput(app.ron_config.incremental_steps_input)); }
-                    if y < 2. { volume::volume(volume::VolumeAction::DecreaseInput(app.ron_config.incremental_steps_input)); }
+                if y > 2. { volume::volume(volume::VolumeAction::IncreaseInput(app.ron_config.incremental_steps_input)); }
+                if y < 2. { volume::volume(volume::VolumeAction::DecreaseInput(app.ron_config.incremental_steps_input)); }
             }
 
             if app.is_hovering_workspace

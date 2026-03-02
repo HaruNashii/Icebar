@@ -8,9 +8,9 @@ use iced::{Font, font::Family};
 
 
 // ============ CRATES ============
-use crate::helpers::{misc::is_active_module, style::{style, set_style, UserStyle}, string::weight_from_str, fs::check_if_config_file_exists, monitor::get_monitor_res, };
+use crate::helpers::{fs::check_if_config_file_exists, misc::{is_active_module, validade_bar_size_and_margin}, monitor::get_monitor_res, string::weight_from_str, style::{UserStyle, set_style, style} };
 use crate::modules::{data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
-use crate::ron::{BarPosition, read_ron_config, BarConfig};
+use crate::ron::{read_ron_config, BarConfig};
 use crate::subscription::subscription;
 use crate::update::update;
 use crate::view::view;
@@ -36,6 +36,7 @@ mod ron;
 #[derive(Default, Clone)]
 struct AppData
 {
+    is_hovering_media_player_meta_data: bool,
     cached_continuous_outputs: Vec<String>,
     cached_command_outputs: Vec<String>,
     is_hovering_volume_output: bool,
@@ -63,8 +64,9 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let monitor_res = get_monitor_res(ron_config.display.clone());
     if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
     let ron_config_clone = ron_config.clone();
-    let font_name = ron_config.font_family;
+    let (exclusive_zone, floating_space) = validade_bar_size_and_margin(&ron_config);
     let start_mode = match ron_config.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };
+    let font_name = ron_config.font_family;
 
     let modules_data = ModulesData
     {
@@ -80,29 +82,6 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         ..Default::default()
     };
 
-    let (exclusive_zone, (floating_space_up, floating_space_right, floating_space_down, floating_space_left)) = match ron_config.bar_position 
-    {
-        BarPosition::Up => 
-        {
-            if ron_config.bar_size[1] == 0 { panic!("ERROR!!!: Bar Heigth Can't Be Zero, When The Bar Is On Top!!!") }
-            (ron_config.bar_size[1] + ron_config.increased_exclusive_bar_zone, (ron_config.floating_space, 0, 0 ,0))
-        },
-        BarPosition::Right =>
-        {
-            if ron_config.bar_size[0] == 0 { panic!("ERROR!!!: Bar Width Can't Be Zero, When The Bar Is On The Right!!!") }
-            (ron_config.bar_size[0] + ron_config.increased_exclusive_bar_zone, (0, ron_config.floating_space, 0, 0))
-        }
-        BarPosition::Down =>
-        {
-            if ron_config.bar_size[1] == 0 { panic!("ERROR!!!: Bar Heigth Can't Be Zero, When The Bar Is On The Bottom!!!") }
-            (ron_config.bar_size[1] + ron_config.increased_exclusive_bar_zone, (0, 0, ron_config.floating_space, 0))
-        }
-        BarPosition::Left =>
-        {
-            if ron_config.bar_size[0] == 0 { panic!("ERROR!!!: Bar Width Can't Be Zero, When The Bar Is On The Left!!!") }
-            (ron_config.bar_size[0] + ron_config.increased_exclusive_bar_zone, (0, 0, 0, ron_config.floating_space))
-        }
-    };
 
     let default_font = app_data.default_font;
     application(move || app_data.clone(), namespace, update, view).default_font(default_font).style(style).subscription(subscription).settings(Settings
@@ -111,7 +90,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         {
             size: Some((ron_config.bar_size[0], ron_config.bar_size[1])),
             exclusive_zone: exclusive_zone as i32,
-            margin: (floating_space_up, floating_space_right, floating_space_down, floating_space_left),
+            margin: floating_space,
             anchor: anchor_position,
             start_mode,
             ..Default::default()

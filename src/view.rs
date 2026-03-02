@@ -113,7 +113,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     mouse_area(button(text(orient_text(&formated_metadata, &app.ron_config.media_player_metadata_text_orientation)).color(color_to_send).wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.media_player_metadata_text_size).center()).style(|_: &Theme, status: button::Status| 
                     {
                         define_media_player_metadata_style(app, status)
-                    })).on_press(left_click_metadata_message).on_right_press(right_click_metadata_message)
+                    })).on_enter(Message::IsHoveringMediaPlayerMetaData(true)).on_exit(Message::IsHoveringMediaPlayerMetaData(false)).on_press(left_click_metadata_message).on_right_press(right_click_metadata_message)
 
                 ).align_y(Alignment::Center).into();
 
