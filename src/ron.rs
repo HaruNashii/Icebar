@@ -652,7 +652,7 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<Modules>)
     };
 
     let mut active_modules: Vec<Modules> = Vec::new();
-    let all_possible_default_modules = [Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
+    let all_possible_default_modules = [Modules::NiriWorkspaces, Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
     let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
     for position in all_possible_position
     {

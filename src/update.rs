@@ -1,13 +1,21 @@
 // ============ IMPORTS ============
 use iced::{Task as Command, mouse::ScrollDelta, widget::image};
 use iced_layershell::to_layer_message;
+use std::sync::Once;
+
+
+
+
+
+// ============ STATICS ============
+static WARNING_ONCE: Once = Once::new();
 
 
 
 
 
 // ============ CRATES ============
-use crate::modules::{clock::get_current_time, data::Modules, hypr::{self, UserHyprAction, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, sway::{self, UserSwayAction, change_workspace_sway}, tray::{TrayEvent, MenuItem}, volume::{self, VolumeAction} };
+use crate::modules::{clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume::{self, VolumeAction}, workspaces::UserWorkspaceAction };
 use crate::helpers::{misc::is_active_module, workspaces::build_workspace_list };
 use crate::context_menu::run_context_menu;
 use crate::AppData;
@@ -64,7 +72,7 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
         Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
         Message::CommandFinished(index, text) => { if app.cached_command_outputs.len() <= index { app.cached_command_outputs.resize(index + 1, String::new()); } app.cached_command_outputs[index] = text; }
-        Message::WorkspaceButtonPressed(id) => { if is_active_module(&app.modules_data.active_modules,  Modules::HyprWorkspaces) { change_workspace_hypr(UserHyprAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces) { change_workspace_sway(UserSwayAction::ChangeWithIndex(id)); } }
+        Message::WorkspaceButtonPressed(id) => { if is_active_module(&app.modules_data.active_modules,  Modules::HyprWorkspaces) { change_workspace_hypr(UserWorkspaceAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces) { change_workspace_sway(UserWorkspaceAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::NiriWorkspaces) { change_workspace_niri(UserWorkspaceAction::ChangeWithIndex(id)); } }
         Message::NetworkUpdated(data) => { app.modules_data.network_data = data }
         Message::MediaPlayerClickNext => media_player_action(&app.ron_config.player, MediaPlayerAction::Next),
         Message::MediaPlayerClickPlayPause => media_player_action(&app.ron_config.player, MediaPlayerAction::PlayPause),
@@ -94,6 +102,7 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
             {
                 let hypr_active = is_active_module(&app.modules_data.active_modules, Modules::HyprWorkspaces);
                 let sway_active = is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces);
+                let niri_active = is_active_module(&app.modules_data.active_modules, Modules::NiriWorkspaces);
 
                 // === SCROLL UP ===
                 if y > 2. 
@@ -102,21 +111,30 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     {
                         if hypr_active
                         {
-                            change_workspace_hypr(UserHyprAction::MoveNext);
+                            change_workspace_hypr(UserWorkspaceAction::MoveNext);
                         } 
                         else if sway_active
                         {
-                            change_workspace_sway(UserSwayAction::MoveNext);
+                            change_workspace_sway(UserWorkspaceAction::MoveNext);
+                        }
+                        else if niri_active
+                        {
+                            change_workspace_niri(UserWorkspaceAction::MoveNext);
                         };
+
                     }
                     else if hypr_active
                     {
-                        change_workspace_hypr(UserHyprAction::MovePrev);
+                        change_workspace_hypr(UserWorkspaceAction::MovePrev);
                     } 
                     else if sway_active
                     {
-                        change_workspace_sway(UserSwayAction::MovePrev);
+                        change_workspace_sway(UserWorkspaceAction::MovePrev);
                     }
+                    else if niri_active
+                    {
+                        change_workspace_niri(UserWorkspaceAction::MovePrev);
+                    };
                 }
 
                 // === SCROLL DOWN ===
@@ -126,21 +144,29 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     {
                         if hypr_active
                         {
-                            change_workspace_hypr(UserHyprAction::MovePrev);
+                            change_workspace_hypr(UserWorkspaceAction::MovePrev);
                         } 
                         else if sway_active
                         {
-                            change_workspace_sway(UserSwayAction::MovePrev);
+                            change_workspace_sway(UserWorkspaceAction::MovePrev);
+                        }
+                        else if niri_active
+                        {
+                            change_workspace_niri(UserWorkspaceAction::MovePrev);
                         };
                     }
                     else if hypr_active
                     {
-                        change_workspace_hypr(UserHyprAction::MoveNext);
+                        change_workspace_hypr(UserWorkspaceAction::MoveNext);
                     } 
                     else if sway_active
                     {
-                        change_workspace_sway(UserSwayAction::MoveNext);
+                        change_workspace_sway(UserWorkspaceAction::MoveNext);
                     }
+                    else if niri_active
+                    {
+                        change_workspace_niri(UserWorkspaceAction::MoveNext);
+                    };
                 }
             }
         }
@@ -156,6 +182,23 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     Modules::Clock => {let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format }; app.modules_data.clock_data.current_time = get_current_time(format_to_send)},
                     Modules::HyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); }
                     Modules::SwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); }
+                    Modules::NiriWorkspaces => 
+                    { 
+                        WARNING_ONCE.call_once(|| 
+                        {
+                            if app.ron_config.persistent_workspaces.is_some()
+                            {
+                                println!("\n=== Niri Workspaces Warning ===");
+                                for _ in 0..3
+                                {
+                                    println!("Warning!!!: Persistent Elements Defined But Niri Doesn't Support Persistent Workspaces.");
+                                }
+                                println!("\n");
+                            }
+                        });
+                        app.modules_data.workspace_data.current_workspace = niri::current_workspace(); 
+                        app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&niri::workspace_count(), None); 
+                    }
                     Modules::MediaPlayerMetaData => { app.modules_data.media_player_data = get_player_data_with_format(&app.ron_config); }
 
                     Modules::VolumeOutput => 

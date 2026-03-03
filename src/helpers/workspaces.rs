@@ -1,15 +1,3 @@
-// ============ ENUM/STRUCT, ETC ============
-#[derive(Default, Clone)]
-pub struct WorkspaceData
-{
-    pub visible_workspaces: Vec<i32>,
-    pub current_workspace: i32 
-}
-
-
-
-
-
 // ============ FUNCTIONS ============
 pub fn build_workspace_list(real: &[i32], persistent: Option<u8>) -> Vec<i32> 
 {

@@ -7,8 +7,7 @@ use iced::widget::image;
 
 
 // ============ CRATES ============
-use crate::modules::{clock::ClockData, media_player::MediaPlayerData, network::NetworkData, volume::VolumeData};
-use crate::helpers::workspaces::WorkspaceData;
+use crate::modules::{workspaces::WorkspaceData, clock::ClockData, media_player::MediaPlayerData, network::NetworkData, volume::VolumeData};
 
 
 
@@ -20,6 +19,7 @@ pub enum Modules
 {
     CustomModule(usize),
     HyprWorkspaces,
+    NiriWorkspaces,
     SwayWorkspaces,
     VolumeOutput,
     MediaPlayerMetaData,

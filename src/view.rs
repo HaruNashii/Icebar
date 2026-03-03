@@ -74,7 +74,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 }
             },
 
-            Modules::HyprWorkspaces | Modules::SwayWorkspaces =>
+            Modules::HyprWorkspaces | Modules::SwayWorkspaces | Modules::NiriWorkspaces =>
             {
                 let workspace_buttons = app.modules_data.workspace_data.visible_workspaces.iter().map(|i| 
                 {

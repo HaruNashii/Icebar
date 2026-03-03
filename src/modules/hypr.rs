@@ -5,14 +5,8 @@ use hyprland::{dispatch::*, prelude::*, data::{Workspaces, Workspace}};
 
 
 
-// ============ ENUM/STRUCT, ETC ============
-#[derive(Clone)]
-pub enum UserHyprAction
-{
-    ChangeWithIndex(usize),
-    MoveNext,
-    MovePrev
-}
+// ============ CRATES ============
+use crate::modules::workspaces::UserWorkspaceAction;
 
 
 
@@ -31,6 +25,9 @@ pub fn workspace_count() -> Vec<i32>
         Vec::new()
     }
 }
+
+
+
 pub fn current_workspace() -> i32 
 { 
     let result = Workspace::get_active();
@@ -43,19 +40,22 @@ pub fn current_workspace() -> i32
         0
     }
 }
-pub fn change_workspace_hypr(action: UserHyprAction)
+
+
+
+pub fn change_workspace_hypr(action: UserWorkspaceAction)
 {
     match action 
     {
-        UserHyprAction::ChangeWithIndex(id) =>
+        UserWorkspaceAction::ChangeWithIndex(id) =>
         {
             let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32))); 
         }
-        UserHyprAction::MoveNext =>
+        UserWorkspaceAction::MoveNext =>
         {
             let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(1))); 
         }
-        UserHyprAction::MovePrev =>
+        UserWorkspaceAction::MovePrev =>
         {
             let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Relative(-1))); 
         }

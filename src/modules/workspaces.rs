@@ -5,6 +5,26 @@ use iced::widget::button;
 
 
 
+// ============ ENUM/STRUCT, ETC ============
+#[derive(Default, Clone)]
+pub struct WorkspaceData
+{
+    pub visible_workspaces: Vec<i32>,
+    pub current_workspace: i32 
+}
+
+#[derive(Clone)]
+pub enum UserWorkspaceAction
+{
+    ChangeWithIndex(usize),
+    MoveNext,
+    MovePrev
+}
+
+
+
+
+
 // ============ CRATES ============
 use crate::helpers::style::{UserStyle, set_style};
 use crate::AppData;

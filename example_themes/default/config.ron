@@ -9,9 +9,10 @@
 // WARNING!!!: THE FIELD: "continous_command" MAY GENERATA HIGH CPU USAGE, DEPENDING ON HOW HEAVY IS THE COMMAND YOU PARSED
 // WARNING!!!: THE FIELD: "continous_command" MAY NOT BE SET TO RUN AN LOOP OF ANY KIND, THE PROCESS WILL HANG FOREVER IF YOU RUN AN LOOP WITH IT
 // WARNING!!!: THE OPTION "bar_size: ()" HAS THE TYPE AS: (WIDTH, HEIGTH), IF YOU ARE CREATING AN SIDE BAR, THE VALUE OF 0 IN THE FIRST OPTION IS NOT VALID, AND WILL RESULT IN CRASH OR THE APP HANGING!!!
+// WARNING!!!: "NiriWorkspaces" DOESN'T SUPPORT "persistent_workspaces", IF YOU PARSED IT, IT WILL BE IGNORED
 
 // ===== TIPS =====
-// All possible modules: "MediaPlayerMetaData", "MediaPlayerButtons", "HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Network", "Clock", "Tray".
+// All possible modules: "MediaPlayerMetaData", "MediaPlayerButtons", "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Network", "Clock", "Tray".
 //
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
 //

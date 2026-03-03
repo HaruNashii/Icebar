@@ -5,21 +5,14 @@ use swayipc::Connection;
 
 
 
-// ============ ENUM/STRUCT, ETC ============
-#[derive(Clone)]
-pub enum UserSwayAction
-{
-    ChangeWithIndex(usize),
-    MoveNext,
-    MovePrev
-}
+// ============ CRATES ============
+use crate::modules::workspaces::UserWorkspaceAction;
 
 
 
 
 
 // ============ FUNCTIONS ============
-
 pub fn current_workspace() -> i32
 {
     let result_connection = Connection::new();
@@ -39,6 +32,9 @@ pub fn current_workspace() -> i32
     }
     0
 }
+
+
+
 pub fn workspace_count() -> Vec<i32>
 { 
     let result_connection = Connection::new();
@@ -54,7 +50,10 @@ pub fn workspace_count() -> Vec<i32>
     }
     Vec::new()
 }
-pub fn change_workspace_sway(action: UserSwayAction)
+
+
+
+pub fn change_workspace_sway(action: UserWorkspaceAction)
 {
     let result_conn = Connection::new();
     match result_conn
@@ -63,12 +62,12 @@ pub fn change_workspace_sway(action: UserSwayAction)
         {
             match action 
             {
-                UserSwayAction::ChangeWithIndex(index) =>
+                UserWorkspaceAction::ChangeWithIndex(index) =>
                 {
                     let output = conn.run_command(format!("workspace number {index}"));
                     if let Err(err) = output { println!("Warning!!! Couldn't Switch Workspaces With Index Using SwayIPC\nErr: {err}") }
                 }
-                UserSwayAction::MoveNext =>
+                UserWorkspaceAction::MoveNext =>
                 {
                     let result_workspaces = conn.get_workspaces();
                     if let Ok(workspaces) = result_workspaces
@@ -83,7 +82,7 @@ pub fn change_workspace_sway(action: UserSwayAction)
                         }
                     }
                 }
-                UserSwayAction::MovePrev =>
+                UserWorkspaceAction::MovePrev =>
                 {
                     let result_workspaces = conn.get_workspaces();
                     if let Ok(workspaces) = result_workspaces
