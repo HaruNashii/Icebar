@@ -59,7 +59,7 @@ BarConfig
 
 
     // ================= MODULES =================
-    left_modules: [HyprWorkspaces, CustomModule(0)],
+    left_modules: [CustomModule(0)],
     center_modules: [Clock],
     right_modules: [Tray, Network, VolumeOutput, VolumeInput],
 
