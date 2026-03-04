@@ -1,6 +1,16 @@
+// ============ IMPORTS ============
+use iced::{Alignment, Element, Theme};
+use iced::widget::{text, button, container, mouse_area};
+
+
+
+
+
 // ============ CRATES ============
 use crate::ron::{BarConfig, BarPosition};
 use crate::modules::data::Modules;
+use crate::update::Message;
+use crate::AppData;
 
 
 
@@ -46,4 +56,35 @@ pub fn validade_bar_size_and_margin(ron_config: &BarConfig) -> ((u32, u32), u32,
             ((ron_config.bar_size[0], 0), ron_config.bar_size[0] + ron_config.increased_exclusive_bar_zone, (0, 0, 0, ron_config.floating_space))
         }
     }
+}
+
+
+
+pub fn create_button_container<'a, F>(app: &'a AppData, text_data: (String, iced::Color), on_enter_message: Message, on_exit_message: Message, left_click_message: Message, right_click_message: Message, style_func: F) -> Element<'a, Message>
+where F: Fn(&AppData, button::Status) -> button::Style + 'a,
+{
+    container
+    (
+        button
+        (
+            mouse_area
+            (
+                text(text_data.0)
+                .color(text_data.1)
+                .wrapping(iced::widget::text::Wrapping::Word)
+                .font(app.default_font)
+                .size(app.ron_config.clock_text_size)
+                .center()
+            )
+            .on_enter(on_enter_message)
+            .on_exit(on_exit_message)
+            .on_right_press(right_click_message)
+        )
+        .on_press(left_click_message)
+        .style(move |_: &Theme, status: button::Status| 
+        {
+            style_func(app, status)
+        })
+    ).align_y(Alignment::Center)
+    .into()
 }

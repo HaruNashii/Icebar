@@ -11,7 +11,7 @@ use anyhow::Result;
 
 
 // ============ CRATES ============
-use crate::helpers::style::{UserStyle, set_style};
+use crate::helpers::style::{UserStyle, orient_text, set_style};
 use crate::update::Message;
 use crate::AppData;
 
@@ -223,12 +223,17 @@ pub fn define_network_text(app: &AppData) -> String
         _ => &app.modules_data.network_data.network_speed.to_string().replace(" ", "").replace("\n", "")
     };
 
+
     if app.is_showing_alt_network_module
     {
-        app.ron_config.alt_network_module_format.replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id)
+        let alt_orientation = &app.ron_config.alt_network_text_orientation;
+        let alt_string = app.ron_config.alt_network_module_format.replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
+        orient_text(&alt_string, alt_orientation)
     }
     else
     {
-        app.ron_config.network_module_format.replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id)
+        let orientation = &app.ron_config.network_text_orientation;
+        let string = app.ron_config.network_module_format.replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
+        orient_text(&string, orientation)
     }
 }

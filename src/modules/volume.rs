@@ -7,7 +7,7 @@ use iced::widget::button;
 
 
 // ============ CRATES ============
-use crate::helpers::style::{UserStyle, set_style};
+use crate::helpers::style::{TextOrientation, UserStyle, orient_text, set_style};
 use crate::AppData;
 
 
@@ -165,4 +165,9 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
         let border_radius = app.ron_config.volume_input_border_radius;
         set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
     }
+}
+
+pub fn define_volume_text(text: &str, text_orientation: &TextOrientation) -> String 
+{
+    orient_text(text, text_orientation)
 }

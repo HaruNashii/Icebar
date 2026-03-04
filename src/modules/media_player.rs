@@ -123,7 +123,8 @@ pub fn define_media_player_metadata_text(app: &AppData) -> String
     {
         metadata = &app.ron_config.text_when_metadata_is_empty;
     }
-    ellipsize(&app.ron_config.ellipsis_text, metadata, app.ron_config.media_player_metadata_text_limit_len)
+    let ellipsed_text = ellipsize(&app.ron_config.ellipsis_text, metadata, app.ron_config.media_player_metadata_text_limit_len);
+    orient_text(&ellipsed_text, &app.ron_config.media_player_metadata_text_orientation)
 }
 
 

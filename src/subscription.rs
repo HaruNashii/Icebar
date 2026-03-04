@@ -32,7 +32,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
 
     let mut subs = vec!
     [
-        time::every(Duration::from_millis(150)).map(|_| Message::Tick),
+        time::every(Duration::from_millis(225)).map(|_| Message::Tick),
         event_reader,
     ];
 
