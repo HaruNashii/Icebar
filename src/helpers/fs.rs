@@ -50,7 +50,7 @@ pub fn check_if_config_file_exists()
 //
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
 //
-// available options for "bar_position" are: "up", "down", "left" and "right" 
+// Available options for "bar_position" are: "Up", "Down", "Left" and "Right" 
 //
 // To configure diffents texts for diferents orientations, how can set the variables "text_orientation:" on any module (excluding "Tray"), with the values:
 //Vertical:
@@ -68,6 +68,9 @@ pub fn check_if_config_file_exists()
 // so for parsing your custom_module to the position just put on the position modules your "custom_module[index]"
 //
 // The unique syntax for each some modules are: "display" = Some("HDMI-A-1"), "force_static_position_context_menu" = Some((x, y)) and "persistent_workspaces" = Some(number_of_persistent_elements)
+//
+// This file have all the currently available options, if you are not finding an option maybe is
+// not implemented yet, make sure to make me know.
 //
 // If you notice some bug or want more features, please feel free to publish your thoughs on: https://github.com/HaruNashii/Icebar.git
 // Or if you want talk directly to me to clear up any questions, my discord id is: harunashiii
