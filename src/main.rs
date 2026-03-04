@@ -8,7 +8,7 @@ use iced::{Font, font::Family};
 
 
 // ============ CRATES ============
-use crate::{helpers::{fs::check_if_config_file_exists, misc::{is_active_module, validade_bar_size_and_margin}, monitor::get_monitor_res, string::weight_from_str, style::{UserStyle, set_style, style} }, ron::BarPosition};
+use crate::{helpers::{fs::check_if_config_file_exists, misc::{is_active_module, validade_bar_size_and_margin}, monitor::get_monitor_res, string::weight_from_str, style::{UserStyle, set_style, style} }};
 use crate::modules::{data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{read_ron_config, BarConfig};
 use crate::subscription::subscription;
@@ -67,7 +67,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let monitor_res = get_monitor_res(ron_config.display.clone());
     if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
     let ron_config_clone = ron_config.clone();
-    let (exclusive_zone, floating_space) = validade_bar_size_and_margin(&ron_config);
+    let (bar_size, exclusive_zone, floating_space) = validade_bar_size_and_margin(&ron_config);
     let start_mode = match ron_config.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };
     let font_name = ron_config.font_family;
 
@@ -85,11 +85,6 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         ..Default::default()
     };
 
-    let size = match ron_config.bar_position 
-    {
-        BarPosition::Up | BarPosition::Down => (0, ron_config.bar_size[1]),
-        BarPosition::Left | BarPosition::Right => (ron_config.bar_size[0], 0)
-    };
 
 
     let default_font = app_data.default_font;
@@ -97,7 +92,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     {
         layer_settings: LayerShellSettings
         {
-            size: Some((size.0, size.1)),
+            size: Some((bar_size.0, bar_size.1)),
             exclusive_zone: exclusive_zone as i32,
             margin: floating_space,
             anchor: anchor_position,

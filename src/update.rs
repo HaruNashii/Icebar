@@ -397,7 +397,6 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                 path,
             };
             
-            println!("mouse position on click: {:?}", app.mouse_position);
             std::thread::spawn(move || 
             {
                 run_context_menu(context_menu_data);
