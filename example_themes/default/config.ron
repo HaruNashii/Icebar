@@ -91,7 +91,7 @@ BarConfig
     media_player_buttons_format: ("󰒮", "⏸", "▶", "󰒭"),
     media_player_metadata_format: "{{artist}} | {{album}} | {{title}}",
     network_disconnected_text: "No Connection Found.",
-    alt_network_module_format: "{level} | {connection_type} | {id}",
+    alt_network_module_format: "{level} | {connection_type} | {id}  | {speed}MB/s",
     network_module_format: "{level} ",
     network_level_format: 
     (

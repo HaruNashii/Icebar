@@ -25,6 +25,7 @@ pub struct NetworkData
 {
     pub connection_type: u8,
     pub network_level: u32,
+    pub network_speed: u32,
     pub id: String
 }
 
@@ -87,10 +88,10 @@ pub fn network_stream(no_conn_string: &String) -> BoxStream<'static, Message>
                         match result_data 
                         {
                             Some(data) => yield Message::NetworkUpdated(data),
-                            None => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone() }) 
+                            None => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0 }) 
                         }
                     },
-                    Err(_) => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone() }) 
+                    Err(_) => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0 }) 
                 }
             }
     
@@ -99,13 +100,55 @@ pub fn network_stream(no_conn_string: &String) -> BoxStream<'static, Message>
     }.boxed()
 }
 
+
+
+async fn get_network_speed<'a>(nm: &Proxy<'a>,  connection: &Connection) -> zbus::Result<u32> 
+{
+    let primary: OwnedObjectPath = nm.get_property("PrimaryConnection").await?;
+    if primary.as_str() == "/" { return Ok(0); }
+    let active = Proxy::new(connection, "org.freedesktop.NetworkManager", primary.as_str(), "org.freedesktop.NetworkManager.Connection.Active").await?;
+    let devices: Vec<OwnedObjectPath> = active.get_property("Devices").await?;
+    let device_path = match devices.first() 
+    {
+        Some(path) => path,
+        None => return Ok(0),
+    };
+    let device = Proxy::new(connection, "org.freedesktop.NetworkManager", device_path.as_str(), "org.freedesktop.NetworkManager.Device").await?;
+    let device_type: u32 = device.get_property("DeviceType").await?;
+
+    match device_type 
+    {
+        1 => 
+        {
+            // Ethernet
+            let wired = Proxy::new(connection, "org.freedesktop.NetworkManager", device_path.as_str(), "org.freedesktop.NetworkManager.Device.Wired").await?;
+            let speed: u32 = wired.get_property("Speed").await?;
+            Ok(speed) // Mb/s
+        }
+        2 => 
+        { 
+            // Wi-Fi
+            let wifi = Proxy::new(connection, "org.freedesktop.NetworkManager", device_path.as_str(), "org.freedesktop.NetworkManager.Device.Wireless").await?;
+            let bitrate: u32 = wifi.get_property("Bitrate").await?;
+            Ok(bitrate / 1000) // convert Kb/s → Mb/s
+        }
+        _ => Ok(0)
+    }
+}
+
+
+
 async fn return_network_state(connection: &Connection) -> Result<Option<NetworkData>> 
 {
     let nm = Proxy::new(connection, "org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager", "org.freedesktop.NetworkManager").await?;
+    let network_speed = get_network_speed(&nm, connection).await?;
     let connectivity: u32 = nm.get_property("Connectivity").await?;
     let primary: OwnedObjectPath = nm.get_property("PrimaryConnection").await?;
     if primary.as_str() == "/" { return Ok(None); }
     let active = Proxy::new(connection, "org.freedesktop.NetworkManager", primary.as_str(), "org.freedesktop.NetworkManager.Connection.Active").await?;
+
+    
+
     let id: String = active.get_property("Id").await?;
     let conn_type: String = active.get_property("Type").await?;
 
@@ -120,7 +163,8 @@ async fn return_network_state(connection: &Connection) -> Result<Option<NetworkD
     {
         connection_type,
         network_level: connectivity,
-        id,
+        network_speed,
+        id
     }))
 }
 
@@ -172,13 +216,19 @@ pub fn define_network_text(app: &AppData) -> String
         2 => &app.ron_config.network_connection_type_icons[1],
         _ => &app.ron_config.network_connection_type_icons[2],
     };
+    
+    let network_speed = match &app.modules_data.network_data.network_speed
+    {
+        0 => &"?".to_string(),
+        _ => &app.modules_data.network_data.network_speed.to_string().replace(" ", "").replace("\n", "")
+    };
 
     if app.is_showing_alt_network_module
     {
-        app.ron_config.alt_network_module_format.replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id)
+        app.ron_config.alt_network_module_format.replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id)
     }
     else
     {
-        app.ron_config.network_module_format.replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id)
+        app.ron_config.network_module_format.replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id)
     }
 }

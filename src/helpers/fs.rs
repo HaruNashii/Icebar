@@ -50,7 +50,7 @@ pub fn check_if_config_file_exists()
 //
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
 //
-// Available options for "bar_position" are: "Up", "Down", "Left" and "Right" 
+// available options for "bar_position" are: "up", "down", "left" and "right" 
 //
 // To configure diffents texts for diferents orientations, how can set the variables "text_orientation:" on any module (excluding "Tray"), with the values:
 //Vertical:
@@ -126,7 +126,7 @@ BarConfig
     media_player_buttons_format: ("󰒮", "⏸", "▶", "󰒭"),
     media_player_metadata_format: "{{artist}} | {{album}} | {{title}}",
     network_disconnected_text: "No Connection Found.",
-    alt_network_module_format: "{level} | {connection_type} | {id}",
+    alt_network_module_format: "{level} | {connection_type} | {id}  | {speed}MB/s",
     network_module_format: "{level} ",
     network_level_format: 
     (
