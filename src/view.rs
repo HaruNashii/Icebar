@@ -43,7 +43,14 @@ pub fn view(app: &AppData) -> Element<'_, Message>
 
     let content = axis_layout(app.ron_config.bar_side_spaces_size, axis, start, center, end);
 
-    container(content).height(Length::Fill).width(Length::Fill).style(bar_style(app)).into()
+
+    let fixed_bar_size_y = if app.ron_config.bar_size[1] == 0 { app.monitor_size.1 } else { app.ron_config.bar_size[1] };
+    let fixed_bar_size_x = if app.ron_config.bar_size[0] == 0 { app.monitor_size.0 } else { app.ron_config.bar_size[0] };
+    container(container(content).height(Length::Fixed(fixed_bar_size_y as f32)).width(Length::Fixed(fixed_bar_size_x as f32)).style(bar_style(app)))
+    .width(Length::Fill)
+    .height(Length::Fill)
+    .center(Length::Fill)
+    .into()
 }
 
 

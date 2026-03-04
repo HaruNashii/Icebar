@@ -260,5 +260,3 @@ pub fn get_context_menu_size(data: &ContextMenuData) -> (u32, u32)
         ) 
     }
 }
-
-

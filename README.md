@@ -179,7 +179,6 @@ The project is primarily a learning and experimentation platform.
 - Icebar crashing on Gnome.
   - Explanation: Icebar depend on [Layer Shell](https://wayland.app/protocols/wlr-layer-shell-unstable-v1#compositor-support) which Gnome doesn't implemented yet!!!
 - Context menu not closing when clicking outside the window on Niri
-- Context menu window being missplaced when bar size is small
 - Bar size not working on Niri
 
 ---

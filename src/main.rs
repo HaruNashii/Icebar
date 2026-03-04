@@ -8,7 +8,7 @@ use iced::{Font, font::Family};
 
 
 // ============ CRATES ============
-use crate::helpers::{fs::check_if_config_file_exists, misc::{is_active_module, validade_bar_size_and_margin}, monitor::get_monitor_res, string::weight_from_str, style::{UserStyle, set_style, style} };
+use crate::{helpers::{fs::check_if_config_file_exists, misc::{is_active_module, validade_bar_size_and_margin}, monitor::get_monitor_res, string::weight_from_str, style::{UserStyle, set_style, style} }, ron::BarPosition};
 use crate::modules::{data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{read_ron_config, BarConfig};
 use crate::subscription::subscription;
@@ -85,13 +85,19 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         ..Default::default()
     };
 
+    let size = match ron_config.bar_position 
+    {
+        BarPosition::Up | BarPosition::Down => (0, ron_config.bar_size[1]),
+        BarPosition::Left | BarPosition::Right => (ron_config.bar_size[0], 0)
+    };
+
 
     let default_font = app_data.default_font;
     application(move || app_data.clone(), namespace, update, view).default_font(default_font).style(style).subscription(subscription).settings(Settings
     {
         layer_settings: LayerShellSettings
         {
-            size: Some((ron_config.bar_size[0], ron_config.bar_size[1])),
+            size: Some((size.0, size.1)),
             exclusive_zone: exclusive_zone as i32,
             margin: floating_space,
             anchor: anchor_position,
