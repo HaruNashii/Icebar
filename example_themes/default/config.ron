@@ -35,6 +35,9 @@
 //
 // The unique syntax for each some modules are: "display" = Some("HDMI-A-1"), "force_static_position_context_menu" = Some((x, y)) and "persistent_workspaces" = Some(number_of_persistent_elements)
 //
+// This file have all the currently available options, if you are not finding an option maybe is
+// not implemented yet, make sure to make me know.
+//
 // If you notice some bug or want more features, please feel free to publish your thoughs on: https://github.com/HaruNashii/Icebar.git
 // Or if you want talk directly to me to clear up any questions, my discord id is: harunashiii
 // you can also join my contact server with: https://discord.gg/CRsz24Ts3a
@@ -65,6 +68,7 @@ BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    ellipsis_text: "...",
     player: "spotify",
     dont_show_metadata_if_empty: true,
     text_when_metadata_is_empty: "No Media Found.",
@@ -368,12 +372,15 @@ BarConfig
     		border_color_rgba: (130, 90, 140, 100),
     		border_size: 1.0,
     		border_radius: (3.0, 3.0, 3.0, 3.0),
+                display_err_output_if_failed: false,
+		dont_show_if_any_output_is_empty: false,
                 use_output_as_text: false,
                 use_continous_output_as_text: false,
                 all_output_as_text_format: "",
                 output_text_limit_len: 0,
 		command_to_exec_on_left_click: ["wofi", "--show", "drun"],
 		command_to_exec_on_right_click: ["wofi", "--show", "run"],
+                continous_command_interval: 500,
                 continous_command: []
 	),
 	// Example of an button that displays the output on click
@@ -409,10 +416,13 @@ BarConfig
     	//	border_color_rgba: (130, 90, 140, 100),
     	//	border_size: 1.0,
     	//	border_radius: (3.0, 3.0, 3.0, 3.0),
+        //	display_err_output_if_failed: false,
+	//      dont_show_if_any_output_is_empty: true,
 	//	use_output_as_text: false,
 	//	use_continous_output_as_text: true,
 	//	all_output_as_text_format: "    {continous_output}",
         //      output_text_limit_len: 50,
+        //      continous_command_interval: 500,
 	//	continous_command: ["playerctl", "--player=spotify", "metadata", "--format", "{{ artist }} - {{ title }}"]
 	//),
     ],
