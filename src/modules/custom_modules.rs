@@ -33,6 +33,8 @@ pub struct CustomModule
     pub border_color_rgba: [u8;4],
     pub border_size: f32,
     pub border_radius: [f32;4],
+    pub dont_show_if_any_output_is_empty: bool,
+    pub display_err_output_if_failed: bool,
     pub use_output_as_text: bool,
     pub use_continous_output_as_text: bool,
     pub all_output_as_text_format: String,
@@ -67,6 +69,8 @@ impl Default for CustomModule
             border_color_rgba: [90, 70, 100, 100],
             border_size: 1.0,
             border_radius: [3., 3., 3., 3.],
+            display_err_output_if_failed: true,
+            dont_show_if_any_output_is_empty: false,
             use_output_as_text: false,
             use_continous_output_as_text: false,
             all_output_as_text_format: "Undefined".to_string(),
@@ -102,12 +106,14 @@ pub fn define_custom_module_text(index: usize, custom_module: &CustomModule, app
     {
         let output_text = app.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
         let output_text = ellipsize(&app.ron_config.ellipsis_text, output_text, custom_module.output_text_limit_len);
+        if custom_module.dont_show_if_any_output_is_empty && output_text.is_empty() { return String::new() };
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
     }
     // CONTINOUS_OUTPUT
     else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
     {
         let output_text = ellipsize(&app.ron_config.ellipsis_text, &app.cached_continuous_outputs[index], custom_module.output_text_limit_len);
+        if custom_module.dont_show_if_any_output_is_empty && output_text.is_empty() { return String::new() };
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{continous_output}", &output_text).replace('\n', "")
     }
     // NO OUTPUT JUST TEXT

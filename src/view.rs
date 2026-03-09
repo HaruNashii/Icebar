@@ -324,6 +324,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let index = *borrowed_index;
                 let custom_module = &app.ron_config.custom_modules[index];
                 let text_to_render = define_custom_module_text(index, custom_module, app);
+                if custom_module.dont_show_if_any_output_is_empty && text_to_render.is_empty()
+                {
+                    continue
+                };
                 let [r, g, b] = &custom_module.text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
 

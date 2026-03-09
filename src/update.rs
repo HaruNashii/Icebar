@@ -232,7 +232,7 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                                 {
                                     Ok(result_output) =>
                                     {
-                                        let output_string = if result_output.stdout.is_empty()
+                                        let output_string = if result_output.stdout.is_empty() && module.display_err_output_if_failed
                                         {
                                             &result_output.stderr
                                         }

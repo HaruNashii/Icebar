@@ -2,7 +2,7 @@
 
 **Icebar** is a lightweight, **Wayland status bar** written in **Rust**, powered by **iced** and **iced-layer-shell**.
 
-It aims to provide a **minimal, fast, and hackable bar/popup system** designed for wlroots compositors (Hyprland, Sway, River, etc.), with dynamic tray integration and interactive popups.
+It aims to provide a **minimal, fast, and hackable bar/popup system** designed for wlroots and smithay compositors (Hyprland, Sway, Niri, etc.), with dynamic tray integration and interactive popups.
 
 > Built for people who want full control instead of heavyweight desktop panels.
 
