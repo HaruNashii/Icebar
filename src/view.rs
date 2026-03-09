@@ -141,11 +141,11 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 }
 
                 let formated_metadata = define_media_player_metadata_text(app);
-                let left_click_metadata_message: Message = match &app.ron_config.action_on_left_click_media_player_metadata { ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
-                let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
+                let left_click_metadata_message: Message = match &app.ron_config.action_on_left_click_media_player_metadata { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
+                let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
                 let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let media_player_metadata_container = create_button_container(app, (formated_metadata, color_to_send),  Message::IsHoveringMediaPlayerMetaData(true), Message::IsHoveringMediaPlayerMetaData(false), left_click_metadata_message, right_click_metadata_message, define_media_player_metadata_style);
+                let media_player_metadata_container = create_button_container(app, (formated_metadata, color_to_send, app.ron_config.media_player_metadata_text_size),  Message::IsHoveringMediaPlayerMetaData(true), Message::IsHoveringMediaPlayerMetaData(false), left_click_metadata_message, right_click_metadata_message, define_media_player_metadata_style);
                 
                 match axis 
                 {
@@ -183,27 +183,29 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_clock
                 {
+                    ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::ToggleAltClock,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), true, false))
                 };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_clock
                 {
+                    ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::Nothing,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
                 };
 
-                let (text_orientation, color_to_send) = if app.is_showing_alt_clock
+                let (text_orientation, color_to_send, text_size) = if app.is_showing_alt_clock
                 {
                     let [r, g, b] = &app.ron_config.alt_clock_text_color_rgb;
-                    (&app.ron_config.alt_clock_text_orientation, Color::from_rgb8(*r, *g, *b))
+                    (&app.ron_config.alt_clock_text_orientation, Color::from_rgb8(*r, *g, *b), app.ron_config.alt_clock_text_size)
                 }
                 else
                 {
                     let [r, g, b] = &app.ron_config.clock_text_color_rgb;
-                    (&app.ron_config.clock_text_orientation, Color::from_rgb8(*r, *g, *b))
+                    (&app.ron_config.clock_text_orientation, Color::from_rgb8(*r, *g, *b), app.ron_config.clock_text_size)
                 };
                 let text_string = orient_text(&app.modules_data.clock_data.current_time, text_orientation);
-                let clock_container = create_button_container(app, (text_string, color_to_send), Message::Nothing, Message::Nothing, left_click_message, right_click_message, define_clock_style);
+                let clock_container = create_button_container(app, (text_string, color_to_send, text_size), Message::Nothing, Message::Nothing, left_click_message, right_click_message, define_clock_style);
 
                 match axis 
                 {
@@ -218,28 +220,30 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_network
                 {
+                    ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::ToggleAltNetwork,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false))
                 };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_network
                 {
+                    ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::Nothing,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false))
                 };
 
-                let color_to_send = if app.is_showing_alt_network_module
+                let (color_to_send, text_size) = if app.is_showing_alt_network_module
                 {
                     let [r, g, b] = &app.ron_config.alt_network_text_color_rgb;
-                    Color::from_rgb8(*r, *g, *b)
+                    (Color::from_rgb8(*r, *g, *b), app.ron_config.alt_network_text_size)
                 }
                 else
                 {
                     let [r, g, b] = &app.ron_config.network_text_color_rgb;
-                     Color::from_rgb8(*r, *g, *b)
+                    (Color::from_rgb8(*r, *g, *b), app.ron_config.network_text_size)
                 };
 
                 let text_to_send = define_network_text(app);
-                let network_container = create_button_container(app, (text_to_send, color_to_send), Message::Nothing, Message::Nothing, left_click_message, right_click_message, define_network_style);
+                let network_container = create_button_container(app, (text_to_send, color_to_send, text_size), Message::Nothing, Message::Nothing, left_click_message, right_click_message, define_network_style);
 
                 match axis 
                 {
@@ -254,30 +258,32 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_output
                 {
+                    ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false))
 
                 };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_output
                 {
+                    ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::Nothing,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false))
 
                 };
 
-                let (text_orientation, color_to_send) = if app.volume_output_is_muted
+                let (text_orientation, color_to_send, text_size) = if app.volume_output_is_muted
                 {
                     let [r, g, b] = &app.ron_config.muted_volume_output_text_color_rgb;
-                    (&app.ron_config.muted_volume_output_text_orientation, Color::from_rgb8(*r, *g, *b))
+                    (&app.ron_config.muted_volume_output_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.muted_volume_output_text_size)
                 }
                 else
                 {
                     let [r, g, b] = &app.ron_config.volume_output_text_color_rgb;
-                    (&app.ron_config.volume_output_text_orientation, Color::from_rgb8(*r, *g, *b))
+                    (&app.ron_config.volume_output_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.volume_output_text_size)
                 };
 
                 let text_to_send = define_volume_text(&app.modules_data.volume_data.output_volume_level, text_orientation);
-                let volume_output_container = create_button_container(app, (text_to_send, color_to_send), Message::IsHoveringVolumeOutput(true), Message::IsHoveringVolumeOutput(false), left_click_message, right_click_message, define_volume_output_style);
+                let volume_output_container = create_button_container(app, (text_to_send, color_to_send, *text_size), Message::IsHoveringVolumeOutput(true), Message::IsHoveringVolumeOutput(false), left_click_message, right_click_message, define_volume_output_style);
 
                 match axis 
                 {
@@ -292,30 +298,31 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             {
                 let left_click_message: Message = match &app.ron_config.action_on_left_click_volume_input
                 {
+                    ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::MuteAudioPressedInput,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false))
 
                 };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_input
                 {
+                    ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::Nothing,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false))
-
                 };
 
-                let (text_orientation, color_to_send) = if app.volume_input_is_muted
+                let (text_orientation, color_to_send, text_size) = if app.volume_input_is_muted
                 {
                     let [r, g, b] = &app.ron_config.muted_volume_input_text_color_rgb;
-                    (&app.ron_config.muted_volume_input_text_orientation, Color::from_rgb8(*r, *g, *b))
+                    (&app.ron_config.muted_volume_input_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.muted_volume_input_text_size)
                 }
                 else
                 {
                     let [r, g, b] = &app.ron_config.volume_input_text_color_rgb;
-                    (&app.ron_config.volume_output_text_orientation, Color::from_rgb8(*r, *g, *b))
+                    (&app.ron_config.volume_input_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.volume_input_text_size)
                 };
 
                 let text_to_send = define_volume_text(&app.modules_data.volume_data.input_volume_level, text_orientation);
-                let volume_input_container = create_button_container(app, (text_to_send, color_to_send), Message::IsHoveringVolumeInput(true), Message::IsHoveringVolumeInput(false), left_click_message, right_click_message, define_volume_input_style);
+                let volume_input_container = create_button_container(app, (text_to_send, color_to_send, *text_size), Message::IsHoveringVolumeInput(true), Message::IsHoveringVolumeInput(false), left_click_message, right_click_message, define_volume_input_style);
                 
                 match axis 
                 {

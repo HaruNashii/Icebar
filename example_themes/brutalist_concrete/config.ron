@@ -1,0 +1,438 @@
+// ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+// ▓                                                                        ▓
+// ▓   B R U T A L I S T   C O N C R E T E                                 ▓
+// ▓   ICEBAR CONFIG — HEAVY CONSTRUCTION EDITION                           ▓
+// ▓                                                                        ▓
+// ▓   No ornament. No softness. No apology.                                ▓
+// ▓   The bar is a load-bearing wall. It does not decorate. It holds.      ▓
+// ▓                                                                        ▓
+// ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+//
+//  PALETTE — named after construction materials
+//
+//    Wet Concrete   (72,  70,  68 )  ← bar background
+//    Dry Concrete   (105, 102, 98 )  ← module base
+//    Aggregate      (142, 138, 132)  ← secondary text, dim elements
+//    Dust           (185, 182, 176)  ← borders, dividers
+//    Chalk          (225, 222, 215)  ← primary text — NOT white, dusty
+//    Rust           (195,  82,  28 )  ← THE ONLY ACCENT. used sparingly.
+//    Oxide          (140,  55,  15 )  ← rust pressed / darkened
+//    Void           ( 38,  36,  34 )  ← deepest shadow, pressed states
+//
+//  RULES:
+//    · Zero border radius. The bar was poured, not shaped.
+//    · Bar position: Down, no floating — it is BOLTED to the bottom.
+//    · Tall bar (42px) — weight implies permanence.
+//    · Thick borders (2px) — structural, not decorative.
+//    · Everything is slightly oversized. Monuments don't whisper.
+//    · Rust appears ONLY on: selected workspace, hover states, muted audio.
+//    · All module text reads like stenciled labels on factory equipment.
+
+BarConfig
+(
+    // ================= GENERAL =================
+    display: None,
+    bar_position: Down,
+    floating_space: 0,                                // bolted — no gap
+    increased_exclusive_bar_zone: 0,
+    bar_side_spaces_size: 0,                          // edge to edge — no breathing room
+    bar_size: (0, 42),                                // tall and heavy
+
+    bar_border_radius: (0., 0., 0., 0.),              // poured concrete has no curves
+    bar_border_size: 2.0,                             // structural border
+    bar_border_color_rgba: (185, 182, 176, 100),      // Dust — full opacity
+    bar_background_color_rgba: (72, 70, 68, 100),     // Wet Concrete — fully opaque
+
+    font_family: "Barlow Condensed",                  // fallback: "Liberation Sans Narrow" or "Arial Narrow"
+    font_style: "Bold",
+
+
+    // ================= MODULES =================
+    //
+    //  LEFT   :  [BLOC ID badge]  [HyprWorkspaces]  [CPU/RAM]
+    //  CENTER :  [Clock]
+    //  RIGHT  :  [Now Playing]  [Network]  [VolumeOut]  [Tray]
+    //
+    left_modules:  [CustomModule(0), HyprWorkspaces, CustomModule(1)],
+    center_modules: [Clock],
+    right_modules: [CustomModule(2), Network, VolumeOutput, Tray],
+
+
+    // ================= MODULES CONFIGS =================
+    ellipsis_text: "...",
+    player: "spotify",
+    dont_show_metadata_if_empty: true,
+    text_when_metadata_is_empty: "NO SIGNAL",
+    media_player_metadata_text_limit_len: 30,
+    spacing_between_all_modules: 2,                   // tight. packed. industrial.
+    force_static_position_context_menu: None,
+    reverse_scroll_on_workspace: false,
+    persistent_workspaces: Some(5),
+    incremental_steps_output: 10,
+    incremental_steps_input: 10,
+    action_on_left_click_media_player_metadata: DefaultAction,
+    action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_clock: DefaultAction,
+    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
+    action_on_left_click_network: DefaultAction,
+    action_on_right_click_network: DefaultAction,
+    action_on_left_click_volume_output: DefaultAction,
+    action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]),
+    action_on_left_click_volume_input: DefaultAction,
+    action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]),
+
+
+    // ================= FORMATS =================
+    media_player_buttons_format: ("|<<", "||", "|>", ">>|"),
+    media_player_metadata_format: "// {{artist}} / {{title}}",
+
+    network_disconnected_text: "LINK: DEAD",
+    network_module_format: "{level}",
+    alt_network_module_format: "NET: {id} / {speed}MB",
+    network_level_format:
+    (
+        "NET: OK",
+        "NET: --",
+        "NET: LOW",
+        "NET: DEAD"
+    ),
+    network_connection_type_icons:
+    (
+        "ETH",
+        "WLS",
+        "UNK"
+    ),
+
+    output_volume_format:
+    (
+        "SPK: ---",
+        "SPK: {}%",
+        "SPK: {}%",
+        "SPK: {}%",
+        "SPK: {}%",
+        "SPK: {}%!"
+    ),
+    input_volume_format:
+    (
+        "MIC: ---",
+        "MIC: {}%",
+        "MIC: {}%",
+        "MIC: {}%",
+        "MIC: {}%",
+        "MIC: {}%!"
+    ),
+    output_volume_muted_format: "SPK: MUTED",
+    input_volume_muted_format:  "MIC: MUTED",
+
+    clock_format:     "%H:%M",
+    clock_alt_format: "%H:%M:%S   %Y-%m-%d",
+
+
+    // ================= TRAY =================
+    tray_icon_size: 18,
+    tray_spacing: 2,
+    tray_button_size: 4,
+    tray_button_color_rgb: (105, 102, 98),
+    tray_button_text_color_rgb: (225, 222, 215),
+    tray_button_hovered_color_rgb: (195, 82, 28),
+    tray_button_hovered_text_color_rgb: (225, 222, 215),
+    tray_button_pressed_color_rgb: (38, 36, 34),
+    tray_border_color_rgba: (185, 182, 176, 100),
+    tray_border_size: 2.0,
+    tray_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= MEDIA PLAYER METADATA =================
+    media_player_metadata_text_size: 14,
+    media_player_metadata_text_color_rgb: (142, 138, 132),   // Aggregate — dim, not primary
+    media_player_metadata_text_orientation: Horizontal,
+    media_player_metadata_button_color_rgb: (105, 102, 98),
+    media_player_metadata_button_text_color_rgb: (142, 138, 132),
+    media_player_metadata_button_hovered_color_rgb: (195, 82, 28),
+    media_player_metadata_button_hovered_text_color_rgb: (225, 222, 215),
+    media_player_metadata_button_pressed_color_rgb: (38, 36, 34),
+    media_player_metadata_border_color_rgba: (185, 182, 176, 100),
+    media_player_metadata_border_size: 2.0,
+    media_player_metadata_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= MEDIA PLAYER BUTTONS =================
+    media_player_button_spacing: 2,
+    media_player_button_text_size: 13,
+    media_player_button_text_color_rgb: (225, 222, 215),
+    media_player_button_text_orientation: Horizontal,
+    media_player_button_color_rgb: (105, 102, 98),
+    media_player_button_hovered_color_rgb: (195, 82, 28),
+    media_player_button_hovered_text_color_rgb: (225, 222, 215),
+    media_player_button_pressed_color_rgb: (38, 36, 34),
+    media_player_button_border_color_rgba: (185, 182, 176, 100),
+    media_player_button_border_size: 2.0,
+    media_player_button_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= NETWORK =================
+    network_text_size: 14,
+    network_text_color_rgb: (185, 182, 176),
+    network_text_orientation: Horizontal,
+    network_button_color_rgb: (105, 102, 98),
+    network_button_text_color_rgb: (185, 182, 176),
+    network_button_hovered_color_rgb: (195, 82, 28),
+    network_button_hovered_text_color_rgb: (225, 222, 215),
+    network_button_pressed_color_rgb: (38, 36, 34),
+    network_border_color_rgba: (185, 182, 176, 100),
+    network_border_size: 2.0,
+    network_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= ALT NETWORK =================
+    alt_network_text_size: 14,
+    alt_network_text_color_rgb: (225, 222, 215),
+    alt_network_text_orientation: Horizontal,
+    alt_network_button_color_rgb: (88, 85, 82),
+    alt_network_button_text_color_rgb: (225, 222, 215),
+    alt_network_button_hovered_color_rgb: (195, 82, 28),
+    alt_network_button_hovered_text_color_rgb: (225, 222, 215),
+    alt_network_button_pressed_color_rgb: (38, 36, 34),
+    alt_network_border_color_rgba: (185, 182, 176, 100),
+    alt_network_border_size: 2.0,
+    alt_network_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= CLOCK =================
+    // Largest element. No border. Pure chalk on concrete.
+    // Reads like an industrial facility clock — time is a fact, not decoration.
+    clock_text_size: 20,
+    clock_text_color_rgb: (225, 222, 215),
+    clock_text_orientation: Horizontal,
+    clock_button_color_rgb: (72, 70, 68),              // matches bar — floats borderless
+    clock_button_text_color_rgb: (225, 222, 215),
+    clock_button_hovered_color_rgb: (195, 82, 28),
+    clock_button_hovered_text_color_rgb: (225, 222, 215),
+    clock_button_pressed_color_rgb: (38, 36, 34),
+    clock_border_color_rgba: (185, 182, 176, 0),       // invisible — clock needs no frame
+    clock_border_size: 0.0,
+    clock_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= ALT CLOCK =================
+    alt_clock_text_size: 15,
+    alt_clock_text_color_rgb: (225, 222, 215),
+    alt_clock_text_orientation: Horizontal,
+    alt_clock_button_color_rgb: (105, 102, 98),
+    alt_clock_button_text_color_rgb: (225, 222, 215),
+    alt_clock_button_hovered_color_rgb: (195, 82, 28),
+    alt_clock_button_hovered_text_color_rgb: (225, 222, 215),
+    alt_clock_button_pressed_color_rgb: (38, 36, 34),
+    alt_clock_border_color_rgba: (185, 182, 176, 100),
+    alt_clock_border_size: 2.0,
+    alt_clock_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= VOLUME OUTPUT =================
+    volume_output_text_size: 14,
+    volume_output_text_color_rgb: (185, 182, 176),
+    volume_output_text_orientation: Horizontal,
+    volume_output_button_color_rgb: (105, 102, 98),
+    volume_output_button_text_color_rgb: (185, 182, 176),
+    volume_output_button_hovered_color_rgb: (195, 82, 28),
+    volume_output_button_hovered_text_color_rgb: (225, 222, 215),
+    volume_output_button_pressed_color_rgb: (38, 36, 34),
+    volume_output_border_color_rgba: (185, 182, 176, 100),
+    volume_output_border_size: 2.0,
+    volume_output_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= MUTED VOLUME OUTPUT =================
+    // Muted gets rust — a warning, not a decoration.
+    muted_volume_output_text_size: 14,
+    muted_volume_output_text_color_rgb: (195, 82, 28),
+    muted_volume_output_text_orientation: Horizontal,
+    muted_volume_output_button_color_rgb: (88, 45, 20),
+    muted_volume_output_button_text_color_rgb: (195, 82, 28),
+    muted_volume_output_button_hovered_color_rgb: (195, 82, 28),
+    muted_volume_output_button_hovered_text_color_rgb: (225, 222, 215),
+    muted_volume_output_button_pressed_color_rgb: (38, 36, 34),
+    muted_volume_output_border_color_rgba: (195, 82, 28, 100),
+    muted_volume_output_border_size: 2.0,
+    muted_volume_output_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= VOLUME INPUT =================
+    volume_input_text_size: 14,
+    volume_input_text_color_rgb: (185, 182, 176),
+    volume_input_text_orientation: Horizontal,
+    volume_input_button_color_rgb: (105, 102, 98),
+    volume_input_button_text_color_rgb: (185, 182, 176),
+    volume_input_button_hovered_color_rgb: (195, 82, 28),
+    volume_input_button_hovered_text_color_rgb: (225, 222, 215),
+    volume_input_button_pressed_color_rgb: (38, 36, 34),
+    volume_input_border_color_rgba: (185, 182, 176, 100),
+    volume_input_border_size: 2.0,
+    volume_input_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= MUTED VOLUME INPUT =================
+    muted_volume_input_text_size: 14,
+    muted_volume_input_text_color_rgb: (195, 82, 28),
+    muted_volume_input_text_orientation: Horizontal,
+    muted_volume_input_button_color_rgb: (88, 45, 20),
+    muted_volume_input_button_text_color_rgb: (195, 82, 28),
+    muted_volume_input_button_hovered_color_rgb: (195, 82, 28),
+    muted_volume_input_button_hovered_text_color_rgb: (225, 222, 215),
+    muted_volume_input_button_pressed_color_rgb: (38, 36, 34),
+    muted_volume_input_border_color_rgba: (195, 82, 28, 100),
+    muted_volume_input_border_size: 2.0,
+    muted_volume_input_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= WORKSPACES =================
+    // Roman numerals. Heavy. Permanent.
+    // Selected = rust fill. The only color that breaks the grey.
+    workspace_heigth: 5,
+    workspace_width: 8,
+    workspace_different_selected_width: None,
+    workspace_text_size: 15,
+    workspace_text_color_rgb: (142, 138, 132),
+    workspace_text_orientation: Horizontal,
+    workspace_text:
+    [
+        "I", "II", "III", "IV", "V",
+        "VI", "VII", "VIII", "IX", "X"
+    ],
+    workspace_selected_text: Some(
+    [
+        "I", "II", "III", "IV", "V",
+        "VI", "VII", "VIII", "IX", "X"
+    ]),
+    workspace_spacing: 2,
+    workspace_button_color_rgb: (88, 85, 82),
+    workspace_button_text_color_rgb: (142, 138, 132),
+    workspace_button_selected_color_rgb: (195, 82, 28),   // rust — the only warm thing
+    workspace_button_hovered_color_rgb: (195, 82, 28),
+    workspace_button_hovered_text_color_rgb: (225, 222, 215),
+    workspace_button_pressed_color_rgb: (140, 55, 15),
+    workspace_border_color_rgba: (185, 182, 176, 100),
+    workspace_border_size: 2.0,
+    workspace_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= CONTEXT MENU =================
+    context_menu_background_color_rgba: (58, 56, 54, 100),
+    context_menu_background_size: 4,
+    context_menu_background_border_color_rgba: (185, 182, 176, 100),
+    context_menu_background_border_size: 2.0,
+    context_menu_background_border_radius: (0.0, 0.0, 0.0, 0.0),
+    context_menu_text_size: 14,
+    context_menu_text_color_rgb: (225, 222, 215),
+    context_menu_orientation: Vertical,
+    context_menu_size: 260,
+    context_menu_item_size: 32,
+    context_menu_button_color_rgb: (88, 85, 82),
+    context_menu_button_text_color_rgb: (185, 182, 176),
+    context_menu_button_hovered_color_rgb: (195, 82, 28),
+    context_menu_button_hovered_text_color_rgb: (225, 222, 215),
+    context_menu_button_pressed_color_rgb: (38, 36, 34),
+    context_menu_border_color_rgba: (185, 182, 176, 100),
+    context_menu_border_size: 2.0,
+    context_menu_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= CUSTOM MODULES =================
+    custom_modules_spacing: 2,
+    custom_modules:
+    [
+        // ── MODULE 0 ── BLOC ID
+        // A solid rust rectangle stamped on the far left.
+        // This is your identity tag — like a serial number plate on
+        // a piece of heavy machinery. Just a fixed label.
+        // Left-click = wofi launcher. Right-click = wofi run.
+        (
+            name: "BLOC_ID",
+            text: "BLOC-01",
+            text_size: 15,
+            text_color_rgb: (225, 222, 215),
+            text_orientation: Horizontal,
+            height: 34,
+            button_color_rgb: (195, 82, 28),              // solid rust fill — the stamp
+            button_text_color_rgb: (225, 222, 215),
+            button_hovered_color_rgb: (140, 55, 15),       // oxide — darkens on hover
+            button_hovered_text_color_rgb: (225, 222, 215),
+            button_pressed_color_rgb: (38, 36, 34),
+            border_color_rgba: (140, 55, 15, 100),
+            border_size: 2.0,
+            border_radius: (0.0, 0.0, 0.0, 0.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: false,
+            use_output_as_text: false,
+            use_continous_output_as_text: false,
+            all_output_as_text_format: "",
+            output_text_limit_len: 0,
+            command_to_exec_on_left_click: ["wofi", "--show", "drun"],
+            command_to_exec_on_right_click: ["wofi", "--show", "run"],
+            continous_command_interval: 500,
+            continous_command: []
+        ),
+
+        // ── MODULE 1 ── CPU / RAM GAUGE
+        // Live system load. Reads like a dial on a generator panel.
+        // Dry concrete background. Chalk text.
+        // Turns rust-bordered when CPU is presumably high (always shows).
+        // Left-click = btop. Right-click = kill tree via fzf.
+        (
+            name: "LOAD",
+            text: "",
+            text_size: 14,
+            text_color_rgb: (185, 182, 176),
+            text_orientation: Horizontal,
+            height: 34,
+            button_color_rgb: (105, 102, 98),
+            button_text_color_rgb: (185, 182, 176),
+            button_hovered_color_rgb: (195, 82, 28),
+            button_hovered_text_color_rgb: (225, 222, 215),
+            button_pressed_color_rgb: (38, 36, 34),
+            border_color_rgba: (185, 182, 176, 100),
+            border_size: 2.0,
+            border_radius: (0.0, 0.0, 0.0, 0.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: true,
+            use_output_as_text: false,
+            use_continous_output_as_text: true,
+            all_output_as_text_format: "{continous_output}",
+            output_text_limit_len: 26,
+            command_to_exec_on_left_click: ["kitty", "btop"],
+            command_to_exec_on_right_click: ["kitty", "bash", "-c", "ps aux --sort=-%cpu | head -20; read -n 1"],
+            continous_command_interval: 2000,
+            continous_command: [
+                "bash", "-c",
+                "cpu=$(top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d. -f1); ram=$(free -m | awk '/Mem:/{printf \"%d/%dM\", $3, $2}'); echo \"CPU:${cpu}%  MEM:${ram}\""
+            ]
+        ),
+
+        // ── MODULE 2 ── TRANSMISSION (NOW PLAYING)
+        // Media info formatted like a radio frequency bulletin.
+        // Dimmed aggregate color — it's secondary data, not primary.
+        // Left-click = play/pause. Right-click = next.
+        // Hides completely if nothing is playing (dont_show_if_any_output_is_empty).
+        (
+            name: "TRANSMISSION",
+            text: "",
+            text_size: 14,
+            text_color_rgb: (142, 138, 132),
+            text_orientation: Horizontal,
+            height: 34,
+            button_color_rgb: (88, 85, 82),
+            button_text_color_rgb: (142, 138, 132),
+            button_hovered_color_rgb: (195, 82, 28),
+            button_hovered_text_color_rgb: (225, 222, 215),
+            button_pressed_color_rgb: (38, 36, 34),
+            border_color_rgba: (185, 182, 176, 100),
+            border_size: 2.0,
+            border_radius: (0.0, 0.0, 0.0, 0.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: true,
+            use_output_as_text: false,
+            use_continous_output_as_text: true,
+            all_output_as_text_format: "// {continous_output}",
+            output_text_limit_len: 36,
+            command_to_exec_on_left_click: ["playerctl", "play-pause"],
+            command_to_exec_on_right_click: ["playerctl", "next"],
+            continous_command_interval: 1000,
+            continous_command: ["playerctl", "metadata", "--format", "{{ artist }} / {{ title }}"]
+        ),
+    ],
+)

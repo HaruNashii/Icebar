@@ -29,6 +29,7 @@ pub enum BarPosition
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ActionOnClick 
 {
+    Nothing,
     DefaultAction,
     CustomAction(Vec<String>)
 }

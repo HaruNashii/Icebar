@@ -60,7 +60,7 @@ pub fn validade_bar_size_and_margin(ron_config: &BarConfig) -> ((u32, u32), u32,
 
 
 
-pub fn create_button_container<'a, F>(app: &'a AppData, text_data: (String, iced::Color), on_enter_message: Message, on_exit_message: Message, left_click_message: Message, right_click_message: Message, style_func: F) -> Element<'a, Message>
+pub fn create_button_container<'a, F>(app: &'a AppData, text_data: (String, iced::Color, u32), on_enter_message: Message, on_exit_message: Message, left_click_message: Message, right_click_message: Message, style_func: F) -> Element<'a, Message>
 where F: Fn(&AppData, button::Status) -> button::Style + 'a,
 {
     container
@@ -73,7 +73,7 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
                 .color(text_data.1)
                 .wrapping(iced::widget::text::Wrapping::Word)
                 .font(app.default_font)
-                .size(app.ron_config.clock_text_size)
+                .size(text_data.2)
                 .center()
             )
             .on_enter(on_enter_message)

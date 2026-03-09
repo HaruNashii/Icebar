@@ -1,0 +1,414 @@
+// ██████╗██╗   ██╗██████╗ ███████╗██████╗ ██████╗ ██╗   ██╗███╗   ██╗██╗  ██╗
+//██╔════╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗██╔══██╗██║   ██║████╗  ██║██║ ██╔╝
+//██║      ╚████╔╝ ██████╔╝█████╗  ██████╔╝██████╔╝██║   ██║██╔██╗ ██║█████╔╝ 
+//██║       ╚██╔╝  ██╔══██╗██╔══╝  ██╔══██╗██╔═══╝ ██║   ██║██║╚██╗██║██╔═██╗ 
+//╚██████╗   ██║   ██████╔╝███████╗██║  ██║██║     ╚██████╔╝██║ ╚████║██║  ██╗
+// ╚═════╝   ╚═╝   ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
+//
+// ICEBAR — NEON DYSTOPIA THEME
+// Palette:
+//   Void Black    : (5,   5,   8  )
+//   Deep Slate    : (12,  12,  18 )
+//   Grid Purple   : (28,  14,  45 )
+//   Acid Green    : (0,   255, 140)   ← primary neon accent
+//   Hot Magenta   : (255, 0,   110)   ← secondary accent / alert
+//   Cyan Shock    : (0,   220, 255)   ← tertiary / info
+//   Dim Grid      : (40,  20,  60 )   ← module base bg
+//   Neon Border   : (0,   255, 140)   ← borders pulse acid green
+
+BarConfig
+(
+    // ================= GENERAL =================
+    display: None,
+    bar_position: Up,
+    floating_space: 0,
+    increased_exclusive_bar_zone: 0,
+    bar_side_spaces_size: 4,
+    bar_size: (0, 32),
+
+    // Sharp. No radius. Ever.
+    bar_border_radius: (0., 0., 0., 0.),
+    bar_border_size: 1.5,
+    bar_border_color_rgba: (0, 255, 140, 80),        // acid green border, semi-transparent
+    bar_background_color_rgba: (5, 5, 8, 98),         // near-void black
+
+    font_family: "JetBrains Mono",
+    font_style: "Bold",
+
+
+    // ================= MODULES =================
+    //  LEFT  : [SYS_LABEL] [CPU/RAM live readout]
+    //  CENTER: [Clock]
+    //  RIGHT : [Network] [VolumeOut] [VolumeIn] [Tray]
+    left_modules:  [CustomModule(0), CustomModule(1)],
+    center_modules: [Clock],
+    right_modules: [Network, VolumeOutput, VolumeInput, Tray],
+
+
+    // ================= MODULES CONFIGS =================
+    ellipsis_text: "▒▒",
+    player: "spotify",
+    dont_show_metadata_if_empty: true,
+    text_when_metadata_is_empty: "// NO_SIGNAL",
+    media_player_metadata_text_limit_len: 30,
+    spacing_between_all_modules: 4,
+    force_static_position_context_menu: None,
+    reverse_scroll_on_workspace: false,
+    persistent_workspaces: Some(5),
+    incremental_steps_output: 5,
+    incremental_steps_input: 5,
+    action_on_left_click_media_player_metadata: DefaultAction,
+    action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_clock: DefaultAction,
+    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && echo '[ PRESS ANY KEY ]' && read -n 1"]),
+    action_on_left_click_network: DefaultAction,
+    action_on_right_click_network: DefaultAction,
+    action_on_left_click_volume_output: DefaultAction,
+    action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]),
+    action_on_left_click_volume_input: DefaultAction,
+    action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]),
+
+
+    // ================= FORMATS =================
+    media_player_buttons_format: ("⏮", "⏸", "⏵", "⏭"),
+    media_player_metadata_format: "♪ {{artist}} ⟫ {{title}}",
+
+    network_disconnected_text: "⚠ NULL_LINK",
+    network_module_format: "{level} ",
+    alt_network_module_format: "{level} {connection_type} ⟫ {id} ⟫ {speed}MB/s",
+    network_level_format:
+    (
+        "▲ NET",    // connected / good signal
+        "△ NET",    // medium
+        "▽ NET",    // low
+        "✕ NET"     // disconnected
+    ),
+    network_connection_type_icons:
+    (
+        "ETH",
+        "WLN",
+        "UNK"
+    ),
+
+    // Volume steps: mute | 0-25 | 25-50 | 50-75 | 75-100 | >100
+    output_volume_format:
+    (
+        "▣  ---%",
+        "▣  {}%",
+        "▣  {}%",
+        "▣  {}%",
+        "▣  {}%",
+        "▣  {}%!"
+    ),
+    input_volume_format:
+    (
+        "◉  ---%",
+        "◉  {}%",
+        "◉  {}%",
+        "◉  {}%",
+        "◉  {}%",
+        "◉  {}%!"
+    ),
+    output_volume_muted_format: "▣  MUTED",
+    input_volume_muted_format:  "◉  MUTED",
+
+    clock_format:     "⬡ %H:%M",
+    clock_alt_format: "⬡ %H:%M:%S  //  %a %d %b %Y",
+
+
+    // ================= TRAY (STYLE) =================
+    tray_icon_size: 18,
+    tray_spacing: 4,
+    tray_button_size: 4,
+    tray_button_color_rgb: (18, 10, 28),
+    tray_button_text_color_rgb: (0, 255, 140),
+    tray_button_hovered_color_rgb: (255, 0, 110),
+    tray_button_hovered_text_color_rgb: (5, 5, 8),
+    tray_button_pressed_color_rgb: (0, 180, 90),
+    tray_border_color_rgba: (0, 255, 140, 90),
+    tray_border_size: 1.0,
+    tray_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= MEDIA PLAYER (STYLE) =================
+    media_player_metadata_text_size: 13,
+    media_player_metadata_text_color_rgb: (0, 255, 140),
+    media_player_metadata_text_orientation: Horizontal,
+    media_player_metadata_button_color_rgb: (18, 10, 28),
+    media_player_metadata_button_text_color_rgb: (0, 255, 140),
+    media_player_metadata_button_hovered_color_rgb: (255, 0, 110),
+    media_player_metadata_button_hovered_text_color_rgb: (5, 5, 8),
+    media_player_metadata_button_pressed_color_rgb: (0, 160, 80),
+    media_player_metadata_border_color_rgba: (0, 255, 140, 90),
+    media_player_metadata_border_size: 1.0,
+    media_player_metadata_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= MEDIA PLAYER BUTTONS (STYLE) =================
+    media_player_button_spacing: 3,
+    media_player_button_text_size: 14,
+    media_player_button_text_color_rgb: (0, 220, 255),
+    media_player_button_text_orientation: Horizontal,
+    media_player_button_color_rgb: (18, 10, 28),
+    media_player_button_hovered_color_rgb: (255, 0, 110),
+    media_player_button_hovered_text_color_rgb: (5, 5, 8),
+    media_player_button_pressed_color_rgb: (0, 140, 200),
+    media_player_button_border_color_rgba: (0, 220, 255, 90),
+    media_player_button_border_size: 1.0,
+    media_player_button_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= NETWORK (STYLE) =================
+    network_text_size: 13,
+    network_text_color_rgb: (0, 255, 140),
+    network_text_orientation: Horizontal,
+    network_button_color_rgb: (12, 8, 20),
+    network_button_text_color_rgb: (0, 255, 140),
+    network_button_hovered_color_rgb: (255, 0, 110),
+    network_button_hovered_text_color_rgb: (5, 5, 8),
+    network_button_pressed_color_rgb: (0, 160, 80),
+    network_border_color_rgba: (0, 255, 140, 85),
+    network_border_size: 1.0,
+    network_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= ALT NETWORK (STYLE) =================
+    alt_network_text_size: 13,
+    alt_network_text_color_rgb: (0, 220, 255),
+    alt_network_text_orientation: Horizontal,
+    alt_network_button_color_rgb: (8, 20, 30),
+    alt_network_button_text_color_rgb: (0, 220, 255),
+    alt_network_button_hovered_color_rgb: (255, 0, 110),
+    alt_network_button_hovered_text_color_rgb: (5, 5, 8),
+    alt_network_button_pressed_color_rgb: (0, 140, 200),
+    alt_network_border_color_rgba: (0, 220, 255, 85),
+    alt_network_border_size: 1.0,
+    alt_network_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= CLOCK (STYLE) =================
+    clock_text_size: 14,
+    clock_text_color_rgb: (255, 0, 110),
+    clock_text_orientation: Horizontal,
+    clock_button_color_rgb: (20, 5, 15),
+    clock_button_text_color_rgb: (255, 0, 110),
+    clock_button_hovered_color_rgb: (0, 255, 140),
+    clock_button_hovered_text_color_rgb: (5, 5, 8),
+    clock_button_pressed_color_rgb: (180, 0, 80),
+    clock_border_color_rgba: (255, 0, 110, 90),
+    clock_border_size: 1.5,
+    clock_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= ALT CLOCK (STYLE) =================
+    alt_clock_text_size: 13,
+    alt_clock_text_color_rgb: (255, 0, 110),
+    alt_clock_text_orientation: Horizontal,
+    alt_clock_button_color_rgb: (20, 5, 15),
+    alt_clock_button_text_color_rgb: (255, 0, 110),
+    alt_clock_button_hovered_color_rgb: (0, 255, 140),
+    alt_clock_button_hovered_text_color_rgb: (5, 5, 8),
+    alt_clock_button_pressed_color_rgb: (180, 0, 80),
+    alt_clock_border_color_rgba: (255, 0, 110, 90),
+    alt_clock_border_size: 1.5,
+    alt_clock_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= VOLUME/OUTPUT (STYLE) =================
+    volume_output_text_size: 13,
+    volume_output_text_color_rgb: (0, 220, 255),
+    volume_output_text_orientation: Horizontal,
+    volume_output_button_color_rgb: (8, 18, 28),
+    volume_output_button_text_color_rgb: (0, 220, 255),
+    volume_output_button_hovered_color_rgb: (255, 0, 110),
+    volume_output_button_hovered_text_color_rgb: (5, 5, 8),
+    volume_output_button_pressed_color_rgb: (0, 140, 200),
+    volume_output_border_color_rgba: (0, 220, 255, 85),
+    volume_output_border_size: 1.0,
+    volume_output_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= MUTED VOLUME/OUTPUT (STYLE) =================
+    muted_volume_output_text_size: 13,
+    muted_volume_output_text_color_rgb: (255, 0, 110),
+    muted_volume_output_text_orientation: Horizontal,
+    muted_volume_output_button_color_rgb: (25, 5, 12),
+    muted_volume_output_button_text_color_rgb: (255, 0, 110),
+    muted_volume_output_button_hovered_color_rgb: (0, 255, 140),
+    muted_volume_output_button_hovered_text_color_rgb: (5, 5, 8),
+    muted_volume_output_button_pressed_color_rgb: (180, 0, 60),
+    muted_volume_output_border_color_rgba: (255, 0, 110, 90),
+    muted_volume_output_border_size: 1.0,
+    muted_volume_output_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= VOLUME/INPUT (STYLE) =================
+    volume_input_text_size: 13,
+    volume_input_text_color_rgb: (0, 220, 255),
+    volume_input_text_orientation: Horizontal,
+    volume_input_button_color_rgb: (8, 18, 28),
+    volume_input_button_text_color_rgb: (0, 220, 255),
+    volume_input_button_hovered_color_rgb: (255, 0, 110),
+    volume_input_button_hovered_text_color_rgb: (5, 5, 8),
+    volume_input_button_pressed_color_rgb: (0, 140, 200),
+    volume_input_border_color_rgba: (0, 220, 255, 85),
+    volume_input_border_size: 1.0,
+    volume_input_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= MUTED VOLUME/INPUT (STYLE) =================
+    muted_volume_input_text_size: 13,
+    muted_volume_input_text_color_rgb: (255, 0, 110),
+    muted_volume_input_text_orientation: Horizontal,
+    muted_volume_input_button_color_rgb: (25, 5, 12),
+    muted_volume_input_button_text_color_rgb: (255, 0, 110),
+    muted_volume_input_button_hovered_color_rgb: (0, 255, 140),
+    muted_volume_input_button_hovered_text_color_rgb: (5, 5, 8),
+    muted_volume_input_button_pressed_color_rgb: (180, 0, 60),
+    muted_volume_input_border_color_rgba: (255, 0, 110, 90),
+    muted_volume_input_border_size: 1.0,
+    muted_volume_input_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= HYPR WORKSPACES (STYLE) =================
+    workspace_heigth: 5,
+    workspace_width: 5,
+    workspace_different_selected_width: None,
+    workspace_text_size: 13,
+    workspace_text_color_rgb: (0, 255, 140),
+    workspace_text_orientation: Horizontal,
+    workspace_text:
+    [
+        "01", "02", "03", "04", "05",
+        "06", "07", "08", "09", "10"
+    ],
+    workspace_selected_text: Some(
+    [
+        "▶01", "▶02", "▶03", "▶04", "▶05",
+        "▶06", "▶07", "▶08", "▶09", "▶10"
+    ]),
+    workspace_spacing: 2,
+    workspace_button_color_rgb: (12, 8, 20),
+    workspace_button_text_color_rgb: (80, 200, 120),
+    workspace_button_selected_color_rgb: (0, 255, 140),
+    workspace_button_hovered_color_rgb: (255, 0, 110),
+    workspace_button_hovered_text_color_rgb: (5, 5, 8),
+    workspace_button_pressed_color_rgb: (0, 180, 90),
+    workspace_border_color_rgba: (0, 255, 140, 80),
+    workspace_border_size: 1.0,
+    workspace_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= CONTEXT MENU (STYLE) =================
+    context_menu_background_color_rgba: (5, 5, 8, 97),
+    context_menu_background_size: 4,
+    context_menu_background_border_color_rgba: (0, 255, 140, 100),
+    context_menu_background_border_size: 1.5,
+    context_menu_background_border_radius: (0.0, 0.0, 0.0, 0.0),
+    context_menu_text_size: 13,
+    context_menu_text_color_rgb: (0, 255, 140),
+    context_menu_orientation: Vertical,
+    context_menu_size: 280,
+    context_menu_item_size: 28,
+    context_menu_button_color_rgb: (12, 8, 20),
+    context_menu_button_text_color_rgb: (0, 255, 140),
+    context_menu_button_hovered_color_rgb: (255, 0, 110),
+    context_menu_button_hovered_text_color_rgb: (5, 5, 8),
+    context_menu_button_pressed_color_rgb: (0, 180, 90),
+    context_menu_border_color_rgba: (0, 255, 140, 80),
+    context_menu_border_size: 1.0,
+    context_menu_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= CUSTOM MODULES =================
+    custom_modules_spacing: 6,
+    custom_modules:
+    [
+        // ── MODULE 0 ── SYS LABEL + APP LAUNCHER
+        // Glowing magenta identity badge. Click = wofi launcher.
+        (
+            name: "SYS_LABEL",
+            text: "⬡ SYS",
+            text_size: 13,
+            text_color_rgb: (5, 5, 8),
+            text_orientation: Horizontal,
+            height: 26,
+            button_color_rgb: (255, 0, 110),          // solid hot magenta fill — stands out as the "logo" badge
+            button_text_color_rgb: (5, 5, 8),
+            button_hovered_color_rgb: (0, 255, 140),
+            button_hovered_text_color_rgb: (5, 5, 8),
+            button_pressed_color_rgb: (180, 0, 80),
+            border_color_rgba: (255, 0, 110, 100),
+            border_size: 1.5,
+            border_radius: (0.0, 0.0, 0.0, 0.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: false,
+            use_output_as_text: false,
+            use_continous_output_as_text: false,
+            all_output_as_text_format: "",
+            output_text_limit_len: 0,
+            command_to_exec_on_left_click: ["wofi", "--show", "drun"],
+            command_to_exec_on_right_click: ["wofi", "--show", "run"],
+            continous_command_interval: 500,
+            continous_command: []
+        ),
+
+        // ── MODULE 1 ── LIVE CPU + RAM READOUT
+        // Continuously reads CPU% and RAM used via shell.
+        // Displayed in acid green. High-density info.
+        (
+            name: "CPU_RAM",
+            text: "",
+            text_size: 12,
+            text_color_rgb: (0, 255, 140),
+            text_orientation: Horizontal,
+            height: 26,
+            button_color_rgb: (12, 8, 20),
+            button_text_color_rgb: (0, 255, 140),
+            button_hovered_color_rgb: (255, 0, 110),
+            button_hovered_text_color_rgb: (5, 5, 8),
+            button_pressed_color_rgb: (0, 180, 90),
+            border_color_rgba: (0, 255, 140, 75),
+            border_size: 1.0,
+            border_radius: (0.0, 0.0, 0.0, 0.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: true,
+            use_output_as_text: false,
+            use_continous_output_as_text: true,
+            all_output_as_text_format: "{continous_output}",
+            output_text_limit_len: 28,
+            command_to_exec_on_left_click: ["kitty", "bash", "-c", "btop"],
+            command_to_exec_on_right_click: ["kitty", "bash", "-c", "htop"],
+            continous_command_interval: 1500,
+            continous_command: [
+                "bash", "-c",
+                "cpu=$(top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d. -f1); ram=$(free -m | awk '/Mem:/{printf \"%dM/%dM\", $3, $2}'); echo \"CPU ${cpu}%  RAM ${ram}\""
+            ]
+        ),
+
+        // ── MODULE 2 ── PLAYERCTL NOW PLAYING
+        // Scrolling artist + title from any player. Cyan color.
+        // Left-click = play/pause. Right-click = next track.
+        (
+            name: "NOW_PLAYING",
+            text: "",
+            text_size: 12,
+            text_color_rgb: (0, 220, 255),
+            text_orientation: Horizontal,
+            height: 26,
+            button_color_rgb: (8, 18, 28),
+            button_text_color_rgb: (0, 220, 255),
+            button_hovered_color_rgb: (255, 0, 110),
+            button_hovered_text_color_rgb: (5, 5, 8),
+            button_pressed_color_rgb: (0, 140, 200),
+            border_color_rgba: (0, 220, 255, 75),
+            border_size: 1.0,
+            border_radius: (0.0, 0.0, 0.0, 0.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: true,
+            use_output_as_text: false,
+            use_continous_output_as_text: true,
+            all_output_as_text_format: "♪ {continous_output}",
+            output_text_limit_len: 35,
+            command_to_exec_on_left_click: ["playerctl", "play-pause"],
+            command_to_exec_on_right_click: ["playerctl", "next"],
+            continous_command_interval: 1000,
+            continous_command: ["playerctl", "metadata", "--format", "{{ artist }} ⟫ {{ title }}"]
+        ),
+    ],
+)

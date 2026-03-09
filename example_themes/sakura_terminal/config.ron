@@ -1,0 +1,424 @@
+//  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+//  ░                                                                        ░
+//  ░    桜  ターミナル  ·  S A K U R A   T E R M I N A L                    ░
+//  ░                                                                        ░
+//  ░    A bar that feels like ink drying on washi paper.                    ░
+//  ░    Quiet. Considered. Everything in its place.                         ░
+//  ░                                                                        ░
+//  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+//
+//  PALETTE — named after traditional Japanese pigments
+//
+//    Shiro      (白)   (252, 248, 241)  ← warm off-white / washi paper
+//    Sumi       (墨)   ( 38,  32,  28)  ← deep ink black, not pure
+//    Sakura     (桜)   (220, 130, 150)  ← muted dusty cherry blossom
+//    Koke       (苔)   (110, 145, 100)  ← muted moss green
+//    Tsuchi     (土)   (185, 160, 130)  ← warm earth / sand
+//    Umi        (海)   ( 95, 145, 175)  ← muted sea blue
+//    Kiri       (霧)   (210, 205, 195)  ← fog grey, for borders
+//    Kakiiro    (柿色) (210, 105,  60)  ← persimmon orange, rare accent
+//
+//  PHILOSOPHY:
+//    · Soft rounded corners (6px) — like worn paper edges
+//    · No sharp contrast — everything breathes
+//    · The bar sits BELOW the screen, floating, like a scroll unrolled
+//    · Workspaces use kanji numerals
+//    · Clock uses 12h format with Japanese period marker (午前/午後 implied by dot)
+//    · One vivid accent (Kakiiro persimmon) used ONLY on hover — a surprise
+
+BarConfig
+(
+    // ================= GENERAL =================
+    display: None,
+    bar_position: Down,                               // floats at the bottom like a scroll
+    floating_space: 5,                                // lifted slightly off the edge
+    increased_exclusive_bar_zone: 0,
+    bar_side_spaces_size: 12,                         // generous breathing room on sides
+    bar_size: (0, 36),
+
+    bar_border_radius: (6., 6., 6., 6.),              // soft, paper-worn edges
+    bar_border_size: 1.0,
+    bar_border_color_rgba: (185, 160, 130, 60),       // Tsuchi earth — barely-there
+    bar_background_color_rgba: (252, 248, 241, 97),   // Shiro washi — warm off-white
+
+    font_family: "Noto Serif CJK JP",                 // if unavailable, fallback: "Noto Serif"
+    font_style: "Bold",
+
+
+    // ================= MODULES =================
+    //
+    //  LEFT   :  [季節 SEASON badge]  [HyprWorkspaces]
+    //  CENTER :  [Clock]
+    //  RIGHT  :  [Now Playing]  [Network]  [VolumeOut]  [Tray]
+    //
+    left_modules:  [CustomModule(0), HyprWorkspaces],
+    center_modules: [Clock],
+    right_modules: [CustomModule(1), Network, VolumeOutput, Tray],
+
+
+    // ================= MODULES CONFIGS =================
+    ellipsis_text: "…",
+    player: "spotify",
+    dont_show_metadata_if_empty: true,
+    text_when_metadata_is_empty: "· 静寂 ·",           // "seijaku" — silence / stillness
+    media_player_metadata_text_limit_len: 32,
+    spacing_between_all_modules: 6,
+    force_static_position_context_menu: None,
+    reverse_scroll_on_workspace: false,
+    persistent_workspaces: Some(5),
+    incremental_steps_output: 5,
+    incremental_steps_input: 5,
+    action_on_left_click_media_player_metadata: DefaultAction,
+    action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_clock: DefaultAction,
+    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
+    action_on_left_click_network: DefaultAction,
+    action_on_right_click_network: DefaultAction,
+    action_on_left_click_volume_output: DefaultAction,
+    action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]),
+    action_on_left_click_volume_input: DefaultAction,
+    action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]),
+
+
+    // ================= FORMATS =================
+    media_player_buttons_format: ("«", "⏸", "▶", "»"),
+    media_player_metadata_format: "♩ {{artist}}  —  {{title}}",
+
+    network_disconnected_text: "· 無線 ·",            // "musen" — no signal
+    network_module_format: "{level}",
+    alt_network_module_format: "{level}  {id}  {speed}MB/s",
+    network_level_format:
+    (
+        "電波 ···",     // strong — "denpa" radio waves
+        "電波 ··",
+        "電波 ·",
+        "圏外"          // "kengai" — out of range
+    ),
+    network_connection_type_icons:
+    (
+        "有線",          // wired — "yusen"
+        "無線",          // wifi  — "musen"
+        "不明"           // unknown — "fumei"
+    ),
+
+    // Volume steps: silent | 0–25 | 25–50 | 50–75 | 75–100 | >100
+    output_volume_format:
+    (
+        "♪  —",
+        "♪  {}",
+        "♪  {}",
+        "♪  {}",
+        "♪  {}",
+        "♪  {}!"
+    ),
+    input_volume_format:
+    (
+        "◎  —",
+        "◎  {}",
+        "◎  {}",
+        "◎  {}",
+        "◎  {}",
+        "◎  {}!"
+    ),
+    output_volume_muted_format: "♪  消音",            // "shouin" — silenced
+    input_volume_muted_format:  "◎  消音",
+
+    clock_format:     "%H · %M",                      // dot separator, not colon — calligraphic pause
+    clock_alt_format: "%H · %M · %S    %a %d %b",
+
+
+    // ================= TRAY (STYLE) =================
+    tray_icon_size: 18,
+    tray_spacing: 5,
+    tray_button_size: 5,
+    tray_button_color_rgb: (240, 234, 224),
+    tray_button_text_color_rgb: (38, 32, 28),
+    tray_button_hovered_color_rgb: (210, 105, 60),    // persimmon surprise
+    tray_button_hovered_text_color_rgb: (252, 248, 241),
+    tray_button_pressed_color_rgb: (170, 80, 40),
+    tray_border_color_rgba: (185, 160, 130, 70),
+    tray_border_size: 1.0,
+    tray_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+
+    // ================= MEDIA PLAYER (STYLE) =================
+    media_player_metadata_text_size: 13,
+    media_player_metadata_text_color_rgb: (110, 145, 100),   // Koke moss
+    media_player_metadata_text_orientation: Horizontal,
+    media_player_metadata_button_color_rgb: (244, 239, 230),
+    media_player_metadata_button_text_color_rgb: (110, 145, 100),
+    media_player_metadata_button_hovered_color_rgb: (210, 105, 60),
+    media_player_metadata_button_hovered_text_color_rgb: (252, 248, 241),
+    media_player_metadata_button_pressed_color_rgb: (170, 80, 40),
+    media_player_metadata_border_color_rgba: (185, 160, 130, 65),
+    media_player_metadata_border_size: 1.0,
+    media_player_metadata_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+
+    // ================= MEDIA PLAYER BUTTONS (STYLE) =================
+    media_player_button_spacing: 4,
+    media_player_button_text_size: 13,
+    media_player_button_text_color_rgb: (38, 32, 28),
+    media_player_button_text_orientation: Horizontal,
+    media_player_button_color_rgb: (244, 239, 230),
+    media_player_button_hovered_color_rgb: (210, 105, 60),
+    media_player_button_hovered_text_color_rgb: (252, 248, 241),
+    media_player_button_pressed_color_rgb: (170, 80, 40),
+    media_player_button_border_color_rgba: (185, 160, 130, 65),
+    media_player_button_border_size: 1.0,
+    media_player_button_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+
+    // ================= NETWORK (STYLE) =================
+    network_text_size: 13,
+    network_text_color_rgb: (95, 145, 175),           // Umi sea blue
+    network_text_orientation: Horizontal,
+    network_button_color_rgb: (244, 239, 230),
+    network_button_text_color_rgb: (95, 145, 175),
+    network_button_hovered_color_rgb: (210, 105, 60),
+    network_button_hovered_text_color_rgb: (252, 248, 241),
+    network_button_pressed_color_rgb: (65, 110, 140),
+    network_border_color_rgba: (185, 160, 130, 60),
+    network_border_size: 1.0,
+    network_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+    // ================= ALT NETWORK (STYLE) =================
+    alt_network_text_size: 13,
+    alt_network_text_color_rgb: (95, 145, 175),
+    alt_network_text_orientation: Horizontal,
+    alt_network_button_color_rgb: (232, 226, 214),
+    alt_network_button_text_color_rgb: (95, 145, 175),
+    alt_network_button_hovered_color_rgb: (210, 105, 60),
+    alt_network_button_hovered_text_color_rgb: (252, 248, 241),
+    alt_network_button_pressed_color_rgb: (65, 110, 140),
+    alt_network_border_color_rgba: (185, 160, 130, 60),
+    alt_network_border_size: 1.0,
+    alt_network_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+
+    // ================= CLOCK (STYLE) =================
+    // The clock is the centerpiece — slightly larger, deepest ink color.
+    // It reads like a brushstroke.
+    clock_text_size: 16,
+    clock_text_color_rgb: (38, 32, 28),               // Sumi — deep ink
+    clock_text_orientation: Horizontal,
+    clock_button_color_rgb: (252, 248, 241),           // transparent against bar
+    clock_button_text_color_rgb: (38, 32, 28),
+    clock_button_hovered_color_rgb: (210, 105, 60),
+    clock_button_hovered_text_color_rgb: (252, 248, 241),
+    clock_button_pressed_color_rgb: (170, 80, 40),
+    clock_border_color_rgba: (185, 160, 130, 0),       // invisible border — clock floats free
+    clock_border_size: 0.0,
+    clock_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= ALT CLOCK (STYLE) =================
+    alt_clock_text_size: 14,
+    alt_clock_text_color_rgb: (38, 32, 28),
+    alt_clock_text_orientation: Horizontal,
+    alt_clock_button_color_rgb: (244, 239, 230),
+    alt_clock_button_text_color_rgb: (38, 32, 28),
+    alt_clock_button_hovered_color_rgb: (210, 105, 60),
+    alt_clock_button_hovered_text_color_rgb: (252, 248, 241),
+    alt_clock_button_pressed_color_rgb: (170, 80, 40),
+    alt_clock_border_color_rgba: (185, 160, 130, 50),
+    alt_clock_border_size: 1.0,
+    alt_clock_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+
+    // ================= VOLUME/OUTPUT (STYLE) =================
+    volume_output_text_size: 13,
+    volume_output_text_color_rgb: (110, 145, 100),     // Koke moss
+    volume_output_text_orientation: Horizontal,
+    volume_output_button_color_rgb: (244, 239, 230),
+    volume_output_button_text_color_rgb: (110, 145, 100),
+    volume_output_button_hovered_color_rgb: (210, 105, 60),
+    volume_output_button_hovered_text_color_rgb: (252, 248, 241),
+    volume_output_button_pressed_color_rgb: (80, 110, 72),
+    volume_output_border_color_rgba: (185, 160, 130, 60),
+    volume_output_border_size: 1.0,
+    volume_output_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+    // ================= MUTED VOLUME/OUTPUT (STYLE) =================
+    muted_volume_output_text_size: 13,
+    muted_volume_output_text_color_rgb: (185, 160, 130),  // Tsuchi — faded, like silence
+    muted_volume_output_text_orientation: Horizontal,
+    muted_volume_output_button_color_rgb: (238, 232, 220),
+    muted_volume_output_button_text_color_rgb: (185, 160, 130),
+    muted_volume_output_button_hovered_color_rgb: (210, 105, 60),
+    muted_volume_output_button_hovered_text_color_rgb: (252, 248, 241),
+    muted_volume_output_button_pressed_color_rgb: (170, 80, 40),
+    muted_volume_output_border_color_rgba: (185, 160, 130, 50),
+    muted_volume_output_border_size: 1.0,
+    muted_volume_output_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+    // ================= VOLUME/INPUT (STYLE) =================
+    volume_input_text_size: 13,
+    volume_input_text_color_rgb: (110, 145, 100),
+    volume_input_text_orientation: Horizontal,
+    volume_input_button_color_rgb: (244, 239, 230),
+    volume_input_button_text_color_rgb: (110, 145, 100),
+    volume_input_button_hovered_color_rgb: (210, 105, 60),
+    volume_input_button_hovered_text_color_rgb: (252, 248, 241),
+    volume_input_button_pressed_color_rgb: (80, 110, 72),
+    volume_input_border_color_rgba: (185, 160, 130, 60),
+    volume_input_border_size: 1.0,
+    volume_input_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+    // ================= MUTED VOLUME/INPUT (STYLE) =================
+    muted_volume_input_text_size: 13,
+    muted_volume_input_text_color_rgb: (185, 160, 130),
+    muted_volume_input_text_orientation: Horizontal,
+    muted_volume_input_button_color_rgb: (238, 232, 220),
+    muted_volume_input_button_text_color_rgb: (185, 160, 130),
+    muted_volume_input_button_hovered_color_rgb: (210, 105, 60),
+    muted_volume_input_button_hovered_text_color_rgb: (252, 248, 241),
+    muted_volume_input_button_pressed_color_rgb: (170, 80, 40),
+    muted_volume_input_border_color_rgba: (185, 160, 130, 50),
+    muted_volume_input_border_size: 1.0,
+    muted_volume_input_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+
+    // ================= HYPR WORKSPACES (STYLE) =================
+    // Workspaces use kanji numerals — 一 二 三 四 五
+    // Selected workspace gets a sakura pink fill.
+    workspace_heigth: 5,
+    workspace_width: 5,
+    workspace_different_selected_width: None,
+    workspace_text_size: 14,
+    workspace_text_color_rgb: (38, 32, 28),
+    workspace_text_orientation: Horizontal,
+    workspace_text:
+    [
+        "一",    // ichi — 1
+        "二",    // ni   — 2
+        "三",    // san  — 3
+        "四",    // shi  — 4
+        "五",    // go   — 5
+        "六",    // roku — 6
+        "七",    // nana — 7
+        "八",    // hachi— 8
+        "九",    // ku   — 9
+        "十"     // juu  — 10
+    ],
+    workspace_selected_text: Some(
+    [
+        "一",
+        "二",
+        "三",
+        "四",
+        "五",
+        "六",
+        "七",
+        "八",
+        "九",
+        "十"
+    ]),
+    workspace_spacing: 4,
+    workspace_button_color_rgb: (244, 239, 230),
+    workspace_button_text_color_rgb: (160, 135, 110),  // resting — muted earth
+    workspace_button_selected_color_rgb: (220, 130, 150),  // Sakura cherry fill when active
+    workspace_button_hovered_color_rgb: (210, 105, 60),    // persimmon on hover
+    workspace_button_hovered_text_color_rgb: (252, 248, 241),
+    workspace_button_pressed_color_rgb: (170, 80, 40),
+    workspace_border_color_rgba: (185, 160, 130, 55),
+    workspace_border_size: 1.0,
+    workspace_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+
+    // ================= CONTEXT MENU (STYLE) =================
+    context_menu_background_color_rgba: (250, 245, 238, 97),
+    context_menu_background_size: 6,
+    context_menu_background_border_color_rgba: (185, 160, 130, 80),
+    context_menu_background_border_size: 1.0,
+    context_menu_background_border_radius: (6.0, 6.0, 6.0, 6.0),
+    context_menu_text_size: 13,
+    context_menu_text_color_rgb: (38, 32, 28),
+    context_menu_orientation: Vertical,
+    context_menu_size: 260,
+    context_menu_item_size: 30,
+    context_menu_button_color_rgb: (248, 243, 235),
+    context_menu_button_text_color_rgb: (38, 32, 28),
+    context_menu_button_hovered_color_rgb: (210, 105, 60),
+    context_menu_button_hovered_text_color_rgb: (252, 248, 241),
+    context_menu_button_pressed_color_rgb: (170, 80, 40),
+    context_menu_border_color_rgba: (185, 160, 130, 55),
+    context_menu_border_size: 1.0,
+    context_menu_border_radius: (5.0, 5.0, 5.0, 5.0),
+
+
+    // ================= CUSTOM MODULES =================
+    custom_modules_spacing: 8,
+    custom_modules:
+    [
+        // ── MODULE 0 ── 季節 SEASON BADGE
+        // Shows the current Japanese season based on the month,
+        // with its kanji + a tiny nature symbol.
+        // Left-click opens wofi drun launcher.
+        // Right-click opens a terminal file manager (yazi).
+        // The badge is the only module with a solid fill — sakura pink.
+        // It is the "mon" (家紋 — family crest) of the bar.
+        (
+            name: "季節",
+            text: "",
+            text_size: 14,
+            text_color_rgb: (252, 248, 241),
+            text_orientation: Horizontal,
+            height: 28,
+            button_color_rgb: (220, 130, 150),          // Sakura — only solid-filled badge
+            button_text_color_rgb: (252, 248, 241),
+            button_hovered_color_rgb: (210, 105, 60),   // persimmon on hover
+            button_hovered_text_color_rgb: (252, 248, 241),
+            button_pressed_color_rgb: (170, 80, 40),
+            border_color_rgba: (200, 110, 130, 80),
+            border_size: 1.0,
+            border_radius: (5.0, 5.0, 5.0, 5.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: true,
+            use_output_as_text: false,
+            use_continous_output_as_text: true,
+            all_output_as_text_format: "{continous_output}",
+            output_text_limit_len: 12,
+            command_to_exec_on_left_click: ["wofi", "--show", "drun"],
+            command_to_exec_on_right_click: ["kitty", "yazi"],
+            continous_command_interval: 60000,         // re-checks once per minute — season never rushes
+            continous_command: [
+                "bash", "-c",
+                "m=$(date +%-m); if [ $m -ge 3 ] && [ $m -le 5 ]; then echo '春  sakura'; elif [ $m -ge 6 ] && [ $m -le 8 ]; then echo '夏  natsu'; elif [ $m -ge 9 ] && [ $m -le 11 ]; then echo '秋  aki'; else echo '冬  fuyu'; fi"
+            ]
+        ),
+
+        // ── MODULE 1 ── LIVE UPTIME HAIKU
+        // Displays system uptime as a compact "d·h·m" reading.
+        // Quiet, minimal — like a clock that counts life, not time.
+        // Moss green. Right-click opens a terminal with system info.
+        (
+            name: "稼働時間",
+            text: "",
+            text_size: 13,
+            text_color_rgb: (110, 145, 100),
+            text_orientation: Horizontal,
+            height: 28,
+            button_color_rgb: (244, 239, 230),
+            button_text_color_rgb: (110, 145, 100),
+            button_hovered_color_rgb: (210, 105, 60),
+            button_hovered_text_color_rgb: (252, 248, 241),
+            button_pressed_color_rgb: (80, 110, 72),
+            border_color_rgba: (185, 160, 130, 55),
+            border_size: 1.0,
+            border_radius: (5.0, 5.0, 5.0, 5.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: true,
+            use_output_as_text: false,
+            use_continous_output_as_text: true,
+            all_output_as_text_format: "起動 {continous_output}",   // "kidou" — running since
+            output_text_limit_len: 20,
+            command_to_exec_on_left_click: ["kitty", "bash", "-c", "neofetch; read -n 1"],
+            command_to_exec_on_right_click: ["kitty", "bash", "-c", "neofetch; read -n 1"],
+            continous_command_interval: 30000,
+            continous_command: [
+                "bash", "-c",
+                "uptime -p | sed 's/up //' | sed 's/ hours\\?/h/' | sed 's/ minutes\\?/m/' | sed 's/ days\\?/d/' | sed 's/, / · /g'"
+            ]
+        ),
+    ],
+)
