@@ -96,8 +96,9 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     {
         layer_settings: LayerShellSettings
         {
-            size: Some((bar_size.0, bar_size.1)),
             exclusive_zone: exclusive_zone as i32,
+            size: Some((bar_size.0, bar_size.1)),
+            layer: iced_layershell::reexport::Layer::Top,
             margin: floating_space,
             anchor: anchor_position,
             start_mode,

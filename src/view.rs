@@ -90,8 +90,6 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     let color_to_send = Color::from_rgb8(*r, *g, *b);
                     button
                     (
-                        mouse_area
-                        (
                             text
                             (
                                 orient_text
@@ -105,9 +103,6 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                             .font(app.default_font)
                             .size(app.ron_config.workspace_text_size)
                             .center()
-                        )
-                        .on_enter(Message::IsHoveringWorkspace(true))
-                        .on_exit(Message::IsHoveringWorkspace(false))
                     )
                     .padding(padding_y)
                     .style(move |_: &Theme, status: button::Status| 
@@ -121,8 +116,20 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 match axis 
                 {
-                    Axis::Horizontal => row(workspace_buttons).align_y(Alignment::Center).spacing(app.ron_config.workspace_spacing).into(),
-                    Axis::Vertical => column(workspace_buttons).align_x(Alignment::Center).spacing(app.ron_config.workspace_spacing).into(),
+                    Axis::Horizontal => mouse_area
+                    (
+                        row(workspace_buttons).align_y(Alignment::Center).spacing(app.ron_config.workspace_spacing)
+                    )
+                    .on_enter(Message::IsHoveringWorkspace(true))
+                    .on_exit(Message::IsHoveringWorkspace(false))
+                    .into(),
+                    Axis::Vertical => mouse_area
+                    (
+                        column(workspace_buttons).align_x(Alignment::Center).spacing(app.ron_config.workspace_spacing)
+                    )
+                    .on_enter(Message::IsHoveringWorkspace(true))
+                    .on_exit(Message::IsHoveringWorkspace(false))
+                    .into(),
                 }
             }
 
