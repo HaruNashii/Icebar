@@ -414,6 +414,7 @@ BarConfig
                 output_text_limit_len: 0,
 		command_to_exec_on_left_click: ["wofi", "--show", "drun"],
 		command_to_exec_on_right_click: ["wofi", "--show", "run"],
+                continous_command_interval: 500,
                 continous_command: []
 	),
 	// Example of an button that displays the output on click
@@ -455,6 +456,7 @@ BarConfig
 	//	use_continous_output_as_text: true,
 	//	all_output_as_text_format: "    {continous_output}",
         //      output_text_limit_len: 50,
+        //      continous_command_interval: 500,
 	//	continous_command: ["playerctl", "--player=spotify", "metadata", "--format", "{{ artist }} - {{ title }}"]
 	//),
     ],

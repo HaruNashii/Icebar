@@ -1,10 +1,9 @@
 // ============ IMPORTS ============
 use zbus::{Connection, fdo::DBusProxy, interface, message::Header, object_server::SignalEmitter};
 use std::{pin::Pin, collections::{HashMap, HashSet}, process::Command, sync::Mutex};
-use iced::{widget::button, futures::{Stream, StreamExt}};
+use iced::{Element, widget::{button, image, text}, futures::{Stream, StreamExt}};
 use tokio::sync::mpsc::{self, Sender};
 use once_cell::sync::Lazy;
-
 
 
 
@@ -268,8 +267,6 @@ pub fn define_tray_style(app: &AppData, status: button::Status) -> iced::widget:
 }
 
 
-// ============ IMPORTS ============
-use iced::{Element, widget::{image, text}};
 
 pub fn define_tray_icon<'a>(app: &'a AppData, icon: &'a Option<iced::widget::image::Handle>) ->  Element<'a, Message>
 {

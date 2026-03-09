@@ -1,6 +1,8 @@
 // ============ IMPORTS ============
 use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}};
 use iced::{Font, font::Family};
+use std::time::Instant;
+
 
 
 
@@ -38,6 +40,7 @@ struct AppData
 {
     is_hovering_media_player_meta_data: bool,
     cached_continuous_outputs: Vec<String>,
+    custom_module_last_run: Vec<Instant>,
     cached_command_outputs: Vec<String>,
     is_showing_alt_network_module: bool,
     is_hovering_volume_output: bool,
@@ -80,6 +83,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     {
         default_font: Font { family: Family::Name(Box::leak(font_name.into_boxed_str())), weight: weight_from_str(&ron_config.font_style), ..iced::Font::DEFAULT}, 
         monitor_size: (monitor_res.0, monitor_res.1),
+        custom_module_last_run: vec![Instant::now(); ron_config.custom_modules.len()],
         ron_config: ron_config_clone, 
         modules_data,
         ..Default::default()

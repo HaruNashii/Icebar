@@ -55,12 +55,12 @@ Wayland Layer Surface
 
 ## 🖥 Supported Environments
 
-Icebar targets **wlroots-based compositors**, including:
+Icebar targets **smithay and wlroots based compositors**, including:
 
 - Hyprland
 - Sway
-- Wayfire
-- Other layer-shell compatible compositors
+- Niri 
+- Others layer-shell compatible compositors
 
 X11 is **not supported**.
 

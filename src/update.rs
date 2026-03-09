@@ -1,6 +1,7 @@
 // ============ IMPORTS ============
-use iced::{Task as Command, mouse::ScrollDelta, widget::image};
+use iced::{Task, mouse::ScrollDelta, widget::image};
 use iced_layershell::to_layer_message;
+use std::time::{Duration, Instant};
 use std::sync::Once;
 
 
@@ -58,7 +59,7 @@ pub enum Message
 
 
 // ============ FUNCTIONS ============
-pub fn update(app: &mut AppData, message: Message) -> Command<Message>
+pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 {
     match message
     {
@@ -219,8 +220,12 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     {
                         let index = *borrowed_index;
                         let module = &app.ron_config.custom_modules[index];
+                        if module.continous_command.is_empty() || app.custom_module_last_run[index].elapsed() < Duration::from_millis(module.continous_command_interval)
+                        {
+                            continue;
+                        }
+                        app.custom_module_last_run[index] = Instant::now();
                         let command_vec = &module.continous_command;
-
                         if !command_vec.is_empty() && let Some((program, args)) = command_vec.split_first() 
                         {
                             let mut command = std::process::Command::new(program);
@@ -293,7 +298,7 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                 // ==============================
                 if output_as_text 
                 {
-                    return Command::perform
+                    return Task::perform
                     (async move 
                         {
                                 let output = std::process::Command::new(program).args(args).output().ok();
@@ -314,7 +319,7 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                     if custom_name.is_empty() { println!("Custom Module Output:\n{:?}", output); } else { println!( "'{custom_name}' Command executed (no output capture):\n{:?}", output); }
                 });
         
-                return Command::none();
+                return Task::none();
             }
             else { println!("Empty command vector, no argument was parsed"); }
         }
@@ -346,7 +351,7 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
                         if handle.is_none()
                         {
                             *handle = Some(image::Handle::from_rgba(width, height, data.clone()));
-                            return Command::none();
+                            return Task::none();
                         }
                     }
                 }
@@ -362,10 +367,10 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
             if let Some((_, combined)) = app.modules_data.tray_icons.get(idx)
             {
                 let parts: Vec<&str> = combined.split('|').collect();
-                if parts.len() != 2 { return Command::none(); }
+                if parts.len() != 2 { return Task::none(); }
                 let service = parts[0].to_string();
                 let path = parts[1].to_string();
-                return Command::perform(async move 
+                return Task::perform(async move 
                 {
                     let conn = zbus::Connection::session().await.unwrap();
                     let proxy: zbus::Proxy<'_> = zbus::Proxy::new(&conn, service.as_str(), path.as_str(), "org.kde.StatusNotifierItem").await.unwrap();
@@ -406,5 +411,5 @@ pub fn update(app: &mut AppData, message: Message) -> Command<Message>
         _=> {},
     }
 
-    Command::none()
+    Task::none()
 }

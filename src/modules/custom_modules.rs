@@ -41,6 +41,7 @@ pub struct CustomModule
     pub output_text_limit_len: usize,
     pub command_to_exec_on_left_click: Vec<String>,
     pub command_to_exec_on_right_click: Vec<String>,
+    pub continous_command_interval: u64,
     pub continous_command: Vec<String>
 }
 
@@ -77,6 +78,7 @@ impl Default for CustomModule
             output_text_limit_len: 100,
             command_to_exec_on_left_click: vec![], 
             command_to_exec_on_right_click: vec![],
+            continous_command_interval: 500,
             continous_command: vec![]
         }
     }
