@@ -8,6 +8,12 @@ It aims to provide a **minimal, fast, and hackable bar/popup system** designed f
 
 ---
 
+## 🖼️ Showcase
+![icebar_showcase](https://github.com/user-attachments/assets/1ef3feb2-312c-4b3d-ad99-71df9a667602)
+
+
+---
+
 ## ✨ Features
 
 - 🧊 Native Wayland layer-shell bar
@@ -211,8 +217,6 @@ The project is primarily a learning and experimentation platform.
 ---
 
 ## 📸 Screenshots
-
-(Wil add screenshots later)
 (Accepting screenshots to display here, if you have one and want to share, i would appreciate it)
 
 ---
