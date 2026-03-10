@@ -126,6 +126,47 @@ bar {
 
 ---
 
+## 🎨 Theme Switcher
+
+Icebar includes a bash script that lets you manage and apply themes from a collection of preset configurations.
+
+### Folder Structure
+
+Place your themes in a folder called `themes` next to the script. Each theme must be a subdirectory containing a `config.ron` file:
+
+```
+icebar-theme-switcher.sh
+themes/
+├── dracula/
+│   └── config.ron
+├── nord/
+│   └── config.ron
+└── catppuccin-mocha/
+    └── config.ron
+```
+
+### Usage
+
+```bash
+chmod +x icebar-theme-switcher.sh
+./icebar-theme-switcher.sh
+```
+
+The script will:
+
+1. **Scan** `./themes/` and list every valid theme (subdirectories that contain a `config.ron`)
+2. **Prompt you to pick** a theme by number, or press `q` to quit without making any changes
+3. **Check for an existing config** at `~/.config/icebar/config.ron` and offer two options if one is found:
+   - **Backup** — renames the existing config to `config.ron.backup_YYYYMMDD_HHMMSS` before installing the new one, so nothing is lost
+   - **Overwrite** — replaces the current config permanently; requires a second confirmation (`yes`) before proceeding
+4. **Copy** the chosen theme's `config.ron` to `~/.config/icebar/config.ron`
+
+After the script finishes, restart Icebar to apply the new theme.
+
+> **Note:** The script creates `~/.config/icebar/` automatically if it does not exist yet.
+
+---
+
 ## 🧩 Architecture Overview
 ```
 src/

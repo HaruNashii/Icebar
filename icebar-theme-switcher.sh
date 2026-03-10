@@ -2,12 +2,12 @@
 
 # ╭─────────────────────────────────────────────────────────────────────────╮
 # │   ICEBAR THEME SWITCHER                                                 │
-# │   Lists themes in ./example_themes, lets you pick one,                 │
-# │   and installs its config.ron to ~/.config/icebar/                     │
+# │   Lists themes in ./themes, lets you pick one,                 	    │
+# │   and installs its config.ron to ~/.config/icebar/                      │
 # ╰─────────────────────────────────────────────────────────────────────────╯
 
 # ── Paths ──────────────────────────────────────────────────────────────────
-THEMES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/example_themes"
+THEMES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/themes"
 ICEBAR_DIR="$HOME/.config/icebar"
 ICEBAR_CONFIG="$ICEBAR_DIR/config.ron"
 
@@ -42,7 +42,7 @@ divider() { echo -e "  ${DIM}─────────────────
 if [[ ! -d "$THEMES_DIR" ]]; then
     print_header
     print_error "Themes folder not found: ${BOLD}$THEMES_DIR${RESET}"
-    print_info  "Create a folder called ${BOLD}example_themes${RESET} next to this script"
+    print_info  "Create a folder called ${BOLD}themes${RESET} next to this script"
     print_info  "and place theme subdirectories inside it, each containing a ${BOLD}config.ron${RESET}"
     echo
     exit 1
