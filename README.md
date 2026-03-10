@@ -9,7 +9,8 @@ It aims to provide a **minimal, fast, and hackable bar/popup system** designed f
 ---
 
 ## 🖼️ Showcase
-![icebar_showcase](https://github.com/user-attachments/assets/1ef3feb2-312c-4b3d-ad99-71df9a667602)
+![icebar_showcase_new](https://github.com/user-attachments/assets/f714222b-61f7-4dea-b6b6-a29e43367d15)
+
 
 
 ---
