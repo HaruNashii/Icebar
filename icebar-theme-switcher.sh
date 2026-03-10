@@ -187,7 +187,7 @@ if cp "$CHOSEN_CONFIG" "$ICEBAR_CONFIG"; then
     echo
     divider
     echo
-    echo -e "  ${DIM}Restart icebar to apply the new theme.${RESET}"
+    echo -e "  ${DIM}If you have 'bar_check_reload_interval_ms' set to 'None', you will need to restart icebar to apply the new theme.${RESET}"
     echo
 else
     echo

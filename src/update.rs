@@ -1,9 +1,8 @@
 // ============ IMPORTS ============
-use iced::{Task, mouse::ScrollDelta, widget::image};
+use iced::{Font, font::Family, Task, mouse::ScrollDelta, widget::image};
 use iced_layershell::to_layer_message;
 use std::time::{Duration, Instant};
 use std::sync::Once;
-
 
 
 
@@ -15,10 +14,12 @@ static WARNING_ONCE: Once = Once::new();
 
 
 
+use crate::helpers::string::weight_from_str;
 // ============ CRATES ============
-use crate::modules::{clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume::{self, VolumeAction}, workspaces::UserWorkspaceAction };
-use crate::helpers::{misc::is_active_module, workspaces::build_workspace_list };
+use crate::{helpers::{fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::{Modules, ModulesData}, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume::{self, VolumeAction}, workspaces::UserWorkspaceAction }};
+use crate::helpers::{misc::{is_active_module, validade_bar_size_and_margin}, workspaces::build_workspace_list };
 use crate::context_menu::run_context_menu;
+use crate::ron::read_ron_config;
 use crate::AppData;
 
 
@@ -50,6 +51,7 @@ pub enum Message
     TrayEvent(TrayEvent),
     ToggleAltNetwork,
     ToggleAltClock,
+    ConfigChanged,
     Nothing,
     Tick
 }
@@ -78,6 +80,49 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::MediaPlayerClickNext => media_player_action(&app.ron_config.player, MediaPlayerAction::Next),
         Message::MediaPlayerClickPlayPause => media_player_action(&app.ron_config.player, MediaPlayerAction::PlayPause),
         Message::MediaPlayerClickPrev => media_player_action(&app.ron_config.player, MediaPlayerAction::Prev),
+
+        Message::ConfigChanged =>
+        {
+            println!("\n=== CONFIG RELOAD ===");
+            println!("[icebar] config.ron changed — reloading in place...");
+            check_if_config_file_exists();
+            let (new_config, new_anchor, active_modules) = read_ron_config();
+            let (mut bar_size, exclusive_zone, floating_space) = validade_bar_size_and_margin(&new_config);
+            let monitor_res = get_monitor_res(new_config.display.clone());
+            if bar_size.0 == 0 { bar_size.0 = monitor_res.0; };
+            if bar_size.1 == 0 { bar_size.1 = monitor_res.1; };
+            let font_name = new_config.font_family.clone();
+            let modules_data = ModulesData 
+            {
+                network_data: app.modules_data.network_data.clone(),
+                volume_data: app.modules_data.volume_data.clone(),
+                tray_icons: app.modules_data.tray_icons.clone(),
+                clock_data: app.modules_data.clock_data.clone(),
+                active_modules: active_modules.clone(),
+                ..Default::default() 
+            };
+            *app = AppData
+            {
+                default_font: Font { family: Family::Name(Box::leak(font_name.into_boxed_str())), weight: weight_from_str(&new_config.font_style), ..iced::Font::DEFAULT}, 
+                monitor_size: monitor_res,
+                custom_module_last_run: vec![Instant::now(); new_config.custom_modules.len()],
+                ron_config: new_config, 
+                modules_data,
+                ..Default::default()
+            };
+
+            //if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
+
+            println!("\n=== CONFIG RELOAD ===");
+            println!("Reloaded Successfully");
+            return Task::batch(vec!
+            [
+                Task::done(Message::SizeChange(bar_size)),
+                Task::done(Message::AnchorChange(new_anchor)),
+                Task::done(Message::MarginChange(floating_space)),
+                Task::done(Message::ExclusiveZoneChange(exclusive_zone as i32)),
+            ]);
+        }
 
         Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>
         {
@@ -220,10 +265,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                     {
                         let index = *borrowed_index;
                         let module = &app.ron_config.custom_modules[index];
-                        if module.continous_command.is_empty() || app.custom_module_last_run[index].elapsed() < Duration::from_millis(module.continous_command_interval)
-                        {
-                            continue;
-                        }
+                        if module.continous_command.is_empty() { continue; }
+                        if app.custom_module_last_run[index].elapsed() < Duration::from_millis(module.continous_command_interval) { continue; }
                         app.custom_module_last_run[index] = Instant::now();
                         let command_vec = &module.continous_command;
                         if !command_vec.is_empty() && let Some((program, args)) = command_vec.split_first() 

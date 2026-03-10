@@ -1,6 +1,6 @@
 // ============ IMPORTS ============
+use iced::{Element, widget::container, Alignment, Theme, widget::{button, text}};
 use std::process::Command;
-use iced::widget::button;
 
 
 
@@ -168,4 +168,25 @@ pub fn define_button_data(previous_text: String, play_pause_text: String, next_t
             Message::MediaPlayerClickNext
         ),
     ]
+}
+
+
+
+pub fn create_media_button<'a>(app: &'a AppData, label: String, message: Message, color: iced::Color) -> Element<'a, Message> 
+{
+    container
+    (
+        button
+        (
+            text(label)
+            .color(color)
+            .wrapping(iced::widget::text::Wrapping::Word)
+            .font(app.default_font)
+            .size(app.ron_config.media_player_button_text_size)
+            .center()
+        )
+        .style(|_: &Theme, status: button::Status| 
+        {
+            define_media_player_buttons_style(app, status)
+        }).on_press(message)).align_y(Alignment::Center).into()
 }

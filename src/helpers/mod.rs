@@ -1,4 +1,4 @@
-pub mod media_buttons;
+pub mod config_watcher;
 pub mod workspaces;
 pub mod monitor;
 pub mod string;

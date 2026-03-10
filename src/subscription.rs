@@ -7,7 +7,7 @@ use std::time::Duration;
 
 
 // ============ CRATES ============
-use crate::modules::{data::Modules, network::{network_subscription}, tray::{TraySubscription, tray_stream}};
+use crate::{helpers::config_watcher::config_file_watcher, modules::{data::Modules, network::network_subscription, tray::{TraySubscription, tray_stream}}};
 use crate::helpers::misc::is_active_module;
 use crate::update::Message;
 use crate::AppData;
@@ -37,6 +37,10 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
     ];
 
 
+    if let Some(reload_interval) = app.ron_config.bar_check_reload_interval_ms 
+    {
+        subs.push(config_file_watcher(reload_interval));
+    };
     if is_active_module(&app.modules_data.active_modules, Modules::Tray) 
     {
         subs.push(iced::Subscription::run_with(TraySubscription, tray_stream));

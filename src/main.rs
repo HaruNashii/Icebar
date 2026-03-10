@@ -91,8 +91,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
 
 
 
-    let default_font = app_data.default_font;
-    application(move || app_data.clone(), namespace, update, view).default_font(default_font).style(style).subscription(subscription).settings(Settings
+    application(move || app_data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings
     {
         layer_settings: LayerShellSettings
         {

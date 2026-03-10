@@ -65,7 +65,10 @@ pub fn check_if_config_file_exists()
 // To see the correct "font_family" and "font_style" i recommend using "fc-scan $PATH_TO_FONT_FILE".
 //
 // every custom module you make will be assigned an index based on the position they are, from top to bottom, the first = 0, the second = 1
-// so for parsing your custom_module to the position just put on the position modules your "custom_module[index]"
+// so for parsing your custom_module to the position just put on the position modules your "custom_module[index]".
+//
+// if "bar_check_reload_interval_ms" is set to "None" the bar will not hot-reload, 
+// it may make the bar lighter if it's turned off, so if you don't pretend to use this feature is reccommended to turn it off.
 //
 // The unique syntax for each some modules are: "display" = Some("HDMI-A-1"), "force_static_position_context_menu" = Some((x, y)) and "persistent_workspaces" = Some(number_of_persistent_elements)
 //
@@ -85,6 +88,7 @@ BarConfig
     bar_position: Up,
     floating_space: 0,
     increased_exclusive_bar_zone: 0,
+    bar_check_reload_interval_ms: Some(500),
     bar_side_spaces_size: 0,
     bar_size: (0, 35),
     bar_border_radius: (0., 0., 0., 0.),
