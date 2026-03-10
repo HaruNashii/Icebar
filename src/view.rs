@@ -392,11 +392,9 @@ fn axis_layout<'a>(padding: u32, axis: Axis, start: Element<'a, Message>, center
             row!
             [
                 Space::new().width(padding),
-                container(start).height(Length::Fill).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Center),
-                Space::new().width(Length::Fill),
-                container(center).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Center),
-                Space::new().width(Length::Fill),
-                container(end).height(Length::Fill).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Center),
+                container(start).width(Length::Fill).height(Length::Fill).align_x(iced::alignment::Horizontal::Left).align_y(iced::alignment::Vertical::Center),
+                container(center).width(Length::Shrink).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Center),
+                container(end).width(Length::Fill).height(Length::Fill).align_x(iced::alignment::Horizontal::Right).align_y(iced::alignment::Vertical::Center),
                 Space::new().width(padding),
             ].width(Length::Fill).height(Length::Fill).into()
         }
@@ -406,10 +404,8 @@ fn axis_layout<'a>(padding: u32, axis: Axis, start: Element<'a, Message>, center
             column!
             [
                 Space::new().height(padding),
-                container(start).height(Length::Fill).align_x(iced::alignment::Horizontal::Center),
-                Space::new().height(Length::Fill),
-                container(center).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Center),
-                Space::new().height(Length::Fill),
+                container(start).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Top),
+                container(center).height(Length::Shrink).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Center),
                 container(end).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).align_y(iced::alignment::Vertical::Bottom),
                 Space::new().height(padding),
             ].width(Length::Fill).height(Length::Fill).align_x(iced::alignment::Horizontal::Center).into()
