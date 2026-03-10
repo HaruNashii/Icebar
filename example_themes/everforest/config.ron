@@ -1,0 +1,382 @@
+// ╭─────────────────────────────────────────────────────────────────────────╮
+// │                                                                         │
+// │   E V E R F O R E S T   v2   ·   ICEBAR                                 │
+// │   Ultra-thin top bar. One line of text. The forest floor.               │
+// │   You barely notice it. That's the point.                               │
+// │                                                                         │
+// ╰─────────────────────────────────────────────────────────────────────────╯
+//
+//  PALETTE — Everforest Dark Medium (softer than v1's Hard)
+//
+//    bg0        ( 42,  45,  43)  ← bar bg — Medium variant, warmer than Hard
+//    bg1        ( 53,  58,  54)  ← module resting bg
+//    bg2        ( 64,  71,  65)  ← hover bg
+//    bg3        ( 75,  82,  76)  ← active / pressed
+//    bg4        ( 87,  95,  87)  ← very dim elements
+//
+//    fg         (211, 198, 170)  ← primary text
+//    grey1      (147, 164, 153)  ← secondary
+//    grey2      (159, 177, 165)  ← dim
+//
+//    red        (230, 126, 128)
+//    orange     (230, 152,  98)
+//    yellow     (219, 188, 127)  ← clock — warm center
+//    green      (167, 192, 128)  ← network / PRIMARY ACCENT
+//    aqua       (131, 192, 179)
+//    blue       (125, 175, 202)
+//    purple     (210, 166, 215)
+//
+//  DESIGN — opposite of v1 in every dimension:
+//    · ULTRA-THIN FULL WIDTH TOP BAR — bar_size: (0, 24)
+//      Only 24px tall — the thinnest bar in the entire collection
+//      It sits like a hairline at the top of the screen
+//    · floating_space: 0 — flush to edge, no gap
+//    · bar_border_radius: (0., 0., 0., 0.) — flat, not a sidebar capsule
+//    · ALL modules: 0px radius — no pills, no lozenges, perfectly flat
+//    · Font: "Hack" Regular — thin, small, forest-floor quiet
+//    · font size: 11 everywhere — tiny, like lichen text
+//    · No workspaces module — too wide for a 24px bar
+//    · No media metadata — too wide
+//    · NO badge, NO launcher
+//    · Layout: LEFT=CPU/RAM live   CENTER=Clock   RIGHT=Network+Vol+Tray
+//    · Everything is borderless, flat, and the same height as the bar itself
+//    · The bar IS the module — no visual separation between them
+//    · green is still the soul but whispered, not shouted
+
+BarConfig
+(
+    // ================= GENERAL =================
+    display: None,
+    bar_position: Up,
+    floating_space: 0,
+    increased_exclusive_bar_zone: 0,
+    bar_side_spaces_size: 10,
+    bar_size: (0, 24),                                // 24px — hairline bar
+    bar_border_radius: (0., 0., 0., 0.),              // completely flat
+    bar_border_size: 0.0,
+    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_background_color_rgba: (42, 45, 43, 100),     // bg0 Medium — fully opaque
+    font_family: "Hack",                              // thin, legible, quiet
+    font_style: "Regular",                            // Regular — not Bold
+
+
+    // ================= MODULES =================
+    //
+    //  No workspaces, no badge, no media — just pure system info
+    //  LEFT   : NiriWorkspaces
+    //  CENTER : Clock
+    //  RIGHT  : Network  VolumeOutput  Tray
+    //
+    left_modules:  [NiriWorkspaces],
+    center_modules: [Clock],
+    right_modules: [Network, VolumeOutput, Tray],
+
+
+    // ================= MODULES CONFIGS =================
+    ellipsis_text: "…",
+    player: "spotify",
+    dont_show_metadata_if_empty: true,
+    text_when_metadata_is_empty: "~",
+    media_player_metadata_text_limit_len: 20,
+    spacing_between_all_modules: 8,
+    force_static_position_context_menu: None,
+    reverse_scroll_on_workspace: false,
+    persistent_workspaces: Some(5),
+    incremental_steps_output: 5,
+    incremental_steps_input: 5,
+    action_on_left_click_media_player_metadata: DefaultAction,
+    action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_clock: DefaultAction,
+    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
+    action_on_left_click_network: DefaultAction,
+    action_on_right_click_network: DefaultAction,
+    action_on_left_click_volume_output: DefaultAction,
+    action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]),
+    action_on_left_click_volume_input: DefaultAction,
+    action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]),
+
+
+    // ================= FORMATS =================
+    media_player_buttons_format: ("«", "⏸", "⏵", "»"),
+    media_player_metadata_format: "{{artist}} — {{title}}",
+
+    // No icons — text only at 11px looks better without glyph clutter
+    network_disconnected_text: "no link",
+    network_module_format: "{level}",
+    alt_network_module_format: "{id}",
+    network_level_format:
+    (
+        "online",
+        "fair",
+        "weak",
+        "offline"
+    ),
+    network_connection_type_icons: ("eth", "wls", "?"),
+
+    output_volume_format:
+    (
+        "vol –",
+        "vol {}%",
+        "vol {}%",
+        "vol {}%",
+        "vol {}%",
+        "vol {}%"
+    ),
+    input_volume_format:
+    (
+        "mic –",
+        "mic {}%",
+        "mic {}%",
+        "mic {}%",
+        "mic {}%",
+        "mic {}%"
+    ),
+    output_volume_muted_format: "muted",
+    input_volume_muted_format:  "mic off",
+
+    // Plain time. No icon, no separator glyph.
+    clock_format:     "%H:%M",
+    clock_alt_format: "%a %d %b  %H:%M",
+
+
+    // ================= TRAY =================
+    tray_icon_size: 14,                               // tiny — matches bar height
+    tray_spacing: 4,
+    tray_button_size: 2,
+    tray_button_color_rgb: (42, 45, 43),              // matches bar — invisible bg
+    tray_button_text_color_rgb: (159, 177, 165),
+    tray_button_hovered_color_rgb: (64, 71, 65),
+    tray_button_hovered_text_color_rgb: (211, 198, 170),
+    tray_button_pressed_color_rgb: (42, 45, 43),
+    tray_border_color_rgba: (0, 0, 0, 0),
+    tray_border_size: 0.0,
+    tray_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= MEDIA PLAYER METADATA =================
+    media_player_metadata_text_size: 11,
+    media_player_metadata_text_color_rgb: (210, 166, 215),
+    media_player_metadata_text_orientation: Horizontal,
+    media_player_metadata_button_color_rgb: (42, 45, 43),
+    media_player_metadata_button_text_color_rgb: (210, 166, 215),
+    media_player_metadata_button_hovered_color_rgb: (64, 71, 65),
+    media_player_metadata_button_hovered_text_color_rgb: (210, 166, 215),
+    media_player_metadata_button_pressed_color_rgb: (42, 45, 43),
+    media_player_metadata_border_color_rgba: (0, 0, 0, 0),
+    media_player_metadata_border_size: 0.0,
+    media_player_metadata_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= MEDIA PLAYER BUTTONS =================
+    media_player_button_spacing: 3,
+    media_player_button_text_size: 11,
+    media_player_button_text_color_rgb: (210, 166, 215),
+    media_player_button_text_orientation: Horizontal,
+    media_player_button_color_rgb: (42, 45, 43),
+    media_player_button_hovered_color_rgb: (64, 71, 65),
+    media_player_button_hovered_text_color_rgb: (210, 166, 215),
+    media_player_button_pressed_color_rgb: (42, 45, 43),
+    media_player_button_border_color_rgba: (0, 0, 0, 0),
+    media_player_button_border_size: 0.0,
+    media_player_button_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= NETWORK =================
+    network_text_size: 11,
+    network_text_color_rgb: (167, 192, 128),          // green — quiet signal
+    network_text_orientation: Horizontal,
+    network_button_color_rgb: (42, 45, 43),           // bar bg — seamless
+    network_button_text_color_rgb: (167, 192, 128),
+    network_button_hovered_color_rgb: (53, 58, 54),
+    network_button_hovered_text_color_rgb: (167, 192, 128),
+    network_button_pressed_color_rgb: (42, 45, 43),
+    network_border_color_rgba: (0, 0, 0, 0),
+    network_border_size: 0.0,
+    network_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= ALT NETWORK =================
+    alt_network_text_size: 11,
+    alt_network_text_color_rgb: (167, 192, 128),
+    alt_network_text_orientation: Horizontal,
+    alt_network_button_color_rgb: (53, 58, 54),
+    alt_network_button_text_color_rgb: (167, 192, 128),
+    alt_network_button_hovered_color_rgb: (64, 71, 65),
+    alt_network_button_hovered_text_color_rgb: (167, 192, 128),
+    alt_network_button_pressed_color_rgb: (42, 45, 43),
+    alt_network_border_color_rgba: (0, 0, 0, 0),
+    alt_network_border_size: 0.0,
+    alt_network_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= CLOCK =================
+    // Yellow center. Ghost bg — same as bar. Barely there.
+    // Slightly larger (13px) so it reads as the focal point.
+    clock_text_size: 13,
+    clock_text_color_rgb: (219, 188, 127),            // yellow — warm center
+    clock_text_orientation: Horizontal,
+    clock_button_color_rgb: (42, 45, 43),             // ghost
+    clock_button_text_color_rgb: (219, 188, 127),
+    clock_button_hovered_color_rgb: (53, 58, 54),
+    clock_button_hovered_text_color_rgb: (219, 188, 127),
+    clock_button_pressed_color_rgb: (42, 45, 43),
+    clock_border_color_rgba: (0, 0, 0, 0),
+    clock_border_size: 0.0,
+    clock_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= ALT CLOCK =================
+    alt_clock_text_size: 11,
+    alt_clock_text_color_rgb: (219, 188, 127),
+    alt_clock_text_orientation: Horizontal,
+    alt_clock_button_color_rgb: (53, 58, 54),
+    alt_clock_button_text_color_rgb: (219, 188, 127),
+    alt_clock_button_hovered_color_rgb: (64, 71, 65),
+    alt_clock_button_hovered_text_color_rgb: (219, 188, 127),
+    alt_clock_button_pressed_color_rgb: (42, 45, 43),
+    alt_clock_border_color_rgba: (0, 0, 0, 0),
+    alt_clock_border_size: 0.0,
+    alt_clock_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= VOLUME OUTPUT =================
+    volume_output_text_size: 11,
+    volume_output_text_color_rgb: (131, 192, 179),    // aqua
+    volume_output_text_orientation: Horizontal,
+    volume_output_button_color_rgb: (42, 45, 43),
+    volume_output_button_text_color_rgb: (131, 192, 179),
+    volume_output_button_hovered_color_rgb: (53, 58, 54),
+    volume_output_button_hovered_text_color_rgb: (131, 192, 179),
+    volume_output_button_pressed_color_rgb: (42, 45, 43),
+    volume_output_border_color_rgba: (0, 0, 0, 0),
+    volume_output_border_size: 0.0,
+    volume_output_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= MUTED VOLUME OUTPUT =================
+    muted_volume_output_text_size: 11,
+    muted_volume_output_text_color_rgb: (230, 126, 128),
+    muted_volume_output_text_orientation: Horizontal,
+    muted_volume_output_button_color_rgb: (42, 45, 43),
+    muted_volume_output_button_text_color_rgb: (230, 126, 128),
+    muted_volume_output_button_hovered_color_rgb: (53, 58, 54),
+    muted_volume_output_button_hovered_text_color_rgb: (230, 126, 128),
+    muted_volume_output_button_pressed_color_rgb: (42, 45, 43),
+    muted_volume_output_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_output_border_size: 0.0,
+    muted_volume_output_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= VOLUME INPUT =================
+    volume_input_text_size: 11,
+    volume_input_text_color_rgb: (131, 192, 179),
+    volume_input_text_orientation: Horizontal,
+    volume_input_button_color_rgb: (42, 45, 43),
+    volume_input_button_text_color_rgb: (131, 192, 179),
+    volume_input_button_hovered_color_rgb: (53, 58, 54),
+    volume_input_button_hovered_text_color_rgb: (131, 192, 179),
+    volume_input_button_pressed_color_rgb: (42, 45, 43),
+    volume_input_border_color_rgba: (0, 0, 0, 0),
+    volume_input_border_size: 0.0,
+    volume_input_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+    // ================= MUTED VOLUME INPUT =================
+    muted_volume_input_text_size: 11,
+    muted_volume_input_text_color_rgb: (230, 126, 128),
+    muted_volume_input_text_orientation: Horizontal,
+    muted_volume_input_button_color_rgb: (42, 45, 43),
+    muted_volume_input_button_text_color_rgb: (230, 126, 128),
+    muted_volume_input_button_hovered_color_rgb: (53, 58, 54),
+    muted_volume_input_button_hovered_text_color_rgb: (230, 126, 128),
+    muted_volume_input_button_pressed_color_rgb: (42, 45, 43),
+    muted_volume_input_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_input_border_size: 0.0,
+    muted_volume_input_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= WORKSPACES =================
+    // Flat dots, same bg as bar — they dissolve into the hairline.
+    // Active gets a tiny green text highlight, nothing more.
+    workspace_heigth: 5,
+    workspace_width: 5,
+    workspace_different_selected_width: None,
+    workspace_text_size: 20,
+    workspace_text_color_rgb: (87, 95, 87),           // nearly invisible resting
+    workspace_text_orientation: Horizontal,
+    workspace_text:
+    [
+        "·", "·", "·", "·", "·",
+        "·", "·", "·", "·", "·"
+    ],
+    workspace_selected_text: Some(
+    [
+        "•", "•", "•", "•", "•",
+        "•", "•", "•", "•", "•"
+    ]),
+    workspace_spacing: 3,
+    workspace_button_color_rgb: (42, 45, 43),         // same as bar — invisible
+    workspace_button_text_color_rgb: (87, 95, 87),
+    workspace_button_selected_color_rgb: (42, 45, 43),// still same bg — only text changes
+    workspace_button_hovered_color_rgb: (53, 58, 54),
+    workspace_button_hovered_text_color_rgb: (167, 192, 128),
+    workspace_button_pressed_color_rgb: (42, 45, 43),
+    workspace_border_color_rgba: (0, 0, 0, 0),
+    workspace_border_size: 0.0,
+    workspace_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= CONTEXT MENU =================
+    context_menu_background_color_rgba: (42, 45, 43, 97),
+    context_menu_background_size: 5,
+    context_menu_background_border_color_rgba: (0, 0, 0, 0),
+    context_menu_background_border_size: 0.0,
+    context_menu_background_border_radius: (4.0, 4.0, 4.0, 4.0),
+    context_menu_text_size: 11,
+    context_menu_text_color_rgb: (211, 198, 170),
+    context_menu_orientation: Vertical,
+    context_menu_size: 220,
+    context_menu_item_size: 24,
+    context_menu_button_color_rgb: (53, 58, 54),
+    context_menu_button_text_color_rgb: (211, 198, 170),
+    context_menu_button_hovered_color_rgb: (64, 71, 65),
+    context_menu_button_hovered_text_color_rgb: (167, 192, 128),
+    context_menu_button_pressed_color_rgb: (42, 45, 43),
+    context_menu_border_color_rgba: (0, 0, 0, 0),
+    context_menu_border_size: 0.0,
+    context_menu_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= CUSTOM MODULES =================
+    custom_modules_spacing: 8,
+    custom_modules:
+    [
+        // ── MODULE 0 ── LIVE CPU + RAM
+        // Left anchor. Small text. No icon. Just the numbers.
+        // Looks like a terminal status line at the far left.
+        (
+            name: "sysload",
+            text: "",
+            text_size: 11,
+            text_color_rgb: (159, 177, 165),          // grey2 — muted
+            text_orientation: Horizontal,
+            height: 20,
+            button_color_rgb: (42, 45, 43),           // ghost
+            button_text_color_rgb: (159, 177, 165),
+            button_hovered_color_rgb: (53, 58, 54),
+            button_hovered_text_color_rgb: (167, 192, 128),
+            button_pressed_color_rgb: (42, 45, 43),
+            border_color_rgba: (0, 0, 0, 0),
+            border_size: 0.0,
+            border_radius: (0.0, 0.0, 0.0, 0.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: true,
+            use_output_as_text: false,
+            use_continous_output_as_text: true,
+            all_output_as_text_format: "{continous_output}",
+            output_text_limit_len: 22,
+            command_to_exec_on_left_click: ["kitty", "btop"],
+            command_to_exec_on_right_click: ["kitty", "btop"],
+            continous_command_interval: 2000,
+            continous_command: [
+                "bash", "-c",
+                "cpu=$(top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d. -f1); ram=$(free -m | awk '/Mem:/{printf \"%d/%dM\", $3, $2}'); echo \"cpu ${cpu}%  mem ${ram}\""
+            ]
+        ),
+    ],
+)

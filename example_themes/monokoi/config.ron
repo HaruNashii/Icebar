@@ -1,0 +1,326 @@
+// ╭─────────────────────────────────────────────────────────────────────────╮
+// │                                                                         │
+// │   M O N O K A I   ·   ICEBAR                                            │
+// │   Right short island sidebar. 46×750px. Stubby capsule.                │
+// │   Floats in the middle of the right edge. Never done before.           │
+// │                                                                         │
+// ╰─────────────────────────────────────────────────────────────────────────╯
+//
+//  PALETTE — classic Monokai (TextMate 2006 original)
+//
+//    bg          ( 39,  40,  34)  ← near-black / bar background
+//    bg_light    ( 52,  54,  46)  ← module resting bg
+//    bg_hover    ( 68,  71,  60)  ← hover
+//    bg_pressed  ( 30,  31,  26)  ← pressed
+//    gutter      ( 47,  49,  41)  ← between bg and bg_light
+//
+//    fg          (248, 248, 242)  ← primary text
+//    fg_muted    (117, 113, 101)  ← dim / inactive
+//    fg_comment  (117, 113, 101)  ← same as muted
+//
+//    yellow      (230, 219, 116)  ← clock
+//    orange      (253, 151,  31)  ← badge fill / PRIMARY ACCENT
+//    red         (249,  38, 114)  ← muted audio
+//    purple      (174, 129, 255)  ← volume
+//    blue        (102, 217, 239)  ← network (Monokai's cyan is its "blue")
+//    green       (166, 226,  46)  ← workspaces active
+//
+//  DESIGN — completely unique in the collection:
+//    · RIGHT SHORT ISLAND SIDEBAR — bar_size: (46, 500)
+//      46px wide, only 500px tall — does NOT fill the screen vertically
+//      Wallpaper visible above AND below the capsule
+//      This has never been done — all previous sidebars were full height or
+//      very tall (760–820px). This is a stubby floating tab on the right edge.
+//    · floating_space: 10 — gap from right edge
+//    · bar_border_radius: (18., 18., 18., 18.) — very round for the short height
+//    · Vertical text orientation on all modules (sidebar)
+//    · NO badge module — first vertical sidebar without one
+//    · Workspaces are the TOP anchor instead
+//    · Layout: TOP=Workspaces  CENTER=Clock  BOTTOM=VolumeOutput+Network+Tray
+//    · Only 5 module slots — the short height demands restraint
+//    · Green active workspace — Monokai's most vivid color owns the top
+//    · Orange is reserved ONLY for the clock hover state — never used flat
+//    · Purple volume — Monokai's underused color gets a role here
+//    · Cyan network — faithful to Monokai's original "blue" being a cyan
+
+BarConfig
+(
+    // ================= GENERAL =================
+    display: None,
+    bar_position: Right,
+    floating_space: 10,
+    increased_exclusive_bar_zone: 0,
+    bar_side_spaces_size: 8,
+    bar_size: (46, 750),                              // SHORT island — never done
+
+    bar_border_radius: (18., 18., 18., 18.),          // very round for the short height
+    bar_border_size: 0.0,
+    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_background_color_rgba: (39, 40, 34, 97),
+
+    font_family: "JetBrains Mono",
+    font_style: "Bold",
+
+
+    // ================= MODULES =================
+    //
+    //  Stubby capsule — only 5 module slots, no badge
+    //  TOP    : HyprWorkspaces
+    //  CENTER : Clock
+    //  BOTTOM : VolumeOutput  Network  Tray
+    //
+    left_modules:  [NiriWorkspaces],
+    center_modules: [Clock],
+    right_modules: [VolumeOutput, Network, Tray],
+
+
+    // ================= MODULES CONFIGS =================
+    ellipsis_text: "…",
+    player: "spotify",
+    dont_show_metadata_if_empty: true,
+    text_when_metadata_is_empty: "~",
+    media_player_metadata_text_limit_len: 14,
+    spacing_between_all_modules: 8,
+    force_static_position_context_menu: None,
+    reverse_scroll_on_workspace: false,
+    persistent_workspaces: Some(5),
+    incremental_steps_output: 5,
+    incremental_steps_input: 5,
+    action_on_left_click_media_player_metadata: DefaultAction,
+    action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_clock: Nothing,
+    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
+    action_on_left_click_network: Nothing,
+    action_on_right_click_network: Nothing,
+    action_on_left_click_volume_output: DefaultAction,
+    action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]),
+    action_on_left_click_volume_input: DefaultAction,
+    action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]),
+
+
+    // ================= FORMATS =================
+    media_player_buttons_format: ("󰒮", "󰏤", "󰐊", "󰒭"),
+    media_player_metadata_format: "{{title}}",
+
+    network_disconnected_text: "󰤭",
+    network_module_format: "{level}",
+    alt_network_module_format: "{level}",
+    network_level_format: ("󰤨  ", "󰤥  ", "󰤢  ", "󰤭  "),
+    network_connection_type_icons: ("󰈀", "󰤨", "󰤭"),
+
+    output_volume_format: ("󰕿", "󰕿", "󰖀", "󰖀", "󰕾", "󰕾"),
+    input_volume_format:  ("󰍭", "󰍬", "󰍬", "󰍬", "󰍬", "󰍬"),
+    output_volume_muted_format: "󰝟",
+    input_volume_muted_format:  "󰍭",
+
+    clock_format:     "%H-%M",
+    clock_alt_format: "%H-%M",
+
+
+    // ================= TRAY =================
+    tray_icon_size: 18,
+    tray_spacing: 6,
+    tray_button_size: 6,
+    tray_button_color_rgb: (52, 54, 46),
+    tray_button_text_color_rgb: (248, 248, 242),
+    tray_button_hovered_color_rgb: (68, 71, 60),
+    tray_button_hovered_text_color_rgb: (248, 248, 242),
+    tray_button_pressed_color_rgb: (30, 31, 26),
+    tray_border_color_rgba: (0, 0, 0, 0),
+    tray_border_size: 0.0,
+    tray_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+
+    // ================= MEDIA PLAYER METADATA =================
+    media_player_metadata_text_size: 12,
+    media_player_metadata_text_color_rgb: (174, 129, 255),
+    media_player_metadata_text_orientation: Vertical,
+    media_player_metadata_button_color_rgb: (52, 54, 46),
+    media_player_metadata_button_text_color_rgb: (174, 129, 255),
+    media_player_metadata_button_hovered_color_rgb: (68, 71, 60),
+    media_player_metadata_button_hovered_text_color_rgb: (174, 129, 255),
+    media_player_metadata_button_pressed_color_rgb: (30, 31, 26),
+    media_player_metadata_border_color_rgba: (0, 0, 0, 0),
+    media_player_metadata_border_size: 0.0,
+    media_player_metadata_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+
+    // ================= MEDIA PLAYER BUTTONS =================
+    media_player_button_spacing: 5,
+    media_player_button_text_size: 15,
+    media_player_button_text_color_rgb: (174, 129, 255),
+    media_player_button_text_orientation: Vertical,
+    media_player_button_color_rgb: (52, 54, 46),
+    media_player_button_hovered_color_rgb: (68, 71, 60),
+    media_player_button_hovered_text_color_rgb: (174, 129, 255),
+    media_player_button_pressed_color_rgb: (30, 31, 26),
+    media_player_button_border_color_rgba: (0, 0, 0, 0),
+    media_player_button_border_size: 0.0,
+    media_player_button_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+
+    // ================= NETWORK =================
+    // Cyan — Monokai's "blue", used nowhere else in the capsule
+    network_text_size: 13,
+    network_text_color_rgb: (102, 217, 239),
+    network_text_orientation: Horizontal,
+    network_button_color_rgb: (52, 54, 46),
+    network_button_text_color_rgb: (102, 217, 239),
+    network_button_hovered_color_rgb: (68, 71, 60),
+    network_button_hovered_text_color_rgb: (102, 217, 239),
+    network_button_pressed_color_rgb: (30, 31, 26),
+    network_border_color_rgba: (0, 0, 0, 0),
+    network_border_size: 0.0,
+    network_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+    alt_network_text_size: 13,
+    alt_network_text_color_rgb: (102, 217, 239),
+    alt_network_text_orientation: Vertical,
+    alt_network_button_color_rgb: (68, 71, 60),
+    alt_network_button_text_color_rgb: (102, 217, 239),
+    alt_network_button_hovered_color_rgb: (52, 54, 46),
+    alt_network_button_hovered_text_color_rgb: (102, 217, 239),
+    alt_network_button_pressed_color_rgb: (30, 31, 26),
+    alt_network_border_color_rgba: (0, 0, 0, 0),
+    alt_network_border_size: 0.0,
+    alt_network_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+
+    // ================= CLOCK =================
+    // Yellow center — Monokai yellow is warm and vivid on near-black.
+    // Ghost bg matches bar. Hover reveals the orange — the only place
+    // orange appears in this config, reserved for interaction feedback.
+    clock_text_size: 16,
+    clock_text_color_rgb: (230, 219, 116),            // yellow
+    clock_text_orientation: Vertical,
+    clock_button_color_rgb: (39, 40, 34),             // ghost
+    clock_button_text_color_rgb: (230, 219, 116),
+    clock_button_hovered_color_rgb: (52, 54, 46),
+    clock_button_hovered_text_color_rgb: (253, 151, 31),  // orange on hover — surprise
+    clock_button_pressed_color_rgb: (30, 31, 26),
+    clock_border_color_rgba: (0, 0, 0, 0),
+    clock_border_size: 0.0,
+    clock_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+    alt_clock_text_size: 14,
+    alt_clock_text_color_rgb: (230, 219, 116),
+    alt_clock_text_orientation: Vertical,
+    alt_clock_button_color_rgb: (52, 54, 46),
+    alt_clock_button_text_color_rgb: (230, 219, 116),
+    alt_clock_button_hovered_color_rgb: (68, 71, 60),
+    alt_clock_button_hovered_text_color_rgb: (253, 151, 31),
+    alt_clock_button_pressed_color_rgb: (30, 31, 26),
+    alt_clock_border_color_rgba: (0, 0, 0, 0),
+    alt_clock_border_size: 0.0,
+    alt_clock_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+
+    // ================= VOLUME OUTPUT =================
+    // Purple — Monokai's underused accent finally has a role
+    volume_output_text_size: 17,
+    volume_output_text_color_rgb: (174, 129, 255),
+    volume_output_text_orientation: Vertical,
+    volume_output_button_color_rgb: (52, 54, 46),
+    volume_output_button_text_color_rgb: (174, 129, 255),
+    volume_output_button_hovered_color_rgb: (68, 71, 60),
+    volume_output_button_hovered_text_color_rgb: (174, 129, 255),
+    volume_output_button_pressed_color_rgb: (30, 31, 26),
+    volume_output_border_color_rgba: (0, 0, 0, 0),
+    volume_output_border_size: 0.0,
+    volume_output_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+    muted_volume_output_text_size: 17,
+    muted_volume_output_text_color_rgb: (249, 38, 114),   // red — alarm
+    muted_volume_output_text_orientation: Vertical,
+    muted_volume_output_button_color_rgb: (52, 54, 46),
+    muted_volume_output_button_text_color_rgb: (249, 38, 114),
+    muted_volume_output_button_hovered_color_rgb: (68, 71, 60),
+    muted_volume_output_button_hovered_text_color_rgb: (249, 38, 114),
+    muted_volume_output_button_pressed_color_rgb: (30, 31, 26),
+    muted_volume_output_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_output_border_size: 0.0,
+    muted_volume_output_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+    volume_input_text_size: 17,
+    volume_input_text_color_rgb: (174, 129, 255),
+    volume_input_text_orientation: Vertical,
+    volume_input_button_color_rgb: (52, 54, 46),
+    volume_input_button_text_color_rgb: (174, 129, 255),
+    volume_input_button_hovered_color_rgb: (68, 71, 60),
+    volume_input_button_hovered_text_color_rgb: (174, 129, 255),
+    volume_input_button_pressed_color_rgb: (30, 31, 26),
+    volume_input_border_color_rgba: (0, 0, 0, 0),
+    volume_input_border_size: 0.0,
+    volume_input_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+    muted_volume_input_text_size: 17,
+    muted_volume_input_text_color_rgb: (249, 38, 114),
+    muted_volume_input_text_orientation: Vertical,
+    muted_volume_input_button_color_rgb: (52, 54, 46),
+    muted_volume_input_button_text_color_rgb: (249, 38, 114),
+    muted_volume_input_button_hovered_color_rgb: (68, 71, 60),
+    muted_volume_input_button_hovered_text_color_rgb: (249, 38, 114),
+    muted_volume_input_button_pressed_color_rgb: (30, 31, 26),
+    muted_volume_input_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_input_border_size: 0.0,
+    muted_volume_input_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+
+    // ================= WORKSPACES =================
+    // TOP anchor — replaces the badge in this config.
+    // Green active fill — Monokai's most electric color.
+    // Dots, not numbers. The short capsule is narrow — dots fit better.
+    // Resting = near-invisible ghost on bar bg. Only active pops.
+    workspace_heigth: 8,
+    workspace_width: 5,
+    workspace_different_selected_width: None,
+    workspace_text_size: 12,
+    workspace_text_color_rgb: (47, 49, 41),           // gutter — almost invisible
+    workspace_text_orientation: Vertical,
+    workspace_text:
+    [
+        "󰊠", "󰊠", "󰊠", "󰊠", "󰊠",
+        "󰊠", "󰊠", "󰊠", "󰊠", "󰊠"
+    ],
+    workspace_selected_text: Some(
+    [
+        "󰊡", "󰊡", "󰊡", "󰊡", "󰊡",
+        "󰊡", "󰊡", "󰊡", "󰊡", "󰊡"
+    ]),
+    workspace_spacing: 5,
+    workspace_button_color_rgb: (39, 40, 34),         // ghost — bar bg
+    workspace_button_text_color_rgb: (117, 113, 101),
+    workspace_button_selected_color_rgb: (52, 54, 46),
+    workspace_button_hovered_color_rgb: (52, 54, 46),
+    workspace_button_hovered_text_color_rgb: (166, 226, 46),   // green — vivid on hover
+    workspace_button_pressed_color_rgb: (30, 31, 26),
+    workspace_border_color_rgba: (0, 0, 0, 0),
+    workspace_border_size: 0.0,
+    workspace_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+
+    // ================= CONTEXT MENU =================
+    context_menu_background_color_rgba: (39, 40, 34, 97),
+    context_menu_background_size: 6,
+    context_menu_background_border_color_rgba: (0, 0, 0, 0),
+    context_menu_background_border_size: 0.0,
+    context_menu_background_border_radius: (10.0, 10.0, 10.0, 10.0),
+    context_menu_text_size: 13,
+    context_menu_text_color_rgb: (248, 248, 242),
+    context_menu_orientation: Vertical,
+    context_menu_size: 240,
+    context_menu_item_size: 30,
+    context_menu_button_color_rgb: (52, 54, 46),
+    context_menu_button_text_color_rgb: (248, 248, 242),
+    context_menu_button_hovered_color_rgb: (166, 226, 46),
+    context_menu_button_hovered_text_color_rgb: (39, 40, 34),
+    context_menu_button_pressed_color_rgb: (30, 31, 26),
+    context_menu_border_color_rgba: (0, 0, 0, 0),
+    context_menu_border_size: 0.0,
+    context_menu_border_radius: (10.0, 10.0, 10.0, 10.0),
+
+
+    // ================= CUSTOM MODULES =================
+    custom_modules_spacing: 8,
+    custom_modules: [],
+)

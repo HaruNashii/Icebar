@@ -1,0 +1,344 @@
+// ╭─────────────────────────────────────────────────────────────────────────╮
+// │                                                                         │
+// │   D R A C U L A   v2   ·   ICEBAR                                       │
+// │   Bottom island. Media left. Workspaces center. Clock right.            │
+// │   Everything the first one wasn't.                                      │
+// │                                                                         │
+// ╰─────────────────────────────────────────────────────────────────────────╯
+//
+//  PALETTE — official Dracula
+//
+//    background  ( 40,  42,  54)
+//    currentLine ( 68,  71,  90)
+//    foreground  (248, 248, 242)
+//    comment     ( 98, 114, 164)
+//    cyan        (139, 233, 253)
+//    green       ( 80, 250, 123)
+//    orange      (255, 184, 108)
+//    pink        (255, 121, 198)  ← PRIMARY ACCENT
+//    purple      (189, 147, 249)
+//    red         (255,  85,  85)
+//    yellow      (241, 250, 140)
+//
+//  DESIGN — inverted from v1 in every way:
+//    · BOTTOM FLOATING ISLAND — bar_size: (1100, 44), floating_space: 10
+//    · No badge module, no launcher — bar opens with media player buttons
+//    · Layout: LEFT=MediaPlayerButtons  CENTER=Workspaces  RIGHT=VolumeOutput+Network+Clock
+//    · Clock is on the FAR RIGHT — reads last, like a timestamp
+//    · Workspaces use large uppercase letters (A B C D E) not numbers
+//    · Massive border_radius: (22., 22., 22., 22.) — the island is a huge pill
+//    · Modules: 12px radius — nested softness inside the outer pill
+//    · font: "Fira Code" Bold — distinct from v1's JetBrains
+//    · Clock text is GREEN (not cyan like v1) — swapped roles
+//    · Network text is YELLOW — never used in v1
+//    · Volume text is ORANGE
+//    · Media buttons in PURPLE — the opener of the bar
+//    · Pink owns only workspaces selected + hover — focused role
+
+BarConfig
+(
+    // ================= GENERAL =================
+    display: None,
+    bar_position: Down,
+    floating_space: 10,
+    increased_exclusive_bar_zone: 0,
+    bar_side_spaces_size: 10,
+    bar_size: (1100, 44),
+
+    bar_border_radius: (22., 22., 22., 22.),          // the whole island is a huge pill
+    bar_border_size: 0.0,
+    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_background_color_rgba: (40, 42, 54, 96),
+
+    font_family: "Fira Code",
+    font_style: "Bold",
+
+
+    // ================= MODULES =================
+    //
+    //  LEFT   : MediaPlayerButtons (opener — no badge)
+    //  CENTER : HyprWorkspaces
+    //  RIGHT  : VolumeOutput  Network  Clock (timestamp closer)
+    //
+    left_modules:  [MediaPlayerButtons, MediaPlayerMetaData],
+    center_modules: [HyprWorkspaces],
+    right_modules: [VolumeOutput, VolumeInput, Network, Clock],
+
+
+    // ================= MODULES CONFIGS =================
+    ellipsis_text: "…",
+    player: "spotify",
+    dont_show_metadata_if_empty: true,
+    text_when_metadata_is_empty: "nothing playing",
+    media_player_metadata_text_limit_len: 28,
+    spacing_between_all_modules: 8,
+    force_static_position_context_menu: None,
+    reverse_scroll_on_workspace: false,
+    persistent_workspaces: Some(5),
+    incremental_steps_output: 5,
+    incremental_steps_input: 5,
+    action_on_left_click_media_player_metadata: DefaultAction,
+    action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_clock: DefaultAction,
+    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
+    action_on_left_click_network: DefaultAction,
+    action_on_right_click_network: DefaultAction,
+    action_on_left_click_volume_output: DefaultAction,
+    action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]),
+    action_on_left_click_volume_input: DefaultAction,
+    action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]),
+
+
+    // ================= FORMATS =================
+    media_player_buttons_format: ("⏮", "⏸", "⏵", "⏭"),
+    media_player_metadata_format: "{{artist}}  —  {{title}}",
+
+    network_disconnected_text: "no signal",
+    network_module_format: "{level}",
+    alt_network_module_format: "{id}",
+    network_level_format:
+    (
+        "online",
+        "fair",
+        "weak",
+        "offline"
+    ),
+    network_connection_type_icons: ("eth", "wls", "???"),
+
+    output_volume_format:
+    (
+        "——",
+        "󰕿 {}%",
+        "󰖀 {}%",
+        "󰖀 {}%",
+        "󰕾 {}%",
+        "󰕾 {}%"
+    ),
+    input_volume_format:
+    (
+        "——",
+        "󰍬 {}%",
+        "󰍬 {}%",
+        "󰍬 {}%",
+        "󰍬 {}%",
+        "󰍬 {}%"
+    ),
+    output_volume_muted_format: "󰝟 off",
+    input_volume_muted_format:  "󰍭 off",
+
+    // Clock on far RIGHT — a closing timestamp
+    clock_format:     "%H:%M",
+    clock_alt_format: "%H:%M:%S  %d %b",
+
+
+    // ================= TRAY =================
+    tray_icon_size: 18,
+    tray_spacing: 5,
+    tray_button_size: 5,
+    tray_button_color_rgb: (68, 71, 90),
+    tray_button_text_color_rgb: (248, 248, 242),
+    tray_button_hovered_color_rgb: (255, 121, 198),
+    tray_button_hovered_text_color_rgb: (40, 42, 54),
+    tray_button_pressed_color_rgb: (40, 42, 54),
+    tray_border_color_rgba: (0, 0, 0, 0),
+    tray_border_size: 0.0,
+    tray_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+
+    // ================= MEDIA PLAYER METADATA =================
+    // Purple — the opener, music comes first on this bar
+    media_player_metadata_text_size: 13,
+    media_player_metadata_text_color_rgb: (189, 147, 249),
+    media_player_metadata_text_orientation: Horizontal,
+    media_player_metadata_button_color_rgb: (68, 71, 90),
+    media_player_metadata_button_text_color_rgb: (189, 147, 249),
+    media_player_metadata_button_hovered_color_rgb: (255, 121, 198),
+    media_player_metadata_button_hovered_text_color_rgb: (40, 42, 54),
+    media_player_metadata_button_pressed_color_rgb: (40, 42, 54),
+    media_player_metadata_border_color_rgba: (0, 0, 0, 0),
+    media_player_metadata_border_size: 0.0,
+    media_player_metadata_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+
+    // ================= MEDIA PLAYER BUTTONS =================
+    media_player_button_spacing: 3,
+    media_player_button_text_size: 15,
+    media_player_button_text_color_rgb: (189, 147, 249),  // purple
+    media_player_button_text_orientation: Horizontal,
+    media_player_button_color_rgb: (68, 71, 90),
+    media_player_button_hovered_color_rgb: (255, 121, 198),
+    media_player_button_hovered_text_color_rgb: (40, 42, 54),
+    media_player_button_pressed_color_rgb: (40, 42, 54),
+    media_player_button_border_color_rgba: (0, 0, 0, 0),
+    media_player_button_border_size: 0.0,
+    media_player_button_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+
+    // ================= NETWORK =================
+    // Yellow — never used in v1, vivid and different
+    network_text_size: 13,
+    network_text_color_rgb: (241, 250, 140),
+    network_text_orientation: Horizontal,
+    network_button_color_rgb: (68, 71, 90),
+    network_button_text_color_rgb: (241, 250, 140),
+    network_button_hovered_color_rgb: (255, 121, 198),
+    network_button_hovered_text_color_rgb: (40, 42, 54),
+    network_button_pressed_color_rgb: (40, 42, 54),
+    network_border_color_rgba: (0, 0, 0, 0),
+    network_border_size: 0.0,
+    network_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+    // ================= ALT NETWORK =================
+    alt_network_text_size: 13,
+    alt_network_text_color_rgb: (241, 250, 140),
+    alt_network_text_orientation: Horizontal,
+    alt_network_button_color_rgb: (68, 71, 90),
+    alt_network_button_text_color_rgb: (241, 250, 140),
+    alt_network_button_hovered_color_rgb: (255, 121, 198),
+    alt_network_button_hovered_text_color_rgb: (40, 42, 54),
+    alt_network_button_pressed_color_rgb: (40, 42, 54),
+    alt_network_border_color_rgba: (0, 0, 0, 0),
+    alt_network_border_size: 0.0,
+    alt_network_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+
+    // ================= CLOCK =================
+    // Green — swapped from cyan (v1 used cyan for clock)
+    // No icon, no padding. Reads like a timestamp at the end of a log line.
+    clock_text_size: 15,
+    clock_text_color_rgb: (80, 250, 123),             // green — role-swapped from v1
+    clock_text_orientation: Horizontal,
+    clock_button_color_rgb: (68, 71, 90),
+    clock_button_text_color_rgb: (80, 250, 123),
+    clock_button_hovered_color_rgb: (255, 121, 198),
+    clock_button_hovered_text_color_rgb: (40, 42, 54),
+    clock_button_pressed_color_rgb: (40, 42, 54),
+    clock_border_color_rgba: (0, 0, 0, 0),
+    clock_border_size: 0.0,
+    clock_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+    // ================= ALT CLOCK =================
+    alt_clock_text_size: 13,
+    alt_clock_text_color_rgb: (80, 250, 123),
+    alt_clock_text_orientation: Horizontal,
+    alt_clock_button_color_rgb: (68, 71, 90),
+    alt_clock_button_text_color_rgb: (80, 250, 123),
+    alt_clock_button_hovered_color_rgb: (255, 121, 198),
+    alt_clock_button_hovered_text_color_rgb: (40, 42, 54),
+    alt_clock_button_pressed_color_rgb: (40, 42, 54),
+    alt_clock_border_color_rgba: (0, 0, 0, 0),
+    alt_clock_border_size: 0.0,
+    alt_clock_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+
+    // ================= VOLUME OUTPUT =================
+    // Orange — consistent with v1 but now its the only warm color on the right
+    volume_output_text_size: 13,
+    volume_output_text_color_rgb: (255, 184, 108),
+    volume_output_text_orientation: Horizontal,
+    volume_output_button_color_rgb: (68, 71, 90),
+    volume_output_button_text_color_rgb: (255, 184, 108),
+    volume_output_button_hovered_color_rgb: (255, 121, 198),
+    volume_output_button_hovered_text_color_rgb: (40, 42, 54),
+    volume_output_button_pressed_color_rgb: (40, 42, 54),
+    volume_output_border_color_rgba: (0, 0, 0, 0),
+    volume_output_border_size: 0.0,
+    volume_output_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+    // ================= MUTED VOLUME OUTPUT =================
+    muted_volume_output_text_size: 13,
+    muted_volume_output_text_color_rgb: (255, 85, 85),
+    muted_volume_output_text_orientation: Horizontal,
+    muted_volume_output_button_color_rgb: (68, 71, 90),
+    muted_volume_output_button_text_color_rgb: (255, 85, 85),
+    muted_volume_output_button_hovered_color_rgb: (255, 121, 198),
+    muted_volume_output_button_hovered_text_color_rgb: (40, 42, 54),
+    muted_volume_output_button_pressed_color_rgb: (40, 42, 54),
+    muted_volume_output_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_output_border_size: 0.0,
+    muted_volume_output_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+    // ================= VOLUME INPUT =================
+    volume_input_text_size: 13,
+    volume_input_text_color_rgb: (255, 184, 108),
+    volume_input_text_orientation: Horizontal,
+    volume_input_button_color_rgb: (68, 71, 90),
+    volume_input_button_text_color_rgb: (255, 184, 108),
+    volume_input_button_hovered_color_rgb: (255, 121, 198),
+    volume_input_button_hovered_text_color_rgb: (40, 42, 54),
+    volume_input_button_pressed_color_rgb: (40, 42, 54),
+    volume_input_border_color_rgba: (0, 0, 0, 0),
+    volume_input_border_size: 0.0,
+    volume_input_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+    // ================= MUTED VOLUME INPUT =================
+    muted_volume_input_text_size: 13,
+    muted_volume_input_text_color_rgb: (255, 85, 85),
+    muted_volume_input_text_orientation: Horizontal,
+    muted_volume_input_button_color_rgb: (68, 71, 90),
+    muted_volume_input_button_text_color_rgb: (255, 85, 85),
+    muted_volume_input_button_hovered_color_rgb: (255, 121, 198),
+    muted_volume_input_button_hovered_text_color_rgb: (40, 42, 54),
+    muted_volume_input_button_pressed_color_rgb: (40, 42, 54),
+    muted_volume_input_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_input_border_size: 0.0,
+    muted_volume_input_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+
+    // ================= WORKSPACES =================
+    // Dead center. Large uppercase letters A–E instead of 1–5.
+    // Active = solid pink fill — the single pop of color in the center.
+    // Inactive = very dim comment grey — barely visible, not competing.
+    workspace_heigth: 6,
+    workspace_width: 6,
+    workspace_different_selected_width: None,
+    workspace_text_size: 14,
+    workspace_text_color_rgb: (98, 114, 164),
+    workspace_text_orientation: Horizontal,
+    workspace_text:
+    [
+        "1", "2", "3", "4", "5",
+        "6", "7", "8", "9", "10"
+    ],
+    workspace_selected_text: Some(
+    [
+        "1", "2", "3", "4", "5",
+        "6", "7", "8", "9", "10"
+    ]),
+    workspace_spacing: 5,
+    workspace_button_color_rgb: (68, 71, 90),
+    workspace_button_text_color_rgb: (98, 114, 164),
+    workspace_button_selected_color_rgb: (255, 121, 198),   // pink — the only pop
+    workspace_button_hovered_color_rgb: (255, 121, 198),
+    workspace_button_hovered_text_color_rgb: (40, 42, 54),
+    workspace_button_pressed_color_rgb: (40, 42, 54),
+    workspace_border_color_rgba: (0, 0, 0, 0),
+    workspace_border_size: 0.0,
+    workspace_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+
+    // ================= CONTEXT MENU =================
+    context_menu_background_color_rgba: (40, 42, 54, 97),
+    context_menu_background_size: 6,
+    context_menu_background_border_color_rgba: (0, 0, 0, 0),
+    context_menu_background_border_size: 0.0,
+    context_menu_background_border_radius: (12.0, 12.0, 12.0, 12.0),
+    context_menu_text_size: 13,
+    context_menu_text_color_rgb: (248, 248, 242),
+    context_menu_orientation: Vertical,
+    context_menu_size: 260,
+    context_menu_item_size: 30,
+    context_menu_button_color_rgb: (68, 71, 90),
+    context_menu_button_text_color_rgb: (248, 248, 242),
+    context_menu_button_hovered_color_rgb: (255, 121, 198),
+    context_menu_button_hovered_text_color_rgb: (40, 42, 54),
+    context_menu_button_pressed_color_rgb: (40, 42, 54),
+    context_menu_border_color_rgba: (0, 0, 0, 0),
+    context_menu_border_size: 0.0,
+    context_menu_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+
+    // ================= CUSTOM MODULES =================
+    custom_modules_spacing: 8,
+    custom_modules: [],
+)

@@ -1,0 +1,393 @@
+// ╭─────────────────────────────────────────────────────────────────────────╮
+// │                                                                         │
+// │   O X O C A R B O N   ·   ICEBAR                                        │
+// │   IBM Carbon Design System. Lozenges in a black channel.               │
+// │                                                                         │
+// ╰─────────────────────────────────────────────────────────────────────────╯
+//
+//  PALETTE — IBM Oxocarbon (Carbon Design System dark mode)
+//
+//    background   (  9,   9,   9)  ← true near-black / bar channel
+//    layer01      ( 22,  22,  22)  ← lozenge resting fill
+//    layer02      ( 38,  38,  38)  ← hover fill
+//    layer03      ( 57,  57,  57)  ← pressed / active bg
+//    border       ( 57,  57,  57)  ← structural dividers (unused — borderless)
+//
+//    text_primary    (244, 244, 244)  ← primary text
+//    text_secondary  (198, 198, 198)  ← secondary text
+//    text_disabled   (141, 141, 141)  ← muted / inactive
+//    text_placeholder( 98,  98,  98)  ← very dim
+//
+//    interactive    ( 78, 121, 255)  ← IBM Blue 60 — PRIMARY ACCENT
+//    focus          ( 78, 121, 255)  ← same as interactive
+//    link           (102, 145, 255)  ← lighter blue variant
+//
+//    support_error   (250,  77,  86)  ← red   → muted audio
+//    support_warning (240, 179,   0)  ← yellow → clock text
+//    support_success (  66, 190, 101)  ← green  → network ok
+//    support_info    ( 78, 121, 255)  ← blue   → same as interactive
+//
+//    purple          (163,  92, 245)  ← purple → media player / uptime
+//
+//  DESIGN — everything breaks the previous pattern:
+//
+//    · FULL WIDTH BOTTOM BAR — bolted down, no float, no radius on bar
+//      bar_size: (0, 48) — the tallest horizontal bar in the collection
+//    · bar_border_radius: (0,0,0,0) — the bar is a solid black channel
+//    · MODULE LOZENGES: every module has border_radius: (20,20,20,20)
+//      They float as pill-shaped lozenges inside the black channel
+//    · LAYOUT IS REVERSED from every previous config:
+//        LEFT   : Clock (most important — gets leftmost prime position)
+//        CENTER : HyprWorkspaces
+//        RIGHT  : VolumeOutput · Network · CustomModule(0)[UPTIME] · Tray
+//    · NO launcher badge module at all — first time in the collection
+//    · NO media metadata module — clean, information-only
+//    · Clock uses support_warning yellow — IBM's "attention" signal color
+//    · Uptime module on the far right as the bar's "closing bracket"
+//    · Workspaces use IBM Blue lozenges — numbered, not icon dots
+//    · ALL hover = layer02 lift with no text color change (Carbon style)
+//    · spacing_between_all_modules: 10 — generous, lozenges need breathing room
+
+BarConfig
+(
+    // ================= GENERAL =================
+    display: None,
+    bar_position: Down,
+    floating_space: 0,                                // bolted — no gap, full bleed
+    increased_exclusive_bar_zone: 0,
+    bar_side_spaces_size: 12,
+    bar_size: (0, 48),                                // tallest horizontal bar
+
+    bar_border_radius: (0., 0., 0., 0.),              // hard channel — no curves on bar
+    bar_border_size: 0.0,
+    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_background_color_rgba: (9, 9, 9, 100),        // true near-black, fully opaque
+
+    font_family: "IBM Plex Mono",                     // Carbon's native font — perfect pair
+    font_style: "Regular",                            // Regular, not Bold — IBM precision
+
+
+    // ================= MODULES =================
+    //
+    //  REVERSED LAYOUT:
+    //  LEFT   : Clock ← most important info, leftmost prime reading position
+    //  CENTER : HyprWorkspaces
+    //  RIGHT  : VolumeOutput  Network  Uptime  Tray
+    //
+    left_modules:  [Clock],
+    center_modules: [NiriWorkspaces],
+    right_modules: [VolumeOutput, Network, CustomModule(0), Tray],
+
+
+    // ================= MODULES CONFIGS =================
+    ellipsis_text: "…",
+    player: "spotify",
+    dont_show_metadata_if_empty: true,
+    text_when_metadata_is_empty: "—",
+    media_player_metadata_text_limit_len: 28,
+    spacing_between_all_modules: 10,                  // lozenges need air between them
+    force_static_position_context_menu: None,
+    reverse_scroll_on_workspace: false,
+    persistent_workspaces: Some(6),
+    incremental_steps_output: 5,
+    incremental_steps_input: 5,
+    action_on_left_click_media_player_metadata: DefaultAction,
+    action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_clock: DefaultAction,
+    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
+    action_on_left_click_network: DefaultAction,
+    action_on_right_click_network: DefaultAction,
+    action_on_left_click_volume_output: DefaultAction,
+    action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]),
+    action_on_left_click_volume_input: DefaultAction,
+    action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]),
+
+
+    // ================= FORMATS =================
+    media_player_buttons_format: ("󰒮", "󰏤", "󰐊", "󰒭"),
+    media_player_metadata_format: "{{artist}}  /  {{title}}",
+
+    network_disconnected_text: "no link",
+    network_module_format: "{level}",
+    alt_network_module_format: "{id}  {speed}MB/s",
+    network_level_format:
+    (
+        "online",
+        "fair",
+        "weak",
+        "no link"
+    ),
+    network_connection_type_icons: ("eth", "wls", "???"),
+
+    output_volume_format:
+    (
+        "vol  --",
+        "vol  {}",
+        "vol  {}",
+        "vol  {}",
+        "vol  {}",
+        "vol  {}"
+    ),
+    input_volume_format:
+    (
+        "mic  --",
+        "mic  {}",
+        "mic  {}",
+        "mic  {}",
+        "mic  {}",
+        "mic  {}"
+    ),
+    output_volume_muted_format: "vol  off",
+    input_volume_muted_format:  "mic  off",
+
+    // Clock on the LEFT — reads clean, no icon clutter
+    clock_format:     "%H:%M",
+    clock_alt_format: "%H:%M:%S  —  %a %d %b",
+
+
+    // ================= TRAY =================
+    tray_icon_size: 18,
+    tray_spacing: 6,
+    tray_button_size: 6,
+    tray_button_color_rgb: (22, 22, 22),
+    tray_button_text_color_rgb: (198, 198, 198),
+    tray_button_hovered_color_rgb: (38, 38, 38),
+    tray_button_hovered_text_color_rgb: (244, 244, 244),
+    tray_button_pressed_color_rgb: (9, 9, 9),
+    tray_border_color_rgba: (0, 0, 0, 0),
+    tray_border_size: 0.0,
+    tray_border_radius: (20.0, 20.0, 20.0, 20.0),    // lozenge
+
+
+    // ================= MEDIA PLAYER METADATA =================
+    media_player_metadata_text_size: 13,
+    media_player_metadata_text_color_rgb: (163, 92, 245),
+    media_player_metadata_text_orientation: Horizontal,
+    media_player_metadata_button_color_rgb: (22, 22, 22),
+    media_player_metadata_button_text_color_rgb: (163, 92, 245),
+    media_player_metadata_button_hovered_color_rgb: (38, 38, 38),
+    media_player_metadata_button_hovered_text_color_rgb: (163, 92, 245),
+    media_player_metadata_button_pressed_color_rgb: (9, 9, 9),
+    media_player_metadata_border_color_rgba: (0, 0, 0, 0),
+    media_player_metadata_border_size: 0.0,
+    media_player_metadata_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+
+    // ================= MEDIA PLAYER BUTTONS =================
+    media_player_button_spacing: 4,
+    media_player_button_text_size: 14,
+    media_player_button_text_color_rgb: (163, 92, 245),
+    media_player_button_text_orientation: Horizontal,
+    media_player_button_color_rgb: (22, 22, 22),
+    media_player_button_hovered_color_rgb: (38, 38, 38),
+    media_player_button_hovered_text_color_rgb: (163, 92, 245),
+    media_player_button_pressed_color_rgb: (9, 9, 9),
+    media_player_button_border_color_rgba: (0, 0, 0, 0),
+    media_player_button_border_size: 0.0,
+    media_player_button_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+
+    // ================= NETWORK =================
+    // All text, no icons — Carbon style reads in words, not glyphs
+    network_text_size: 13,
+    network_text_color_rgb: (66, 190, 101),           // support_success green
+    network_text_orientation: Horizontal,
+    network_button_color_rgb: (22, 22, 22),
+    network_button_text_color_rgb: (66, 190, 101),
+    network_button_hovered_color_rgb: (38, 38, 38),
+    network_button_hovered_text_color_rgb: (66, 190, 101),
+    network_button_pressed_color_rgb: (9, 9, 9),
+    network_border_color_rgba: (0, 0, 0, 0),
+    network_border_size: 0.0,
+    network_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+    // ================= ALT NETWORK =================
+    alt_network_text_size: 13,
+    alt_network_text_color_rgb: (66, 190, 101),
+    alt_network_text_orientation: Horizontal,
+    alt_network_button_color_rgb: (38, 38, 38),
+    alt_network_button_text_color_rgb: (66, 190, 101),
+    alt_network_button_hovered_color_rgb: (57, 57, 57),
+    alt_network_button_hovered_text_color_rgb: (66, 190, 101),
+    alt_network_button_pressed_color_rgb: (9, 9, 9),
+    alt_network_border_color_rgba: (0, 0, 0, 0),
+    alt_network_border_size: 0.0,
+    alt_network_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+
+    // ================= CLOCK =================
+    // LEFT side. support_warning yellow — IBM's "notice" signal.
+    // Larger (17px). Lozenge pill. This is the anchor of the whole bar.
+    clock_text_size: 17,
+    clock_text_color_rgb: (240, 179, 0),              // support_warning yellow
+    clock_text_orientation: Horizontal,
+    clock_button_color_rgb: (22, 22, 22),             // layer01 lozenge
+    clock_button_text_color_rgb: (240, 179, 0),
+    clock_button_hovered_color_rgb: (38, 38, 38),
+    clock_button_hovered_text_color_rgb: (240, 179, 0),
+    clock_button_pressed_color_rgb: (9, 9, 9),
+    clock_border_color_rgba: (0, 0, 0, 0),
+    clock_border_size: 0.0,
+    clock_border_radius: (20.0, 20.0, 20.0, 20.0),   // lozenge
+
+    // ================= ALT CLOCK =================
+    alt_clock_text_size: 14,
+    alt_clock_text_color_rgb: (240, 179, 0),
+    alt_clock_text_orientation: Horizontal,
+    alt_clock_button_color_rgb: (38, 38, 38),
+    alt_clock_button_text_color_rgb: (240, 179, 0),
+    alt_clock_button_hovered_color_rgb: (57, 57, 57),
+    alt_clock_button_hovered_text_color_rgb: (240, 179, 0),
+    alt_clock_button_pressed_color_rgb: (9, 9, 9),
+    alt_clock_border_color_rgba: (0, 0, 0, 0),
+    alt_clock_border_size: 0.0,
+    alt_clock_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+
+    // ================= VOLUME OUTPUT =================
+    // Plain text labels — "vol  72" not "󰕾  72%"
+    // IBM Carbon reads in words. The % is dropped — numbers speak.
+    volume_output_text_size: 13,
+    volume_output_text_color_rgb: (198, 198, 198),    // text_secondary
+    volume_output_text_orientation: Horizontal,
+    volume_output_button_color_rgb: (22, 22, 22),
+    volume_output_button_text_color_rgb: (198, 198, 198),
+    volume_output_button_hovered_color_rgb: (38, 38, 38),
+    volume_output_button_hovered_text_color_rgb: (244, 244, 244),
+    volume_output_button_pressed_color_rgb: (9, 9, 9),
+    volume_output_border_color_rgba: (0, 0, 0, 0),
+    volume_output_border_size: 0.0,
+    volume_output_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+    // ================= MUTED VOLUME OUTPUT =================
+    muted_volume_output_text_size: 13,
+    muted_volume_output_text_color_rgb: (250, 77, 86),  // support_error red
+    muted_volume_output_text_orientation: Horizontal,
+    muted_volume_output_button_color_rgb: (22, 22, 22),
+    muted_volume_output_button_text_color_rgb: (250, 77, 86),
+    muted_volume_output_button_hovered_color_rgb: (38, 38, 38),
+    muted_volume_output_button_hovered_text_color_rgb: (250, 77, 86),
+    muted_volume_output_button_pressed_color_rgb: (9, 9, 9),
+    muted_volume_output_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_output_border_size: 0.0,
+    muted_volume_output_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+    // ================= VOLUME INPUT =================
+    volume_input_text_size: 13,
+    volume_input_text_color_rgb: (198, 198, 198),
+    volume_input_text_orientation: Horizontal,
+    volume_input_button_color_rgb: (22, 22, 22),
+    volume_input_button_text_color_rgb: (198, 198, 198),
+    volume_input_button_hovered_color_rgb: (38, 38, 38),
+    volume_input_button_hovered_text_color_rgb: (244, 244, 244),
+    volume_input_button_pressed_color_rgb: (9, 9, 9),
+    volume_input_border_color_rgba: (0, 0, 0, 0),
+    volume_input_border_size: 0.0,
+    volume_input_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+    // ================= MUTED VOLUME INPUT =================
+    muted_volume_input_text_size: 13,
+    muted_volume_input_text_color_rgb: (250, 77, 86),
+    muted_volume_input_text_orientation: Horizontal,
+    muted_volume_input_button_color_rgb: (22, 22, 22),
+    muted_volume_input_button_text_color_rgb: (250, 77, 86),
+    muted_volume_input_button_hovered_color_rgb: (38, 38, 38),
+    muted_volume_input_button_hovered_text_color_rgb: (250, 77, 86),
+    muted_volume_input_button_pressed_color_rgb: (9, 9, 9),
+    muted_volume_input_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_input_border_size: 0.0,
+    muted_volume_input_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+
+    // ================= WORKSPACES =================
+    // Centered. IBM Blue active fill — the interactive signal color.
+    // Numbers only, no icons. Active = solid interactive blue lozenge.
+    // Inactive = layer01 dark lozenge, text_placeholder grey text.
+    // Hover = layer02 — Carbon's standard interactive lift.
+    workspace_heigth: 8,
+    workspace_width: 10,
+    workspace_different_selected_width: None,
+    workspace_text_size: 13,
+    workspace_text_color_rgb: (98, 98, 98),           // text_placeholder — very dim
+    workspace_text_orientation: Horizontal,
+    workspace_text:
+    [
+        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
+    ],
+    workspace_selected_text: Some(
+    [
+        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
+    ]),
+    workspace_spacing: 6,
+    workspace_button_color_rgb: (22, 22, 22),         // layer01
+    workspace_button_text_color_rgb: (98, 98, 98),    // text_placeholder
+    workspace_button_selected_color_rgb: (78, 121, 255),  // interactive blue — the signal
+    workspace_button_hovered_color_rgb: (38, 38, 38), // layer02 lift
+    workspace_button_hovered_text_color_rgb: (244, 244, 244),
+    workspace_button_pressed_color_rgb: (9, 9, 9),
+    workspace_border_color_rgba: (0, 0, 0, 0),
+    workspace_border_size: 0.0,
+    workspace_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+
+    // ================= CONTEXT MENU =================
+    context_menu_background_color_rgba: (9, 9, 9, 97),
+    context_menu_background_size: 8,
+    context_menu_background_border_color_rgba: (0, 0, 0, 0),
+    context_menu_background_border_size: 0.0,
+    context_menu_background_border_radius: (12.0, 12.0, 12.0, 12.0),
+    context_menu_text_size: 13,
+    context_menu_text_color_rgb: (198, 198, 198),
+    context_menu_orientation: Vertical,
+    context_menu_size: 260,
+    context_menu_item_size: 32,
+    context_menu_button_color_rgb: (22, 22, 22),
+    context_menu_button_text_color_rgb: (198, 198, 198),
+    context_menu_button_hovered_color_rgb: (78, 121, 255),
+    context_menu_button_hovered_text_color_rgb: (244, 244, 244),
+    context_menu_button_pressed_color_rgb: (9, 9, 9),
+    context_menu_border_color_rgba: (0, 0, 0, 0),
+    context_menu_border_size: 0.0,
+    context_menu_border_radius: (20.0, 20.0, 20.0, 20.0),
+
+
+    // ================= CUSTOM MODULES =================
+    custom_modules_spacing: 10,
+    custom_modules:
+    [
+        // ── MODULE 0 ── UPTIME  (far right — the closing bracket)
+        // No badge, no launcher — this IS the rightmost anchor.
+        // Shows how long the system has been up, IBM purple.
+        // Left-click = neofetch. Right-click = btop.
+        // It reads like: "up  2d 4h" — plain language, no symbols.
+        (
+            name: "uptime",
+            text: "",
+            text_size: 13,
+            text_color_rgb: (163, 92, 245),           // purple — closing bracket color
+            text_orientation: Horizontal,
+            height: 32,
+            button_color_rgb: (22, 22, 22),
+            button_text_color_rgb: (163, 92, 245),
+            button_hovered_color_rgb: (38, 38, 38),
+            button_hovered_text_color_rgb: (163, 92, 245),
+            button_pressed_color_rgb: (9, 9, 9),
+            border_color_rgba: (0, 0, 0, 0),
+            border_size: 0.0,
+            border_radius: (20.0, 20.0, 20.0, 20.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: true,
+            use_output_as_text: false,
+            use_continous_output_as_text: true,
+            all_output_as_text_format: "{continous_output}",
+            output_text_limit_len: 20,
+            command_to_exec_on_left_click: ["kitty", "bash", "-c", "neofetch; read -n 1"],
+            command_to_exec_on_right_click: ["kitty", "btop"],
+            continous_command_interval: 30000,
+            continous_command: [
+                "bash", "-c",
+                "uptime -p | sed 's/up /up  /' | sed 's/ hours\\?/h/' | sed 's/ minutes\\?/m/' | sed 's/ days\\?/d/' | sed 's/, / /g'"
+            ]
+        ),
+    ],
+)

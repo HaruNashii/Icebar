@@ -1,0 +1,395 @@
+// ╭─────────────────────────────────────────────────────────────────────────╮
+// │                                                                         │
+// │   S O L A R I Z E D   L I G H T   v3   ·   ICEBAR                      │
+// │   Full width. Top. Light variant. Retro toolbar energy.                 │
+// │   v1 was dark, bottom, fixed-width island. This is none of that.       │
+// │                                                                         │
+// ╰─────────────────────────────────────────────────────────────────────────╯
+//
+//  PALETTE — Solarized Light (same hue values, swapped bg/fg roles)
+//
+//    base3      (253, 246, 227)  ← lightest bg / bar background
+//    base2      (238, 232, 213)  ← module resting bg — a step darker
+//    base1      (147, 161, 161)  ← dim text / secondary
+//    base0      (101, 123, 131)  ← body text
+//    base00     (101, 123, 131)  ← same as base0 in light
+//    base01     ( 88, 110, 117)  ← emphasized text
+//    base02     (  7,  54,  66)  ← stronger contrast elements
+//    base03     (  0,  43,  54)  ← darkest — hover fill, inverted
+//
+//    yellow     (181, 137,   0)  ← clock
+//    orange     (203,  75,  22)  ← badge fill / PRIMARY warm accent
+//    red        (220,  50,  47)  ← muted
+//    magenta    (211,  54, 130)  ← media
+//    violet     (108, 113, 196)  ← workspaces active
+//    blue       ( 38, 139, 210)  ← network
+//    cyan       ( 42, 161, 152)  ← volume
+//    green      (133, 153,   0)  ← sys stats
+//
+//  DESIGN — completely opposite of both v1 and v2:
+//    · FULL WIDTH TOP BAR — bar_size: (0, 38), floating_space: 0
+//      Edge to edge. Flush. No island. Never done before in Solarized.
+//    · bar_border_radius: (0., 0., 0., 0.) — flat, not rounded
+//    · LIGHT background (base3 cream) — only the second light theme in collection
+//    · Module bg = base2 — visibly darker than bar, like raised buttons
+//      This creates the "retro toolbar" depth even without borders
+//    · Hover = base03 (near-black fill) with base3 (cream) text
+//      Inverted on hover — dramatic, high contrast, intentional retro click
+//    · Font: "Source Code Pro" Bold — different from both previous versions
+//    · Layout: LEFT=Badge+Workspaces+MediaMetaData  CENTER=Clock  RIGHT=Vol+Net+Stats+Tray
+//    · Badge uses ORANGE fill with cream text — warm and punchy on the pale bar
+//    · Clock uses yellow — same as v1 but now on a light bg, reads totally different
+//    · Workspaces use violet fill on active — clear on cream, never tried before
+
+BarConfig
+(
+    // ================= GENERAL =================
+    display: None,
+    bar_position: Up,
+    floating_space: 0,
+    increased_exclusive_bar_zone: 0,
+    bar_side_spaces_size: 8,
+    bar_size: (0, 38),
+
+    bar_border_radius: (0., 0., 0., 0.),
+    bar_border_size: 0.0,
+    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_background_color_rgba: (253, 246, 227, 100),  // base3 cream — fully opaque
+
+    font_family: "Source Code Pro",
+    font_style: "Bold",
+
+
+    // ================= MODULES =================
+    left_modules:  [CustomModule(0), NiriWorkspaces],
+    center_modules: [Clock],
+    right_modules: [VolumeOutput, VolumeInput, Network, Tray],
+
+
+    // ================= MODULES CONFIGS =================
+    ellipsis_text: "…",
+    player: "spotify",
+    dont_show_metadata_if_empty: true,
+    text_when_metadata_is_empty: "—",
+    media_player_metadata_text_limit_len: 26,
+    spacing_between_all_modules: 5,
+    force_static_position_context_menu: None,
+    reverse_scroll_on_workspace: false,
+    persistent_workspaces: Some(5),
+    incremental_steps_output: 5,
+    incremental_steps_input: 5,
+    action_on_left_click_media_player_metadata: DefaultAction,
+    action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_clock: DefaultAction,
+    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
+    action_on_left_click_network: DefaultAction,
+    action_on_right_click_network: DefaultAction,
+    action_on_left_click_volume_output: DefaultAction,
+    action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]),
+    action_on_left_click_volume_input: DefaultAction,
+    action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]),
+
+
+    // ================= FORMATS =================
+    media_player_buttons_format: ("󰒮", "󰏤", "󰐊", "󰒭"),
+    media_player_metadata_format: "♪  {{artist}}  —  {{title}}",
+
+    network_disconnected_text: "󰤭  offline",
+    network_module_format: "{level}",
+    alt_network_module_format: "󰤨  {id}",
+    network_level_format:
+    (
+        "󰤨  online",
+        "󰤥  fair",
+        "󰤢  weak",
+        "󰤭  offline"
+    ),
+    network_connection_type_icons: ("󰈀", "󰤨", "󰤭"),
+
+    output_volume_format:
+    (
+        "󰕿  —",
+        "󰕿  {}%",
+        "󰖀  {}%",
+        "󰖀  {}%",
+        "󰕾  {}%",
+        "󰕾  {}%"
+    ),
+    input_volume_format:
+    (
+        "󰍭  —",
+        "󰍬  {}%",
+        "󰍬  {}%",
+        "󰍬  {}%",
+        "󰍬  {}%",
+        "󰍬  {}%"
+    ),
+    output_volume_muted_format: "󰝟  muted",
+    input_volume_muted_format:  "󰍭  muted",
+
+    clock_format:     "󰥔  %H:%M",
+    clock_alt_format: "󰃭  %a %d %b  ·  %H:%M:%S",
+
+
+    // ================= TRAY =================
+    tray_icon_size: 18,
+    tray_spacing: 5,
+    tray_button_size: 5,
+    tray_button_color_rgb: (238, 232, 213),           // base2 — raised button
+    tray_button_text_color_rgb: (88, 110, 117),
+    tray_button_hovered_color_rgb: (0, 43, 54),       // base03 inversion
+    tray_button_hovered_text_color_rgb: (253, 246, 227),
+    tray_button_pressed_color_rgb: (7, 54, 66),
+    tray_border_color_rgba: (0, 0, 0, 0),
+    tray_border_size: 0.0,
+    tray_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+
+    // ================= MEDIA PLAYER METADATA =================
+    // Magenta on base2 — stands out against the cream bar
+    media_player_metadata_text_size: 13,
+    media_player_metadata_text_color_rgb: (211, 54, 130),
+    media_player_metadata_text_orientation: Horizontal,
+    media_player_metadata_button_color_rgb: (238, 232, 213),
+    media_player_metadata_button_text_color_rgb: (211, 54, 130),
+    media_player_metadata_button_hovered_color_rgb: (0, 43, 54),
+    media_player_metadata_button_hovered_text_color_rgb: (253, 246, 227),
+    media_player_metadata_button_pressed_color_rgb: (7, 54, 66),
+    media_player_metadata_border_color_rgba: (0, 0, 0, 0),
+    media_player_metadata_border_size: 0.0,
+    media_player_metadata_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+
+    // ================= MEDIA PLAYER BUTTONS =================
+    media_player_button_spacing: 3,
+    media_player_button_text_size: 14,
+    media_player_button_text_color_rgb: (211, 54, 130),
+    media_player_button_text_orientation: Horizontal,
+    media_player_button_color_rgb: (238, 232, 213),
+    media_player_button_hovered_color_rgb: (0, 43, 54),
+    media_player_button_hovered_text_color_rgb: (253, 246, 227),
+    media_player_button_pressed_color_rgb: (7, 54, 66),
+    media_player_button_border_color_rgba: (0, 0, 0, 0),
+    media_player_button_border_size: 0.0,
+    media_player_button_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+
+    // ================= NETWORK =================
+    // Blue on light bg — vivid and legible
+    network_text_size: 13,
+    network_text_color_rgb: (38, 139, 210),
+    network_text_orientation: Horizontal,
+    network_button_color_rgb: (238, 232, 213),
+    network_button_text_color_rgb: (38, 139, 210),
+    network_button_hovered_color_rgb: (0, 43, 54),
+    network_button_hovered_text_color_rgb: (253, 246, 227),
+    network_button_pressed_color_rgb: (7, 54, 66),
+    network_border_color_rgba: (0, 0, 0, 0),
+    network_border_size: 0.0,
+    network_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+    alt_network_text_size: 13,
+    alt_network_text_color_rgb: (38, 139, 210),
+    alt_network_text_orientation: Horizontal,
+    alt_network_button_color_rgb: (238, 232, 213),
+    alt_network_button_text_color_rgb: (38, 139, 210),
+    alt_network_button_hovered_color_rgb: (0, 43, 54),
+    alt_network_button_hovered_text_color_rgb: (253, 246, 227),
+    alt_network_button_pressed_color_rgb: (7, 54, 66),
+    alt_network_border_color_rgba: (0, 0, 0, 0),
+    alt_network_border_size: 0.0,
+    alt_network_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+
+    // ================= CLOCK =================
+    // Yellow on cream — darker yellow reads well on the pale background
+    // Ghost bg matches bar (base3) — time text floats without a box
+    clock_text_size: 15,
+    clock_text_color_rgb: (181, 137, 0),
+    clock_text_orientation: Horizontal,
+    clock_button_color_rgb: (253, 246, 227),          // ghost — bar bg
+    clock_button_text_color_rgb: (181, 137, 0),
+    clock_button_hovered_color_rgb: (238, 232, 213),  // base2 on hover
+    clock_button_hovered_text_color_rgb: (181, 137, 0),
+    clock_button_pressed_color_rgb: (0, 43, 54),
+    clock_border_color_rgba: (0, 0, 0, 0),
+    clock_border_size: 0.0,
+    clock_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+    alt_clock_text_size: 13,
+    alt_clock_text_color_rgb: (181, 137, 0),
+    alt_clock_text_orientation: Horizontal,
+    alt_clock_button_color_rgb: (238, 232, 213),
+    alt_clock_button_text_color_rgb: (181, 137, 0),
+    alt_clock_button_hovered_color_rgb: (0, 43, 54),
+    alt_clock_button_hovered_text_color_rgb: (253, 246, 227),
+    alt_clock_button_pressed_color_rgb: (7, 54, 66),
+    alt_clock_border_color_rgba: (0, 0, 0, 0),
+    alt_clock_border_size: 0.0,
+    alt_clock_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+
+    // ================= VOLUME OUTPUT =================
+    // Cyan on base2 — utility color, calm on the light bar
+    volume_output_text_size: 13,
+    volume_output_text_color_rgb: (42, 161, 152),
+    volume_output_text_orientation: Horizontal,
+    volume_output_button_color_rgb: (238, 232, 213),
+    volume_output_button_text_color_rgb: (42, 161, 152),
+    volume_output_button_hovered_color_rgb: (0, 43, 54),
+    volume_output_button_hovered_text_color_rgb: (253, 246, 227),
+    volume_output_button_pressed_color_rgb: (7, 54, 66),
+    volume_output_border_color_rgba: (0, 0, 0, 0),
+    volume_output_border_size: 0.0,
+    volume_output_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+    muted_volume_output_text_size: 13,
+    muted_volume_output_text_color_rgb: (220, 50, 47),
+    muted_volume_output_text_orientation: Horizontal,
+    muted_volume_output_button_color_rgb: (238, 232, 213),
+    muted_volume_output_button_text_color_rgb: (220, 50, 47),
+    muted_volume_output_button_hovered_color_rgb: (0, 43, 54),
+    muted_volume_output_button_hovered_text_color_rgb: (253, 246, 227),
+    muted_volume_output_button_pressed_color_rgb: (7, 54, 66),
+    muted_volume_output_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_output_border_size: 0.0,
+    muted_volume_output_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+    volume_input_text_size: 13,
+    volume_input_text_color_rgb: (42, 161, 152),
+    volume_input_text_orientation: Horizontal,
+    volume_input_button_color_rgb: (238, 232, 213),
+    volume_input_button_text_color_rgb: (42, 161, 152),
+    volume_input_button_hovered_color_rgb: (0, 43, 54),
+    volume_input_button_hovered_text_color_rgb: (253, 246, 227),
+    volume_input_button_pressed_color_rgb: (7, 54, 66),
+    volume_input_border_color_rgba: (0, 0, 0, 0),
+    volume_input_border_size: 0.0,
+    volume_input_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+    muted_volume_input_text_size: 13,
+    muted_volume_input_text_color_rgb: (220, 50, 47),
+    muted_volume_input_text_orientation: Horizontal,
+    muted_volume_input_button_color_rgb: (238, 232, 213),
+    muted_volume_input_button_text_color_rgb: (220, 50, 47),
+    muted_volume_input_button_hovered_color_rgb: (0, 43, 54),
+    muted_volume_input_button_hovered_text_color_rgb: (253, 246, 227),
+    muted_volume_input_button_pressed_color_rgb: (7, 54, 66),
+    muted_volume_input_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_input_border_size: 0.0,
+    muted_volume_input_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+
+    // ================= WORKSPACES =================
+    // Violet active fill on cream bar — vivid and distinct
+    // Numbers only, base2 resting bg, invert on hover
+    workspace_heigth: 5,
+    workspace_width: 6,
+    workspace_different_selected_width: None,
+    workspace_text_size: 13,
+    workspace_text_color_rgb: (147, 161, 161),        // base1 — muted
+    workspace_text_orientation: Horizontal,
+    workspace_text: ["1","2","3","4","5","6","7","8","9","10"],
+    workspace_selected_text: Some(["1","2","3","4","5","6","7","8","9","10"]),
+    workspace_spacing: 4,
+    workspace_button_color_rgb: (238, 232, 213),      // base2 — raised resting
+    workspace_button_text_color_rgb: (147, 161, 161),
+    workspace_button_selected_color_rgb: (108, 113, 196),  // violet — clear on cream
+    workspace_button_hovered_color_rgb: (0, 43, 54),  // base03 inversion
+    workspace_button_hovered_text_color_rgb: (253, 246, 227),
+    workspace_button_pressed_color_rgb: (7, 54, 66),
+    workspace_border_color_rgba: (0, 0, 0, 0),
+    workspace_border_size: 0.0,
+    workspace_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+
+    // ================= CONTEXT MENU =================
+    context_menu_background_color_rgba: (253, 246, 227, 97),
+    context_menu_background_size: 5,
+    context_menu_background_border_color_rgba: (0, 0, 0, 0),
+    context_menu_background_border_size: 0.0,
+    context_menu_background_border_radius: (6.0, 6.0, 6.0, 6.0),
+    context_menu_text_size: 13,
+    context_menu_text_color_rgb: (88, 110, 117),
+    context_menu_orientation: Vertical,
+    context_menu_size: 260,
+    context_menu_item_size: 30,
+    context_menu_button_color_rgb: (238, 232, 213),
+    context_menu_button_text_color_rgb: (88, 110, 117),
+    context_menu_button_hovered_color_rgb: (0, 43, 54),
+    context_menu_button_hovered_text_color_rgb: (253, 246, 227),
+    context_menu_button_pressed_color_rgb: (7, 54, 66),
+    context_menu_border_color_rgba: (0, 0, 0, 0),
+    context_menu_border_size: 0.0,
+    context_menu_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+
+    // ================= CUSTOM MODULES =================
+    custom_modules_spacing: 5,
+    custom_modules:
+    [
+        // ── MODULE 0 ── LAUNCHER BADGE
+        // Orange fill with cream text — warm and punchy on the pale bar.
+        // The only warm color on a cool scientific cream background.
+        // Hover inverts to base03 — maximum contrast click feedback.
+        (
+            name: "badge",
+            text: "󰣇  solar",
+            text_size: 13,
+            text_color_rgb: (253, 246, 227),          // cream on orange
+            text_orientation: Horizontal,
+            height: 28,
+            button_color_rgb: (203, 75, 22),          // orange — punchy
+            button_text_color_rgb: (253, 246, 227),
+            button_hovered_color_rgb: (0, 43, 54),    // base03 inversion
+            button_hovered_text_color_rgb: (253, 246, 227),
+            button_pressed_color_rgb: (7, 54, 66),
+            border_color_rgba: (0, 0, 0, 0),
+            border_size: 0.0,
+            border_radius: (4.0, 4.0, 4.0, 4.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: false,
+            use_output_as_text: false,
+            use_continous_output_as_text: false,
+            all_output_as_text_format: "",
+            output_text_limit_len: 0,
+            command_to_exec_on_left_click: ["wofi", "--show", "drun"],
+            command_to_exec_on_right_click: ["wofi", "--show", "run"],
+            continous_command_interval: 500,
+            continous_command: []
+        ),
+
+        // ── MODULE 1 ── LIVE SYS STATS (right side)
+        // Green text on base2 — data treated as content.
+        // "cpu 23%  mem 61%" — plain language, Source Code Pro precision.
+        (
+            name: "stats",
+            text: "",
+            text_size: 13,
+            text_color_rgb: (133, 153, 0),            // green
+            text_orientation: Horizontal,
+            height: 28,
+            button_color_rgb: (238, 232, 213),
+            button_text_color_rgb: (133, 153, 0),
+            button_hovered_color_rgb: (0, 43, 54),
+            button_hovered_text_color_rgb: (253, 246, 227),
+            button_pressed_color_rgb: (7, 54, 66),
+            border_color_rgba: (0, 0, 0, 0),
+            border_size: 0.0,
+            border_radius: (4.0, 4.0, 4.0, 4.0),
+            display_err_output_if_failed: false,
+            dont_show_if_any_output_is_empty: true,
+            use_output_as_text: false,
+            use_continous_output_as_text: true,
+            all_output_as_text_format: "{continous_output}",
+            output_text_limit_len: 22,
+            command_to_exec_on_left_click: ["kitty", "btop"],
+            command_to_exec_on_right_click: ["kitty", "btop"],
+            continous_command_interval: 2500,
+            continous_command: [
+                "bash", "-c",
+                "c=$(top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d. -f1); r=$(free -m | awk '/Mem:/{printf \"%d%%\", $3*100/$2}'); echo \"cpu ${c}%  mem ${r}\""
+            ]
+        ),
+    ],
+)
