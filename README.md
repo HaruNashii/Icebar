@@ -90,7 +90,13 @@ X11 is **not supported**.
 ## 🚀 Installation
 
 #### **AUR (Recommended):**
-```paru -S icebar-git``` or ```yay -S icebar-git```
+```paru -S icebar-git``` 
+
+or 
+
+```yay -S icebar-git```
+
+--
 
 #### **Building From Source:**
 
