@@ -15,6 +15,7 @@ static WARNING_ONCE: Once = Once::new();
 
 
 use crate::helpers::string::weight_from_str;
+use crate::modules::clock::cycle_clock_timezones;
 // ============ CRATES ============
 use crate::{helpers::{fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::{Modules, ModulesData}, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume::{self, VolumeAction}, workspaces::UserWorkspaceAction }};
 use crate::helpers::{misc::{is_active_module, validade_bar_size_and_margin}, workspaces::build_workspace_list };
@@ -33,6 +34,7 @@ pub enum Message
 {
     CreateCustomModuleCommand((Option<usize>, Vec<String>, String, bool, bool)),
     MenuLoaded(String, String, Vec<MenuItem>),
+    ToggleAltClockAndCycleClockTimeZones,
     IsHoveringMediaPlayerMetaData(bool),
     MouseWheelScrolled(ScrollDelta),
     CommandFinished(usize, String),
@@ -49,6 +51,7 @@ pub enum Message
     MediaPlayerClickNext,
     MediaPlayerClickPrev,
     TrayEvent(TrayEvent),
+    CycleClockTimeZones,
     ToggleAltNetwork,
     ToggleAltClock,
     ConfigChanged,
@@ -80,13 +83,16 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::MediaPlayerClickNext => media_player_action(&app.ron_config.player, MediaPlayerAction::Next),
         Message::MediaPlayerClickPlayPause => media_player_action(&app.ron_config.player, MediaPlayerAction::PlayPause),
         Message::MediaPlayerClickPrev => media_player_action(&app.ron_config.player, MediaPlayerAction::Prev),
+        Message::CycleClockTimeZones => cycle_clock_timezones(app),
+        Message::ToggleAltClockAndCycleClockTimeZones => { app.is_showing_alt_clock = !app.is_showing_alt_clock; cycle_clock_timezones(app); },
+
 
         Message::ConfigChanged =>
         {
             println!("\n=== CONFIG RELOAD ===");
             println!("[icebar] config.ron changed — reloading in place...");
             check_if_config_file_exists();
-            let (new_config, new_anchor, active_modules) = read_ron_config();
+            let (new_config, new_anchor, current_clock_timezone, active_modules) = read_ron_config();
             let (mut bar_size, exclusive_zone, floating_space) = validade_bar_size_and_margin(&new_config);
             let monitor_res = get_monitor_res(new_config.display.clone());
             if bar_size.0 == 0 { bar_size.0 = monitor_res.0; };
@@ -106,6 +112,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 default_font: Font { family: Family::Name(Box::leak(font_name.into_boxed_str())), weight: weight_from_str(&new_config.font_style), ..iced::Font::DEFAULT}, 
                 monitor_size: monitor_res,
                 custom_module_last_run: vec![Instant::now(); new_config.custom_modules.len()],
+                current_clock_timezone,
                 ron_config: new_config, 
                 modules_data,
                 ..Default::default()
@@ -225,7 +232,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             {
                 match module_name
                 {
-                    Modules::Clock => {let format_to_send = if app.is_showing_alt_clock { &app.ron_config.clock_alt_format } else { &app.ron_config.clock_format }; app.modules_data.clock_data.current_time = get_current_time(format_to_send)},
+                    Modules::MediaPlayerMetaData => { app.modules_data.media_player_data = get_player_data_with_format(&app.ron_config); }
                     Modules::HyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); }
                     Modules::SwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); }
                     Modules::NiriWorkspaces => 
@@ -245,7 +252,20 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                         app.modules_data.workspace_data.current_workspace = niri::current_workspace(); 
                         app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&niri::workspace_count(), None); 
                     }
-                    Modules::MediaPlayerMetaData => { app.modules_data.media_player_data = get_player_data_with_format(&app.ron_config); }
+
+                    Modules::Clock => 
+                    {
+                        let format_to_send = if app.is_showing_alt_clock 
+                        { 
+                            &app.ron_config.clock_alt_format 
+                        } 
+                        else 
+                        {
+                            &app.ron_config.clock_format 
+                        }; 
+                        app.modules_data.clock_data.current_time = get_current_time(format_to_send, &app.current_clock_timezone)
+                    },
+
 
                     Modules::VolumeOutput => 
                     {

@@ -38,6 +38,7 @@ mod ron;
 #[derive(Default, Clone)]
 struct AppData
 {
+    current_clock_timezone: Option<(String, u32)>,
     is_hovering_media_player_meta_data: bool,
     cached_continuous_outputs: Vec<String>,
     custom_module_last_run: Vec<Instant>,
@@ -66,7 +67,7 @@ struct AppData
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
     check_if_config_file_exists();
-    let (ron_config, anchor_position, active_modules) = read_ron_config();
+    let (ron_config, anchor_position,  current_clock_timezone, active_modules) = read_ron_config();
     let monitor_res = get_monitor_res(ron_config.display.clone());
     if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
     let ron_config_clone = ron_config.clone();
@@ -85,6 +86,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         monitor_size: (monitor_res.0, monitor_res.1),
         custom_module_last_run: vec![Instant::now(); ron_config.custom_modules.len()],
         ron_config: ron_config_clone, 
+        current_clock_timezone,
         modules_data,
         ..Default::default()
     };

@@ -31,7 +31,9 @@ pub enum ActionOnClick
 {
     Nothing,
     DefaultAction,
-    CustomAction(Vec<String>)
+    CustomAction(Vec<String>),
+    CycleClockTimezones,
+    ToggleAltClockAndCycleClockTimezones
 }
 
 
@@ -62,6 +64,7 @@ pub struct BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    pub clock_timezones: Option<Vec<String>>,
     pub ellipsis_text: String,
     pub player: String, 
     pub dont_show_metadata_if_empty: bool,
@@ -335,6 +338,7 @@ impl Default for BarConfig
 
 
             // ================= MODULES CONFIGS =================
+            clock_timezones: None,
             ellipsis_text: "...".to_string(),
             player: "spotify".to_string(),
             dont_show_metadata_if_empty: false,
@@ -628,7 +632,7 @@ impl Default for BarConfig
 
 
 
-pub fn read_ron_config() -> (BarConfig, Anchor, Vec<Modules>)
+pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, Vec<Modules>)
 {
     println!("\n=== READING CONFIG FILE ===");
     let home_path = home::home_dir().expect("Failed To Get Home Directory");
@@ -654,6 +658,15 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<Modules>)
         BarPosition::Right => Anchor::Right | Anchor::Top | Anchor::Bottom,
     };
 
+    let current_time_zone = if let Some(ref time_zone) = bar_config.clock_timezones && !time_zone.is_empty()
+    {
+        Some((time_zone[0].clone(), 0))
+    }
+    else
+    {
+        None
+    };
+
     let mut active_modules: Vec<Modules> = Vec::new();
     let all_possible_default_modules = [Modules::NiriWorkspaces, Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
     let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
@@ -677,5 +690,5 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Vec<Modules>)
 
     println!("Active modules: {:?}", active_modules);
 
-    (bar_config, anchor_position, active_modules)
+    (bar_config, anchor_position, current_time_zone, active_modules)
 }

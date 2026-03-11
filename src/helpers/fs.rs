@@ -50,6 +50,8 @@ pub fn check_if_config_file_exists()
 //
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
 //
+// If "clock_timezones" is not setted or is explicited setted to "None", your clock will use your local timezone 
+//
 // Available options for "bar_position" are: "Up", "Down", "Left" and "Right" 
 //
 // To configure diffents texts for diferents orientations, how can set the variables "text_orientation:" on any module (excluding "Tray"), with the values:
@@ -106,6 +108,7 @@ BarConfig
 
 
     // ================= MODULES CONFIGS =================
+    clock_timezones: Some(["America/New_York", "Europe/London", "Asia/Tokyo", "America/Sao_Paulo"]),
     ellipsis_text: "...",
     player: "spotify",
     dont_show_metadata_if_empty: true,
@@ -117,10 +120,11 @@ BarConfig
     persistent_workspaces: Some(5),
     incremental_steps_output: 10,
     incremental_steps_input: 10,
-    action_on_left_click_media_player_metadata: DefaultAction, 
-    action_on_right_click_media_player_metadata: DefaultAction, 
+    action_on_left_click_media_player_metadata: Nothing, 
+    action_on_right_click_media_player_metadata: Nothing, 
     action_on_left_click_clock: DefaultAction,
-    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo 'Press Enter To Exit' && read -n 1"]), 
+    action_on_right_click_clock: CycleClockTimezones,
+    // action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo 'Press Enter To Exit' && read -n 1"]), 
     action_on_left_click_network: DefaultAction, 
     action_on_right_click_network: DefaultAction, 
     action_on_left_click_volume_output: DefaultAction, 

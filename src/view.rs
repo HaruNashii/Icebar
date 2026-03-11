@@ -141,8 +141,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 }
 
                 let formated_metadata = define_media_player_metadata_text(app);
-                let left_click_metadata_message: Message = match &app.ron_config.action_on_left_click_media_player_metadata { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
-                let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
+                let left_click_metadata_message: Message = match &app.ron_config.action_on_left_click_media_player_metadata { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
+                let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
                 let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let media_player_metadata_container = create_button_container(app, (formated_metadata, color_to_send, app.ron_config.media_player_metadata_text_size),  Message::IsHoveringMediaPlayerMetaData(true), Message::IsHoveringMediaPlayerMetaData(false), left_click_metadata_message, right_click_metadata_message, define_media_player_metadata_style);
@@ -185,12 +185,16 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 {
                     ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::ToggleAltClock,
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), true, false))
                 };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_clock
                 {
                     ActionOnClick::Nothing => Message::Nothing,
-                    ActionOnClick::DefaultAction => Message::Nothing,
+                    ActionOnClick::DefaultAction => Message::ToggleAltClock,
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
                 };
 
@@ -222,12 +226,16 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 {
                     ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::ToggleAltNetwork,
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false))
                 };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_network
                 {
                     ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::Nothing,
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false))
                 };
 
@@ -260,6 +268,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 {
                     ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput,
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false))
 
                 };
@@ -267,6 +277,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 {
                     ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::Nothing,
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false))
 
                 };
@@ -300,6 +312,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 {
                     ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::MuteAudioPressedInput,
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false))
 
                 };
@@ -307,6 +321,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 {
                     ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::Nothing,
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false))
                 };
 

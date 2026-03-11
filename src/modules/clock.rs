@@ -1,7 +1,7 @@
 // ============ IMPORTS ============
 use iced::widget::button;
-use chrono::Local;
-
+use chrono::{Local, Utc};
+use chrono_tz::Tz;
 
 
 
@@ -26,7 +26,20 @@ pub struct ClockData
 
 
 // ============ FUNCTIONS ============
-pub fn get_current_time(time_format: &str) -> String { Local::now().format(time_format).to_string() }
+pub fn get_current_time(time_format: &str, option_time_zone: &Option<(String, u32)>) -> String 
+{
+    if let Some((time_zone, _)) = option_time_zone
+    {
+        let result_timezone: Result<Tz, _> = time_zone.parse();
+        match result_timezone
+        {
+            Ok(tz) => return Utc::now().with_timezone(&tz).format(time_format).to_string(),
+            Err(err) => println!("Warning!!!: Failed to parse timezone. Err: {err}")
+        }
+    }
+    
+    Local::now().format(time_format).to_string() 
+}
 
 
 
@@ -57,4 +70,25 @@ pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget
         set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
     }
 
+}
+
+
+
+pub fn cycle_clock_timezones(app: &mut AppData)
+{
+    if let Some((current_time_zone, index)) = &app.current_clock_timezone && let Some(timezones) = &app.ron_config.clock_timezones && !timezones.is_empty()
+    {
+        if (*index as usize + 1) <= (timezones.len().saturating_sub(1))
+        {
+            println!("\n=== CLOCK ACTION ===");
+            println!("Cycling Timezone!: {} -> {}", current_time_zone, timezones[*index as usize + 1]);
+            app.current_clock_timezone = Some((timezones[*index as usize + 1].clone(), (index + 1)));
+        }
+        else
+        {
+            println!("\n=== CLOCK ACTION ===");
+            println!("Cycling Timezone!: {} -> {}", current_time_zone, timezones[0]);
+            app.current_clock_timezone = Some((timezones[0].clone(), 0));
+        };
+    };
 }
