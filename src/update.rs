@@ -86,7 +86,6 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::CycleClockTimeZones => cycle_clock_timezones(app),
         Message::ToggleAltClockAndCycleClockTimeZones => { app.is_showing_alt_clock = !app.is_showing_alt_clock; cycle_clock_timezones(app); },
 
-
         Message::ConfigChanged =>
         {
             println!("\n=== CONFIG RELOAD ===");

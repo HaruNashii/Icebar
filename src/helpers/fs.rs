@@ -108,7 +108,8 @@ BarConfig
 
 
     // ================= MODULES CONFIGS =================
-    clock_timezones: Some(["America/New_York", "Europe/London", "Asia/Tokyo", "America/Sao_Paulo"]),
+    clock_timezones: None,
+    //clock_timezones: Some(["America/New_York", "Europe/London", "Asia/Tokyo", "America/Sao_Paulo"]),
     ellipsis_text: "...",
     player: "spotify",
     dont_show_metadata_if_empty: true,
@@ -123,8 +124,9 @@ BarConfig
     action_on_left_click_media_player_metadata: Nothing, 
     action_on_right_click_media_player_metadata: Nothing, 
     action_on_left_click_clock: DefaultAction,
-    action_on_right_click_clock: CycleClockTimezones,
-    // action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo 'Press Enter To Exit' && read -n 1"]), 
+    //action_on_right_click_clock: CycleClockTimezones,
+    // action_on_right_click_clock: ToggleAltClockAndCycleClockTimezones,
+    action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo 'Press Enter To Exit' && read -n 1"]), 
     action_on_left_click_network: DefaultAction, 
     action_on_right_click_network: DefaultAction, 
     action_on_left_click_volume_output: DefaultAction, 
