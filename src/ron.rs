@@ -95,7 +95,9 @@ pub struct BarConfig
     pub alt_network_module_format: String,
     pub network_disconnected_text: String,
     pub network_level_format: [String;4], 
+    pub alt_network_level_format: [String;4], 
     pub network_connection_type_icons: [String;3],
+    pub alt_network_connection_type_icons: [String;3],
     pub output_volume_format: [String;6],
     pub output_volume_muted_format: String,
     pub input_volume_format: [String;6],
@@ -376,7 +378,20 @@ impl Default for BarConfig
                 "󱚼".to_string(),
                 "󰖪".to_string()
             ],
+            alt_network_level_format: 
+            [
+                "󰖩".to_string(),
+                "󱚵".to_string(),
+                "󱚼".to_string(),
+                "󰖪".to_string()
+            ],
             network_connection_type_icons: 
+            [
+                "󰈀".to_string(), 
+                "".to_string(), 
+                "?".to_string()
+            ],
+            alt_network_connection_type_icons: 
             [
                 "󰈀".to_string(), 
                 "".to_string(), 

@@ -26,7 +26,7 @@ pub enum UserWorkspaceAction
 
 
 // ============ CRATES ============
-use crate::helpers::style::{UserStyle, set_style};
+use crate::helpers::style::{UserStyle, orient_text, set_style};
 use crate::AppData;
 
 
@@ -53,7 +53,7 @@ pub fn define_workspaces_style(app: &AppData, status: button::Status, i: &i32) -
 
 pub fn define_workspaces_text(app: &AppData, id: i32) -> String
 {
-    if id == app.modules_data.workspace_data.current_workspace 
+    let string_not_oriented = if id == app.modules_data.workspace_data.current_workspace 
     {
         if let Some(selected) = &app.ron_config.workspace_selected_text 
         {
@@ -67,7 +67,9 @@ pub fn define_workspaces_text(app: &AppData, id: i32) -> String
     else 
     { 
         app.ron_config.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
-    }
+    };
+
+    orient_text(&string_not_oriented, &app.ron_config.workspace_text_orientation)
 }
 
 

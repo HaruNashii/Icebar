@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{Element, widget::container, Alignment, Theme, widget::{button, text}};
+use iced::{Element, widget::container, Alignment, Theme, widget::button};
 use std::process::Command;
 
 
@@ -7,7 +7,7 @@ use std::process::Command;
 
 
 // ============ CRATES ============
-use crate::helpers::{string::ellipsize, style::{UserStyle, orient_text, set_style}};
+use crate::helpers::{string::{convert_text_to_rich_text, ellipsize}, style::{UserStyle, orient_text, set_style}};
 use crate::update::Message;
 use crate::ron::BarConfig;
 use crate::AppData;
@@ -174,12 +174,12 @@ pub fn define_button_data(previous_text: String, play_pause_text: String, next_t
 
 pub fn create_media_button<'a>(app: &'a AppData, label: String, message: Message, color: iced::Color) -> Element<'a, Message> 
 {
+    let colored_label = convert_text_to_rich_text::<Message>(&label, Some(color));
     container
     (
         button
         (
-            text(label)
-            .color(color)
+            colored_label
             .wrapping(iced::widget::text::Wrapping::Word)
             .font(app.default_font)
             .size(app.ron_config.media_player_button_text_size)

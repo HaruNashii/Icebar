@@ -1,12 +1,12 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, column, container, mouse_area, row, text}};
+use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, column, container, mouse_area, row}};
 
 
 
 
 
 // ============ CRATES ============
-use crate::{helpers::{misc::create_button_container, style::{bar_style, orient_text}}, modules::volume::define_volume_text};
+use crate::{helpers::{misc::create_button_container, string::convert_text_to_rich_text, style::{bar_style, orient_text}}, modules::volume::define_volume_text};
 use crate::modules::{clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_padding, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::update::Message;
@@ -84,25 +84,18 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             {
                 let workspace_buttons = app.modules_data.workspace_data.visible_workspaces.iter().map(|i| 
                 {
-                    let workspace_text = define_workspaces_text(app, *i);
+                    let non_color_workspace_text = define_workspaces_text(app, *i);
                     let padding_y = define_workspaces_padding(app, *i);
                     let [r, g, b] = &app.ron_config.workspace_text_color_rgb;
                     let color_to_send = Color::from_rgb8(*r, *g, *b);
+                    let workspace_text = convert_text_to_rich_text(&non_color_workspace_text, Some(color_to_send));
                     button
                     (
-                            text
-                            (
-                                orient_text
-                                (
-                                    &workspace_text,
-                                    &app.ron_config.workspace_text_orientation
-                                )
-                            )
-                            .color(color_to_send)
-                            .wrapping(iced::widget::text::Wrapping::Word)
-                            .font(app.default_font)
-                            .size(app.ron_config.workspace_text_size)
-                            .center()
+                        workspace_text
+                        .wrapping(iced::widget::text::Wrapping::Word)
+                        .font(app.default_font)
+                        .size(app.ron_config.workspace_text_size)
+                        .center()
                     )
                     .padding(padding_y)
                     .style(move |_: &Theme, status: button::Status| 
@@ -145,7 +138,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
                 let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let media_player_metadata_container = create_button_container(app, (formated_metadata, color_to_send, app.ron_config.media_player_metadata_text_size),  Message::IsHoveringMediaPlayerMetaData(true), Message::IsHoveringMediaPlayerMetaData(false), left_click_metadata_message, right_click_metadata_message, define_media_player_metadata_style);
+                let colored_formated_metadata = convert_text_to_rich_text::<Message>(&formated_metadata, Some(color_to_send));
+                let media_player_metadata_container = create_button_container(app, (colored_formated_metadata, app.ron_config.media_player_metadata_text_size),  Message::IsHoveringMediaPlayerMetaData(true), Message::IsHoveringMediaPlayerMetaData(false), left_click_metadata_message, right_click_metadata_message, define_media_player_metadata_style);
                 
                 match axis 
                 {
@@ -209,7 +203,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     (&app.ron_config.clock_text_orientation, Color::from_rgb8(*r, *g, *b), app.ron_config.clock_text_size)
                 };
                 let text_string = orient_text(&app.modules_data.clock_data.current_time, text_orientation);
-                let clock_container = create_button_container(app, (text_string, color_to_send, text_size), Message::Nothing, Message::Nothing, left_click_message, right_click_message, define_clock_style);
+                let colored_clock_string = convert_text_to_rich_text::<Message>(&text_string, Some(color_to_send));
+                let clock_container = create_button_container(app, (colored_clock_string, text_size), Message::Nothing, Message::Nothing, left_click_message, right_click_message, define_clock_style);
 
                 match axis 
                 {
@@ -251,7 +246,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 };
 
                 let text_to_send = define_network_text(app);
-                let network_container = create_button_container(app, (text_to_send, color_to_send, text_size), Message::Nothing, Message::Nothing, left_click_message, right_click_message, define_network_style);
+                let colored_network_string = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let network_container = create_button_container(app, (colored_network_string, text_size), Message::Nothing, Message::Nothing, left_click_message, right_click_message, define_network_style);
 
                 match axis 
                 {
@@ -295,7 +291,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 };
 
                 let text_to_send = define_volume_text(&app.modules_data.volume_data.output_volume_level, text_orientation);
-                let volume_output_container = create_button_container(app, (text_to_send, color_to_send, *text_size), Message::IsHoveringVolumeOutput(true), Message::IsHoveringVolumeOutput(false), left_click_message, right_click_message, define_volume_output_style);
+                let colored_volume_output_string = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let volume_output_container = create_button_container(app, (colored_volume_output_string, *text_size), Message::IsHoveringVolumeOutput(true), Message::IsHoveringVolumeOutput(false), left_click_message, right_click_message, define_volume_output_style);
 
                 match axis 
                 {
@@ -338,7 +335,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 };
 
                 let text_to_send = define_volume_text(&app.modules_data.volume_data.input_volume_level, text_orientation);
-                let volume_input_container = create_button_container(app, (text_to_send, color_to_send, *text_size), Message::IsHoveringVolumeInput(true), Message::IsHoveringVolumeInput(false), left_click_message, right_click_message, define_volume_input_style);
+                let colored_volume_input_string = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let volume_input_container = create_button_container(app, (colored_volume_input_string, *text_size), Message::IsHoveringVolumeInput(true), Message::IsHoveringVolumeInput(false), left_click_message, right_click_message, define_volume_input_style);
                 
                 match axis 
                 {
@@ -360,6 +358,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 };
                 let [r, g, b] = &custom_module.text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
+                let text_to_send = orient_text(&text_to_render, &custom_module.text_orientation);
+                let colored_custom_module_string = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
 
                 let element = container
                 (
@@ -367,8 +367,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         (
                             mouse_area
                             (
-                                text(orient_text(&text_to_render, &custom_module.text_orientation))
-                                .color(color_to_send)
+                                colored_custom_module_string
                                 .wrapping(iced::widget::text::Wrapping::Word)
                                 .font(app.default_font)
                                 .size(custom_module.text_size)

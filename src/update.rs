@@ -74,7 +74,20 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::IsHoveringMediaPlayerMetaData(bool) => { app.is_hovering_media_player_meta_data = bool; }
         Message::MuteAudioPressedOutput => { volume::volume( volume::VolumeAction::MuteOutput); }
         Message::MuteAudioPressedInput => { volume::volume( volume::VolumeAction::MuteInput); }
-        Message::ToggleAltNetwork => { app.is_showing_alt_network_module = !app.is_showing_alt_network_module; }
+        Message::ToggleAltNetwork => 
+        { 
+            app.is_showing_alt_network_module = !app.is_showing_alt_network_module; 
+            if app.is_showing_alt_network_module 
+            { 
+                app.connection_type_icons = app.ron_config.alt_network_connection_type_icons.clone();
+                app.network_icons = app.ron_config.alt_network_level_format.clone();
+            }
+            else 
+            {
+                app.connection_type_icons = app.ron_config.network_connection_type_icons.clone();
+                app.network_icons = app.ron_config.network_level_format.clone();
+            };
+        }
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
         Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
         Message::CommandFinished(index, text) => { if app.cached_command_outputs.len() <= index { app.cached_command_outputs.resize(index + 1, String::new()); } app.cached_command_outputs[index] = text; }

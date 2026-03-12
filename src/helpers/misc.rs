@@ -1,6 +1,6 @@
 // ============ IMPORTS ============
 use iced::{Alignment, Element, Theme};
-use iced::widget::{text, button, container, mouse_area};
+use iced::widget::{button, container, mouse_area};
 
 
 
@@ -60,7 +60,7 @@ pub fn validade_bar_size_and_margin(ron_config: &BarConfig) -> ((u32, u32), u32,
 
 
 
-pub fn create_button_container<'a, F>(app: &'a AppData, text_data: (String, iced::Color, u32), on_enter_message: Message, on_exit_message: Message, left_click_message: Message, right_click_message: Message, style_func: F) -> Element<'a, Message>
+pub fn create_button_container<'a, F>(app: &'a AppData, text_data: (iced::widget::text::Rich<'a, (), Message>, u32), on_enter_message: Message, on_exit_message: Message, left_click_message: Message, right_click_message: Message, style_func: F) -> Element<'a, Message>
 where F: Fn(&AppData, button::Status) -> button::Style + 'a,
 {
     container
@@ -69,11 +69,10 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
         (
             mouse_area
             (
-                text(text_data.0)
-                .color(text_data.1)
+                text_data.0
                 .wrapping(iced::widget::text::Wrapping::Word)
                 .font(app.default_font)
-                .size(text_data.2)
+                .size(text_data.1)
                 .center()
             )
             .on_enter(on_enter_message)

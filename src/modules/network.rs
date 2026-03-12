@@ -204,17 +204,17 @@ pub fn define_network_text(app: &AppData) -> String
 {
     let network_level = match &app.modules_data.network_data.network_level
     {
-        4 => &app.ron_config.network_level_format[0],
-        3 => &app.ron_config.network_level_format[1],
-        2 => &app.ron_config.network_level_format[2],
-        _ => &app.ron_config.network_level_format[3],
+        4 => &app.network_icons[0],
+        3 => &app.network_icons[1],
+        2 => &app.network_icons[2],
+        _ => &app.network_icons[3],
     };
 
     let connection_type = match &app.modules_data.network_data.connection_type
     {
-        1 => &app.ron_config.network_connection_type_icons[0],
-        2 => &app.ron_config.network_connection_type_icons[1],
-        _ => &app.ron_config.network_connection_type_icons[2],
+        1 => &app.connection_type_icons[0],
+        2 => &app.connection_type_icons[1],
+        _ => &app.connection_type_icons[2],
     };
     
     let network_speed = match &app.modules_data.network_data.network_speed
