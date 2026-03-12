@@ -119,8 +119,216 @@ pub fn bar_style(app: &AppData) -> impl Fn(&Theme) -> container::Style
 #[cfg(test)]
 mod tests
 {
+    use iced::widget::button;
+    use iced::{Background, Color};
+    use iced::border::Radius;
     use super::*;
  
+    fn base_user_style(status: button::Status) -> UserStyle
+    {
+        UserStyle
+        {
+            status,
+            normal:            [10, 20, 30],
+            normal_text:       [200, 210, 220],
+            hovered:           [50, 60, 70],
+            hovered_text:      [255, 255, 255],
+            pressed:           [80, 90, 100],
+            border_color_rgba: [1, 2, 3, 128],
+            border_size:       2.5,
+            border_radius:     [1.0, 2.0, 3.0, 4.0],
+        }
+    }
+ 
+    #[test]
+    fn set_style_active_background_is_normal_color()
+    {
+        let style = set_style(base_user_style(button::Status::Active));
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(10, 20, 30))));
+    }
+ 
+    #[test]
+    fn set_style_active_text_is_normal_text_color()
+    {
+        let style = set_style(base_user_style(button::Status::Active));
+        assert_eq!(style.text_color, Color::from_rgb8(200, 210, 220));
+    }
+ 
+    #[test]
+    fn set_style_hovered_background_is_hovered_color()
+    {
+        let style = set_style(base_user_style(button::Status::Hovered));
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(50, 60, 70))));
+    }
+ 
+    #[test]
+    fn set_style_hovered_text_is_hovered_text_color()
+    {
+        let style = set_style(base_user_style(button::Status::Hovered));
+        assert_eq!(style.text_color, Color::from_rgb8(255, 255, 255));
+    }
+ 
+    #[test]
+    fn set_style_pressed_background_is_pressed_color()
+    {
+        let style = set_style(base_user_style(button::Status::Pressed));
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(80, 90, 100))));
+    }
+ 
+    #[test]
+    fn set_style_disabled_background_is_normal_color()
+    {
+        // Disabled falls through to the `_` arm which uses normal colors
+        let style = set_style(base_user_style(button::Status::Disabled));
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(10, 20, 30))));
+    }
+ 
+    #[test]
+    fn set_style_border_width_applied_correctly()
+    {
+        let style = set_style(base_user_style(button::Status::Active));
+        assert_eq!(style.border.width, 2.5);
+    }
+ 
+    #[test]
+    fn set_style_border_radius_applied_correctly()
+    {
+        let style = set_style(base_user_style(button::Status::Active));
+        assert_eq!(style.border.radius, Radius { top_left: 1.0, top_right: 2.0, bottom_left: 3.0, bottom_right: 4.0 });
+    }
+ 
+    #[test]
+    fn set_style_zero_border_size()
+    {
+        let style = set_style(UserStyle { border_size: 0.0, ..base_user_style(button::Status::Active) });
+        assert_eq!(style.border.width, 0.0);
+    }
+ 
+    #[test]
+    fn set_style_all_statuses_produce_some_background()
+    {
+        for status in [button::Status::Active, button::Status::Hovered, button::Status::Pressed, button::Status::Disabled]
+        {
+            let style = set_style(base_user_style(status));
+            assert!(style.background.is_some(), "Expected background for status {:?}", status);
+        }
+    }
+ 
+    #[test]
+    fn set_style_active_and_hovered_backgrounds_differ()
+    {
+        let active  = set_style(base_user_style(button::Status::Active));
+        let hovered = set_style(base_user_style(button::Status::Hovered));
+        assert_ne!(active.background, hovered.background);
+    }
+ 
+    #[test]
+    fn set_style_hovered_and_pressed_backgrounds_differ()
+    {
+        let hovered = set_style(base_user_style(button::Status::Hovered));
+        let pressed = set_style(base_user_style(button::Status::Pressed));
+        assert_ne!(hovered.background, pressed.background);
+    }
+ 
+    fn make_style(status: button::Status) -> iced::widget::button::Style
+    {
+        set_style(UserStyle
+        {
+            status,
+            normal:            [10, 20, 30],
+            normal_text:       [200, 210, 220],
+            hovered:           [50, 60, 70],
+            hovered_text:      [255, 255, 255],
+            pressed:           [80, 90, 100],
+            border_color_rgba: [1, 2, 3, 50],
+            border_size:       2.0,
+            border_radius:     [1.0, 2.0, 3.0, 4.0],
+        })
+    }
+ 
+    // ---- set_style: Active/Normal ------------------------------------------
+ 
+    #[test]
+    fn set_style_active_uses_normal_background()
+    {
+        use iced::{Background, Color};
+        let style = make_style(button::Status::Active);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(10, 20, 30))));
+    }
+ 
+    #[test]
+    fn set_style_active_uses_normal_text_color()
+    {
+        use iced::Color;
+        let style = make_style(button::Status::Active);
+        assert_eq!(style.text_color, Color::from_rgb8(200, 210, 220));
+    }
+ 
+    // ---- set_style: Hovered ------------------------------------------------
+ 
+    #[test]
+    fn set_style_hovered_uses_hovered_background()
+    {
+        use iced::{Background, Color};
+        let style = make_style(button::Status::Hovered);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(50, 60, 70))));
+    }
+ 
+    #[test]
+    fn set_style_hovered_uses_hovered_text_color()
+    {
+        use iced::Color;
+        let style = make_style(button::Status::Hovered);
+        assert_eq!(style.text_color, Color::from_rgb8(255, 255, 255));
+    }
+ 
+    // ---- set_style: Pressed ------------------------------------------------
+ 
+    #[test]
+    fn set_style_pressed_uses_pressed_background()
+    {
+        use iced::{Background, Color};
+        let style = make_style(button::Status::Pressed);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(80, 90, 100))));
+    }
+ 
+    // ---- set_style: Border -------------------------------------------------
+ 
+    #[test]
+    fn set_style_border_width_applied()
+    {
+        let style = make_style(button::Status::Active);
+        assert_eq!(style.border.width, 2.0);
+    }
+ 
+    #[test]
+    fn set_style_border_radius_applied()
+    {
+        use iced::border::Radius;
+        let style = make_style(button::Status::Active);
+        assert_eq!(style.border.radius, Radius { top_left: 1.0, top_right: 2.0, bottom_left: 3.0, bottom_right: 4.0 });
+    }
+ 
+    #[test]
+    fn set_style_border_color_applied()
+    {
+        use iced::Color;
+        let style = make_style(button::Status::Active);
+        assert_eq!(style.border.color, Color::from_rgba8(1, 2, 3, 50.0));
+    }
+ 
+    // ---- set_style: all statuses produce non-None background ---------------
+ 
+    #[test]
+    fn set_style_all_statuses_produce_background()
+    {
+        for status in [button::Status::Active, button::Status::Hovered, button::Status::Pressed, button::Status::Disabled]
+        {
+            let style = make_style(status);
+            assert!(style.background.is_some(), "Expected background for status {:?}", status);
+        }
+    }
+
     // ---- orient_text --------------------------------------------------------
  
     #[test]

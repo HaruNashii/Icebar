@@ -490,3 +490,411 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
     Task::none()
 }
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::AppData;
+    use crate::modules::network::NetworkData;
+    use crate::modules::tray::TrayEvent;
+ 
+    fn make_app() -> AppData { AppData::default() }
+ 
+    // ---- IsHovering* flags --------------------------------------------------
+ 
+    #[test]
+    fn message_is_hovering_volume_output_sets_flag_true()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::IsHoveringVolumeOutput(true));
+        assert!(app.is_hovering_volume_output);
+    }
+ 
+    #[test]
+    fn message_is_hovering_volume_output_sets_flag_false()
+    {
+        let mut app = make_app();
+        app.is_hovering_volume_output = true;
+        let _ = update(&mut app, Message::IsHoveringVolumeOutput(false));
+        assert!(!app.is_hovering_volume_output);
+    }
+ 
+    #[test]
+    fn message_is_hovering_volume_input_sets_flag()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::IsHoveringVolumeInput(true));
+        assert!(app.is_hovering_volume_input);
+    }
+ 
+    #[test]
+    fn message_is_hovering_workspace_sets_flag()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::IsHoveringWorkspace(true));
+        assert!(app.is_hovering_workspace);
+    }
+ 
+    #[test]
+    fn message_is_hovering_media_player_sets_flag()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::IsHoveringMediaPlayerMetaData(true));
+        assert!(app.is_hovering_media_player_meta_data);
+    }
+ 
+    // ---- ToggleAltClock -----------------------------------------------------
+ 
+    #[test]
+    fn toggle_alt_clock_flips_from_false_to_true()
+    {
+        let mut app = make_app();
+        assert!(!app.is_showing_alt_clock);
+        let _ = update(&mut app, Message::ToggleAltClock);
+        assert!(app.is_showing_alt_clock);
+    }
+ 
+    #[test]
+    fn toggle_alt_clock_flips_back_on_second_call()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::ToggleAltClock);
+        let _ = update(&mut app, Message::ToggleAltClock);
+        assert!(!app.is_showing_alt_clock);
+    }
+ 
+    // ---- ToggleAltNetwork ---------------------------------------------------
+ 
+    #[test]
+    fn toggle_alt_network_flips_flag()
+    {
+        let mut app = make_app();
+        assert!(!app.is_showing_alt_network_module);
+        let _ = update(&mut app, Message::ToggleAltNetwork);
+        assert!(app.is_showing_alt_network_module);
+    }
+ 
+    #[test]
+    fn toggle_alt_network_swaps_to_alt_icons()
+    {
+        let mut app = make_app();
+        app.ron_config.alt_network_level_format = ["A".into(), "B".into(), "C".into(), "D".into()];
+        app.ron_config.alt_network_connection_type_icons = ["X".into(), "Y".into(), "Z".into()];
+ 
+        let _ = update(&mut app, Message::ToggleAltNetwork);
+ 
+        assert_eq!(app.network_icons, ["A", "B", "C", "D"]);
+        assert_eq!(app.connection_type_icons, ["X", "Y", "Z"]);
+    }
+ 
+    #[test]
+    fn toggle_alt_network_swaps_back_to_normal_icons()
+    {
+        let mut app = make_app();
+        app.ron_config.network_level_format = ["N1".into(), "N2".into(), "N3".into(), "N4".into()];
+        app.ron_config.network_connection_type_icons = ["E".into(), "W".into(), "?".into()];
+        app.ron_config.alt_network_level_format = ["A".into(), "B".into(), "C".into(), "D".into()];
+        app.ron_config.alt_network_connection_type_icons = ["X".into(), "Y".into(), "Z".into()];
+ 
+        let _ = update(&mut app, Message::ToggleAltNetwork); // → alt
+        let _ = update(&mut app, Message::ToggleAltNetwork); // → normal
+ 
+        assert_eq!(app.network_icons, ["N1", "N2", "N3", "N4"]);
+        assert_eq!(app.connection_type_icons, ["E", "W", "?"]);
+    }
+ 
+    // ---- CursorMoved --------------------------------------------------------
+ 
+    #[test]
+    fn cursor_moved_updates_mouse_position()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 123.7, y: 456.2 }));
+        assert_eq!(app.mouse_position, (123, 456));
+    }
+ 
+    #[test]
+    fn cursor_moved_truncates_not_rounds()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 99.9, y: 99.9 }));
+        assert_eq!(app.mouse_position, (99, 99));
+    }
+ 
+    // ---- CommandFinished ----------------------------------------------------
+ 
+    #[test]
+    fn command_finished_stores_output_at_index()
+    {
+        let mut app = make_app();
+        app.cached_command_outputs = vec!["old".into(), "old".into()];
+        let _ = update(&mut app, Message::CommandFinished(1, "new_output".into()));
+        assert_eq!(app.cached_command_outputs[1], "new_output");
+    }
+ 
+    #[test]
+    fn command_finished_resizes_vec_if_index_out_of_bounds()
+    {
+        let mut app = make_app();
+        // vec is empty, index 3 requires resize to length 4
+        let _ = update(&mut app, Message::CommandFinished(3, "hello".into()));
+        assert_eq!(app.cached_command_outputs.len(), 4);
+        assert_eq!(app.cached_command_outputs[3], "hello");
+        // Slots 0..2 should be empty strings
+        assert_eq!(app.cached_command_outputs[0], "");
+        assert_eq!(app.cached_command_outputs[2], "");
+    }
+ 
+    #[test]
+    fn command_finished_index_zero_works()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::CommandFinished(0, "result".into()));
+        assert_eq!(app.cached_command_outputs[0], "result");
+    }
+ 
+    // ---- NetworkUpdated -----------------------------------------------------
+ 
+    #[test]
+    fn network_updated_stores_data()
+    {
+        let mut app = make_app();
+        let data = NetworkData { network_level: 4, connection_type: 2, network_speed: 100, id: "HomeWifi".into() };
+        let _ = update(&mut app, Message::NetworkUpdated(data));
+        assert_eq!(app.modules_data.network_data.id, "HomeWifi");
+        assert_eq!(app.modules_data.network_data.network_level, 4);
+        assert_eq!(app.modules_data.network_data.network_speed, 100);
+    }
+ 
+    // ---- TrayEvent: ItemRegistered ------------------------------------------
+ 
+    #[test]
+    fn tray_item_registered_adds_to_list()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemRegistered("service|/path".into())));
+        assert_eq!(app.modules_data.tray_icons.len(), 1);
+        assert_eq!(app.modules_data.tray_icons[0].1, "service|/path");
+        assert!(app.modules_data.tray_icons[0].0.is_none());
+    }
+ 
+    #[test]
+    fn tray_item_registered_does_not_duplicate()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemRegistered("svc|/path".into())));
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemRegistered("svc|/path".into())));
+        assert_eq!(app.modules_data.tray_icons.len(), 1);
+    }
+ 
+    #[test]
+    fn tray_item_registered_allows_different_services()
+    {
+        let mut app = make_app();
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemRegistered("svc1|/path".into())));
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemRegistered("svc2|/path".into())));
+        assert_eq!(app.modules_data.tray_icons.len(), 2);
+    }
+ 
+    // ---- TrayEvent: ItemUnregistered ----------------------------------------
+ 
+    #[test]
+    fn tray_item_unregistered_removes_from_list()
+    {
+        let mut app = make_app();
+        app.modules_data.tray_icons = vec![(None, "svc1|/p".into()), (None, "svc2|/p".into())];
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemUnregistered("svc1|/p".into())));
+        assert_eq!(app.modules_data.tray_icons.len(), 1);
+        assert_eq!(app.modules_data.tray_icons[0].1, "svc2|/p");
+    }
+ 
+    #[test]
+    fn tray_item_unregistered_nonexistent_service_does_nothing()
+    {
+        let mut app = make_app();
+        app.modules_data.tray_icons = vec![(None, "svc1|/p".into())];
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemUnregistered("ghost|/p".into())));
+        assert_eq!(app.modules_data.tray_icons.len(), 1);
+    }
+ 
+    #[test]
+    fn tray_item_unregistered_empties_list()
+    {
+        let mut app = make_app();
+        app.modules_data.tray_icons = vec![(None, "only|/p".into())];
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemUnregistered("only|/p".into())));
+        assert!(app.modules_data.tray_icons.is_empty());
+    }
+ 
+    // ---- Nothing -----------------------------------------------------------
+ 
+    #[test]
+    fn message_nothing_does_not_change_state()
+    {
+        let mut app = make_app();
+        let before = app.is_showing_alt_clock;
+        let _ = update(&mut app, Message::Nothing);
+        assert_eq!(app.is_showing_alt_clock, before);
+    }
+
+    #[test]
+    fn toggle_alt_clock_and_alt_network_are_independent()
+    {
+        let mut app = AppData::default();
+        let _ = update(&mut app, Message::ToggleAltClock);
+        assert!(app.is_showing_alt_clock);
+        assert!(!app.is_showing_alt_network_module); // network untouched
+     
+        let _ = update(&mut app, Message::ToggleAltNetwork);
+        assert!(app.is_showing_alt_clock);            // clock untouched
+        assert!(app.is_showing_alt_network_module);
+    }
+     
+    #[test]
+    fn multiple_command_finished_messages_stored_independently()
+    {
+        let mut app = AppData::default();
+        let _ = update(&mut app, Message::CommandFinished(0, "out0".into()));
+        let _ = update(&mut app, Message::CommandFinished(1, "out1".into()));
+        let _ = update(&mut app, Message::CommandFinished(2, "out2".into()));
+     
+        assert_eq!(app.cached_command_outputs[0], "out0");
+        assert_eq!(app.cached_command_outputs[1], "out1");
+        assert_eq!(app.cached_command_outputs[2], "out2");
+    }
+     
+    #[test]
+    fn overwriting_command_output_replaces_not_appends()
+    {
+        let mut app = AppData::default();
+        let _ = update(&mut app, Message::CommandFinished(0, "first".into()));
+        let _ = update(&mut app, Message::CommandFinished(0, "second".into()));
+        assert_eq!(app.cached_command_outputs[0], "second");
+        assert_eq!(app.cached_command_outputs.len(), 1);
+    }
+     
+    #[test]
+    fn cursor_moved_multiple_times_keeps_last_position()
+    {
+        let mut app = AppData::default();
+        let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 10.0, y: 20.0 }));
+        let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 300.0, y: 400.0 }));
+        assert_eq!(app.mouse_position, (300, 400));
+    }
+     
+    #[test]
+    fn tray_register_then_unregister_leaves_empty_list()
+    {
+        let mut app = AppData::default();
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemRegistered("s|/p".into())));
+        assert_eq!(app.modules_data.tray_icons.len(), 1);
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemUnregistered("s|/p".into())));
+        assert!(app.modules_data.tray_icons.is_empty());
+    }
+
+    #[test]
+    fn cycle_clock_timezones_message_advances_timezone()
+    {
+        let mut app = make_app();
+        app.ron_config.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into()]);
+        app.current_clock_timezone = Some(("UTC".into(), 0));
+ 
+        let _ = update(&mut app, Message::CycleClockTimeZones);
+ 
+        let (tz, idx) = app.current_clock_timezone.unwrap();
+        assert_eq!(tz, "America/New_York");
+        assert_eq!(idx, 1);
+    }
+ 
+    #[test]
+    fn cycle_clock_timezones_message_wraps_at_end()
+    {
+        let mut app = make_app();
+        app.ron_config.clock_timezones = Some(vec!["UTC".into(), "Europe/London".into()]);
+        app.current_clock_timezone = Some(("Europe/London".into(), 1));
+ 
+        let _ = update(&mut app, Message::CycleClockTimeZones);
+ 
+        let (tz, idx) = app.current_clock_timezone.unwrap();
+        assert_eq!(tz, "UTC");
+        assert_eq!(idx, 0);
+    }
+ 
+    #[test]
+    fn cycle_clock_timezones_message_with_no_timezones_configured_does_nothing()
+    {
+        let mut app = make_app();
+        app.ron_config.clock_timezones = None;
+        app.current_clock_timezone = Some(("UTC".into(), 0));
+ 
+        let _ = update(&mut app, Message::CycleClockTimeZones);
+ 
+        // State must be unchanged
+        let (tz, idx) = app.current_clock_timezone.unwrap();
+        assert_eq!(tz, "UTC");
+        assert_eq!(idx, 0);
+    }
+ 
+    // ---- ToggleAltClockAndCycleClockTimeZones --------------------------------
+ 
+    #[test]
+    fn toggle_alt_clock_and_cycle_flips_alt_clock_flag()
+    {
+        let mut app = make_app();
+        assert!(!app.is_showing_alt_clock);
+ 
+        let _ = update(&mut app, Message::ToggleAltClockAndCycleClockTimeZones);
+ 
+        assert!(app.is_showing_alt_clock);
+    }
+ 
+    #[test]
+    fn toggle_alt_clock_and_cycle_also_cycles_timezone()
+    {
+        let mut app = make_app();
+        app.ron_config.clock_timezones = Some(vec!["UTC".into(), "Asia/Tokyo".into()]);
+        app.current_clock_timezone = Some(("UTC".into(), 0));
+ 
+        let _ = update(&mut app, Message::ToggleAltClockAndCycleClockTimeZones);
+ 
+        // Both effects must have applied
+        assert!(app.is_showing_alt_clock);
+        let (tz, _) = app.current_clock_timezone.unwrap();
+        assert_eq!(tz, "Asia/Tokyo");
+    }
+ 
+    #[test]
+    fn toggle_alt_clock_and_cycle_called_twice_restores_flag_and_wraps_timezone()
+    {
+        let mut app = make_app();
+        app.ron_config.clock_timezones = Some(vec!["UTC".into(), "Asia/Tokyo".into()]);
+        app.current_clock_timezone = Some(("UTC".into(), 0));
+ 
+        let _ = update(&mut app, Message::ToggleAltClockAndCycleClockTimeZones); // on + advance
+        let _ = update(&mut app, Message::ToggleAltClockAndCycleClockTimeZones); // off + wrap
+ 
+        assert!(!app.is_showing_alt_clock);
+        let (tz, idx) = app.current_clock_timezone.unwrap();
+        assert_eq!(tz, "UTC"); // wrapped back
+        assert_eq!(idx, 0);
+    }
+ 
+    #[test]
+    fn toggle_alt_clock_and_cycle_with_no_timezones_still_toggles_flag()
+    {
+        let mut app = make_app();
+        app.ron_config.clock_timezones = None;
+        app.current_clock_timezone = None;
+ 
+        let _ = update(&mut app, Message::ToggleAltClockAndCycleClockTimeZones);
+ 
+        // Flag must flip even when timezone cycling is a no-op
+        assert!(app.is_showing_alt_clock);
+    }
+}

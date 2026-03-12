@@ -97,7 +97,9 @@ mod tests
     use super::*;
     use crate::AppData;
     use crate::modules::workspaces::WorkspaceData;
- 
+    use iced::{Background, Color};
+    use iced::widget::button;
+
     fn make_app(current: i32) -> AppData
     {
         let mut app = AppData::default();
@@ -197,5 +199,52 @@ mod tests
         app.ron_config.workspace_selected_text = None;
         // Should fall back to id.to_string() when no selected_text provided
         assert_eq!(define_workspaces_text(&app, 2), "2");
+    }
+ 
+    fn make_style_app(current: i32) -> AppData
+    {
+        let mut app = make_app(current);   // re-uses the existing make_app helper
+        app.ron_config.workspace_button_color_rgb           = [0, 0, 200];
+        app.ron_config.workspace_button_selected_color_rgb  = [255, 0, 0];
+        app.ron_config.workspace_button_hovered_color_rgb   = [0, 200, 0];
+        app.ron_config.workspace_button_pressed_color_rgb   = [0, 100, 0];
+        app
+    }
+ 
+    #[test]
+    fn workspace_style_current_workspace_uses_selected_color()
+    {
+        let style = define_workspaces_style(&make_style_app(2), button::Status::Active, &2);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(255, 0, 0))));
+    }
+ 
+    #[test]
+    fn workspace_style_non_current_uses_normal_color()
+    {
+        let style = define_workspaces_style(&make_style_app(1), button::Status::Active, &3);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(0, 0, 200))));
+    }
+ 
+    #[test]
+    fn workspace_style_selected_and_non_selected_differ()
+    {
+        let app      = make_style_app(1);
+        let selected = define_workspaces_style(&app, button::Status::Active, &1);
+        let other    = define_workspaces_style(&app, button::Status::Active, &2);
+        assert_ne!(selected.background, other.background);
+    }
+ 
+    #[test]
+    fn workspace_style_hovered_uses_hovered_color()
+    {
+        let style = define_workspaces_style(&make_style_app(1), button::Status::Hovered, &2);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(0, 200, 0))));
+    }
+ 
+    #[test]
+    fn workspace_style_pressed_uses_pressed_color()
+    {
+        let style = define_workspaces_style(&make_style_app(1), button::Status::Pressed, &2);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(0, 100, 0))));
     }
 }

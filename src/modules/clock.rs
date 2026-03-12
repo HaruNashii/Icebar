@@ -102,7 +102,65 @@ pub fn cycle_clock_timezones(app: &mut AppData)
 mod tests
 {
     use super::*;
+    use iced::{Background, Color};
+    use iced::widget::button;
  
+    fn make_clock_app(is_alt: bool) -> AppData
+    {
+        let mut app = AppData::default();
+        app.is_showing_alt_clock = is_alt;
+        app.ron_config.clock_button_color_rgb         = [10, 20, 30];
+        app.ron_config.clock_button_hovered_color_rgb = [15, 25, 35];
+        app.ron_config.clock_button_pressed_color_rgb = [5,  10, 15];
+        app.ron_config.alt_clock_button_color_rgb         = [200, 100, 50];
+        app.ron_config.alt_clock_button_hovered_color_rgb = [210, 110, 60];
+        app.ron_config.alt_clock_button_pressed_color_rgb = [190,  90, 40];
+        app
+    }
+ 
+    #[test]
+    fn clock_style_active_normal_uses_clock_color()
+    {
+        let style = define_clock_style(&make_clock_app(false), button::Status::Active);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(10, 20, 30))));
+    }
+ 
+    #[test]
+    fn clock_style_active_alt_uses_alt_clock_color()
+    {
+        let style = define_clock_style(&make_clock_app(true), button::Status::Active);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(200, 100, 50))));
+    }
+ 
+    #[test]
+    fn clock_style_normal_and_alt_backgrounds_differ()
+    {
+        let normal = define_clock_style(&make_clock_app(false), button::Status::Active);
+        let alt    = define_clock_style(&make_clock_app(true),  button::Status::Active);
+        assert_ne!(normal.background, alt.background);
+    }
+ 
+    #[test]
+    fn clock_style_hovered_normal_uses_hovered_color()
+    {
+        let style = define_clock_style(&make_clock_app(false), button::Status::Hovered);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(15, 25, 35))));
+    }
+ 
+    #[test]
+    fn clock_style_hovered_alt_uses_alt_hovered_color()
+    {
+        let style = define_clock_style(&make_clock_app(true), button::Status::Hovered);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(210, 110, 60))));
+    }
+ 
+    #[test]
+    fn clock_style_pressed_normal_uses_pressed_color()
+    {
+        let style = define_clock_style(&make_clock_app(false), button::Status::Pressed);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(5, 10, 15))));
+    }
+
     #[test]
     fn get_current_time_returns_non_empty_string()
     {

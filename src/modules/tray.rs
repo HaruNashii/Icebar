@@ -280,3 +280,222 @@ pub fn define_tray_icon<'a>(app: &'a AppData, icon: &'a Option<iced::widget::ima
     };
     element_to_send
 }
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::AppData;
+    use iced::{Background, Color};
+    use iced::widget::button;
+    use serde_json::json;
+ 
+    // ---- extract_nodes ------------------------------------------------------
+ 
+    #[test]
+    fn extract_nodes_empty_array_produces_nothing()
+    {
+        let mut out = Vec::new();
+        extract_nodes(&json!([]), &mut out);
+        assert!(out.is_empty());
+    }
+ 
+    #[test]
+    fn extract_nodes_visible_enabled_default_item_extracted()
+    {
+        let v = json!([
+            7,
+            { "label": {"data": "Open"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "default"} },
+            []
+        ]);
+        let mut out = Vec::new();
+        extract_nodes(&v, &mut out);
+        assert_eq!(out.len(), 1);
+        assert_eq!(out[0].label, "Open");
+        assert_eq!(out[0].id, 7);
+    }
+ 
+    #[test]
+    fn extract_nodes_invisible_item_skipped()
+    {
+        let v = json!([
+            1,
+            { "label": {"data": "Hidden"}, "visible": {"data": false}, "enabled": {"data": true}, "type": {"data": "default"} },
+            []
+        ]);
+        let mut out = Vec::new();
+        extract_nodes(&v, &mut out);
+        assert!(out.is_empty());
+    }
+ 
+    #[test]
+    fn extract_nodes_disabled_item_skipped()
+    {
+        let v = json!([
+            2,
+            { "label": {"data": "Grey"}, "visible": {"data": true}, "enabled": {"data": false}, "type": {"data": "default"} },
+            []
+        ]);
+        let mut out = Vec::new();
+        extract_nodes(&v, &mut out);
+        assert!(out.is_empty());
+    }
+ 
+    #[test]
+    fn extract_nodes_separator_type_skipped()
+    {
+        let v = json!([
+            3,
+            { "label": {"data": "-"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "separator"} },
+            []
+        ]);
+        let mut out = Vec::new();
+        extract_nodes(&v, &mut out);
+        assert!(out.is_empty());
+    }
+ 
+    #[test]
+    fn extract_nodes_missing_visible_defaults_to_true()
+    {
+        let v = json!([
+            4,
+            { "label": {"data": "NoVis"}, "enabled": {"data": true}, "type": {"data": "default"} },
+            []
+        ]);
+        let mut out = Vec::new();
+        extract_nodes(&v, &mut out);
+        assert_eq!(out.len(), 1);
+    }
+ 
+    #[test]
+    fn extract_nodes_missing_enabled_defaults_to_true()
+    {
+        let v = json!([
+            5,
+            { "label": {"data": "NoEna"}, "visible": {"data": true}, "type": {"data": "default"} },
+            []
+        ]);
+        let mut out = Vec::new();
+        extract_nodes(&v, &mut out);
+        assert_eq!(out.len(), 1);
+    }
+ 
+    #[test]
+    fn extract_nodes_id_parsed_correctly()
+    {
+        let v = json!([
+            42,
+            { "label": {"data": "Item"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "default"} },
+            []
+        ]);
+        let mut out = Vec::new();
+        extract_nodes(&v, &mut out);
+        assert_eq!(out[0].id, 42);
+    }
+ 
+    #[test]
+    fn extract_nodes_nested_children_both_extracted()
+    {
+        let v = json!([
+            [
+                10,
+                { "label": {"data": "A"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "default"} },
+                []
+            ],
+            [
+                11,
+                { "label": {"data": "B"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "default"} },
+                []
+            ]
+        ]);
+        let mut out = Vec::new();
+        extract_nodes(&v, &mut out);
+        assert_eq!(out.len(), 2);
+        let labels: Vec<&str> = out.iter().map(|i| i.label.as_str()).collect();
+        assert!(labels.contains(&"A") && labels.contains(&"B"));
+    }
+ 
+    #[test]
+    fn extract_nodes_object_recurses_into_values()
+    {
+        let v = json!({
+            "menu": [
+                20,
+                { "label": {"data": "Nested"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "default"} },
+                []
+            ]
+        });
+        let mut out = Vec::new();
+        extract_nodes(&v, &mut out);
+        assert_eq!(out.len(), 1);
+        assert_eq!(out[0].label, "Nested");
+    }
+ 
+    #[test]
+    fn extract_nodes_scalar_values_ignored()
+    {
+        let mut out = Vec::new();
+        extract_nodes(&json!(42),    &mut out);
+        extract_nodes(&json!("str"), &mut out);
+        extract_nodes(&json!(true),  &mut out);
+        extract_nodes(&json!(null),  &mut out);
+        assert!(out.is_empty());
+    }
+ 
+    // ---- define_tray_style --------------------------------------------------
+ 
+    fn make_tray_app() -> AppData
+    {
+        let mut app = AppData::default();
+        app.ron_config.tray_button_color_rgb         = [10, 20, 30];
+        app.ron_config.tray_button_hovered_color_rgb = [50, 60, 70];
+        app.ron_config.tray_button_pressed_color_rgb = [80, 90, 100];
+        app.ron_config.tray_button_text_color_rgb    = [200, 210, 220];
+        app.ron_config.tray_button_hovered_text_color_rgb = [255, 255, 255];
+        app
+    }
+ 
+    #[test]
+    fn tray_style_active_uses_tray_normal_color()
+    {
+        let style = define_tray_style(&make_tray_app(), button::Status::Active);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(10, 20, 30))));
+    }
+ 
+    #[test]
+    fn tray_style_hovered_uses_tray_hovered_color()
+    {
+        let style = define_tray_style(&make_tray_app(), button::Status::Hovered);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(50, 60, 70))));
+    }
+ 
+    #[test]
+    fn tray_style_pressed_uses_tray_pressed_color()
+    {
+        let style = define_tray_style(&make_tray_app(), button::Status::Pressed);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(80, 90, 100))));
+    }
+ 
+    #[test]
+    fn tray_style_active_text_color_correct()
+    {
+        let style = define_tray_style(&make_tray_app(), button::Status::Active);
+        assert_eq!(style.text_color, Color::from_rgb8(200, 210, 220));
+    }
+ 
+    #[test]
+    fn tray_style_all_statuses_produce_background()
+    {
+        let app = make_tray_app();
+        for status in [button::Status::Active, button::Status::Hovered, button::Status::Pressed, button::Status::Disabled]
+        {
+            let style = define_tray_style(&app, status);
+            assert!(style.background.is_some(), "Expected background for {:?}", status);
+        }
+    }
+}

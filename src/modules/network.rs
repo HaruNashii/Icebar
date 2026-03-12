@@ -249,6 +249,66 @@ mod tests
     use super::*;
     use crate::AppData;
     use crate::modules::network::NetworkData;
+    use iced::{Background, Color};
+    use iced::widget::button;
+ 
+    fn make_network_style_app(is_alt: bool) -> AppData
+    {
+        let mut app = AppData::default();
+        app.is_showing_alt_network_module = is_alt;
+        app.ron_config.network_button_color_rgb         = [10, 20, 30];
+        app.ron_config.network_button_hovered_color_rgb = [15, 25, 35];
+        app.ron_config.network_button_pressed_color_rgb = [5,  10, 15];
+        app.ron_config.alt_network_button_color_rgb         = [200, 100, 50];
+        app.ron_config.alt_network_button_hovered_color_rgb = [210, 110, 60];
+        app.ron_config.alt_network_button_pressed_color_rgb = [190,  90, 40];
+        app
+    }
+ 
+    #[test]
+    fn network_style_active_normal_uses_network_color()
+    {
+        let style = define_network_style(&make_network_style_app(false), button::Status::Active);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(10, 20, 30))));
+    }
+ 
+    #[test]
+    fn network_style_active_alt_uses_alt_color()
+    {
+        let style = define_network_style(&make_network_style_app(true), button::Status::Active);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(200, 100, 50))));
+    }
+ 
+    #[test]
+    fn network_style_normal_and_alt_differ()
+    {
+        let normal = define_network_style(&make_network_style_app(false), button::Status::Active);
+        let alt    = define_network_style(&make_network_style_app(true),  button::Status::Active);
+        assert_ne!(normal.background, alt.background);
+    }
+ 
+    #[test]
+    fn network_style_hovered_uses_hovered_color()
+    {
+        let style = define_network_style(&make_network_style_app(false), button::Status::Hovered);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(15, 25, 35))));
+    }
+ 
+    // level=2 icon path was missing from the existing tests
+    #[test]
+    fn network_text_level_2_uses_third_icon()
+    {
+        // Re-use the make_app helper already defined in the tests block
+        let app = make_app(2, 1, 10, "net");
+        assert!(define_network_text(&app).contains("L2"));
+    }
+ 
+    #[test]
+    fn network_text_level_1_uses_last_icon()
+    {
+        let app = make_app(1, 1, 10, "net");
+        assert!(define_network_text(&app).contains("L0"));
+    }
  
     fn make_app(level: u32, conn_type: u8, speed: u32, id: &str) -> AppData
     {

@@ -251,3 +251,103 @@ pub fn search_icon_recursive(dir: &Path, name: &str, exts: &[&str]) -> Option<Pa
     }
     None
 }
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use std::fs;
+ 
+    // ---- search_icon_recursive ---------------------------------------------
+ 
+    #[test]
+    fn search_icon_finds_png_in_flat_dir()
+    {
+        let dir = tempfile::tempdir().unwrap();
+        let icon_path = dir.path().join("myapp.png");
+        fs::write(&icon_path, b"fake png data").unwrap();
+ 
+        let result = search_icon_recursive(dir.path(), "myapp", &["png", "svg"]);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), icon_path);
+    }
+ 
+    #[test]
+    fn search_icon_finds_svg_in_flat_dir()
+    {
+        let dir = tempfile::tempdir().unwrap();
+        let icon_path = dir.path().join("myapp.svg");
+        fs::write(&icon_path, b"<svg/>").unwrap();
+ 
+        let result = search_icon_recursive(dir.path(), "myapp", &["png", "svg"]);
+        assert!(result.is_some());
+    }
+ 
+    #[test]
+    fn search_icon_finds_file_in_subdirectory()
+    {
+        let dir = tempfile::tempdir().unwrap();
+        let subdir = dir.path().join("48x48").join("apps");
+        fs::create_dir_all(&subdir).unwrap();
+        let icon_path = subdir.join("myapp.png");
+        fs::write(&icon_path, b"fake").unwrap();
+ 
+        let result = search_icon_recursive(dir.path(), "myapp", &["png"]);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), icon_path);
+    }
+ 
+    #[test]
+    fn search_icon_returns_none_when_not_found()
+    {
+        let dir = tempfile::tempdir().unwrap();
+        let result = search_icon_recursive(dir.path(), "ghost_app", &["png", "svg"]);
+        assert!(result.is_none());
+    }
+ 
+    #[test]
+    fn search_icon_does_not_match_wrong_extension()
+    {
+        let dir = tempfile::tempdir().unwrap();
+        fs::write(dir.path().join("myapp.jpg"), b"jpeg data").unwrap();
+ 
+        // looking for png/svg only — should not match .jpg
+        let result = search_icon_recursive(dir.path(), "myapp", &["png", "svg"]);
+        assert!(result.is_none());
+    }
+ 
+    #[test]
+    fn search_icon_does_not_match_partial_name()
+    {
+        let dir = tempfile::tempdir().unwrap();
+        fs::write(dir.path().join("myapp-extra.png"), b"fake").unwrap();
+ 
+        // stem is "myapp-extra", not "myapp"
+        let result = search_icon_recursive(dir.path(), "myapp", &["png"]);
+        assert!(result.is_none());
+    }
+ 
+    #[test]
+    fn search_icon_empty_directory_returns_none()
+    {
+        let dir = tempfile::tempdir().unwrap();
+        let result = search_icon_recursive(dir.path(), "anything", &["png"]);
+        assert!(result.is_none());
+    }
+ 
+    #[test]
+    fn search_icon_nonexistent_directory_returns_none()
+    {
+        let result = search_icon_recursive(
+            std::path::Path::new("/tmp/this_dir_does_not_exist_12345"),
+            "myapp",
+            &["png"],
+        );
+        assert!(result.is_none());
+    }
+}

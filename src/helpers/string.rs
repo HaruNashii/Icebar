@@ -376,4 +376,60 @@ mod tests
         let result = ellipsize(&String::new(), "abcdef", 3);
         assert_eq!(result, "abc");
     }
+
+    #[test]
+    fn full_pipeline_plain_text_does_not_panic()
+    {
+        let _ = convert_text_to_rich_text::<()>("plain text no tags", None);
+    }
+     
+    #[test]
+    fn full_pipeline_single_tag_does_not_panic()
+    {
+        let _ = convert_text_to_rich_text::<()>("[Color=(255,0,0),String=red] rest", None);
+    }
+     
+    #[test]
+    fn full_pipeline_multiple_tags_does_not_panic()
+    {
+        let _ = convert_text_to_rich_text::<()>(
+            "[Color=(255,0,0),String=red][Color=(0,255,0),String=green] plain",
+            None,
+        );
+    }
+     
+    #[test]
+    fn full_pipeline_with_default_color_does_not_panic()
+    {
+        use iced::Color;
+        let _ = convert_text_to_rich_text::<()>(
+            "[Color=(255,0,0),String=hello] world",
+            Some(Color::from_rgb8(200, 200, 200)),
+        );
+    }
+     
+    #[test]
+    fn full_pipeline_malformed_tag_falls_back_to_plain()
+    {
+        // Malformed tag — should not panic, should render as plain text
+        let _ = convert_text_to_rich_text::<()>("[Color=(bad),String=abc] rest", None);
+    }
+     
+    #[test]
+    fn full_pipeline_empty_string_does_not_panic()
+    {
+        let _ = convert_text_to_rich_text::<()>("", None);
+    }
+     
+    #[test]
+    fn full_pipeline_deeply_nested_tags_does_not_panic()
+    {
+        // Many chained tags to stress-test the recursion
+        let mut input = String::new();
+        for i in 0..20
+        {
+            input.push_str(&format!("[Color=({i},{i},{i}),String=tag{i}] "));
+        }
+        let _ = convert_text_to_rich_text::<()>(&input, None);
+    }
 }

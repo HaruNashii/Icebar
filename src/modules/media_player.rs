@@ -202,6 +202,100 @@ mod tests
     use super::*;
     use crate::AppData;
     use crate::modules::media_player::MediaPlayerData;
+    use iced::{Background, Color};
+    use iced::widget::button;
+ 
+    fn make_style_app() -> AppData
+    {
+        let mut app = AppData::default();
+        // metadata style colors
+        app.ron_config.media_player_metadata_button_color_rgb         = [10, 20, 30];
+        app.ron_config.media_player_metadata_button_hovered_color_rgb = [50, 60, 70];
+        app.ron_config.media_player_metadata_button_pressed_color_rgb = [80, 90, 100];
+        app.ron_config.media_player_metadata_button_text_color_rgb    = [200, 210, 220];
+        app.ron_config.media_player_metadata_button_hovered_text_color_rgb = [255, 255, 255];
+        // buttons style colors
+        app.ron_config.media_player_button_color_rgb         = [1, 2, 3];
+        app.ron_config.media_player_button_hovered_color_rgb = [4, 5, 6];
+        app.ron_config.media_player_button_pressed_color_rgb = [7, 8, 9];
+        app.ron_config.media_player_button_text_color_rgb    = [100, 100, 100];
+        app.ron_config.media_player_button_hovered_text_color_rgb = [150, 150, 150];
+        app
+    }
+ 
+    // ---- define_media_player_metadata_style ---------------------------------
+ 
+    #[test]
+    fn metadata_style_active_uses_metadata_normal_color()
+    {
+        let style = define_media_player_metadata_style(&make_style_app(), button::Status::Active);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(10, 20, 30))));
+    }
+ 
+    #[test]
+    fn metadata_style_hovered_uses_metadata_hovered_color()
+    {
+        let style = define_media_player_metadata_style(&make_style_app(), button::Status::Hovered);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(50, 60, 70))));
+    }
+ 
+    #[test]
+    fn metadata_style_pressed_uses_metadata_pressed_color()
+    {
+        let style = define_media_player_metadata_style(&make_style_app(), button::Status::Pressed);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(80, 90, 100))));
+    }
+ 
+    #[test]
+    fn metadata_style_active_text_color_correct()
+    {
+        let style = define_media_player_metadata_style(&make_style_app(), button::Status::Active);
+        assert_eq!(style.text_color, Color::from_rgb8(200, 210, 220));
+    }
+ 
+    #[test]
+    fn metadata_style_all_statuses_produce_background()
+    {
+        let app = make_style_app();
+        for status in [button::Status::Active, button::Status::Hovered, button::Status::Pressed, button::Status::Disabled]
+        {
+            let style = define_media_player_metadata_style(&app, status);
+            assert!(style.background.is_some(), "Expected background for {:?}", status);
+        }
+    }
+ 
+    // ---- define_media_player_buttons_style ----------------------------------
+ 
+    #[test]
+    fn buttons_style_active_uses_button_normal_color()
+    {
+        let style = define_media_player_buttons_style(&make_style_app(), button::Status::Active);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(1, 2, 3))));
+    }
+ 
+    #[test]
+    fn buttons_style_hovered_uses_button_hovered_color()
+    {
+        let style = define_media_player_buttons_style(&make_style_app(), button::Status::Hovered);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(4, 5, 6))));
+    }
+ 
+    #[test]
+    fn buttons_style_pressed_uses_button_pressed_color()
+    {
+        let style = define_media_player_buttons_style(&make_style_app(), button::Status::Pressed);
+        assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(7, 8, 9))));
+    }
+ 
+    #[test]
+    fn metadata_style_and_buttons_style_have_different_active_backgrounds()
+    {
+        // The two style functions must not be accidentally swapped
+        let app = make_style_app();
+        let meta    = define_media_player_metadata_style(&app, button::Status::Active);
+        let buttons = define_media_player_buttons_style( &app, button::Status::Active);
+        assert_ne!(meta.background, buttons.background);
+    }
  
     fn make_app(metadata: &str, status: &str) -> AppData
     {

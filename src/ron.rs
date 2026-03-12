@@ -334,7 +334,7 @@ impl Default for BarConfig
             font_style: "Normal".into(),
 
             // ================= MODULES =================
-            left_modules: vec![],
+            left_modules: vec![Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons],
             center_modules: vec![Modules::Clock],
             right_modules: vec![Modules::Tray, Modules::Network, Modules::VolumeOutput, Modules::VolumeInput],
 
@@ -706,4 +706,259 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, Vec<Modul
     println!("Active modules: {:?}", active_modules);
 
     (bar_config, anchor_position, current_time_zone, active_modules)
+}
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+ 
+    #[test]
+    fn bar_config_default_has_nonzero_bar_height()
+    {
+        let config = BarConfig::default();
+        assert!(config.bar_size[1] > 0, "default bar height should be > 0");
+    }
+ 
+    #[test]
+    fn bar_config_default_has_nonempty_font_family()
+    {
+        let config = BarConfig::default();
+        assert!(!config.font_family.is_empty());
+    }
+ 
+    #[test]
+    fn bar_config_default_has_nonempty_font_style()
+    {
+        let config = BarConfig::default();
+        assert!(!config.font_style.is_empty());
+    }
+ 
+    #[test]
+    fn bar_config_default_workspace_text_has_ten_entries()
+    {
+        let config = BarConfig::default();
+        assert_eq!(config.workspace_text.len(), 10);
+    }
+ 
+    #[test]
+    fn bar_config_default_workspace_selected_text_has_ten_entries()
+    {
+        let config = BarConfig::default();
+        let selected = config.workspace_selected_text.unwrap();
+        assert_eq!(selected.len(), 10);
+    }
+ 
+    #[test]
+    fn bar_config_default_output_volume_format_has_six_entries()
+    {
+        let config = BarConfig::default();
+        assert_eq!(config.output_volume_format.len(), 6);
+    }
+ 
+    #[test]
+    fn bar_config_default_input_volume_format_has_six_entries()
+    {
+        let config = BarConfig::default();
+        assert_eq!(config.input_volume_format.len(), 6);
+    }
+ 
+    #[test]
+    fn bar_config_default_media_player_buttons_format_has_four_entries()
+    {
+        let config = BarConfig::default();
+        assert_eq!(config.media_player_buttons_format.len(), 4);
+    }
+ 
+    #[test]
+    fn bar_config_default_network_level_format_has_four_entries()
+    {
+        let config = BarConfig::default();
+        assert_eq!(config.network_level_format.len(), 4);
+    }
+ 
+    #[test]
+    fn bar_config_default_connection_type_icons_has_three_entries()
+    {
+        let config = BarConfig::default();
+        assert_eq!(config.network_connection_type_icons.len(), 3);
+    }
+ 
+    #[test]
+    fn bar_config_default_alpha_values_within_0_to_100()
+    {
+        // Alpha in this app is 0..=100, NOT 0..=255
+        let config = BarConfig::default();
+        assert!(config.bar_background_color_rgba[3] <= 100);
+        assert!(config.bar_border_color_rgba[3] <= 100);
+        assert!(config.tray_border_color_rgba[3] <= 100);
+    }
+ 
+    #[test]
+    fn bar_config_default_position_is_up()
+    {
+        assert_eq!(BarConfig::default().bar_position, BarPosition::Up);
+    }
+ 
+    #[test]
+    fn bar_config_default_clock_timezones_is_none()
+    {
+        assert!(BarConfig::default().clock_timezones.is_none());
+    }
+ 
+    #[test]
+    fn bar_config_default_ellipsis_text_is_three_dots()
+    {
+        assert_eq!(BarConfig::default().ellipsis_text, "...");
+    }
+ 
+    #[test]
+    fn bar_config_default_incremental_steps_are_nonzero()
+    {
+        let config = BarConfig::default();
+        assert!(config.incremental_steps_output > 0);
+        assert!(config.incremental_steps_input > 0);
+    }
+
+        // ---- alt_network default arrays ----------------------------------------
+ 
+    #[test]
+    fn bar_config_default_alt_network_level_format_has_four_entries()
+    {
+        assert_eq!(BarConfig::default().alt_network_level_format.len(), 4);
+    }
+ 
+    #[test]
+    fn bar_config_default_alt_network_connection_type_icons_has_three_entries()
+    {
+        assert_eq!(BarConfig::default().alt_network_connection_type_icons.len(), 3);
+    }
+ 
+    // ---- Option fields default to None / Some sentinel ---------------------
+ 
+    #[test]
+    fn bar_config_default_display_is_none()
+    {
+        assert!(BarConfig::default().display.is_none());
+    }
+ 
+    #[test]
+    fn bar_config_default_persistent_workspaces_is_none()
+    {
+        assert!(BarConfig::default().persistent_workspaces.is_none());
+    }
+ 
+    #[test]
+    fn bar_config_default_force_static_position_context_menu_is_none()
+    {
+        assert!(BarConfig::default().force_static_position_context_menu.is_none());
+    }
+ 
+    // ---- String defaults are non-empty -------------------------------------
+ 
+    #[test]
+    fn bar_config_default_ellipsis_text_is_nonempty()
+    {
+        assert!(!BarConfig::default().ellipsis_text.is_empty());
+    }
+ 
+    #[test]
+    fn bar_config_default_network_disconnected_text_is_nonempty()
+    {
+        assert!(!BarConfig::default().network_disconnected_text.is_empty());
+    }
+ 
+    #[test]
+    fn bar_config_default_clock_format_is_nonempty()
+    {
+        assert!(!BarConfig::default().clock_format.is_empty());
+    }
+ 
+    #[test]
+    fn bar_config_default_network_module_format_is_nonempty()
+    {
+        assert!(!BarConfig::default().network_module_format.is_empty());
+    }
+ 
+    // ---- Numeric defaults are sane -----------------------------------------
+ 
+    #[test]
+    fn bar_config_default_incremental_steps_output_is_positive()
+    {
+        assert!(BarConfig::default().incremental_steps_output > 0);
+    }
+ 
+    #[test]
+    fn bar_config_default_incremental_steps_input_is_positive()
+    {
+        assert!(BarConfig::default().incremental_steps_input > 0);
+    }
+ 
+    #[test]
+    fn bar_config_default_context_menu_item_size_is_positive()
+    {
+        assert!(BarConfig::default().context_menu_item_size > 0);
+    }
+ 
+    #[test]
+    fn bar_config_default_context_menu_size_is_positive()
+    {
+        assert!(BarConfig::default().context_menu_size > 0);
+    }
+ 
+    #[test]
+    fn bar_config_default_tray_icon_size_is_positive()
+    {
+        assert!(BarConfig::default().tray_icon_size > 0);
+    }
+ 
+    // ---- Vec defaults are empty (user configures modules) ------------------
+ 
+    #[test]
+    fn bar_config_default_custom_modules_is_empty()
+    {
+        assert!(BarConfig::default().custom_modules.is_empty());
+    }
+ 
+    #[test]
+    fn bar_config_default_left_modules_is_not_empty()
+    {
+        assert!(!BarConfig::default().left_modules.is_empty());
+    }
+ 
+    #[test]
+    fn bar_config_default_center_modules_is_not_empty()
+    {
+        assert!(!BarConfig::default().center_modules.is_empty());
+    }
+ 
+    #[test]
+    fn bar_config_default_right_modules_is_not_empty()
+    {
+        assert!(!BarConfig::default().right_modules.is_empty());
+    }
+ 
+    // ---- BarPosition equality ----------------------------------------------
+ 
+    #[test]
+    fn bar_position_same_variants_are_equal()
+    {
+        assert_eq!(BarPosition::Up,    BarPosition::Up);
+        assert_eq!(BarPosition::Down,  BarPosition::Down);
+        assert_eq!(BarPosition::Left,  BarPosition::Left);
+        assert_eq!(BarPosition::Right, BarPosition::Right);
+    }
+ 
+    #[test]
+    fn bar_position_different_variants_are_not_equal()
+    {
+        assert_ne!(BarPosition::Up,   BarPosition::Down);
+        assert_ne!(BarPosition::Left, BarPosition::Right);
+        assert_ne!(BarPosition::Up,   BarPosition::Left);
+    }
 }
