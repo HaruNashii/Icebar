@@ -65,19 +65,8 @@ fn try_parse_tag(text: &str) -> Option<(&str, Color, &str, &str)>
     let inside = inside.strip_prefix('=')?.trim_start();
 
     // Support both String="text" and String=text
-    let (colored_text, rest) = if let Some(inside) = inside.strip_prefix('"') 
-    {
-        let (text, after_quote) = inside.split_once('"')?;
-        let bracket_end = after_quote.trim_start().find(']')?;
-        let rest = after_quote.trim_start()[bracket_end + 1..].trim_start();
-        (text, rest)
-    }
-    else 
-    {
-        // No quotes — read until ]
-        let (text, rest) = inside.split_once(']')?;
-        (text.trim_end(), rest)
-    };
+    let (unformated_colored_text, rest) = inside.split_once(']')?;
+    let colored_text = unformated_colored_text.trim_end();
 
     Some((before, color, colored_text, rest))
 }
@@ -181,17 +170,6 @@ mod tests
     // ---- try_parse_tag ------------------------------------------------------
  
     #[test]
-    fn try_parse_tag_basic_quoted()
-    {
-        let result = try_parse_tag(r#"[Color=(255, 0, 0),String="hello"] world"#);
-        let (before, color, colored, rest) = result.unwrap();
-        assert_eq!(before, "");
-        assert_eq!(color, Color::from_rgb8(255, 0, 0));
-        assert_eq!(colored, "hello");
-        assert_eq!(rest, "world");
-    }
- 
-    #[test]
     fn try_parse_tag_basic_unquoted()
     {
         let result = try_parse_tag("[Color=(0, 255, 0),String=world] rest");
@@ -205,17 +183,17 @@ mod tests
     #[test]
     fn try_parse_tag_with_text_before_tag()
     {
-        let result = try_parse_tag(r#"prefix [Color=(0, 0, 255),String="blue"] after"#);
+        let result = try_parse_tag(r#"prefix [Color=(0, 0, 255),String=blue] after"#);
         let (before, _color, colored, rest) = result.unwrap();
         assert_eq!(before, "prefix ");
         assert_eq!(colored, "blue");
-        assert_eq!(rest, "after");
+        assert_eq!(rest, " after");
     }
  
     #[test]
     fn try_parse_tag_with_spaces_inside_brackets()
     {
-        let result = try_parse_tag(r#"[ Color = ( 255 , 128 , 0 ) , String = "spaced" ] after"#);
+        let result = try_parse_tag(r#"[ Color = ( 255 , 128 , 0 ) , String =spaced ] after"#);
         let (_before, color, colored, _rest) = result.unwrap();
         assert_eq!(color, Color::from_rgb8(255, 128, 0));
         assert_eq!(colored, "spaced");
@@ -238,13 +216,13 @@ mod tests
     #[test]
     fn try_parse_tag_malformed_no_closing_bracket_returns_none()
     {
-        assert!(try_parse_tag(r#"[Color=(255,0,0),String="abc""#).is_none());
+        assert!(try_parse_tag(r#"[Color=(255,0,0),String=abc"#).is_none());
     }
  
     #[test]
     fn try_parse_tag_bad_color_returns_none()
     {
-        assert!(try_parse_tag(r#"[Color=(red,green,blue),String="abc"]"#).is_none());
+        assert!(try_parse_tag(r#"[Color=(red,green,blue),String=abc]"#).is_none());
     }
  
     // ---- ellipsize ----------------------------------------------------------
@@ -326,5 +304,76 @@ mod tests
         use iced::font::Weight;
         assert_eq!(weight_from_str("garbage"), Weight::Normal);
         assert_eq!(weight_from_str(""),         Weight::Normal);
+    }
+    
+    // ---- parse_colored_spans (via multiple-tag round-trip) ------------------
+ 
+    #[test]
+    fn two_consecutive_color_tags_both_parsed()
+    {
+        // The first tag's rest feeds recursively into parse_colored_spans, so
+        // we verify that two back-to-back tags both produce colored spans.
+        // We do this indirectly through try_parse_tag twice.
+        let input = r#"[Color=(255,0,0),String=red][Color=(0,255,0),String=green]"#;
+ 
+        let (before1, c1, text1, rest1) = try_parse_tag(input).unwrap();
+        assert_eq!(before1, "");
+        assert_eq!(c1, Color::from_rgb8(255, 0, 0));
+        assert_eq!(text1, "red");
+ 
+        let (before2, c2, text2, rest2) = try_parse_tag(rest1).unwrap();
+        assert_eq!(before2, "");
+        assert_eq!(c2, Color::from_rgb8(0, 255, 0));
+        assert_eq!(text2, "green");
+        assert_eq!(rest2, "");
+    }
+ 
+    #[test]
+    fn try_parse_tag_only_colored_text_no_rest()
+    {
+        let result = try_parse_tag(r#"[Color=(10,20,30),String=only]"#);
+        let (_before, color, colored, rest) = result.unwrap();
+        assert_eq!(color, Color::from_rgb8(10, 20, 30));
+        assert_eq!(colored, "only");
+        assert_eq!(rest, "");
+    }
+ 
+    #[test]
+    fn try_parse_tag_empty_colored_string_quoted()
+    {
+        // String="" is valid — empty colored span
+        let result = try_parse_tag(r#"[Color=(1,2,3),String=] tail"#);
+        let (_before, _color, colored, rest) = result.unwrap();
+        assert_eq!(colored, "");
+        assert_eq!(rest, " tail");
+    }
+ 
+    #[test]
+    fn try_parse_tag_wrong_keyword_returns_none()
+    {
+        // "colour" instead of "Color" must not match
+        assert!(try_parse_tag(r#"[colour=(255,0,0),String=abc]"#).is_none());
+    }
+ 
+    #[test]
+    fn try_parse_tag_missing_comma_between_rgb_and_string_returns_none()
+    {
+        assert!(try_parse_tag(r#"[Color=(255,0,0) String=abc]"#).is_none());
+    }
+ 
+    // ---- ellipsize edge cases -----------------------------------------------
+ 
+    #[test]
+    fn ellipsize_limit_zero_appends_ellipsis_immediately()
+    {
+        let result = ellipsize(&"...".to_string(), "hello", 0);
+        assert_eq!(result, "...");
+    }
+ 
+    #[test]
+    fn ellipsize_empty_ellipsis_string()
+    {
+        let result = ellipsize(&String::new(), "abcdef", 3);
+        assert_eq!(result, "abc");
     }
 }

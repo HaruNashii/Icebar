@@ -144,4 +144,72 @@ mod tests
         let result = get_current_time("TIME", &None);
         assert_eq!(result, "TIME");
     }
+
+    // ---- cycle_clock_timezones ----------------------------------------------
+ 
+    #[test]
+    fn cycle_clock_advances_to_next_timezone()
+    {
+        let mut app = AppData::default();
+        app.ron_config.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into(), "Asia/Tokyo".into()]);
+        app.current_clock_timezone = Some(("UTC".into(), 0));
+ 
+        cycle_clock_timezones(&mut app);
+        let (tz, idx) = app.current_clock_timezone.unwrap();
+        assert_eq!(tz, "America/New_York");
+        assert_eq!(idx, 1);
+    }
+ 
+    #[test]
+    fn cycle_clock_wraps_around_to_first()
+    {
+        let mut app = AppData::default();
+        app.ron_config.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into()]);
+        app.current_clock_timezone = Some(("America/New_York".into(), 1));
+ 
+        cycle_clock_timezones(&mut app);
+        let (tz, idx) = app.current_clock_timezone.unwrap();
+        assert_eq!(tz, "UTC");
+        assert_eq!(idx, 0);
+    }
+ 
+    #[test]
+    fn cycle_clock_no_timezones_configured_does_nothing()
+    {
+        let mut app = AppData::default();
+        app.ron_config.clock_timezones = None;
+        app.current_clock_timezone = Some(("UTC".into(), 0));
+ 
+        cycle_clock_timezones(&mut app);
+        // Should remain unchanged
+        let (tz, idx) = app.current_clock_timezone.unwrap();
+        assert_eq!(tz, "UTC");
+        assert_eq!(idx, 0);
+    }
+ 
+    #[test]
+    fn cycle_clock_empty_timezones_list_does_nothing()
+    {
+        let mut app = AppData::default();
+        app.ron_config.clock_timezones = Some(vec![]);
+        app.current_clock_timezone = Some(("UTC".into(), 0));
+ 
+        cycle_clock_timezones(&mut app);
+        let (tz, idx) = app.current_clock_timezone.unwrap();
+        assert_eq!(tz, "UTC");
+        assert_eq!(idx, 0);
+    }
+ 
+    #[test]
+    fn cycle_clock_single_timezone_wraps_to_itself()
+    {
+        let mut app = AppData::default();
+        app.ron_config.clock_timezones = Some(vec!["UTC".into()]);
+        app.current_clock_timezone = Some(("UTC".into(), 0));
+ 
+        cycle_clock_timezones(&mut app);
+        let (tz, idx) = app.current_clock_timezone.unwrap();
+        assert_eq!(tz, "UTC");
+        assert_eq!(idx, 0);
+    }
 }

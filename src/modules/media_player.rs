@@ -272,4 +272,55 @@ mod tests
         assert_eq!(prev, "<<");
         assert_eq!(next, ">>");
     }
+
+    // ---- define_button_data -------------------------------------------------
+ 
+    #[test]
+    fn button_data_vec_has_three_entries()
+    {
+        let data = define_button_data("<<".into(), "||".into(), ">>".into());
+        assert_eq!(data.len(), 3);
+    }
+ 
+    #[test]
+    fn button_data_labels_are_correct()
+    {
+        let data = define_button_data("PREV".into(), "PLAY".into(), "NEXT".into());
+        assert_eq!(data[0].0, "PREV");
+        assert_eq!(data[1].0, "PLAY");
+        assert_eq!(data[2].0, "NEXT");
+    }
+ 
+    #[test]
+    fn button_data_messages_are_correct_variants()
+    {
+        use crate::update::Message;
+        let data = define_button_data("".into(), "".into(), "".into());
+        assert!(matches!(data[0].1, Message::MediaPlayerClickPrev));
+        assert!(matches!(data[1].1, Message::MediaPlayerClickPlayPause));
+        assert!(matches!(data[2].1, Message::MediaPlayerClickNext));
+    }
+ 
+    // ---- metadata text with orientation ------------------------------------
+ 
+    #[test]
+    fn metadata_text_vertical_orientation_inserts_newlines()
+    {
+        use crate::helpers::style::TextOrientation;
+        let mut app = make_app("abc", "Playing");
+        app.ron_config.media_player_metadata_text_orientation = TextOrientation::Vertical;
+        let result = define_media_player_metadata_text(&app);
+        assert!(result.contains('\n'));
+    }
+ 
+    #[test]
+    fn metadata_text_dont_show_if_empty_flag_hides_fallback()
+    {
+        let mut app = make_app("", "Stopped");
+        app.ron_config.dont_show_metadata_if_empty = true;
+        // When dont_show is true and metadata is empty, it should still use
+        // the empty string (not the fallback), then ellipsize — result is empty.
+        let result = define_media_player_metadata_text(&app);
+        assert_eq!(result, "");
+    }
 }

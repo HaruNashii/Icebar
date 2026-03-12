@@ -173,4 +173,29 @@ mod tests
         assert_eq!(define_workspaces_padding(&app, 1), 10);
         assert_eq!(define_workspaces_padding(&app, 2), 10);
     }
+        #[test]
+    fn workspace_text_id_1_returns_first_element()
+    {
+        let app = make_app(3);
+        // workspace 1 is not current (current=3), should return workspace_text[0]
+        assert_eq!(define_workspaces_text(&app, 1), "ws1");
+    }
+ 
+    #[test]
+    fn workspace_text_all_three_workspaces_correct()
+    {
+        let app = make_app(99); // nothing is selected
+        assert_eq!(define_workspaces_text(&app, 1), "ws1");
+        assert_eq!(define_workspaces_text(&app, 2), "ws2");
+        assert_eq!(define_workspaces_text(&app, 3), "ws3");
+    }
+ 
+    #[test]
+    fn workspace_text_selected_text_none_falls_back_for_current()
+    {
+        let mut app = make_app(2);
+        app.ron_config.workspace_selected_text = None;
+        // Should fall back to id.to_string() when no selected_text provided
+        assert_eq!(define_workspaces_text(&app, 2), "2");
+    }
 }

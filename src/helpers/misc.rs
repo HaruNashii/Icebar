@@ -131,4 +131,125 @@ mod tests
         assert!(is_active_module(&modules, Modules::CustomModule(2)));
         assert!(!is_active_module(&modules, Modules::CustomModule(1)));
     }
+
+    // ---- validade_bar_size_and_margin ---------------------------------------
+ 
+    #[test]
+    fn validate_bar_margin_up_applies_to_top()
+    {
+        let mut config = crate::ron::BarConfig::default();
+        config.bar_position = crate::ron::BarPosition::Up;
+        config.bar_size = [0, 40];
+        config.floating_space = 8;
+        config.increased_exclusive_bar_zone = 0;
+ 
+        let ((_, h), exclusive, (top, right, bottom, left)) = validade_bar_size_and_margin(&config);
+        assert_eq!(h, 40);
+        assert_eq!(exclusive, 40);
+        assert_eq!(top, 8);
+        assert_eq!(right, 0);
+        assert_eq!(bottom, 0);
+        assert_eq!(left, 0);
+    }
+ 
+    #[test]
+    fn validate_bar_margin_down_applies_to_bottom()
+    {
+        let mut config = crate::ron::BarConfig::default();
+        config.bar_position = crate::ron::BarPosition::Down;
+        config.bar_size = [0, 35];
+        config.floating_space = 4;
+        config.increased_exclusive_bar_zone = 0;
+ 
+        let (_, _, (top, right, bottom, left)) = validade_bar_size_and_margin(&config);
+        assert_eq!(top, 0);
+        assert_eq!(bottom, 4);
+        assert_eq!(right, 0);
+        assert_eq!(left, 0);
+    }
+ 
+    #[test]
+    fn validate_bar_margin_left_applies_to_left()
+    {
+        let mut config = crate::ron::BarConfig::default();
+        config.bar_position = crate::ron::BarPosition::Left;
+        config.bar_size = [50, 0];
+        config.floating_space = 6;
+        config.increased_exclusive_bar_zone = 0;
+ 
+        let ((w, _), exclusive, (top, right, bottom, left)) = validade_bar_size_and_margin(&config);
+        assert_eq!(w, 50);
+        assert_eq!(exclusive, 50);
+        assert_eq!(left, 6);
+        assert_eq!(top, 0);
+        assert_eq!(right, 0);
+        assert_eq!(bottom, 0);
+    }
+ 
+    #[test]
+    fn validate_bar_margin_right_applies_to_right()
+    {
+        let mut config = crate::ron::BarConfig::default();
+        config.bar_position = crate::ron::BarPosition::Right;
+        config.bar_size = [50, 0];
+        config.floating_space = 3;
+        config.increased_exclusive_bar_zone = 5;
+ 
+        let ((w, _), exclusive, (_, right, _, _)) = validade_bar_size_and_margin(&config);
+        assert_eq!(w, 50);
+        assert_eq!(exclusive, 55); // 50 + 5
+        assert_eq!(right, 3);
+    }
+ 
+    #[test]
+    fn validate_bar_increased_exclusive_zone_adds_to_exclusive()
+    {
+        let mut config = crate::ron::BarConfig::default();
+        config.bar_position = crate::ron::BarPosition::Up;
+        config.bar_size = [0, 30];
+        config.increased_exclusive_bar_zone = 10;
+ 
+        let (_, exclusive, _) = validade_bar_size_and_margin(&config);
+        assert_eq!(exclusive, 40); // 30 + 10
+    }
+ 
+    #[test]
+    #[should_panic(expected = "Bar Heigth Can't Be Zero")]
+    fn validate_bar_up_with_zero_height_panics()
+    {
+        let mut config = crate::ron::BarConfig::default();
+        config.bar_position = crate::ron::BarPosition::Up;
+        config.bar_size = [0, 0];
+        validade_bar_size_and_margin(&config);
+    }
+ 
+    #[test]
+    #[should_panic(expected = "Bar Heigth Can't Be Zero")]
+    fn validate_bar_down_with_zero_height_panics()
+    {
+        let mut config = crate::ron::BarConfig::default();
+        config.bar_position = crate::ron::BarPosition::Down;
+        config.bar_size = [0, 0];
+        validade_bar_size_and_margin(&config);
+    }
+ 
+    #[test]
+    #[should_panic(expected = "Bar Width Can't Be Zero")]
+    fn validate_bar_left_with_zero_width_panics()
+    {
+        let mut config = crate::ron::BarConfig::default();
+        config.bar_position = crate::ron::BarPosition::Left;
+        config.bar_size = [0, 0];
+        validade_bar_size_and_margin(&config);
+    }
+ 
+    #[test]
+    #[should_panic(expected = "Bar Width Can't Be Zero")]
+    fn validate_bar_right_with_zero_width_panics()
+    {
+        let mut config = crate::ron::BarConfig::default();
+        config.bar_position = crate::ron::BarPosition::Right;
+        config.bar_size = [0, 0];
+        validade_bar_size_and_margin(&config);
+    }
 }

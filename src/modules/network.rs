@@ -237,3 +237,107 @@ pub fn define_network_text(app: &AppData) -> String
         orient_text(&string, orientation)
     }
 }
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::AppData;
+    use crate::modules::network::NetworkData;
+ 
+    fn make_app(level: u32, conn_type: u8, speed: u32, id: &str) -> AppData
+    {
+        let mut app = AppData::default();
+        app.modules_data.network_data = NetworkData { network_level: level, connection_type: conn_type, network_speed: speed, id: id.into() };
+        app.network_icons = ["L4".into(), "L3".into(), "L2".into(), "L0".into()];
+        app.connection_type_icons = ["ETH".into(), "WIFI".into(), "?".into()];
+        app.ron_config.network_module_format = "{level}|{connection_type}|{speed}|{id}".into();
+        app.ron_config.alt_network_module_format = "ALT:{level}".into();
+        app
+    }
+ 
+    #[test]
+    fn network_text_level_4_uses_first_icon()
+    {
+        let app = make_app(4, 1, 100, "home");
+        let text = define_network_text(&app);
+        assert!(text.contains("L4"));
+    }
+ 
+    #[test]
+    fn network_text_level_3_uses_second_icon()
+    {
+        let app = make_app(3, 1, 100, "home");
+        assert!(define_network_text(&app).contains("L3"));
+    }
+ 
+    #[test]
+    fn network_text_level_below_2_uses_last_icon()
+    {
+        let app = make_app(0, 1, 100, "home");
+        assert!(define_network_text(&app).contains("L0"));
+    }
+ 
+    #[test]
+    fn network_text_connection_type_1_uses_ethernet_icon()
+    {
+        let app = make_app(4, 1, 100, "home");
+        assert!(define_network_text(&app).contains("ETH"));
+    }
+ 
+    #[test]
+    fn network_text_connection_type_2_uses_wifi_icon()
+    {
+        let app = make_app(4, 2, 100, "home");
+        assert!(define_network_text(&app).contains("WIFI"));
+    }
+ 
+    #[test]
+    fn network_text_connection_type_other_uses_unknown_icon()
+    {
+        let app = make_app(4, 3, 100, "home");
+        assert!(define_network_text(&app).contains("?"));
+    }
+ 
+    #[test]
+    fn network_text_zero_speed_shows_question_mark()
+    {
+        let app = make_app(4, 1, 0, "home");
+        assert!(define_network_text(&app).contains("?"));
+    }
+ 
+    #[test]
+    fn network_text_nonzero_speed_shows_numeric()
+    {
+        let app = make_app(4, 1, 75, "home");
+        assert!(define_network_text(&app).contains("75"));
+    }
+ 
+    #[test]
+    fn network_text_id_substituted_correctly()
+    {
+        let app = make_app(4, 1, 50, "MyNetwork");
+        assert!(define_network_text(&app).contains("MyNetwork"));
+    }
+ 
+    #[test]
+    fn network_text_alt_module_uses_alt_format()
+    {
+        let mut app = make_app(4, 1, 50, "home");
+        app.is_showing_alt_network_module = true;
+        let text = define_network_text(&app);
+        assert!(text.starts_with("ALT:"));
+    }
+ 
+    #[test]
+    fn network_text_normal_module_does_not_use_alt_format()
+    {
+        let app = make_app(4, 1, 50, "home");
+        assert!(!define_network_text(&app).starts_with("ALT:"));
+    }
+}

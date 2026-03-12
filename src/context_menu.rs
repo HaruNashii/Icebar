@@ -376,4 +376,29 @@ mod tests
         assert_eq!(w, 90);
         assert_eq!(h, 60);
     }
+
+    #[test]
+    fn context_menu_size_zero_items_only_background_padding()
+    {
+        use crate::helpers::style::TextOrientation;
+        let mut config = crate::ron::BarConfig::default();
+        config.context_menu_orientation = TextOrientation::Vertical;
+        config.context_menu_size = 200;
+        config.context_menu_item_size = 30;
+        config.context_menu_background_size = 10;
+ 
+        let data = ContextMenuData { items: vec![], ron_config: config, ..Default::default() };
+        let (w, h) = get_context_menu_size(&data);
+        // width = 200 + 20 = 220, height = 0*30 + 20 = 20
+        assert_eq!(w, 220);
+        assert_eq!(h, 20);
+    }
+ 
+    #[test]
+    fn popup_position_cursor_at_center_of_screen()
+    {
+        let (x, y) = smart_popup_position(960, 540, 1920, 1080, 100, 50);
+        assert_eq!(x, 910); // 960 - 50
+        assert_eq!(y, 515); // 540 - 25
+    }
 }
