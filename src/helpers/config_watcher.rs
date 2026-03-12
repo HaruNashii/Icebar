@@ -44,7 +44,7 @@ fn config_watcher_stream(reload_interval: &u64) -> Pin<Box<dyn futures::Stream<I
                 }
             }).expect("Failed to create file watcher");
             watcher.watch(&config_path, RecursiveMode::NonRecursive).expect("Failed to watch config file");
-            loop { std::thread::sleep(std::time::Duration::from_secs(60)); }
+            loop { std::thread::sleep(std::time::Duration::from_secs(1)); }
         });
         while rx.recv().await.is_some()
         {

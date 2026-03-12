@@ -353,6 +353,7 @@ BarConfig
     workspace_width: 5,
     workspace_different_selected_width: None,
     workspace_text_size: 15,
+    workspace_selected_text_color_rgb: (255, 255, 255),
     workspace_text_color_rgb: (255, 255, 255),
     workspace_text_orientation: Horizontal,
     workspace_text: 

@@ -37,9 +37,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //  LEFT  : [SYS_LABEL] [CPU/RAM live readout]
-    //  CENTER: [Clock]
-    //  RIGHT : [Network] [VolumeOut] [VolumeIn] [Tray]
     left_modules:  [CustomModule(0), CustomModule(1)],
     center_modules: [Clock],
     right_modules: [Network, VolumeOutput, VolumeInput, Tray],

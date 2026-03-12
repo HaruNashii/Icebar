@@ -63,12 +63,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  Stubby capsule — only 5 module slots, no badge
-    //  TOP    : HyprWorkspaces
-    //  CENTER : Clock
-    //  BOTTOM : VolumeOutput  Network  Tray
-    //
     left_modules:  [NiriWorkspaces],
     center_modules: [Clock],
     right_modules: [VolumeOutput, Network, Tray],

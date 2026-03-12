@@ -66,14 +66,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  Sidebar layout (top → bottom):
-    //
-    //  TOP    : [Badge]  [HyprWorkspaces]
-    //  CENTER : [Clock]
-    //  BOTTOM : [VolumeOutput]  [VolumeInput]
-    //           [Network]  [Tray]
-    //
     left_modules:  [CustomModule(0), NiriWorkspaces],
     center_modules:[Clock],
     right_modules: [VolumeOutput, VolumeInput, Network, Tray],

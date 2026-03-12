@@ -349,6 +349,7 @@ BarConfig
     ]),
     workspace_spacing: 3,
     workspace_button_color_rgb: (45, 40, 55),
+    workspace_selected_text_color_rgb: (255, 255, 255),
     workspace_button_text_color_rgb: (200, 200, 210),
     workspace_button_selected_color_rgb: (150, 40, 80),
     workspace_button_hovered_color_rgb: (140, 35, 75),

@@ -1,5 +1,3 @@
-// This File Is Auto-Generated When Icebar Detects That The Config File Or Config Directory Doesn't Exists.
-
 // ===== WARNINGS =====
 // WARNING!!!: THE ALPHA OF THE RGBA HAS THE RANGE BETWEEN 0 TO 100, PARSING MORE THAN 100 WILL RESULT IN CRASH
 // WARNING!!!: "bar_size" FIRST OPTION DEFINED TO "0" WILL MAKE THE BAR FILL THE ENTIRE SCREEN X AXIS

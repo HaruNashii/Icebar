@@ -46,11 +46,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  LEFT   :  [季節 SEASON badge]  [HyprWorkspaces]
-    //  CENTER :  [Clock]
-    //  RIGHT  :  [Now Playing]  [Network]  [VolumeOut]  [Tray]
-    //
     left_modules:  [CustomModule(0), HyprWorkspaces],
     center_modules: [Clock],
     right_modules: [CustomModule(1), Network, VolumeOutput, Tray],

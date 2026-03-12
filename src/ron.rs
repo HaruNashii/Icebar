@@ -267,6 +267,7 @@ pub struct BarConfig
     pub workspace_text_size: u32,
     pub workspace_text: Vec<String>,
     pub workspace_text_color_rgb: [u8;3],
+    pub workspace_selected_text_color_rgb: [u8;3],
     pub workspace_text_orientation: TextOrientation,
     pub workspace_selected_text: Option<Vec<String>>,
     pub workspace_spacing: u32,
@@ -576,6 +577,7 @@ impl Default for BarConfig
             workspace_width: 5,
             workspace_different_selected_width: None,
             workspace_text_size: 15,
+            workspace_selected_text_color_rgb: [255, 255, 255],
             workspace_text_color_rgb: [255, 255, 255],
             workspace_text_orientation: TextOrientation::Horizontal,
             workspace_text: vec!

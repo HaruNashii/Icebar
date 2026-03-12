@@ -55,11 +55,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  LEFT   : MediaPlayerButtons (opener — no badge)
-    //  CENTER : HyprWorkspaces
-    //  RIGHT  : VolumeOutput  Network  Clock (timestamp closer)
-    //
     left_modules:  [MediaPlayerButtons, MediaPlayerMetaData],
     center_modules: [HyprWorkspaces],
     right_modules: [VolumeOutput, VolumeInput, Network, Clock],

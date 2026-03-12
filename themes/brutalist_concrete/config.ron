@@ -48,11 +48,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  LEFT   :  [BLOC ID badge]  [HyprWorkspaces]  [CPU/RAM]
-    //  CENTER :  [Clock]
-    //  RIGHT  :  [Now Playing]  [Network]  [VolumeOut]  [Tray]
-    //
     left_modules:  [CustomModule(0), HyprWorkspaces, CustomModule(1)],
     center_modules: [Clock],
     right_modules: [CustomModule(2), Network, VolumeOutput, Tray],

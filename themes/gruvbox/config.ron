@@ -66,11 +66,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  LEFT   : [Badge]  [HyprWorkspaces]  [CPU/RAM]
-    //  CENTER : [Clock]
-    //  RIGHT  : [MediaPlayerMetaData]  [Network]  [VolumeOutput]  [VolumeInput]  [Tray]
-    //
     left_modules:  [CustomModule(0), NiriWorkspaces, CustomModule(1)],
     center_modules: [Clock],
     right_modules: [MediaPlayerMetaData, Network, VolumeOutput, VolumeInput, Tray],

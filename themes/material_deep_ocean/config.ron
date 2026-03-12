@@ -35,10 +35,6 @@
 //    · Module radius: (6., 6., 6., 6.) — subtle inside the wide bar
 //    · Font: "Roboto Mono" Bold — Material Design's mono typeface
 //    · Font size: 13 — compact, fits the generous width without wasted space
-//    · Layout fills all three zones tightly:
-//        LEFT   : Badge  Workspaces  CustomModule(1)[CPU+RAM]
-//        CENTER : Clock
-//        RIGHT  : MediaPlayerMetaData  MediaPlayerButtons  VolumeOutput  Network  Tray
 //    · Cyan is the soul of Material Deep Ocean — badge, selected ws, clock
 //    · Pink owns media — never paired with cyan in any other config
 //    · Yellow volume — warm against the deep cold background
@@ -65,11 +61,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  LEFT   : Badge  Workspaces  CPU+RAM
-    //  CENTER : Clock
-    //  RIGHT  : MediaMetaData  MediaButtons  VolumeOutput  Network  Tray
-    //
     left_modules:  [CustomModule(0), HyprWorkspaces, CustomModule(1)],
     center_modules: [Clock],
     right_modules: [MediaPlayerMetaData, MediaPlayerButtons, VolumeOutput, Network, Tray],

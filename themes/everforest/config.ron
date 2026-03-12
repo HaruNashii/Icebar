@@ -61,12 +61,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  No workspaces, no badge, no media — just pure system info
-    //  LEFT   : NiriWorkspaces
-    //  CENTER : Clock
-    //  RIGHT  : Network  VolumeOutput  Tray
-    //
     left_modules:  [NiriWorkspaces],
     center_modules: [Clock],
     right_modules: [Network, VolumeOutput, Tray],

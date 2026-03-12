@@ -86,8 +86,16 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 {
                     let non_color_workspace_text = define_workspaces_text(app, *i);
                     let padding_y = define_workspaces_padding(app, *i);
-                    let [r, g, b] = &app.ron_config.workspace_text_color_rgb;
-                    let color_to_send = Color::from_rgb8(*r, *g, *b);
+                    let color_to_send   = if *i == app.modules_data.workspace_data.current_workspace
+                    {
+                        let [r, g, b] = &app.ron_config.workspace_selected_text_color_rgb;
+                        Color::from_rgb8(*r, *g, *b)
+                    }
+                    else
+                    {
+                        let [r, g, b] = &app.ron_config.workspace_text_color_rgb;
+                        Color::from_rgb8(*r, *g, *b)
+                    };
                     let workspace_text = convert_text_to_rich_text(&non_color_workspace_text, Some(color_to_send));
                     button
                     (

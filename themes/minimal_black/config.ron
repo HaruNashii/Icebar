@@ -36,11 +36,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  LEFT   : YourWorkspaces
-    //  CENTER : Clock
-    //  RIGHT  : Network  VolumeOutput  Tray
-    //
     left_modules:  [NiriWorkspaces],
     center_modules: [Clock],
     right_modules: [Network, VolumeOutput, Tray],

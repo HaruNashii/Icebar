@@ -36,10 +36,6 @@
 //    · bar_border_radius: (0,0,0,0) — the bar is a solid black channel
 //    · MODULE LOZENGES: every module has border_radius: (20,20,20,20)
 //      They float as pill-shaped lozenges inside the black channel
-//    · LAYOUT IS REVERSED from every previous config:
-//        LEFT   : Clock (most important — gets leftmost prime position)
-//        CENTER : HyprWorkspaces
-//        RIGHT  : VolumeOutput · Network · CustomModule(0)[UPTIME] · Tray
 //    · NO launcher badge module at all — first time in the collection
 //    · NO media metadata module — clean, information-only
 //    · Clock uses support_warning yellow — IBM's "attention" signal color
@@ -68,12 +64,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  REVERSED LAYOUT:
-    //  LEFT   : Clock ← most important info, leftmost prime reading position
-    //  CENTER : HyprWorkspaces
-    //  RIGHT  : VolumeOutput  Network  Uptime  Tray
-    //
     left_modules:  [Clock],
     center_modules: [NiriWorkspaces],
     right_modules: [VolumeOutput, Network, CustomModule(0), Tray],

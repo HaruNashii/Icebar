@@ -68,11 +68,6 @@ BarConfig
 
 
     // ================= MODULES =================
-    //
-    //  LEFT   : Badge  Workspaces
-    //  CENTER : MediaPlayerButtons  MediaPlayerMetaData
-    //  RIGHT  : Network  VolumeOutput  Clock  Tray
-    //
     left_modules:  [CustomModule(0), NiriWorkspaces],
     center_modules: [MediaPlayerButtons, MediaPlayerMetaData],
     right_modules: [Network, VolumeOutput, Clock, Tray],
