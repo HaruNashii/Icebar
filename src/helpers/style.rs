@@ -110,3 +110,51 @@ pub fn bar_style(app: &AppData) -> impl Fn(&Theme) -> container::Style
         bar_style
     }
 }
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+ 
+    // ---- orient_text --------------------------------------------------------
+ 
+    #[test]
+    fn orient_text_horizontal_unchanged()
+    {
+        let result = orient_text("hello world", &TextOrientation::Horizontal);
+        assert_eq!(result, "hello world");
+    }
+ 
+    #[test]
+    fn orient_text_vertical_joins_with_newlines()
+    {
+        let result = orient_text("abc", &TextOrientation::Vertical);
+        assert_eq!(result, "a\nb\nc");
+    }
+ 
+    #[test]
+    fn orient_text_vertical_space_becomes_blank_line()
+    {
+        let result = orient_text("a b", &TextOrientation::Vertical);
+        assert_eq!(result, "a\n \nb");
+    }
+ 
+    #[test]
+    fn orient_text_vertical_trims_trailing_whitespace()
+    {
+        let result = orient_text("ab ", &TextOrientation::Vertical);
+        assert_eq!(result, "a\nb");
+    }
+ 
+    #[test]
+    fn orient_text_empty_string()
+    {
+        assert_eq!(orient_text("", &TextOrientation::Horizontal), "");
+        assert_eq!(orient_text("", &TextOrientation::Vertical),   "");
+    }
+}

@@ -190,3 +190,86 @@ pub fn create_media_button<'a>(app: &'a AppData, label: String, message: Message
             define_media_player_buttons_style(app, status)
         }).on_press(message)).align_y(Alignment::Center).into()
 }
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::AppData;
+    use crate::modules::media_player::MediaPlayerData;
+ 
+    fn make_app(metadata: &str, status: &str) -> AppData
+    {
+        let mut app = AppData::default();
+        app.modules_data.media_player_data = MediaPlayerData
+        {
+            metadata: metadata.into(),
+            status: status.into(),
+        };
+        app.ron_config.media_player_metadata_text_limit_len = 20;
+        app.ron_config.ellipsis_text = "...".into();
+        app.ron_config.dont_show_metadata_if_empty = false;
+        app.ron_config.text_when_metadata_is_empty = "No Media".into();
+        app.ron_config.media_player_buttons_format = ["<<".into(), "||".into(), ">".into(), ">>".into()];
+        app
+    }
+ 
+    // ---- define_media_player_metadata_text ----------------------------------
+ 
+    #[test]
+    fn metadata_text_short_returned_as_is()
+    {
+        let app = make_app("short title", "Playing");
+        let result = define_media_player_metadata_text(&app);
+        assert_eq!(result, "short title");
+    }
+ 
+    #[test]
+    fn metadata_text_long_gets_ellipsized()
+    {
+        let app = make_app("this is a very long title that exceeds the limit", "Playing");
+        let result = define_media_player_metadata_text(&app);
+        assert!(result.ends_with("..."));
+        assert!(result.chars().count() <= 23); // 20 + "...".len()
+    }
+ 
+    #[test]
+    fn metadata_text_empty_shows_fallback()
+    {
+        let app = make_app("", "Stopped");
+        let result = define_media_player_metadata_text(&app);
+        assert_eq!(result, "No Media");
+    }
+ 
+    // ---- define_media_player_buttons_text -----------------------------------
+ 
+    #[test]
+    fn buttons_text_playing_returns_pause_symbol()
+    {
+        let app = make_app("", "Playing");
+        let (_prev, play_pause, _next) = define_media_player_buttons_text(&app);
+        assert_eq!(play_pause, "||");
+    }
+ 
+    #[test]
+    fn buttons_text_paused_returns_play_symbol()
+    {
+        let app = make_app("", "Paused");
+        let (_prev, play_pause, _next) = define_media_player_buttons_text(&app);
+        assert_eq!(play_pause, ">");
+    }
+ 
+    #[test]
+    fn buttons_text_prev_and_next_always_same()
+    {
+        let app = make_app("", "Playing");
+        let (prev, _pp, next) = define_media_player_buttons_text(&app);
+        assert_eq!(prev, "<<");
+        assert_eq!(next, ">>");
+    }
+}

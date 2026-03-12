@@ -124,3 +124,111 @@ pub fn define_custom_module_text(index: usize, custom_module: &CustomModule, app
         custom_module.text.clone()
     }
 }
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::AppData;
+ 
+    fn make_module() -> CustomModule
+    {
+        CustomModule
+        {
+            text: "MyText".into(),
+            use_output_as_text: false,
+            use_continous_output_as_text: false,
+            all_output_as_text_format: String::new(),
+            output_text_limit_len: 100,
+            dont_show_if_any_output_is_empty: false,
+            ..Default::default()
+        }
+    }
+ 
+    // ---- define_custom_module_text ------------------------------------------
+ 
+    #[test]
+    fn custom_module_text_plain_returns_text_field()
+    {
+        let app = AppData::default();
+        let m = make_module();
+        assert_eq!(define_custom_module_text(0, &m, &app), "MyText");
+    }
+ 
+    #[test]
+    fn custom_module_text_with_command_output()
+    {
+        let mut app = AppData::default();
+        app.cached_command_outputs = vec!["CmdOut".to_string()];
+        let m = CustomModule
+        {
+            use_output_as_text: true,
+            all_output_as_text_format: "{output}".into(),
+            ..make_module()
+        };
+        assert_eq!(define_custom_module_text(0, &m, &app), "CmdOut");
+    }
+ 
+    #[test]
+    fn custom_module_text_format_replaces_text_and_output()
+    {
+        let mut app = AppData::default();
+        app.cached_command_outputs = vec!["99%".to_string()];
+        let m = CustomModule
+        {
+            text: "CPU".into(),
+            use_output_as_text: true,
+            all_output_as_text_format: "{text}: {output}".into(),
+            ..make_module()
+        };
+        assert_eq!(define_custom_module_text(0, &m, &app), "CPU: 99%");
+    }
+ 
+    #[test]
+    fn custom_module_text_dont_show_if_empty()
+    {
+        let mut app = AppData::default();
+        app.cached_command_outputs = vec!["".to_string()];
+        let m = CustomModule
+        {
+            use_output_as_text: true,
+            all_output_as_text_format: "{output}".into(),
+            dont_show_if_any_output_is_empty: true,
+            ..make_module()
+        };
+        assert_eq!(define_custom_module_text(0, &m, &app), "");
+    }
+ 
+    #[test]
+    fn custom_module_text_with_continuous_output()
+    {
+        let mut app = AppData::default();
+        app.cached_continuous_outputs = vec!["live_data".to_string()];
+        let m = CustomModule
+        {
+            use_continous_output_as_text: true,
+            all_output_as_text_format: "{continous_output}".into(),
+            ..make_module()
+        };
+        assert_eq!(define_custom_module_text(0, &m, &app), "live_data");
+    }
+ 
+    #[test]
+    fn custom_module_text_strips_newlines_from_output()
+    {
+        let mut app = AppData::default();
+        app.cached_command_outputs = vec!["line1\nline2".to_string()];
+        let m = CustomModule
+        {
+            use_output_as_text: true,
+            all_output_as_text_format: "{output}".into(),
+            ..make_module()
+        };
+        assert_eq!(define_custom_module_text(0, &m, &app), "line1line2");
+    }
+}

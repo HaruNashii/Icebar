@@ -87,3 +87,48 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
     ).align_y(Alignment::Center)
     .into()
 }
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::modules::data::Modules;
+ 
+    // ---- is_active_module ---------------------------------------------------
+ 
+    #[test]
+    fn is_active_module_found()
+    {
+        let modules = vec![Modules::Clock, Modules::Network, Modules::Tray];
+        assert!(is_active_module(&modules, Modules::Clock));
+        assert!(is_active_module(&modules, Modules::Network));
+        assert!(is_active_module(&modules, Modules::Tray));
+    }
+ 
+    #[test]
+    fn is_active_module_not_found()
+    {
+        let modules = vec![Modules::Clock];
+        assert!(!is_active_module(&modules, Modules::Network));
+    }
+ 
+    #[test]
+    fn is_active_module_empty_list()
+    {
+        assert!(!is_active_module(&vec![], Modules::Clock));
+    }
+ 
+    #[test]
+    fn is_active_module_custom_module_matches_by_index()
+    {
+        let modules = vec![Modules::CustomModule(0), Modules::CustomModule(2)];
+        assert!(is_active_module(&modules, Modules::CustomModule(0)));
+        assert!(is_active_module(&modules, Modules::CustomModule(2)));
+        assert!(!is_active_module(&modules, Modules::CustomModule(1)));
+    }
+}

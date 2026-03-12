@@ -45,8 +45,12 @@ pub fn check_if_config_file_exists()
 // WARNING!!!: THE OPTION "bar_size: ()" HAS THE TYPE AS: (WIDTH, HEIGTH), IF YOU ARE CREATING AN SIDE BAR, THE VALUE OF 0 IN THE FIRST OPTION IS NOT VALID, AND WILL RESULT IN CRASH OR THE APP HANGING!!!
 // WARNING!!!: "NiriWorkspaces" DOESN'T SUPPORT "persistent_workspaces", IF YOU PARSED IT, IT WILL BE IGNORED
 
+
 // ===== TIPS =====
 // All possible modules: "MediaPlayerMetaData", "MediaPlayerButtons", "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Network", "Clock", "Tray".
+//
+// All texts supports per color flags per string, you just need to have "[Color=(Red, Green, Blue), String=YourString]", you can have multiples color flags for text 
+// like: "[Color=(255, 0, 0), String=red_string], non_colored_String [Color=(0, 0, 255), String=blue_string]", this will display "red_string non_colored_String, blue_string", all with your respective colors
 //
 // Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
 //
@@ -67,7 +71,7 @@ pub fn check_if_config_file_exists()
 // To see the correct "font_family" and "font_style" i recommend using "fc-scan $PATH_TO_FONT_FILE".
 //
 // every custom module you make will be assigned an index based on the position they are, from top to bottom, the first = 0, the second = 1
-// so for parsing your custom_module to the position just put on the position modules your "custom_module[index]".
+// so for parsing your custom_module to the position just put on the position modules your "custom_module[index]"
 //
 // if "bar_check_reload_interval_ms" is set to "None" the bar will not hot-reload, 
 // it may make the bar lighter if it's turned off, so if you don't pretend to use this feature is reccommended to turn it off.
@@ -133,15 +137,22 @@ BarConfig
     action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]), 
     action_on_left_click_volume_input: DefaultAction, 
     action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]), 
-
+	
 
     // ================= FORMATS =================
     media_player_buttons_format: ("󰒮", "⏸", "▶", "󰒭"),
     media_player_metadata_format: "{{artist}} | {{album}} | {{title}}",
     network_disconnected_text: "No Connection Found.",
-    alt_network_module_format: "{level} | {connection_type} | {id}  | {speed}MB/s",
+    alt_network_module_format: "{level} | {connection_type} | [Color=(0, 255, 255), String={id}]  | [Color=(0, 255, 0), String={speed}MB/s]",
     network_module_format: "{level} ",
     network_level_format: 
+    (
+        "[Color=(150, 40, 80), String=󰖩]",
+        "[Color=(150, 40, 80), String=󱚵]",
+        "[Color=(150, 40, 80), String=󱚼]",
+        "[Color=(150, 40, 80), String=󰖪]"
+    ),
+    alt_network_level_format: 
     (
         "󰖩",
         "󱚵",
@@ -150,31 +161,37 @@ BarConfig
     ),
     network_connection_type_icons: 
     (
+        "[Color=(150, 40, 80), String=󰈀]", 
+        "[Color=(150, 40, 80), String=]", 
+        "[Color=(150, 40, 80), String=?]"
+    ),
+    alt_network_connection_type_icons: 
+    (
         "󰈀", 
         "", 
         "?"
     ),
     output_volume_format: 
     (
-        "   {}%", 
-        "󰖀   {}%", 
-        "   {}%", 
-        "   {}%", 
-        "   {}%", 
-        "   + {}%"
+        "[Color=(150, 40, 80), String=]   {}%", 
+        "[Color=(150, 40, 80), String=󰖀]   {}%", 
+        "[Color=(150, 40, 80), String=]   {}%", 
+        "[Color=(150, 40, 80), String=]   {}%", 
+        "[Color=(150, 40, 80), String=]   {}%", 
+        "[Color=(150, 40, 80), String=]   + {}%"
     ),
     input_volume_format: 
     (
-        "   {}%", 
-        "  {}%", 
-        "  {}%", 
-        "  {}%", 
-        "  {}%", 
-        "󰢴  {}%"
+        "[Color=(150, 40, 80), String=]   {}%", 
+        "[Color=(150, 40, 80), String=]  {}%", 
+        "[Color=(150, 40, 80), String=]  {}%", 
+        "[Color=(150, 40, 80), String=]  {}%", 
+        "[Color=(150, 40, 80), String=]  {}%", 
+        "[Color=(150, 40, 80), String=󰢴]  {}%"
     ),
     output_volume_muted_format: "   Muted",
     input_volume_muted_format: "   Muted",
-    clock_format: "󰥔  %H:%M",
+    clock_format: "[Color=(150, 40, 80), String=󰥔]  %H:%M",
     clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S",
 
 
@@ -403,7 +420,7 @@ BarConfig
     	//Example of an button that just runs an app or command
 	(
 		name: "Wofi Custom Module",
-		text: "󰣇 ",
+		text: "[Color=(150, 40, 80), String=󰣇] ",
                 text_size: 15,
                 text_color_rgb: (255, 255, 255),
 		text_orientation: Horizontal,

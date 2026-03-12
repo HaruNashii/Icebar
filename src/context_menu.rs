@@ -260,3 +260,120 @@ pub fn get_context_menu_size(data: &ContextMenuData) -> (u32, u32)
         ) 
     }
 }
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+ 
+    // ---- smart_popup_position -----------------------------------------------
+ 
+    #[test]
+    fn popup_position_centered_when_space_available()
+    {
+        // cursor at (500,400), screen 1920x1080, popup 200x100
+        let (x, y) = smart_popup_position(500, 400, 1920, 1080, 200, 100);
+        assert_eq!(x, 400); // 500 - 200/2
+        assert_eq!(y, 350); // 400 - 100/2
+    }
+ 
+    #[test]
+    fn popup_position_clamps_to_left_edge()
+    {
+        let (x, _) = smart_popup_position(0, 500, 1920, 1080, 200, 100);
+        assert_eq!(x, 0);
+    }
+ 
+    #[test]
+    fn popup_position_clamps_to_top_edge()
+    {
+        let (_, y) = smart_popup_position(500, 0, 1920, 1080, 200, 100);
+        assert_eq!(y, 0);
+    }
+ 
+    #[test]
+    fn popup_position_clamps_to_right_edge()
+    {
+        let (x, _) = smart_popup_position(1919, 500, 1920, 1080, 200, 100);
+        assert_eq!(x, 1720); // max_x = 1920 - 200
+    }
+ 
+    #[test]
+    fn popup_position_clamps_to_bottom_edge()
+    {
+        let (_, y) = smart_popup_position(500, 1079, 1920, 1080, 200, 100);
+        assert_eq!(y, 980); // max_y = 1080 - 100
+    }
+ 
+    #[test]
+    fn popup_position_popup_larger_than_screen_clamps_to_zero()
+    {
+        let (x, y) = smart_popup_position(100, 100, 100, 100, 300, 300);
+        assert_eq!(x, 0);
+        assert_eq!(y, 0);
+    }
+ 
+    // ---- get_context_menu_size ----------------------------------------------
+ 
+    #[test]
+    fn context_menu_size_vertical_layout()
+    {
+        use crate::helpers::style::TextOrientation;
+        let mut config = crate::ron::BarConfig::default();
+        config.context_menu_orientation = TextOrientation::Vertical;
+        config.context_menu_size = 200;
+        config.context_menu_item_size = 30;
+        config.context_menu_background_size = 5;
+ 
+        let data = ContextMenuData
+        {
+            items: vec!
+            [
+                crate::tray::MenuItem { id: 0, label: "A".into(), _visible: true },
+                crate::tray::MenuItem { id: 1, label: "B".into(), _visible: true },
+                crate::tray::MenuItem { id: 2, label: "C".into(), _visible: true },
+            ],
+            ron_config: config,
+            ..Default::default()
+        };
+ 
+        let (w, h) = get_context_menu_size(&data);
+        // width  = context_size + bg*2 = 200 + 10 = 210
+        // height = items*item_size + bg*2 = 3*30 + 10 = 100
+        assert_eq!(w, 210);
+        assert_eq!(h, 100);
+    }
+ 
+    #[test]
+    fn context_menu_size_horizontal_layout()
+    {
+        use crate::helpers::style::TextOrientation;
+        let mut config = crate::ron::BarConfig::default();
+        config.context_menu_orientation = TextOrientation::Horizontal;
+        config.context_menu_size = 50;
+        config.context_menu_item_size = 40;
+        config.context_menu_background_size = 5;
+ 
+        let data = ContextMenuData
+        {
+            items: vec!
+            [
+                crate::tray::MenuItem { id: 0, label: "X".into(), _visible: true },
+                crate::tray::MenuItem { id: 1, label: "Y".into(), _visible: true },
+            ],
+            ron_config: config,
+            ..Default::default()
+        };
+ 
+        let (w, h) = get_context_menu_size(&data);
+        // width  = items*item_size + bg*2 = 2*40 + 10 = 90
+        // height = context_size + bg*2 = 50 + 10 = 60
+        assert_eq!(w, 90);
+        assert_eq!(h, 60);
+    }
+}

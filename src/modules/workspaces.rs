@@ -86,3 +86,91 @@ pub fn define_workspaces_padding(app: &AppData, id: i32) -> u16
     }
 }
 
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::AppData;
+    use crate::modules::workspaces::WorkspaceData;
+ 
+    fn make_app(current: i32) -> AppData
+    {
+        let mut app = AppData::default();
+        app.modules_data.workspace_data = WorkspaceData
+        {
+            current_workspace: current,
+            visible_workspaces: vec![1, 2, 3],
+        };
+        app.ron_config.workspace_text = vec!["ws1".into(), "ws2".into(), "ws3".into()];
+        app.ron_config.workspace_selected_text = Some(vec!["[1]".into(), "[2]".into(), "[3]".into()]);
+        app.ron_config.workspace_width = 10;
+        app.ron_config.workspace_different_selected_width = Some(20);
+        app
+    }
+ 
+    // ---- define_workspaces_text ---------------------------------------------
+ 
+    #[test]
+    fn workspace_text_returns_normal_text_for_inactive()
+    {
+        let app = make_app(1);
+        let text = define_workspaces_text(&app, 2);
+        assert_eq!(text, "ws2");
+    }
+ 
+    #[test]
+    fn workspace_text_returns_selected_text_for_active()
+    {
+        let app = make_app(2);
+        let text = define_workspaces_text(&app, 2);
+        assert_eq!(text, "[2]");
+    }
+ 
+    #[test]
+    fn workspace_text_falls_back_to_id_when_out_of_bounds()
+    {
+        let app = make_app(1);
+        // workspace 10 doesn't exist in the vec
+        let text = define_workspaces_text(&app, 10);
+        assert_eq!(text, "10");
+    }
+ 
+    #[test]
+    fn workspace_text_no_selected_vec_falls_back_to_id()
+    {
+        let mut app = make_app(2);
+        app.ron_config.workspace_selected_text = None;
+        let text = define_workspaces_text(&app, 2);
+        assert_eq!(text, "2");
+    }
+ 
+    // ---- define_workspaces_padding ------------------------------------------
+ 
+    #[test]
+    fn workspace_padding_returns_different_width_for_selected()
+    {
+        let app = make_app(1);
+        assert_eq!(define_workspaces_padding(&app, 1), 20);
+    }
+ 
+    #[test]
+    fn workspace_padding_returns_default_width_for_unselected()
+    {
+        let app = make_app(1);
+        assert_eq!(define_workspaces_padding(&app, 2), 10);
+    }
+ 
+    #[test]
+    fn workspace_padding_no_different_selected_width_always_returns_default()
+    {
+        let mut app = make_app(1);
+        app.ron_config.workspace_different_selected_width = None;
+        assert_eq!(define_workspaces_padding(&app, 1), 10);
+        assert_eq!(define_workspaces_padding(&app, 2), 10);
+    }
+}

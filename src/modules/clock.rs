@@ -92,3 +92,56 @@ pub fn cycle_clock_timezones(app: &mut AppData)
         };
     };
 }
+
+
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+ 
+    #[test]
+    fn get_current_time_returns_non_empty_string()
+    {
+        let result = get_current_time("%H:%M", &None);
+        assert!(!result.is_empty());
+    }
+ 
+    #[test]
+    fn get_current_time_format_hhmm_has_correct_length()
+    {
+        // "%H:%M" always produces exactly 5 chars: "HH:MM"
+        let result = get_current_time("%H:%M", &None);
+        assert_eq!(result.len(), 5);
+        assert!(result.contains(':'));
+    }
+ 
+    #[test]
+    fn get_current_time_with_invalid_timezone_falls_back_to_local()
+    {
+        let tz = Some(("NotARealTimezone".to_string(), 0));
+        // Should not panic — falls back to local time silently
+        let result = get_current_time("%H:%M", &tz);
+        assert_eq!(result.len(), 5);
+    }
+ 
+    #[test]
+    fn get_current_time_with_valid_timezone_returns_time()
+    {
+        let tz = Some(("America/New_York".to_string(), 0));
+        let result = get_current_time("%H:%M", &tz);
+        assert_eq!(result.len(), 5);
+        assert!(result.contains(':'));
+    }
+ 
+    #[test]
+    fn get_current_time_static_literal_format()
+    {
+        // Literal text in strftime is passed through unchanged
+        let result = get_current_time("TIME", &None);
+        assert_eq!(result, "TIME");
+    }
+}
