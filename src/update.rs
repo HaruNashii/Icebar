@@ -125,6 +125,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 monitor_size: monitor_res,
                 custom_module_last_run: vec![Instant::now(); new_config.custom_modules.len()],
                 current_clock_timezone,
+                network_icons: new_config.network_level_format.clone(),
+                connection_type_icons: new_config.network_connection_type_icons.clone(),
                 ron_config: new_config, 
                 modules_data,
                 ..Default::default()
