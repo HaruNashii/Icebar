@@ -66,7 +66,7 @@ BarConfig
     bar_size: (0, 35),
     bar_border_radius: (0., 0., 0., 0.),
     bar_border_size: 1.0,
-    bar_border_color_rgba: (90, 70, 100, 100),
+    bar_border_color_rgb: (90, 70, 100),
     bar_background_color_rgba: (18, 18, 22, 100),
     font_family: "JetBrains Mono",
     font_style: "Bold",
