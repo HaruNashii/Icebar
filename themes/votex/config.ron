@@ -3,7 +3,7 @@
 // │                                                                         │
 // │   LEFT:   SwayWorkspaces · FocusedWindow                                │
 // │   CENTER: Cpu · CpuTemp · Ram · Clock (time + date)                     │
-// │   RIGHT:  Network · Keyboard · VolumeOutput · Power                     │
+// │   RIGHT:  Tray · Keyboard · VolumeOutput · Power                        │
 // │                                                                         │
 // ╰─────────────────────────────────────────────────────────────────────────╯
 
@@ -30,7 +30,7 @@ BarConfig
     // ================= MODULES =================
     left_modules:   [SwayWorkspaces, FocusedWindowSway],
     center_modules: [Cpu, CpuTemp, Ram, Clock],
-    right_modules:  [Network, CustomModule(0), VolumeOutput, CustomModule(1)],
+    right_modules:  [Tray, CustomModule(0), VolumeOutput, CustomModule(1)],
 
 
     // ================= MODULES CONFIGS =================
@@ -114,9 +114,9 @@ BarConfig
     clock_format:     "󰥔  %H:%M    󰃭  %d-%m",
     clock_alt_format: "󰥔  %H:%M:%S    󰃭  %a %d %b",
 
-    cpu_format:      "󰘚  {usage}%",
+    cpu_format:      "󰍛  {usage}%",
     cpu_temp_format: "󰔏  {temp}°C",
-    ram_format:      "󰍛  {percent}%",
+    ram_format:      "󰘚  {percent}%",
 
     focused_window_format: "[Color=(255, 160, 97), String=~]  {title}",
 
@@ -131,7 +131,7 @@ BarConfig
     tray_button_hovered_text_color_rgb: (255, 255, 255),
     tray_button_pressed_color_rgb: (15, 18, 30),
     tray_border_color_rgba: (45, 55, 100, 50),
-    tray_border_size: 1.0,
+    tray_border_size: 0.0,
     tray_border_radius: (3.0, 3.0, 3.0, 3.0),
 
 
