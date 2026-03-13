@@ -114,6 +114,83 @@ pub struct BarConfig
     pub cpu_format: String,
 
 
+    // ================= SIDE SEPARATOR CONFIGS =================
+    pub clock_side_separator: [bool;2],
+    pub clock_side_separator_color: [u8;3],
+    pub clock_side_separator_width: f32,
+    pub clock_side_separator_height: f32,
+
+    pub alt_clock_side_separator: [bool;2],
+    pub alt_clock_side_separator_color: [u8;3],
+    pub alt_clock_side_separator_width: f32,
+    pub alt_clock_side_separator_height: f32,
+
+    pub tray_side_separator:        [bool; 2],
+    pub tray_side_separator_color:  [u8; 3],
+    pub tray_side_separator_width:  f32,
+    pub tray_side_separator_height: f32,
+ 
+    pub workspace_side_separator:        [bool; 2],
+    pub workspace_side_separator_color:  [u8; 3],
+    pub workspace_side_separator_width:  f32,
+    pub workspace_side_separator_height: f32,
+ 
+    pub media_player_metadata_side_separator:        [bool; 2],
+    pub media_player_metadata_side_separator_color:  [u8; 3],
+    pub media_player_metadata_side_separator_width:  f32,
+    pub media_player_metadata_side_separator_height: f32,
+ 
+    pub media_player_buttons_side_separator:        [bool; 2],
+    pub media_player_buttons_side_separator_color:  [u8; 3],
+    pub media_player_buttons_side_separator_width:  f32,
+    pub media_player_buttons_side_separator_height: f32,
+ 
+    pub focused_window_side_separator:        [bool; 2],
+    pub focused_window_side_separator_color:  [u8; 3],
+    pub focused_window_side_separator_width:  f32,
+    pub focused_window_side_separator_height: f32,
+ 
+    pub cpu_side_separator:        [bool; 2],
+    pub cpu_side_separator_color:  [u8; 3],
+    pub cpu_side_separator_width:  f32,
+    pub cpu_side_separator_height: f32,
+ 
+    pub cpu_temp_side_separator:        [bool; 2],
+    pub cpu_temp_side_separator_color:  [u8; 3],
+    pub cpu_temp_side_separator_width:  f32,
+    pub cpu_temp_side_separator_height: f32,
+ 
+    pub ram_side_separator:        [bool; 2],
+    pub ram_side_separator_color:  [u8; 3],
+    pub ram_side_separator_width:  f32,
+    pub ram_side_separator_height: f32,
+ 
+    pub network_side_separator:        [bool; 2],
+    pub network_side_separator_color:  [u8; 3],
+    pub network_side_separator_width:  f32,
+    pub network_side_separator_height: f32,
+ 
+    pub volume_output_side_separator:        [bool; 2],
+    pub volume_output_side_separator_color:  [u8; 3],
+    pub volume_output_side_separator_width:  f32,
+    pub volume_output_side_separator_height: f32,
+
+    pub muted_volume_output_side_separator:        [bool; 2],
+    pub muted_volume_output_side_separator_color:  [u8; 3],
+    pub muted_volume_output_side_separator_width:  f32,
+    pub muted_volume_output_side_separator_height: f32,
+
+    pub volume_input_side_separator:        [bool; 2],
+    pub volume_input_side_separator_color:  [u8; 3],
+    pub volume_input_side_separator_width:  f32,
+    pub volume_input_side_separator_height: f32,
+ 
+    pub muted_volume_input_side_separator:        [bool; 2],
+    pub muted_volume_input_side_separator_color:  [u8; 3],
+    pub muted_volume_input_side_separator_width:  f32,
+    pub muted_volume_input_side_separator_height: f32,
+
+
     // ================= TRAY (STYLE) =================
     pub tray_icon_size: u32,
     pub tray_spacing: u32,
@@ -129,6 +206,7 @@ pub struct BarConfig
 
 
     // ================= FOCUSED WINDOW (STYLE) =================
+    pub focused_window_padding: u16,
     pub focused_window_format:                        String,
     pub focused_window_text_size:                     u32,
     pub focused_window_text_color_rgb:                [u8; 3],
@@ -144,6 +222,7 @@ pub struct BarConfig
 
 
     // ================= CPU (STYLE) =================
+    pub cpu_padding: u16,
     pub cpu_text_size: u32,
     pub cpu_text_color_rgb: [u8; 3],
     pub cpu_text_orientation: TextOrientation,
@@ -158,6 +237,7 @@ pub struct BarConfig
 
 
     // ================= CPU TEMP (STYLE) =================
+    pub cpu_temp_padding: u16,
     pub cpu_temp_format:                        String,
     pub cpu_temp_text_size:                     u32,
     pub cpu_temp_text_color_rgb:                [u8; 3],
@@ -173,6 +253,7 @@ pub struct BarConfig
 
 
     // ================= RAM (STYLE) =================
+    pub ram_padding: u16,
     pub ram_format:                        String,
     pub ram_text_size:                     u32,
     pub ram_text_color_rgb:                [u8; 3],
@@ -188,6 +269,7 @@ pub struct BarConfig
 
 
     // ================= MEDIA PLAYER (STYLE) =================
+    pub media_player_metadata_padding: u16,
     pub media_player_metadata_text_size: u32,
     pub media_player_metadata_text_color_rgb: [u8;3],
     pub media_player_metadata_text_orientation: TextOrientation,
@@ -202,6 +284,7 @@ pub struct BarConfig
 
 
     // ================= MEDIA PLAYER BUTTONS (STYLE) =================
+    pub media_player_button_padding: u16,
     pub media_player_button_spacing: u32,
     pub media_player_button_text_size: u32,
     pub media_player_button_text_orientation: TextOrientation,
@@ -216,6 +299,7 @@ pub struct BarConfig
 
 
     // ================= NETWORK (STYLE) =================
+    pub network_padding: u16,
     pub network_text_size: u32,
     pub network_text_color_rgb: [u8;3],
     pub network_text_orientation: TextOrientation,
@@ -230,6 +314,7 @@ pub struct BarConfig
 
 
     // ================= ALT NETWORK (STYLE) =================
+    pub alt_network_padding: u16,
     pub alt_network_text_size: u32,
     pub alt_network_text_color_rgb: [u8;3],
     pub alt_network_text_orientation: TextOrientation,
@@ -244,6 +329,7 @@ pub struct BarConfig
 
 
     // ================= CLOCK (STYLE) =================
+    pub clock_padding: u16,
     pub clock_text_size: u32,
     pub clock_text_color_rgb: [u8;3],
     pub clock_text_orientation: TextOrientation,
@@ -258,6 +344,7 @@ pub struct BarConfig
 
 
     // ================= ALT CLOCK (STYLE) =================
+    pub alt_clock_padding: u16,
     pub alt_clock_text_size: u32,
     pub alt_clock_text_color_rgb: [u8;3],
     pub alt_clock_text_orientation: TextOrientation,
@@ -272,6 +359,7 @@ pub struct BarConfig
 
 
     // ================= VOLUME/OUTPUT (STYLE) =================
+    pub volume_output_padding: u16,
     pub volume_output_text_size: u32,
     pub volume_output_text_color_rgb: [u8;3],
     pub volume_output_text_orientation: TextOrientation,
@@ -286,6 +374,7 @@ pub struct BarConfig
 
 
     // ================= MUTED VOLUME/OUTPUT (STYLE) =================
+    pub muted_volume_output_padding: u16,
     pub muted_volume_output_text_size: u32,
     pub muted_volume_output_text_color_rgb: [u8;3],
     pub muted_volume_output_text_orientation: TextOrientation,
@@ -300,6 +389,7 @@ pub struct BarConfig
 
 
     // ================= VOLUME/INPUT (STYLE) =================
+    pub volume_input_padding: u16,
     pub volume_input_text_size: u32,
     pub volume_input_text_color_rgb: [u8;3],
     pub volume_input_text_orientation: TextOrientation,
@@ -314,6 +404,7 @@ pub struct BarConfig
 
 
     // ================= VOLUME/INPUT (STYLE) =================
+    pub muted_volume_input_padding: u16,
     pub muted_volume_input_text_size: u32,
     pub muted_volume_input_text_color_rgb: [u8;3],
     pub muted_volume_input_text_orientation: TextOrientation,
@@ -494,6 +585,87 @@ impl Default for BarConfig
             input_volume_muted_format: "   Muted".into(),
             clock_format: "󰥔  %H:%M".into(),
             clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S".into(),
+            cpu_format: "CPU: {usage}%".to_string(),
+            focused_window_format: "{title}".to_string(),
+            cpu_temp_format: " {temp}°C".to_string(),
+            ram_format: " {used}MB / {total}MB ({percent}%)".to_string(),
+
+
+            // ================= SIDE SEPARATOR CONFIGS =================
+            clock_side_separator: [false, false],
+            clock_side_separator_color: [75, 75, 75],
+            clock_side_separator_width: 1.,
+            clock_side_separator_height: 16.,
+
+            alt_clock_side_separator: [false, false],
+            alt_clock_side_separator_color: [75, 75, 75],
+            alt_clock_side_separator_width: 1.,
+            alt_clock_side_separator_height: 16.,
+
+            tray_side_separator:        [false, false],
+            tray_side_separator_color:  [75, 75, 75],
+            tray_side_separator_width:  1.,
+            tray_side_separator_height: 16.,
+ 
+            workspace_side_separator:        [false, false],
+            workspace_side_separator_color:  [75, 75, 75],
+            workspace_side_separator_width:  1.,
+            workspace_side_separator_height: 16.,
+ 
+            media_player_metadata_side_separator:        [false, false],
+            media_player_metadata_side_separator_color:  [75, 75, 75],
+            media_player_metadata_side_separator_width:  1.,
+            media_player_metadata_side_separator_height: 16.,
+ 
+            media_player_buttons_side_separator:        [false, false],
+            media_player_buttons_side_separator_color:  [75, 75, 75],
+            media_player_buttons_side_separator_width:  1.,
+            media_player_buttons_side_separator_height: 16.,
+ 
+            focused_window_side_separator:        [false, false],
+            focused_window_side_separator_color:  [75, 75, 75],
+            focused_window_side_separator_width:  1.,
+            focused_window_side_separator_height: 16.,
+ 
+            cpu_side_separator:        [false, false],
+            cpu_side_separator_color:  [75, 75, 75],
+            cpu_side_separator_width:  1.,
+            cpu_side_separator_height: 16.,
+ 
+            cpu_temp_side_separator:        [false, false],
+            cpu_temp_side_separator_color:  [75, 75, 75],
+            cpu_temp_side_separator_width:  1.,
+            cpu_temp_side_separator_height: 16.,
+ 
+            ram_side_separator:        [false, false],
+            ram_side_separator_color:  [75, 75, 75],
+            ram_side_separator_width:  1.,
+            ram_side_separator_height: 16.,
+ 
+            network_side_separator:        [false, false],
+            network_side_separator_color:  [75, 75, 75],
+            network_side_separator_width:  1.,
+            network_side_separator_height: 16.,
+
+            volume_output_side_separator:        [false, false],
+            volume_output_side_separator_color:  [75, 75, 75],
+            volume_output_side_separator_width:  1.,
+            volume_output_side_separator_height: 20.,
+ 
+            muted_volume_output_side_separator:        [false, false],
+            muted_volume_output_side_separator_color:  [75, 75, 75],
+            muted_volume_output_side_separator_width:  1.,
+            muted_volume_output_side_separator_height: 20.,
+ 
+            volume_input_side_separator:        [false, false],
+            volume_input_side_separator_color:  [75, 75, 75],
+            volume_input_side_separator_width:  1.,
+            volume_input_side_separator_height: 20.,
+
+            muted_volume_input_side_separator:        [false, false],
+            muted_volume_input_side_separator_color:  [75, 75, 75],
+            muted_volume_input_side_separator_width:  1.,
+            muted_volume_input_side_separator_height: 20.,
 
 
             // ================= TRAY (STYLE) =================
@@ -511,7 +683,7 @@ impl Default for BarConfig
 
 
             // ================= FOCUSED WINDOW (STYLE) =================
-            focused_window_format:                        "{title}".to_string(),
+            focused_window_padding: 0,
             focused_window_text_size:                     12,
             focused_window_text_color_rgb:                [220, 220, 220],
             focused_window_text_orientation:              TextOrientation::Horizontal,
@@ -526,7 +698,7 @@ impl Default for BarConfig
 
 
             // ================= CPU (STYLE) =================
-            cpu_format: "CPU: {usage}%".to_string(),
+            cpu_padding: 0,
             cpu_text_size: 12,
             cpu_text_color_rgb: [220, 220, 220],
             cpu_text_orientation: TextOrientation::Horizontal,
@@ -541,7 +713,7 @@ impl Default for BarConfig
 
 
             // ================= CPU TEMP (STYLE) =================
-            cpu_temp_format:                        " {temp}°C".to_string(),
+            cpu_temp_padding: 0,
             cpu_temp_text_size:                     12,
             cpu_temp_text_color_rgb:                [220, 220, 220],
             cpu_temp_text_orientation:              TextOrientation::Horizontal,
@@ -556,7 +728,7 @@ impl Default for BarConfig
 
 
             // ================= RAM (STYLE) =================
-            ram_format:                        " {used}MB / {total}MB ({percent}%)".to_string(),
+            ram_padding: 0,
             ram_text_size:                     12,
             ram_text_color_rgb:                [220, 220, 220],
             ram_text_orientation:              TextOrientation::Horizontal,
@@ -571,6 +743,7 @@ impl Default for BarConfig
 
 
             // ================= MEDIA PLAYER (STYLE) =================
+            media_player_metadata_padding: 0,
             media_player_metadata_text_size: 15,
             media_player_metadata_text_color_rgb: [255, 255, 255],
             media_player_metadata_text_orientation: TextOrientation::Horizontal,
@@ -585,6 +758,7 @@ impl Default for BarConfig
 
 
             // ================= MEDIA PLAYER BUTTONS (STYLE) =================
+            media_player_button_padding: 0,
             media_player_button_spacing: 5,
             media_player_button_text_size: 15,
             media_player_button_text_color_rgb: [255, 255, 255],
@@ -599,6 +773,7 @@ impl Default for BarConfig
         
 
             // ================= NETWORK (STYLE) =================
+            network_padding: 0,
             network_text_size: 15,
             network_text_color_rgb: [255, 255, 255],
             network_text_orientation: TextOrientation::Horizontal,
@@ -613,6 +788,7 @@ impl Default for BarConfig
 
 
             // ================= NETWORK (STYLE) =================
+            alt_network_padding: 0,
             alt_network_text_size: 15,
             alt_network_text_color_rgb: [255, 255, 255],
             alt_network_text_orientation: TextOrientation::Horizontal,
@@ -627,6 +803,7 @@ impl Default for BarConfig
 
 
             // ================= CLOCK (STYLE) =================
+            clock_padding: 0,
             clock_text_size: 15,
             clock_text_color_rgb: [255, 255, 255],
             clock_text_orientation: TextOrientation::Horizontal,
@@ -641,6 +818,7 @@ impl Default for BarConfig
 
 
             // ================= ALT CLOCK (STYLE) =================
+            alt_clock_padding: 0,
             alt_clock_text_size: 15,
             alt_clock_text_color_rgb: [255, 255, 255],
             alt_clock_text_orientation: TextOrientation::Horizontal,
@@ -655,6 +833,7 @@ impl Default for BarConfig
             
 
             // ================= VOLUME/OUTPUT (STYLE) =================
+            volume_output_padding: 0,
             volume_output_text_size: 15,
             volume_output_text_color_rgb: [255, 255, 255],
             volume_output_text_orientation: TextOrientation::Horizontal,
@@ -668,6 +847,7 @@ impl Default for BarConfig
             volume_output_border_radius: [3.0, 3.0, 3.0, 3.0],
 
             // ================= MUTED VOLUME/OUTPUT (STYLE) =================
+            muted_volume_output_padding: 0,
             muted_volume_output_text_size: 15,
             muted_volume_output_text_color_rgb: [255, 255, 255],
             muted_volume_output_text_orientation: TextOrientation::Horizontal,
@@ -682,6 +862,7 @@ impl Default for BarConfig
             
 
             // ================= VOLUME/INPUT (STYLE) =================
+            volume_input_padding: 0,
             volume_input_text_size: 15,
             volume_input_text_color_rgb: [255, 255, 255],
             volume_input_text_orientation: TextOrientation::Horizontal,
@@ -696,6 +877,7 @@ impl Default for BarConfig
 
 
             // ================= VOLUME/INPUT (STYLE) =================
+            muted_volume_input_padding: 0,
             muted_volume_input_text_size: 15,
             muted_volume_input_text_color_rgb: [255, 255, 255],
             muted_volume_input_text_orientation: TextOrientation::Horizontal,

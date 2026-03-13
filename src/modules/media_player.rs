@@ -171,7 +171,7 @@ pub fn define_button_data(previous_text: String, play_pause_text: String, next_t
 
 
 
-pub fn create_media_button<'a>(app: &'a AppData, label: String, message: Message, color: iced::Color) -> Element<'a, Message> 
+pub fn create_media_button<'a>(app: &'a AppData, padding: u16, label: String, message: Message, color: iced::Color) -> Element<'a, Message> 
 {
     let colored_label = convert_text_to_rich_text::<Message>(&label, Some(color));
     container
@@ -187,7 +187,7 @@ pub fn create_media_button<'a>(app: &'a AppData, label: String, message: Message
         .style(|_: &Theme, status: button::Status| 
         {
             define_media_player_buttons_style(app, status)
-        }).on_press(message)).align_y(Alignment::Center).into()
+        }).on_press(message)).align_y(Alignment::Center).padding(padding).into()
 }
 
 

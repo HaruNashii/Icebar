@@ -60,7 +60,7 @@ pub fn validade_bar_size_and_margin(ron_config: &BarConfig) -> ((u32, u32), u32,
 
 
 
-pub fn create_button_container<'a, F>(app: &'a AppData, text_data: (iced::widget::text::Rich<'a, (), Message>, u32), on_enter_message: Message, on_exit_message: Message, left_click_message: Message, right_click_message: Message, style_func: F) -> Element<'a, Message>
+pub fn create_button_container<'a, F>(app: &'a AppData, padding: u16, text_data: (iced::widget::text::Rich<'a, (), Message>, u32), hover_message: (Message, Message), left_click_message: Message, right_click_message: Message, style_func: F) -> Element<'a, Message>
 where F: Fn(&AppData, button::Status) -> button::Style + 'a,
 {
     container
@@ -75,8 +75,8 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
                 .size(text_data.1)
                 .center()
             )
-            .on_enter(on_enter_message)
-            .on_exit(on_exit_message)
+            .on_enter(hover_message.0)
+            .on_exit(hover_message.1)
             .on_right_press(right_click_message)
         )
         .on_press(left_click_message)
@@ -84,7 +84,7 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
         {
             style_func(app, status)
         })
-    ).align_y(Alignment::Center)
+    ).align_y(Alignment::Center).padding(padding)
     .into()
 }
 

@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{Color, border::Radius, Border, Theme, theme::Style, widget::{button, container}};
+use iced::{Alignment, Border, Color, Element, Theme, border::Radius, theme::Style, widget::{Space, button, container, row}};
 use serde::{Serialize, Deserialize};
 
 
@@ -30,6 +30,13 @@ pub struct UserStyle
     pub border_size: f32, 
     pub pressed: [u8;3], 
     pub normal: [u8;3]
+}
+
+pub enum SideOption 
+{
+    Left,
+    Right,
+    All
 }
 
 
@@ -108,6 +115,51 @@ pub fn bar_style(app: &AppData) -> impl Fn(&Theme) -> container::Style
     move |_theme: &Theme| 
     {
         bar_style
+    }
+}
+
+
+
+pub fn with_unique_border<'a, Message: 'a>(content: impl Into<Element<'a, Message>>, color: Color, width: f32, height: f32, side_option: SideOption) -> Element<'a, Message>
+{
+    let strip: Element<'a, Message> = container(Space::new()).width(width).height(height).align_y(Alignment::Center).style(move |_theme| container::Style
+    {
+        background: Some(color.into()),
+        ..Default::default()
+    }).into();
+
+    match side_option
+    {
+        SideOption::Left => row![strip, content.into()].align_y(Alignment::Center).into(),
+        SideOption::Right => row![content.into(), strip].align_y(Alignment::Center).into(),
+        SideOption::All => 
+        {
+            let new_strip: Element<'a, Message> = container(Space::new()).width(width).height(height).align_y(Alignment::Center).style(move |_theme| container::Style
+            {
+                background: Some(color.into()),
+                ..Default::default()
+            }).into();
+
+            row!
+            [
+                strip, 
+                content.into(), 
+                new_strip
+            ].align_y(Alignment::Center).into()
+        }
+    }
+}
+
+
+ 
+pub fn apply_separator<'a, Message: 'a>(element: Element<'a, Message>, flags: [bool; 2], color: Color, width: f32, height: f32) -> Element<'a, Message>
+{
+    match flags
+    {
+        [true,  false] => with_unique_border(element, color, width, height, SideOption::Left),
+        [false, true]  => with_unique_border(element, color, width, height, SideOption::Right),
+        [true,  true]  => with_unique_border(element, color, width, height, SideOption::All),
+        [false, false] => element,
     }
 }
 

@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{Color, font::Weight, widget::{rich_text, span, text::{Span, Rich}}};
+use iced::{Alignment, Color, font::Weight, widget::{rich_text, span, text::{Rich, Span}}};
 
 
 
@@ -19,7 +19,7 @@ struct Segment
 pub fn convert_text_to_rich_text<'a, Message: 'a>(text: &str, default_color: Option<Color>) -> Rich<'a, (), Message> 
 {
     let spans = segments_to_spans(parse_to_segments(text, default_color));
-    rich_text(spans)
+    rich_text(spans).align_y(Alignment::Center).align_x(Alignment::Center).center()
 }
 
 

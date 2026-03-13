@@ -19,11 +19,17 @@ use crate::AppData;
 #[serde(default)]
 pub struct CustomModule
 {
+    pub side_separator: [bool;2],
+    pub separator_color: [u8;3],
+    pub separator_width:  f32,
+    pub separator_height: f32,  
+
     pub name: String,
     pub text: String,
     pub text_size: u32,
     pub text_color_rgb: [u8;3],
     pub text_orientation: TextOrientation,
+    pub padding: u16,
     pub height: u32,
     pub button_color_rgb: [u8;3],
     pub button_text_color_rgb: [u8;3],
@@ -56,11 +62,17 @@ impl Default for CustomModule
     {
         Self 
         {
+            side_separator: [false, false],
+            separator_color: [75, 75, 75],
+            separator_width:  1.,
+            separator_height: 16.,
+
             name: "Default Custom Module".to_string(),
             text: "".to_string(),
             text_size: 10,
             text_color_rgb: [255, 255, 255],
             text_orientation: TextOrientation::Horizontal,
+            padding: 0,
             height: 30,
             button_color_rgb: [60, 50, 70],
             button_text_color_rgb: [220, 220, 230],
