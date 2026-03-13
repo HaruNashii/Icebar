@@ -10,7 +10,7 @@ use std::time::Instant;
 
 
 // ============ CRATES ============
-use crate::{helpers::{fs::check_if_config_file_exists, misc::{is_active_module, validade_bar_size_and_margin}, monitor::get_monitor_res, string::weight_from_str, style::{UserStyle, set_style, style} }};
+use crate::{helpers::{fs::check_if_config_file_exists, misc::{is_active_module, validade_bar_data}, monitor::get_monitor_res, string::weight_from_str, style::{UserStyle, set_style, style} }};
 use crate::modules::{data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{read_ron_config, BarConfig};
 use crate::subscription::subscription;
@@ -74,7 +74,8 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let monitor_res = get_monitor_res(ron_config.display.clone());
     if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
     let ron_config_clone = ron_config.clone();
-    let (bar_size, exclusive_zone, floating_space) = validade_bar_size_and_margin(&ron_config);
+    let validated_bar_data = validade_bar_data(&ron_config);
+
     let start_mode = match ron_config.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };
     let font_name = ron_config.font_family;
 
@@ -102,10 +103,10 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     {
         layer_settings: LayerShellSettings
         {
-            exclusive_zone: exclusive_zone as i32,
-            size: Some((bar_size.0, bar_size.1)),
+            exclusive_zone: validated_bar_data.exclusive_zone,
+            size: Some(validated_bar_data.bar_size),
             layer: iced_layershell::reexport::Layer::Top,
-            margin: floating_space,
+            margin: validated_bar_data.floating_space,
             anchor: anchor_position,
             start_mode,
             ..Default::default()

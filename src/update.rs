@@ -21,7 +21,7 @@ use crate::modules::cpu_temp::read_cpu_temp;
 use crate::modules::ram::read_ram_data;
 use crate::modules::{clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
 use crate::{helpers::{fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::{Modules, ModulesData}, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume::{self, VolumeAction}, workspaces::UserWorkspaceAction }};
-use crate::helpers::{misc::{is_active_module, validade_bar_size_and_margin}, workspaces::build_workspace_list };
+use crate::helpers::{misc::{is_active_module, validade_bar_data}, workspaces::build_workspace_list };
 use crate::context_menu::run_context_menu;
 use crate::ron::read_ron_config;
 use crate::AppData;
@@ -108,7 +108,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             println!("[icebar] config.ron changed — reloading in place...");
             check_if_config_file_exists();
             let (new_config, new_anchor, current_clock_timezone, active_modules) = read_ron_config();
-            let (mut bar_size, exclusive_zone, floating_space) = validade_bar_size_and_margin(&new_config);
+            let bar_data_validated = validade_bar_data(&new_config);
+            let mut bar_size = bar_data_validated.bar_size;
             let monitor_res = get_monitor_res(new_config.display.clone());
             if bar_size.0 == 0 { bar_size.0 = monitor_res.0; };
             if bar_size.1 == 0 { bar_size.1 = monitor_res.1; };
@@ -149,8 +150,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             [
                 Task::done(Message::SizeChange(bar_size)),
                 Task::done(Message::AnchorChange(new_anchor)),
-                Task::done(Message::MarginChange(floating_space)),
-                Task::done(Message::ExclusiveZoneChange(exclusive_zone as i32)),
+                Task::done(Message::MarginChange(bar_data_validated.floating_space)),
+                Task::done(Message::ExclusiveZoneChange(bar_data_validated.exclusive_zone)),
             ]);
         }
 

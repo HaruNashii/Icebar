@@ -45,7 +45,7 @@ pub struct BarConfig
     pub display: Option<String>,
     pub bar_position: BarPosition,
     pub floating_space: i32,
-    pub increased_exclusive_bar_zone: u32,
+    pub increased_exclusive_bar_zone: i32,
     pub bar_check_reload_interval_ms: Option<u64>,
     pub bar_side_spaces_size: u32,
     pub bar_size: [u32;2],
