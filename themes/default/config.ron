@@ -110,6 +110,13 @@ BarConfig
     action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]), 
     action_on_left_click_volume_input: DefaultAction, 
     action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]), 
+
+
+    // ================= UPDATE INTERVAL =================
+    cpu_update_interval: 500,
+    cpu_temp_update_interval: 500,
+    ram_update_interval: 500,
+    focused_window_update_interval: 500,
 	
 
     // ================= FORMATS =================

@@ -95,6 +95,13 @@ pub struct BarConfig
     pub action_on_right_click_volume_input: ActionOnClick, 
 
 
+    // ================= UPDATE INTERVAL =================
+    pub cpu_update_interval: u64,
+    pub cpu_temp_update_interval: u64,
+    pub ram_update_interval: u64,
+    pub focused_window_update_interval: u64,
+
+
     // ================= FORMATS =================
     pub media_player_buttons_format: [String;4],
     pub media_player_metadata_format: String, 
@@ -529,6 +536,12 @@ impl Default for BarConfig
             action_on_left_click_volume_input: ActionOnClick::DefaultAction, 
             action_on_right_click_volume_input: ActionOnClick::DefaultAction, 
 
+
+            // ================= UPDATE INTERVAL =================
+            cpu_update_interval: 500,
+            cpu_temp_update_interval: 500,
+            ram_update_interval: 500,
+            focused_window_update_interval: 500,
 
 
             // ================= FORMATS =================

@@ -54,10 +54,16 @@ pub enum Message
     MediaPlayerClickNext,
     MediaPlayerClickPrev,
     TrayEvent(TrayEvent),
+    UpdateFocusedWindowNiri,
+    UpdateFocusedWindowSway,
+    UpdateFocusedWindowHypr,
     CycleClockTimeZones,
     ToggleAltNetwork,
     ToggleAltClock,
+    UpdateCpuTemp,
     ConfigChanged,
+    UpdateRam,
+    UpdateCpu,
     Nothing,
     Tick
 }
@@ -101,6 +107,22 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::MediaPlayerClickPrev => media_player_action(&app.ron_config.player, MediaPlayerAction::Prev),
         Message::CycleClockTimeZones => cycle_clock_timezones(app),
         Message::ToggleAltClockAndCycleClockTimeZones => { app.is_showing_alt_clock = !app.is_showing_alt_clock; cycle_clock_timezones(app); },
+        Message::UpdateCpuTemp => if let Some(temp) = read_cpu_temp() { app.modules_data.cpu_temp_data.temp_celsius = temp; }
+        Message::UpdateRam => { if let Some(data) = read_ram_data() { app.modules_data.ram_data = data; }},
+        Message::UpdateFocusedWindowNiri => { app.modules_data.focused_window_data.title = read_focused_window_niri().unwrap_or_default(); }, 
+        Message::UpdateFocusedWindowSway => { app.modules_data.focused_window_data.title = read_focused_window_sway().unwrap_or_default(); },
+        Message::UpdateFocusedWindowHypr => { app.modules_data.focused_window_data.title = read_focused_window_hypr().unwrap_or_default(); },
+        Message::UpdateCpu =>
+        {
+            if let Some(curr) = read_cpu_snapshot()
+            {
+                if let Some(prev) = &app.cpu_snapshot
+                {
+                    app.modules_data.cpu_data.usage_percent = compute_cpu_usage(prev, &curr);
+                }
+                app.cpu_snapshot = Some(curr);
+            }
+        }
 
         Message::ConfigChanged =>
         {
@@ -259,9 +281,6 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                     Modules::MediaPlayerMetaData => { app.modules_data.media_player_data = get_player_data_with_format(&app.ron_config); }
                     Modules::HyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); }
                     Modules::SwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); }
-                    Modules::FocusedWindowNiri => { app.modules_data.focused_window_data.title = read_focused_window_niri().unwrap_or_default(); }
-                    Modules::FocusedWindowSway => { app.modules_data.focused_window_data.title = read_focused_window_sway().unwrap_or_default(); }
-                    Modules::FocusedWindowHypr => { app.modules_data.focused_window_data.title = read_focused_window_hypr().unwrap_or_default(); }
                     Modules::NiriWorkspaces => 
                     { 
                         WARNING_ONCE.call_once(|| 
@@ -280,33 +299,6 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                         app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&niri::workspace_count(), None); 
                     }
 
-                    Modules::Ram =>
-                    {
-                        if let Some(data) = read_ram_data()
-                        {
-                            app.modules_data.ram_data = data;
-                        }
-                    }
-
-                    Modules::Cpu =>
-                    {
-                        if let Some(curr) = read_cpu_snapshot()
-                        {
-                            if let Some(prev) = &app.cpu_snapshot
-                            {
-                                app.modules_data.cpu_data.usage_percent = compute_cpu_usage(prev, &curr);
-                            }
-                            app.cpu_snapshot = Some(curr);
-                        }
-                    }
-
-                    Modules::CpuTemp =>
-                    {
-                        if let Some(temp) = read_cpu_temp()
-                        {
-                            app.modules_data.cpu_temp_data.temp_celsius = temp;
-                        }
-                    }
 
                     Modules::Clock => 
                     {
