@@ -7,7 +7,7 @@ use iced::widget::image;
 
 
 // ============ CRATES ============
-use crate::modules::{workspaces::WorkspaceData, clock::ClockData, media_player::MediaPlayerData, network::NetworkData, volume::VolumeData};
+use crate::modules::{clock::ClockData, cpu::CpuData, cpu_temp::CpuTempData, focused_window::FocusedWindowData, media_player::MediaPlayerData, network::NetworkData, ram::RamData, volume::VolumeData, workspaces::WorkspaceData};
 
 
 
@@ -24,22 +24,32 @@ pub enum Modules
     VolumeOutput,
     MediaPlayerMetaData,
     MediaPlayerButtons,
+    FocusedWindowSway,
+    FocusedWindowHypr,
+    FocusedWindowNiri,
     VolumeInput,
     Network,
+    CpuTemp,
     Clock,
     Tray,
+    Cpu,
+    Ram,
 }
 
 #[derive(Default, Clone)]
 pub struct ModulesData
 {
     pub tray_icons: Vec<(Option<image::Handle>, String)>,
+    pub focused_window_data: FocusedWindowData,
     pub media_player_data: MediaPlayerData,
     pub workspace_data: WorkspaceData,
     pub active_modules: Vec<Modules>,
+    pub cpu_temp_data: CpuTempData,
     pub network_data: NetworkData,
     pub volume_data: VolumeData,
-    pub clock_data: ClockData
+    pub clock_data: ClockData,
+    pub cpu_data: CpuData,
+    pub ram_data: RamData
 }
 
 

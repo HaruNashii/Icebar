@@ -5,69 +5,149 @@ use iced::{Color, font::Weight, widget::{rich_text, span, text::{Span, Rich}}};
 
 
 
-// ============ FUNCTIONS ============
-pub fn convert_text_to_rich_text<'a, Message: 'a>(text: &str, default_color: Option<Color>) -> Rich<'a, (), Message> 
+// ============ ENUM/STRUCT, ETC ============
+struct Segment 
 {
-    rich_text(parse_colored_spans(text, default_color))
+    text:  String,
+    color: Option<Color>,
 }
 
 
 
-fn parse_colored_spans<'a>(text: &str, default_color: Option<Color>) -> Vec<Span<'a>> 
-{
-    let mut spans = Vec::new();
 
+
+pub fn convert_text_to_rich_text<'a, Message: 'a>(text: &str, default_color: Option<Color>) -> Rich<'a, (), Message> 
+{
+    let spans = segments_to_spans(parse_to_segments(text, default_color));
+    rich_text(spans)
+}
+
+
+
+pub fn convert_text_to_rich_text_ellipsized<'a, Message: 'a>(text: &str, default_color: Option<Color>, ellipsis: &str, limit: usize) -> Rich<'a, (), Message> 
+{
+    let segments = parse_to_segments(text, default_color);
+    let ellipsized = ellipsize_segments(segments, ellipsis, limit);
+    rich_text(segments_to_spans(ellipsized))
+}
+
+
+
+fn parse_to_segments(text: &str, default_color: Option<Color>) -> Vec<Segment> 
+{
+    let mut segments = Vec::new();
     match try_parse_tag(text) 
     {
         Some((before, color, colored_text, rest)) => 
         {
-            if !before.is_empty() { spans.push(make_span(before, default_color)); }
-            spans.push(span(colored_text.to_string()).color(color));
-            if !rest.is_empty() { spans.extend(parse_colored_spans(rest, default_color)); }
+            if !before.is_empty() 
+            { 
+                segments.push(Segment { text: before.to_string(), color: default_color }); 
+            }
+            segments.push(Segment { text: colored_text.to_string(), color: Some(color) });
+            if !rest.is_empty() 
+            { 
+                segments.extend(parse_to_segments(rest, default_color)); 
+            }
         }
         None => 
         {
-            if !text.is_empty() { spans.push(make_span(text, default_color)); }
+            if !text.is_empty() 
+            { 
+                segments.push(Segment { text: text.to_string(), color: default_color }); 
+            }
+        }
+    }
+    segments
+}
+
+
+
+fn ellipsize_segments(segments: Vec<Segment>, ellipsis: &str, limit: usize) -> Vec<Segment> 
+{
+    let total_visible: usize = segments.iter().map(|s| s.text.chars().count()).sum();
+    if total_visible <= limit 
+    {
+        return segments;
+    }
+
+    let ellipsis_len = ellipsis.chars().count();
+    let mut budget    = limit.saturating_sub(ellipsis_len);
+    let mut result    = Vec::new();
+    let mut truncated = false;
+
+    for seg in segments 
+    {
+        if budget == 0 
+        { 
+            break; 
+        }
+
+        let char_count = seg.text.chars().count();
+
+        if char_count <= budget 
+        {
+            budget -= char_count;
+            result.push(seg);
+        } 
+        else 
+        {
+            let cut: String = seg.text.chars().take(budget).collect();
+            result.push(Segment 
+            {
+                text:  format!("{}{}", cut, ellipsis),
+                color: seg.color,
+            });
+            budget    = 0;
+            truncated = true;
         }
     }
 
-    spans
+    if !truncated && !result.is_empty() 
+    {
+        let last = result.last_mut().unwrap();
+        last.text.push_str(ellipsis);
+    }
+
+    result
 }
 
 
 
-fn make_span<'a>(text: &str, color: Option<Color>) -> Span<'a> 
+fn segments_to_spans(segments: Vec<Segment>) -> Vec<Span<'static>> 
+{
+    segments.into_iter().map(|seg| make_span_owned(seg.text, seg.color)).collect()
+}
+
+
+
+fn make_span_owned(text: String, color: Option<Color>) -> Span<'static> 
 {
     match color 
     {
-        Some(c) => span(text.to_string()).color(c),
-        None => span(text.to_string()),
+        Some(c) => span(text).color(c),
+        None    => span(text),
     }
 }
+
 
 
 fn try_parse_tag(text: &str) -> Option<(&str, Color, &str, &str)> 
 {
     let bracket_start = text.find('[')?;
-    let before = &text[..bracket_start];
-
-    let inside = text[bracket_start + 1..].trim_start();
-    let inside = inside.strip_prefix("Color")?.trim_start();
-    let inside = inside.strip_prefix('=')?.trim_start();
-    let inside = inside.strip_prefix('(')?.trim_start();
-
+    let before        = &text[..bracket_start];
+    let inside        = text[bracket_start + 1..].trim_start();
+    let inside        = inside.strip_prefix("Color")?.trim_start();
+    let inside        = inside.strip_prefix('=')?.trim_start();
+    let inside        = inside.strip_prefix('(')?.trim_start();
     let (rgb_str, inside) = inside.split_once(')')?;
-    let color = parse_color(rgb_str)?;
-
-    let inside = inside.trim_start();
-    let inside = inside.strip_prefix(',')?.trim_start();
-    let inside = inside.strip_prefix("String")?.trim_start();
-    let inside = inside.strip_prefix('=')?.trim_start();
-
-    // Support both String="text" and String=text
+    let color         = parse_color(rgb_str)?;
+    let inside        = inside.trim_start();
+    let inside        = inside.strip_prefix(',')?.trim_start();
+    let inside        = inside.strip_prefix("String")?.trim_start();
+    let inside        = inside.strip_prefix('=')?.trim_start();
     let (unformated_colored_text, rest) = inside.split_once(']')?;
-    let colored_text = unformated_colored_text.trim_end();
-
+    let colored_text  = unformated_colored_text.trim_end();
     Some((before, color, colored_text, rest))
 }
 
@@ -79,7 +159,7 @@ fn parse_color(rgb_str: &str) -> Option<Color>
     match values.as_slice() 
     {
         [r, g, b] => Some(Color::from_rgb8(*r as u8, *g as u8, *b as u8)),
-        _ => None,
+        _=> None,
     }
 }
 
@@ -89,16 +169,16 @@ pub fn weight_from_str(s: &str) -> Weight
 {
     match s.to_lowercase().as_str() 
     {
-        "thin" => Weight::Thin,
+        "thin"                              => Weight::Thin,
         "extra_light" | "extralight" | "ultralight" => Weight::ExtraLight,
-        "light" => Weight::Light,
-        "normal" | "regular" => Weight::Normal,
-        "medium" => Weight::Medium,
-        "semibold" | "semi_bold" => Weight::Semibold,
-        "bold" => Weight::Bold,
+        "light"                             => Weight::Light,
+        "normal" | "regular"               => Weight::Normal,
+        "medium"                            => Weight::Medium,
+        "semibold" | "semi_bold"           => Weight::Semibold,
+        "bold"                              => Weight::Bold,
         "extra_bold" | "extrabold" | "ultrabold" => Weight::ExtraBold,
-        "black" | "heavy" => Weight::Black,
-        _ => Weight::Normal, 
+        "black" | "heavy"                  => Weight::Black,
+        _                                  => Weight::Normal,
     }
 }
 
@@ -115,7 +195,6 @@ pub fn ellipsize(ellipsis: &String, text: &str, limit: usize) -> String
         format!("{}{}", text.chars().take(limit).collect::<String>(), ellipsis)
     }
 }
-
 
 
 

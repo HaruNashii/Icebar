@@ -97,7 +97,7 @@ pub fn bar_style(app: &AppData) -> impl Fn(&Theme) -> container::Style
             {
                 radius: Radius { top_left: app.ron_config.bar_border_radius[0], top_right: app.ron_config.bar_border_radius[1], bottom_left: app.ron_config.bar_border_radius[2], bottom_right: app.ron_config.bar_border_radius[3]},
                 width: app.ron_config.bar_border_size, 
-                color: Color::from_rgba8(app.ron_config.bar_border_color_rgba[0], app.ron_config.bar_border_color_rgba[1], app.ron_config.bar_border_color_rgba[2], app.ron_config.bar_border_color_rgba[3] as f32)
+                color: Color::from_rgb8(app.ron_config.bar_border_color_rgb[0], app.ron_config.bar_border_color_rgb[1], app.ron_config.bar_border_color_rgb[2])
             },
             background: { Some(iced::Background::Color(color)) },
             text_color: None,

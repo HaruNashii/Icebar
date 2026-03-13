@@ -58,7 +58,7 @@ BarConfig
 
     bar_border_radius: (10., 10., 10., 10.),
     bar_border_size: 0.0,
-    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_border_color_rgb: (0, 0, 0),
     bar_background_color_rgba: (17, 17, 27, 97),      // Crust — deepest layer
 
     font_family: "JetBrains Mono",

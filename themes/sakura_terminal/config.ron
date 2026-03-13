@@ -38,7 +38,7 @@ BarConfig
 
     bar_border_radius: (6., 6., 6., 6.),              // soft, paper-worn edges
     bar_border_size: 1.0,
-    bar_border_color_rgba: (185, 160, 130, 60),       // Tsuchi earth — barely-there
+    bar_border_color_rgb: (185, 160, 130),       // Tsuchi earth — barely-there
     bar_background_color_rgba: (252, 248, 241, 97),   // Shiro washi — warm off-white
 
     font_family: "Noto Serif CJK JP",                 // if unavailable, fallback: "Noto Serif"

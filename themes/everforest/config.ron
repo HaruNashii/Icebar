@@ -54,7 +54,7 @@ BarConfig
     bar_size: (0, 24),                                // 24px — hairline bar
     bar_border_radius: (0., 0., 0., 0.),              // completely flat
     bar_border_size: 0.0,
-    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_border_color_rgb: (0, 0, 0),
     bar_background_color_rgba: (42, 45, 43, 100),     // bg0 Medium — fully opaque
     font_family: "Hack",                              // thin, legible, quiet
     font_style: "Regular",                            // Regular — not Bold

@@ -47,7 +47,7 @@ BarConfig
 
     bar_border_radius: (22., 22., 22., 22.),          // the whole island is a huge pill
     bar_border_size: 0.0,
-    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_border_color_rgb: (0, 0, 0),
     bar_background_color_rgba: (40, 42, 54, 96),
 
     font_family: "Fira Code",

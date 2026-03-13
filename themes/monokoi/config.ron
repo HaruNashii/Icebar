@@ -55,7 +55,7 @@ BarConfig
 
     bar_border_radius: (18., 18., 18., 18.),          // very round for the short height
     bar_border_size: 0.0,
-    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_border_color_rgb: (0, 0, 0),
     bar_background_color_rgba: (39, 40, 34, 97),
 
     font_family: "JetBrains Mono",

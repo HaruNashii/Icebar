@@ -6,8 +6,8 @@ use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, col
 
 
 // ============ CRATES ============
-use crate::{helpers::{misc::create_button_container, string::convert_text_to_rich_text, style::{bar_style, orient_text}}, modules::volume::define_volume_text};
-use crate::modules::{clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_padding, define_workspaces_style, define_workspaces_text}};
+use crate::{helpers::{misc::create_button_container, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized, ellipsize}, style::{bar_style, orient_text}}, modules::{cpu::define_cpu_text, cpu_temp::{define_cpu_temp_style, define_cpu_temp_text}, focused_window::{define_focused_window_style, define_focused_window_text}, ram::{define_ram_style, define_ram_text}, volume::define_volume_text}};
+use crate::modules::{cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_padding, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::update::Message;
 use crate::AppData;
@@ -134,6 +134,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 }
             }
 
+
+
             Modules::MediaPlayerMetaData => 
             {
                 if app.ron_config.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
@@ -141,12 +143,12 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     continue;
                 }
 
-                let formated_metadata = define_media_player_metadata_text(app);
+                let text_to_send = define_media_player_metadata_text(app);
                 let left_click_metadata_message: Message = match &app.ron_config.action_on_left_click_media_player_metadata { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
                 let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
                 let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let colored_formated_metadata = convert_text_to_rich_text::<Message>(&formated_metadata, Some(color_to_send));
+                let colored_formated_metadata = convert_text_to_rich_text_ellipsized::<Message>(&text_to_send, Some(color_to_send), &app.ron_config.ellipsis_text, app.ron_config.media_player_metadata_text_limit_len);
                 let media_player_metadata_container = create_button_container(app, (colored_formated_metadata, app.ron_config.media_player_metadata_text_size),  Message::IsHoveringMediaPlayerMetaData(true), Message::IsHoveringMediaPlayerMetaData(false), left_click_metadata_message, right_click_metadata_message, define_media_player_metadata_style);
                 
                 match axis 
@@ -156,6 +158,105 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 }
             }
 
+            Modules::FocusedWindowHypr | Modules::FocusedWindowNiri | Modules::FocusedWindowSway =>
+            {
+                let text_to_ellipsize = &define_focused_window_text(app);
+                let text_to_send = ellipsize(&app.ron_config.ellipsis_text, text_to_ellipsize, app.ron_config.focused_window_text_limit_len);
+                if app.ron_config.dont_show_focused_window_if_empty && text_to_send.is_empty() { continue; };
+                let text_data = 
+                (
+                    convert_text_to_rich_text_ellipsized
+                    (
+                        &text_to_send,
+                        Some(Color::from_rgb8(app.ron_config.focused_window_text_color_rgb[0], app.ron_config.focused_window_text_color_rgb[1], app.ron_config.focused_window_text_color_rgb[2])),
+                        &app.ron_config.ellipsis_text,
+                        app.ron_config.focused_window_text_limit_len
+                    ),
+                    app.ron_config.focused_window_text_size,
+                );
+                create_button_container
+                (
+                    app,
+                    text_data,
+                    Message::Nothing,
+                    Message::Nothing,
+                    Message::Nothing,
+                    Message::Nothing,
+                    define_focused_window_style
+                )
+            }
+ 
+
+            Modules::Ram =>
+            {
+                let text_data = (convert_text_to_rich_text::<Message>(&define_ram_text(app),Some(Color::from_rgb8(app.ron_config.ram_text_color_rgb[0], app.ron_config.ram_text_color_rgb[1], app.ron_config.ram_text_color_rgb[2])),), app.ron_config.ram_text_size);
+                create_button_container(app, text_data, Message::Nothing, Message::Nothing, Message::Nothing, Message::Nothing, define_ram_style) 
+            }
+
+
+            Modules::Cpu => 
+            {
+                let text_to_send = define_cpu_text(app);
+                let left_click_metadata_message: Message = match &app.ron_config.action_on_left_click_cpu 
+                { 
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, 
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, 
+                    ActionOnClick::Nothing => Message::Nothing, 
+                    ActionOnClick::DefaultAction => Message::Nothing, 
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), true, false)) 
+                };
+                let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_cpu 
+                { 
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, 
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, 
+                    ActionOnClick::Nothing => Message::Nothing, 
+                    ActionOnClick::DefaultAction => Message::Nothing, 
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), false, false)) 
+                };
+                let [r, g, b] = &app.ron_config.cpu_text_color_rgb;
+                let color_to_send = Color::from_rgb8(*r, *g, *b);
+                let colored_formated_metadata = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let cpu_container = create_button_container(app, (colored_formated_metadata, app.ron_config.cpu_text_size), Message::Nothing, Message::Nothing, left_click_metadata_message, right_click_metadata_message, define_cpu_style);
+                
+                match axis 
+                {
+                    Axis::Horizontal => row([cpu_container]).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column([cpu_container]).align_x(Alignment::Center).into()
+                }
+            }
+
+
+            Modules::CpuTemp =>
+            {
+                let left_click_metadata_message: Message = match &app.ron_config.action_on_left_click_cpu_temp 
+                { 
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
+                    ActionOnClick::Nothing => Message::Nothing,
+                    ActionOnClick::DefaultAction => Message::Nothing, 
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), true, false)) 
+                };
+                let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_cpu_temp 
+                { 
+                    ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, 
+                    ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, 
+                    ActionOnClick::Nothing => Message::Nothing, 
+                    ActionOnClick::DefaultAction => Message::Nothing, 
+                    ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), false, false)) 
+                };
+
+                let text_to_send = define_cpu_temp_text(app);
+                let [r, g, b] = &app.ron_config.cpu_temp_text_color_rgb;
+                let color_to_send = Color::from_rgb8(*r, *g, *b);
+                let colored_cpu_temp = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let cpu_temp_container = create_button_container(app, (colored_cpu_temp, app.ron_config.cpu_temp_text_size), Message::Nothing, Message::Nothing, left_click_metadata_message, right_click_metadata_message, define_cpu_temp_style);
+                
+                match axis 
+                {
+                    Axis::Horizontal => row( [cpu_temp_container]).align_y(Alignment::Center).into(),
+                    Axis::Vertical => column([cpu_temp_container]).align_x(Alignment::Center).into()
+                }
+            }
 
 
             Modules::MediaPlayerButtons =>

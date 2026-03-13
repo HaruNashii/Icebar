@@ -7,7 +7,7 @@ use std::process::Command;
 
 
 // ============ CRATES ============
-use crate::helpers::{string::{convert_text_to_rich_text, ellipsize}, style::{UserStyle, orient_text, set_style}};
+use crate::helpers::{string::{convert_text_to_rich_text}, style::{UserStyle, orient_text, set_style}};
 use crate::update::Message;
 use crate::ron::BarConfig;
 use crate::AppData;
@@ -123,8 +123,7 @@ pub fn define_media_player_metadata_text(app: &AppData) -> String
     {
         metadata = &app.ron_config.text_when_metadata_is_empty;
     }
-    let ellipsed_text = ellipsize(&app.ron_config.ellipsis_text, metadata, app.ron_config.media_player_metadata_text_limit_len);
-    orient_text(&ellipsed_text, &app.ron_config.media_player_metadata_text_orientation)
+    orient_text(metadata, &app.ron_config.media_player_metadata_text_orientation)
 }
 
 
@@ -201,6 +200,7 @@ mod tests
 {
     use super::*;
     use crate::AppData;
+    use crate::helpers::string::ellipsize;
     use crate::modules::media_player::MediaPlayerData;
     use iced::{Background, Color};
     use iced::widget::button;
@@ -327,7 +327,8 @@ mod tests
     fn metadata_text_long_gets_ellipsized()
     {
         let app = make_app("this is a very long title that exceeds the limit", "Playing");
-        let result = define_media_player_metadata_text(&app);
+        let text = define_media_player_metadata_text(&app);
+        let result  = ellipsize(&"...".to_string(), &text, 20);
         assert!(result.ends_with("..."));
         assert!(result.chars().count() <= 23); // 20 + "...".len()
     }

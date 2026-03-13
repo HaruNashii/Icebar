@@ -53,7 +53,7 @@ BarConfig
 
     bar_border_radius: (0., 0., 0., 0.),
     bar_border_size: 0.0,
-    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_border_color_rgb: (0, 0, 0),
     bar_background_color_rgba: (253, 246, 227, 100),  // base3 cream — fully opaque
 
     font_family: "Source Code Pro",

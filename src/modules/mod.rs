@@ -1,6 +1,8 @@
 pub mod custom_modules;
+pub mod focused_window;
 pub mod media_player;
 pub mod workspaces;
+pub mod cpu_temp;
 pub mod network;
 pub mod volume;
 pub mod clock;
@@ -9,3 +11,5 @@ pub mod niri;
 pub mod hypr;
 pub mod sway;
 pub mod data;
+pub mod cpu;
+pub mod ram;

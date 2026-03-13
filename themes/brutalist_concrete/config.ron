@@ -40,7 +40,7 @@ BarConfig
 
     bar_border_radius: (0., 0., 0., 0.),              // poured concrete has no curves
     bar_border_size: 2.0,                             // structural border
-    bar_border_color_rgba: (185, 182, 176, 100),      // Dust — full opacity
+    bar_border_color_rgb: (185, 182, 176),            // Dust
     bar_background_color_rgba: (72, 70, 68, 100),     // Wet Concrete — fully opaque
 
     font_family: "Barlow Condensed",                  // fallback: "Liberation Sans Narrow" or "Arial Narrow"

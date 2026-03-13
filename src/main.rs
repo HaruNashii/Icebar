@@ -38,6 +38,7 @@ mod ron;
 #[derive(Default, Clone)]
 struct AppData
 {
+    cpu_snapshot: Option<crate::modules::cpu::CpuSnapshot>,
     current_clock_timezone: Option<(String, u32)>,
     is_hovering_media_player_meta_data: bool,
     cached_continuous_outputs: Vec<String>,

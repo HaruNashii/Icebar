@@ -53,7 +53,7 @@ BarConfig
 
     bar_border_radius: (10., 10., 10., 10.),
     bar_border_size: 0.0,
-    bar_border_color_rgba: (0, 0, 0, 0),
+    bar_border_color_rgb: (0, 0, 0),
     bar_background_color_rgba: (15, 17, 26, 97),
 
     font_family: "Roboto Mono",

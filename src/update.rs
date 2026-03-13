@@ -14,9 +14,12 @@ static WARNING_ONCE: Once = Once::new();
 
 
 
-use crate::helpers::string::weight_from_str;
-use crate::modules::clock::cycle_clock_timezones;
 // ============ CRATES ============
+use crate::modules::focused_window::{read_focused_window_hypr, read_focused_window_sway, read_focused_window_niri, };
+use crate::helpers::string::weight_from_str;
+use crate::modules::cpu_temp::read_cpu_temp;
+use crate::modules::ram::read_ram_data;
+use crate::modules::{clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
 use crate::{helpers::{fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::{Modules, ModulesData}, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume::{self, VolumeAction}, workspaces::UserWorkspaceAction }};
 use crate::helpers::{misc::{is_active_module, validade_bar_size_and_margin}, workspaces::build_workspace_list };
 use crate::context_menu::run_context_menu;
@@ -249,6 +252,9 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                     Modules::MediaPlayerMetaData => { app.modules_data.media_player_data = get_player_data_with_format(&app.ron_config); }
                     Modules::HyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); }
                     Modules::SwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); }
+                    Modules::FocusedWindowNiri => { app.modules_data.focused_window_data.title = read_focused_window_niri().unwrap_or_default(); }
+                    Modules::FocusedWindowSway => { app.modules_data.focused_window_data.title = read_focused_window_sway().unwrap_or_default(); }
+                    Modules::FocusedWindowHypr => { app.modules_data.focused_window_data.title = read_focused_window_hypr().unwrap_or_default(); }
                     Modules::NiriWorkspaces => 
                     { 
                         WARNING_ONCE.call_once(|| 
@@ -265,6 +271,34 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                         });
                         app.modules_data.workspace_data.current_workspace = niri::current_workspace(); 
                         app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&niri::workspace_count(), None); 
+                    }
+
+                    Modules::Ram =>
+                    {
+                        if let Some(data) = read_ram_data()
+                        {
+                            app.modules_data.ram_data = data;
+                        }
+                    }
+
+                    Modules::Cpu =>
+                    {
+                        if let Some(curr) = read_cpu_snapshot()
+                        {
+                            if let Some(prev) = &app.cpu_snapshot
+                            {
+                                app.modules_data.cpu_data.usage_percent = compute_cpu_usage(prev, &curr);
+                            }
+                            app.cpu_snapshot = Some(curr);
+                        }
+                    }
+
+                    Modules::CpuTemp =>
+                    {
+                        if let Some(temp) = read_cpu_temp()
+                        {
+                            app.modules_data.cpu_temp_data.temp_celsius = temp;
+                        }
                     }
 
                     Modules::Clock => 

@@ -44,7 +44,7 @@ BarConfig
 
     bar_border_radius: (8., 8., 8., 8.),
     bar_border_size: 0.0,                             // no bar border — clean silhouette
-    bar_border_color_rgba: (76, 86, 106, 0),
+    bar_border_color_rgb: (76, 86, 106),
     bar_background_color_rgba: (59, 66, 82, 97),      // nord1
 
     font_family: "JetBrains Mono",

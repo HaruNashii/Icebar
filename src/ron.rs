@@ -51,7 +51,7 @@ pub struct BarConfig
     pub bar_size: [u32;2],
     pub bar_border_radius: [f32;4],
     pub bar_border_size: f32,
-    pub bar_border_color_rgba: [u8;4],
+    pub bar_border_color_rgb: [u8;3],
     pub bar_background_color_rgba: [u8;4],
     pub font_family: String,
     pub font_style: String,
@@ -68,13 +68,21 @@ pub struct BarConfig
     pub ellipsis_text: String,
     pub player: String, 
     pub dont_show_metadata_if_empty: bool,
+    pub dont_show_focused_window_if_empty: bool,
     pub text_when_metadata_is_empty: String,
+    pub text_when_focused_window_is_empty: String,
+    pub media_player_metadata_text_limit_len: usize,
+    pub focused_window_text_limit_len: usize,
     pub spacing_between_all_modules: u32,
     pub force_static_position_context_menu: Option<(i32, i32)>,
     pub reverse_scroll_on_workspace: bool,
     pub persistent_workspaces: Option<u8>,
     pub incremental_steps_output: u8,
     pub incremental_steps_input: u8,
+    pub action_on_left_click_cpu: ActionOnClick, 
+    pub action_on_right_click_cpu: ActionOnClick, 
+    pub action_on_left_click_cpu_temp: ActionOnClick, 
+    pub action_on_right_click_cpu_temp: ActionOnClick, 
     pub action_on_left_click_media_player_metadata: ActionOnClick, 
     pub action_on_right_click_media_player_metadata: ActionOnClick, 
     pub action_on_left_click_clock: ActionOnClick, 
@@ -90,7 +98,6 @@ pub struct BarConfig
     // ================= FORMATS =================
     pub media_player_buttons_format: [String;4],
     pub media_player_metadata_format: String, 
-    pub media_player_metadata_text_limit_len: usize,
     pub network_module_format: String,
     pub alt_network_module_format: String,
     pub network_disconnected_text: String,
@@ -104,6 +111,7 @@ pub struct BarConfig
     pub input_volume_muted_format: String,
     pub clock_format: String,
     pub clock_alt_format: String,
+    pub cpu_format: String,
 
 
     // ================= TRAY (STYLE) =================
@@ -118,6 +126,65 @@ pub struct BarConfig
     pub tray_border_color_rgba: [u8;4],
     pub tray_border_size: f32,
     pub tray_border_radius: [f32;4],
+
+
+    // ================= FOCUSED WINDOW (STYLE) =================
+    pub focused_window_format:                        String,
+    pub focused_window_text_size:                     u32,
+    pub focused_window_text_color_rgb:                [u8; 3],
+    pub focused_window_text_orientation:              TextOrientation,
+    pub focused_window_button_color_rgb:              [u8; 3],
+    pub focused_window_button_text_color_rgb:         [u8; 3],
+    pub focused_window_button_hovered_color_rgb:      [u8; 3],
+    pub focused_window_button_hovered_text_color_rgb: [u8; 3],
+    pub focused_window_button_pressed_color_rgb:      [u8; 3],
+    pub focused_window_border_color_rgba:             [u8; 4],
+    pub focused_window_border_size:                   f32,
+    pub focused_window_border_radius:                 [f32; 4],
+
+
+    // ================= CPU (STYLE) =================
+    pub cpu_text_size: u32,
+    pub cpu_text_color_rgb: [u8; 3],
+    pub cpu_text_orientation: TextOrientation,
+    pub cpu_button_color_rgb: [u8; 3],
+    pub cpu_button_text_color_rgb: [u8; 3],
+    pub cpu_button_hovered_color_rgb: [u8; 3],
+    pub cpu_button_hovered_text_color_rgb: [u8; 3],
+    pub cpu_button_pressed_color_rgb: [u8; 3],
+    pub cpu_border_color_rgba: [u8; 4],
+    pub cpu_border_size: f32,
+    pub cpu_border_radius: [f32; 4],
+
+
+    // ================= CPU TEMP (STYLE) =================
+    pub cpu_temp_format:                        String,
+    pub cpu_temp_text_size:                     u32,
+    pub cpu_temp_text_color_rgb:                [u8; 3],
+    pub cpu_temp_text_orientation:              TextOrientation,
+    pub cpu_temp_button_color_rgb:              [u8; 3],
+    pub cpu_temp_button_text_color_rgb:         [u8; 3],
+    pub cpu_temp_button_hovered_color_rgb:      [u8; 3],
+    pub cpu_temp_button_hovered_text_color_rgb: [u8; 3],
+    pub cpu_temp_button_pressed_color_rgb:      [u8; 3],
+    pub cpu_temp_border_color_rgba:             [u8; 4],
+    pub cpu_temp_border_size:                   f32,
+    pub cpu_temp_border_radius:                 [f32; 4],
+
+
+    // ================= RAM (STYLE) =================
+    pub ram_format:                        String,
+    pub ram_text_size:                     u32,
+    pub ram_text_color_rgb:                [u8; 3],
+    pub ram_text_orientation:              TextOrientation,
+    pub ram_button_color_rgb:              [u8; 3],
+    pub ram_button_text_color_rgb:         [u8; 3],
+    pub ram_button_hovered_color_rgb:      [u8; 3],
+    pub ram_button_hovered_text_color_rgb: [u8; 3],
+    pub ram_button_pressed_color_rgb:      [u8; 3],
+    pub ram_border_color_rgba:             [u8; 4],
+    pub ram_border_size:                   f32,
+    pub ram_border_radius:                 [f32; 4],
 
 
     // ================= MEDIA PLAYER (STYLE) =================
@@ -329,7 +396,7 @@ impl Default for BarConfig
             bar_size: [0, 35],
             bar_border_radius: [0., 0., 0., 0.],
             bar_border_size: 1.0,
-            bar_border_color_rgba: [90, 70, 100, 100],
+            bar_border_color_rgb: [90, 70, 100],
             bar_background_color_rgba: [18, 18, 22, 92],
             font_family: "JetBrains Mono".into(),
             font_style: "Normal".into(),
@@ -345,8 +412,11 @@ impl Default for BarConfig
             ellipsis_text: "...".to_string(),
             player: "spotify".to_string(),
             dont_show_metadata_if_empty: false,
-            text_when_metadata_is_empty: "No Media Playing!!!".to_string(),
+            dont_show_focused_window_if_empty: false,
+            text_when_metadata_is_empty: "No Media Found.".to_string(),
+            text_when_focused_window_is_empty: "No Window Focused".to_string(),
             media_player_metadata_text_limit_len: 25,
+            focused_window_text_limit_len: 25,
             spacing_between_all_modules: 5,
             force_static_position_context_menu: None,
             reverse_scroll_on_workspace: false,
@@ -355,6 +425,10 @@ impl Default for BarConfig
             incremental_steps_input: 10,
             action_on_left_click_media_player_metadata: ActionOnClick::DefaultAction, 
             action_on_right_click_media_player_metadata: ActionOnClick::DefaultAction, 
+            action_on_left_click_cpu: ActionOnClick::DefaultAction, 
+            action_on_right_click_cpu: ActionOnClick::DefaultAction, 
+            action_on_left_click_cpu_temp: ActionOnClick::DefaultAction, 
+            action_on_right_click_cpu_temp: ActionOnClick::DefaultAction, 
             action_on_left_click_clock: ActionOnClick::DefaultAction, 
             action_on_right_click_clock: ActionOnClick::DefaultAction, 
             action_on_left_click_network: ActionOnClick::DefaultAction, 
@@ -435,6 +509,67 @@ impl Default for BarConfig
             tray_border_size: 1.0,
             tray_border_radius: [3.0, 3.0, 3.0, 3.0],
 
+
+            // ================= FOCUSED WINDOW (STYLE) =================
+            focused_window_format:                        "{title}".to_string(),
+            focused_window_text_size:                     12,
+            focused_window_text_color_rgb:                [220, 220, 220],
+            focused_window_text_orientation:              TextOrientation::Horizontal,
+            focused_window_button_color_rgb:              [40, 40, 50],
+            focused_window_button_text_color_rgb:         [220, 220, 220],
+            focused_window_button_hovered_color_rgb:      [60, 60, 75],
+            focused_window_button_hovered_text_color_rgb: [255, 255, 255],
+            focused_window_button_pressed_color_rgb:      [30, 30, 40],
+            focused_window_border_color_rgba:             [80, 80, 100, 80],
+            focused_window_border_size:                   1.0,
+            focused_window_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+
+
+            // ================= CPU (STYLE) =================
+            cpu_format: "CPU: {usage}%".to_string(),
+            cpu_text_size: 12,
+            cpu_text_color_rgb: [220, 220, 220],
+            cpu_text_orientation: TextOrientation::Horizontal,
+            cpu_button_color_rgb: [40, 40, 50],
+            cpu_button_text_color_rgb: [220, 220, 220],
+            cpu_button_hovered_color_rgb: [60, 60, 75],
+            cpu_button_hovered_text_color_rgb: [255, 255, 255],
+            cpu_button_pressed_color_rgb: [30, 30, 40],
+            cpu_border_color_rgba: [80, 80, 100, 80],
+            cpu_border_size: 1.0,
+            cpu_border_radius: [3.0, 3.0, 3.0, 3.0],
+
+
+            // ================= CPU TEMP (STYLE) =================
+            cpu_temp_format:                        " {temp}°C".to_string(),
+            cpu_temp_text_size:                     12,
+            cpu_temp_text_color_rgb:                [220, 220, 220],
+            cpu_temp_text_orientation:              TextOrientation::Horizontal,
+            cpu_temp_button_color_rgb:              [40, 40, 50],
+            cpu_temp_button_text_color_rgb:         [220, 220, 220],
+            cpu_temp_button_hovered_color_rgb:      [60, 60, 75],
+            cpu_temp_button_hovered_text_color_rgb: [255, 255, 255],
+            cpu_temp_button_pressed_color_rgb:      [30, 30, 40],
+            cpu_temp_border_color_rgba:             [80, 80, 100, 80],
+            cpu_temp_border_size:                   1.0,
+            cpu_temp_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+
+
+            // ================= RAM (STYLE) =================
+            ram_format:                        " {used}MB / {total}MB ({percent}%)".to_string(),
+            ram_text_size:                     12,
+            ram_text_color_rgb:                [220, 220, 220],
+            ram_text_orientation:              TextOrientation::Horizontal,
+            ram_button_color_rgb:              [40, 40, 50],
+            ram_button_text_color_rgb:         [220, 220, 220],
+            ram_button_hovered_color_rgb:      [60, 60, 75],
+            ram_button_hovered_text_color_rgb: [255, 255, 255],
+            ram_button_pressed_color_rgb:      [30, 30, 40],
+            ram_border_color_rgba:             [80, 80, 100, 80],
+            ram_border_size:                   1.0,
+            ram_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+
+
             // ================= MEDIA PLAYER (STYLE) =================
             media_player_metadata_text_size: 15,
             media_player_metadata_text_color_rgb: [255, 255, 255],
@@ -447,6 +582,7 @@ impl Default for BarConfig
             media_player_metadata_border_color_rgba: [120, 80, 130, 100],
             media_player_metadata_border_size: 1.0,
             media_player_metadata_border_radius: [3.0, 3.0, 3.0, 3.0],
+
 
             // ================= MEDIA PLAYER BUTTONS (STYLE) =================
             media_player_button_spacing: 5,
@@ -502,6 +638,7 @@ impl Default for BarConfig
             clock_border_color_rgba: [120, 80, 130, 100],
             clock_border_size: 1.0,
             clock_border_radius: [3.0, 3.0, 3.0, 3.0],
+
 
             // ================= ALT CLOCK (STYLE) =================
             alt_clock_text_size: 15,
@@ -685,7 +822,7 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, Vec<Modul
     };
 
     let mut active_modules: Vec<Modules> = Vec::new();
-    let all_possible_default_modules = [Modules::NiriWorkspaces, Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
+    let all_possible_default_modules = [Modules::FocusedWindowSway, Modules::FocusedWindowHypr, Modules::FocusedWindowNiri, Modules::CpuTemp, Modules::Ram, Modules::Cpu, Modules::NiriWorkspaces, Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
     let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
     for position in all_possible_position
     {
@@ -797,7 +934,6 @@ mod tests
         // Alpha in this app is 0..=100, NOT 0..=255
         let config = BarConfig::default();
         assert!(config.bar_background_color_rgba[3] <= 100);
-        assert!(config.bar_border_color_rgba[3] <= 100);
         assert!(config.tray_border_color_rgba[3] <= 100);
     }
  

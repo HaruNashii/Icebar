@@ -29,7 +29,7 @@ BarConfig
     // Sharp. No radius. Ever.
     bar_border_radius: (0., 0., 0., 0.),
     bar_border_size: 1.5,
-    bar_border_color_rgba: (0, 255, 140, 80),        // acid green border, semi-transparent
+    bar_border_color_rgb: (0, 255, 140),        // acid green border
     bar_background_color_rgba: (5, 5, 8, 98),         // near-void black
 
     font_family: "JetBrains Mono",

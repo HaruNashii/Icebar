@@ -46,8 +46,9 @@ pub fn check_if_config_file_exists()
 // WARNING!!!: "NiriWorkspaces" DOESN'T SUPPORT "persistent_workspaces", IF YOU PARSED IT, IT WILL BE IGNORED
 
 
+     
 // ===== TIPS =====
-// All possible modules: "MediaPlayerMetaData", "MediaPlayerButtons", "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Network", "Clock", "Tray".
+// All possible modules: "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri", "CpuTemp", "Ram", "Cpu", "MediaPlayerMetaData", "MediaPlayerButtons", "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Network", "Clock", "Tray".
 //
 // All texts supports per color flags per string, you just need to have "[Color=(Red, Green, Blue), String=YourString]", you can have multiples color flags for text 
 // like: "[Color=(255, 0, 0), String=red_string], non_colored_String [Color=(0, 0, 255), String=blue_string]", this will display "red_string non_colored_String, blue_string", all with your respective colors
@@ -106,7 +107,7 @@ BarConfig
 
 
     // ================= MODULES =================
-    left_modules: [CustomModule(0)],
+    left_modules: [CustomModule(0), Cpu, CpuTemp, Ram],
     center_modules: [Clock],
     right_modules: [Tray, Network, VolumeOutput, VolumeInput],
 
@@ -116,9 +117,12 @@ BarConfig
     //clock_timezones: Some(["America/New_York", "Europe/London", "Asia/Tokyo", "America/Sao_Paulo"]),
     ellipsis_text: "...",
     player: "spotify",
-    dont_show_metadata_if_empty: true,
+    dont_show_metadata_if_empty: false,
+    dont_show_focused_window_if_empty: true,
     text_when_metadata_is_empty: "No Media Found.",
+    text_when_focused_window_is_empty: "No Window Focused",
     media_player_metadata_text_limit_len: 25,
+    focused_window_text_limit_len: 25,
     spacing_between_all_modules: 5,
     force_static_position_context_menu: None,
     reverse_scroll_on_workspace: false,
@@ -193,6 +197,10 @@ BarConfig
     input_volume_muted_format: "   Muted",
     clock_format: "[Color=(150, 40, 80), String=󰥔]  %H:%M",
     clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S",
+    focused_window_format: "{title}",
+    cpu_format: "[Color=(150, 40, 80), String=CPU:] {usage}%",
+    cpu_temp_format: "[Color=(150, 40, 80), String=CPU Temp:] {temp}°C",
+    ram_format: "[Color=(150, 40, 80), String=Ram Used:] {used}MB / {percent}% | [Color=(150, 40, 80), String=Ram Total:] {total}MB",
 
 
     // ================= TRAY (STYLE) =================
@@ -207,6 +215,62 @@ BarConfig
     tray_border_color_rgba: (90, 70, 100, 100),
     tray_border_size: 1.0,
     tray_border_radius: (3.0, 3.0, 3.0, 3.0),
+
+
+    // ================= FOCUSED WINDOW (STYLE) =================
+    focused_window_text_size: 12,
+    focused_window_text_color_rgb: (220, 220, 220),
+    focused_window_text_orientation: Horizontal,
+    focused_window_button_color_rgb: (40, 40, 50),
+    focused_window_button_text_color_rgb: (220, 220, 220),
+    focused_window_button_hovered_color_rgb: (60, 60, 75),
+    focused_window_button_hovered_text_color_rgb: (255, 255, 255),
+    focused_window_button_pressed_color_rgb: (30, 30, 40),
+    focused_window_border_color_rgba: (80, 80, 100, 80),
+    focused_window_border_size: 1.0,
+    focused_window_border_radius: (3.0, 3.0, 3.0, 3.0),
+
+
+    // ================= CPU (STYLE) =================
+    cpu_text_size: 12,
+    cpu_text_color_rgb: (220, 220, 220),
+    cpu_text_orientation: Horizontal,
+    cpu_button_color_rgb: (40, 40, 50),
+    cpu_button_text_color_rgb: (220, 220, 220),
+    cpu_button_hovered_color_rgb: (60, 60, 75),
+    cpu_button_hovered_text_color_rgb: (255, 255, 255),
+    cpu_button_pressed_color_rgb: (30, 30, 40),
+    cpu_border_color_rgba: (80, 80, 100, 80),
+    cpu_border_size: 1.0,
+    cpu_border_radius: (3.0, 3.0, 3.0, 3.0),
+
+
+    // ================= CPU TEMP (STYLE) =================
+    cpu_temp_text_size: 12,
+    cpu_temp_text_color_rgb: (220, 220, 220),
+    cpu_temp_text_orientation: Horizontal,
+    cpu_temp_button_color_rgb: (40, 40, 50),
+    cpu_temp_button_text_color_rgb: (220, 220, 220),
+    cpu_temp_button_hovered_color_rgb: (60, 60, 75),
+    cpu_temp_button_hovered_text_color_rgb: (255, 255, 255),
+    cpu_temp_button_pressed_color_rgb: (30, 30, 40),
+    cpu_temp_border_color_rgba: (80, 80, 100, 80),
+    cpu_temp_border_size: 1.0,
+    cpu_temp_border_radius: (3.0, 3.0, 3.0, 3.0),
+
+
+    // ================= RAM (STYLE) =================
+    ram_text_size: 12,
+    ram_text_color_rgb: (220, 220, 220),
+    ram_text_orientation: Horizontal,
+    ram_button_color_rgb: (40, 40, 50),
+    ram_button_text_color_rgb: (220, 220, 220),
+    ram_button_hovered_color_rgb: (60, 60, 75),
+    ram_button_hovered_text_color_rgb: (255, 255, 255),
+    ram_button_pressed_color_rgb: (30, 30, 40),
+    ram_border_color_rgba: (80, 80, 100, 80),
+    ram_border_size: 1.0,
+    ram_border_radius: (3.0, 3.0, 3.0, 3.0),
 
     
     // ================= MEDIA PLAYER (STYLE) =================
