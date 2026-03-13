@@ -65,8 +65,13 @@ pub struct MenuItem
 // ============ FUNCTIONS ============
 pub fn tray_stream(_: &TraySubscription) -> Pin<Box<dyn Stream<Item = Message> + Send>>
 {
-    let rx = TRAY_RECEIVER.lock().unwrap().take().expect("tray receiver already taken");
-    Box::pin(tokio_stream::wrappers::ReceiverStream::new(rx).map(Message::TrayEvent))
+    let maybe_rx = TRAY_RECEIVER.lock().unwrap_or_else(|poisoned| poisoned.into_inner()).take();
+
+    match maybe_rx
+    {
+        Some(rx) => Box::pin(tokio_stream::wrappers::ReceiverStream::new(rx).map(Message::TrayEvent)),
+        None => Box::pin(futures::stream::pending()),
+    }
 }
 
 

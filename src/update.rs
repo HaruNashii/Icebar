@@ -115,12 +115,17 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             let font_name = new_config.font_family.clone();
             let modules_data = ModulesData 
             {
+                focused_window_data: app.modules_data.focused_window_data.clone(),
+                cpu_data: app.modules_data.cpu_data.clone(),
+                ram_data: app.modules_data.ram_data.clone(),
+                media_player_data: app.modules_data.media_player_data.clone(),
+                workspace_data: app.modules_data.workspace_data.clone(),
+                cpu_temp_data: app.modules_data.cpu_temp_data.clone(),
                 network_data: app.modules_data.network_data.clone(),
                 volume_data: app.modules_data.volume_data.clone(),
                 tray_icons: app.modules_data.tray_icons.clone(),
                 clock_data: app.modules_data.clock_data.clone(),
                 active_modules: active_modules.clone(),
-                ..Default::default() 
             };
             *app = AppData
             {
@@ -131,6 +136,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 network_icons: new_config.network_level_format.clone(),
                 connection_type_icons: new_config.network_connection_type_icons.clone(),
                 ron_config: new_config, 
+                mouse_position: app.mouse_position,
                 modules_data,
                 ..Default::default()
             };
