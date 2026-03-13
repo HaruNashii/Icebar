@@ -7,7 +7,7 @@ use iced::widget::button;
 
 
 // ============ CRATES ============
-use crate::helpers::{string::ellipsize, style::{TextOrientation, UserStyle, set_style}};
+use crate::helpers::{string::ellipsize, style::{SideOption, TextOrientation, UserStyle, set_style}};
 use crate::AppData;
 
 
@@ -19,7 +19,7 @@ use crate::AppData;
 #[serde(default)]
 pub struct CustomModule
 {
-    pub side_separator: [bool;2],
+    pub side_separator: Option<SideOption>,
     pub separator_color: [u8;3],
     pub separator_width:  f32,
     pub separator_height: f32,  
@@ -62,7 +62,7 @@ impl Default for CustomModule
     {
         Self 
         {
-            side_separator: [false, false],
+            side_separator: None,
             separator_color: [75, 75, 75],
             separator_width:  1.,
             separator_height: 16.,

@@ -9,7 +9,7 @@ use std::fs;
 
 // ============ CRATES ============
 use crate::modules::{custom_modules::CustomModule, data::Modules};
-use crate::helpers::style::TextOrientation;
+use crate::helpers::style::{SideOption, TextOrientation};
 
 
 
@@ -115,77 +115,77 @@ pub struct BarConfig
 
 
     // ================= SIDE SEPARATOR CONFIGS =================
-    pub clock_side_separator: [bool;2],
+    pub clock_side_separator: Option<SideOption>,
     pub clock_side_separator_color: [u8;3],
     pub clock_side_separator_width: f32,
     pub clock_side_separator_height: f32,
 
-    pub alt_clock_side_separator: [bool;2],
+    pub alt_clock_side_separator: Option<SideOption>,
     pub alt_clock_side_separator_color: [u8;3],
     pub alt_clock_side_separator_width: f32,
     pub alt_clock_side_separator_height: f32,
 
-    pub tray_side_separator:        [bool; 2],
+    pub tray_side_separator:        Option<SideOption>,
     pub tray_side_separator_color:  [u8; 3],
     pub tray_side_separator_width:  f32,
     pub tray_side_separator_height: f32,
  
-    pub workspace_side_separator:        [bool; 2],
+    pub workspace_side_separator:        Option<SideOption>,
     pub workspace_side_separator_color:  [u8; 3],
     pub workspace_side_separator_width:  f32,
     pub workspace_side_separator_height: f32,
  
-    pub media_player_metadata_side_separator:        [bool; 2],
+    pub media_player_metadata_side_separator:        Option<SideOption>,
     pub media_player_metadata_side_separator_color:  [u8; 3],
     pub media_player_metadata_side_separator_width:  f32,
     pub media_player_metadata_side_separator_height: f32,
  
-    pub media_player_buttons_side_separator:        [bool; 2],
+    pub media_player_buttons_side_separator:        Option<SideOption>,
     pub media_player_buttons_side_separator_color:  [u8; 3],
     pub media_player_buttons_side_separator_width:  f32,
     pub media_player_buttons_side_separator_height: f32,
  
-    pub focused_window_side_separator:        [bool; 2],
+    pub focused_window_side_separator:        Option<SideOption>,
     pub focused_window_side_separator_color:  [u8; 3],
     pub focused_window_side_separator_width:  f32,
     pub focused_window_side_separator_height: f32,
  
-    pub cpu_side_separator:        [bool; 2],
+    pub cpu_side_separator:        Option<SideOption>,
     pub cpu_side_separator_color:  [u8; 3],
     pub cpu_side_separator_width:  f32,
     pub cpu_side_separator_height: f32,
  
-    pub cpu_temp_side_separator:        [bool; 2],
+    pub cpu_temp_side_separator:        Option<SideOption>,
     pub cpu_temp_side_separator_color:  [u8; 3],
     pub cpu_temp_side_separator_width:  f32,
     pub cpu_temp_side_separator_height: f32,
  
-    pub ram_side_separator:        [bool; 2],
+    pub ram_side_separator:        Option<SideOption>,
     pub ram_side_separator_color:  [u8; 3],
     pub ram_side_separator_width:  f32,
     pub ram_side_separator_height: f32,
  
-    pub network_side_separator:        [bool; 2],
+    pub network_side_separator:        Option<SideOption>,
     pub network_side_separator_color:  [u8; 3],
     pub network_side_separator_width:  f32,
     pub network_side_separator_height: f32,
  
-    pub volume_output_side_separator:        [bool; 2],
+    pub volume_output_side_separator:        Option<SideOption>,
     pub volume_output_side_separator_color:  [u8; 3],
     pub volume_output_side_separator_width:  f32,
     pub volume_output_side_separator_height: f32,
 
-    pub muted_volume_output_side_separator:        [bool; 2],
+    pub muted_volume_output_side_separator:        Option<SideOption>,
     pub muted_volume_output_side_separator_color:  [u8; 3],
     pub muted_volume_output_side_separator_width:  f32,
     pub muted_volume_output_side_separator_height: f32,
 
-    pub volume_input_side_separator:        [bool; 2],
+    pub volume_input_side_separator:        Option<SideOption>,
     pub volume_input_side_separator_color:  [u8; 3],
     pub volume_input_side_separator_width:  f32,
     pub volume_input_side_separator_height: f32,
  
-    pub muted_volume_input_side_separator:        [bool; 2],
+    pub muted_volume_input_side_separator:        Option<SideOption>,
     pub muted_volume_input_side_separator_color:  [u8; 3],
     pub muted_volume_input_side_separator_width:  f32,
     pub muted_volume_input_side_separator_height: f32,
@@ -592,77 +592,77 @@ impl Default for BarConfig
 
 
             // ================= SIDE SEPARATOR CONFIGS =================
-            clock_side_separator: [false, false],
+            clock_side_separator: None,
             clock_side_separator_color: [75, 75, 75],
             clock_side_separator_width: 1.,
             clock_side_separator_height: 16.,
 
-            alt_clock_side_separator: [false, false],
+            alt_clock_side_separator: None,
             alt_clock_side_separator_color: [75, 75, 75],
             alt_clock_side_separator_width: 1.,
             alt_clock_side_separator_height: 16.,
 
-            tray_side_separator:        [false, false],
+            tray_side_separator:        None,
             tray_side_separator_color:  [75, 75, 75],
             tray_side_separator_width:  1.,
             tray_side_separator_height: 16.,
  
-            workspace_side_separator:        [false, false],
+            workspace_side_separator:        None,
             workspace_side_separator_color:  [75, 75, 75],
             workspace_side_separator_width:  1.,
             workspace_side_separator_height: 16.,
  
-            media_player_metadata_side_separator:        [false, false],
+            media_player_metadata_side_separator:        None,
             media_player_metadata_side_separator_color:  [75, 75, 75],
             media_player_metadata_side_separator_width:  1.,
             media_player_metadata_side_separator_height: 16.,
  
-            media_player_buttons_side_separator:        [false, false],
+            media_player_buttons_side_separator:        None,
             media_player_buttons_side_separator_color:  [75, 75, 75],
             media_player_buttons_side_separator_width:  1.,
             media_player_buttons_side_separator_height: 16.,
  
-            focused_window_side_separator:        [false, false],
+            focused_window_side_separator:        None,
             focused_window_side_separator_color:  [75, 75, 75],
             focused_window_side_separator_width:  1.,
             focused_window_side_separator_height: 16.,
  
-            cpu_side_separator:        [false, false],
+            cpu_side_separator:        None,
             cpu_side_separator_color:  [75, 75, 75],
             cpu_side_separator_width:  1.,
             cpu_side_separator_height: 16.,
  
-            cpu_temp_side_separator:        [false, false],
+            cpu_temp_side_separator:        None,
             cpu_temp_side_separator_color:  [75, 75, 75],
             cpu_temp_side_separator_width:  1.,
             cpu_temp_side_separator_height: 16.,
  
-            ram_side_separator:        [false, false],
+            ram_side_separator:        None,
             ram_side_separator_color:  [75, 75, 75],
             ram_side_separator_width:  1.,
             ram_side_separator_height: 16.,
  
-            network_side_separator:        [false, false],
+            network_side_separator:        None,
             network_side_separator_color:  [75, 75, 75],
             network_side_separator_width:  1.,
             network_side_separator_height: 16.,
 
-            volume_output_side_separator:        [false, false],
+            volume_output_side_separator:        None,
             volume_output_side_separator_color:  [75, 75, 75],
             volume_output_side_separator_width:  1.,
             volume_output_side_separator_height: 20.,
  
-            muted_volume_output_side_separator:        [false, false],
+            muted_volume_output_side_separator:        None,
             muted_volume_output_side_separator_color:  [75, 75, 75],
             muted_volume_output_side_separator_width:  1.,
             muted_volume_output_side_separator_height: 20.,
  
-            volume_input_side_separator:        [false, false],
+            volume_input_side_separator:        None,
             volume_input_side_separator_color:  [75, 75, 75],
             volume_input_side_separator_width:  1.,
             volume_input_side_separator_height: 20.,
 
-            muted_volume_input_side_separator:        [false, false],
+            muted_volume_input_side_separator:        None,
             muted_volume_input_side_separator_color:  [75, 75, 75],
             muted_volume_input_side_separator_width:  1.,
             muted_volume_input_side_separator_height: 20.,

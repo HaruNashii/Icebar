@@ -118,13 +118,13 @@ BarConfig
 
 
     // ================= SIDE SEPARATOR CONFIGS =================
-    tray_side_separator: (true, false),
-    clock_side_separator: (true, false),
-    alt_clock_side_separator: (true, false),
-    volume_output_side_separator: (true, false),
-    muted_volume_output_side_separator: (true, false),
-    cpu_side_separator: (true, false),
-    ram_side_separator: (true, false),
+    tray_side_separator: 		Some(Left),
+    clock_side_separator: 		Some(Left),
+    alt_clock_side_separator: 		Some(Left),
+    volume_output_side_separator: 	Some(Left),
+    muted_volume_output_side_separator: Some(Left),
+    cpu_side_separator: 		Some(Left),
+    ram_side_separator: 		Some(Left),
 
 
 
@@ -386,7 +386,7 @@ BarConfig
         // ── MODULE 0 ── KEYBOARD LAYOUT
         // Left click cycles to next layout.
         (
-	    side_separator: (true, false),
+	    side_separator: Some(Left),
             name: "keyboard",
             text: "",
             text_size: 11,
@@ -418,7 +418,7 @@ BarConfig
 
         // ── MODULE 1 ── POWER BUTTON
         (
-	    side_separator: (true, false),
+	    side_separator: Some(Left),
             name: "power",
             text: "󰐥",
             text_size: 17,
