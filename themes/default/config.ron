@@ -66,7 +66,7 @@ BarConfig
     bar_size: (0, 35),
     bar_border_radius: (0., 0., 0., 0.),
     bar_border_size: 1.0,
-    bar_border_color_rgb: (90, 70, 100),
+    bar_border_color_rgba: (90, 70, 100, 100),
     bar_background_color_rgba: (18, 18, 22, 100),
     font_family: "JetBrains Mono",
     font_style: "Bold",
@@ -167,6 +167,100 @@ BarConfig
     cpu_format: "[Color=(150, 40, 80), String=CPU:] {usage}%",
     cpu_temp_format: "[Color=(150, 40, 80), String=CPU Temp:] {temp}°C",
     ram_format: "[Color=(150, 40, 80), String=Ram Used:] {used}MB / {percent}% | [Color=(150, 40, 80), String=Ram Total:] {total}MB",
+
+    
+    // ================= PADDING CONFIGS =================
+    focused_window_padding: 0,
+    cpu_padding: 0,
+    cpu_temp_padding: 0,
+    ram_padding: 0,
+    media_player_metadata_padding: 0,
+    media_player_button_padding: 0,
+    network_padding: 0,
+    alt_network_padding: 0,
+    clock_padding: 0,
+    alt_clock_padding: 0,
+    volume_output_padding: 0,
+    muted_volume_output_padding: 0,
+    volume_input_padding: 0,
+    muted_volume_input_padding: 0,
+
+
+    // ================= SIDE SEPARATOR CONFIGS =================
+    clock_side_separator: (false, false),
+    clock_side_separator_color: (75, 75, 75),
+    clock_side_separator_width: 1.,
+    clock_side_separator_height: 16.,
+
+    alt_clock_side_separator: (false, false),
+    alt_clock_side_separator_color: (75, 75, 75),
+    alt_clock_side_separator_width: 1.,
+    alt_clock_side_separator_height: 16.,
+
+    tray_side_separator:        (false, false),
+    tray_side_separator_color:  (75, 75, 75),
+    tray_side_separator_width:  1.,
+    tray_side_separator_height: 16.,
+ 
+    workspace_side_separator:        (false, false),
+    workspace_side_separator_color:  (75, 75, 75),
+    workspace_side_separator_width:  1.,
+    workspace_side_separator_height: 16.,
+ 
+    media_player_metadata_side_separator:        (false, false),
+    media_player_metadata_side_separator_color:  (75, 75, 75),
+    media_player_metadata_side_separator_width:  1.,
+    media_player_metadata_side_separator_height: 16.,
+ 
+    media_player_buttons_side_separator:        (false, false),
+    media_player_buttons_side_separator_color:  (75, 75, 75),
+    media_player_buttons_side_separator_width:  1.,
+    media_player_buttons_side_separator_height: 16.,
+ 
+    focused_window_side_separator:        (false, false),
+    focused_window_side_separator_color:  (75, 75, 75),
+    focused_window_side_separator_width:  1.,
+    focused_window_side_separator_height: 16.,
+ 
+    cpu_side_separator:        (false, false),
+    cpu_side_separator_color:  (75, 75, 75),
+    cpu_side_separator_width:  1.,
+    cpu_side_separator_height: 16.,
+ 
+    cpu_temp_side_separator:        (false, false),
+    cpu_temp_side_separator_color:  (75, 75, 75),
+    cpu_temp_side_separator_width:  1.,
+    cpu_temp_side_separator_height: 16.,
+ 
+    ram_side_separator:        (false, false),
+    ram_side_separator_color:  (75, 75, 75),
+    ram_side_separator_width:  1.,
+    ram_side_separator_height: 16.,
+ 
+    network_side_separator:        (false, false),
+    network_side_separator_color:  (75, 75, 75),
+    network_side_separator_width:  1.,
+    network_side_separator_height: 16.,
+
+    volume_output_side_separator:        (false, false),
+    volume_output_side_separator_color:  (75, 75, 75),
+    volume_output_side_separator_width:  1.,
+    volume_output_side_separator_height: 20.,
+ 
+    muted_volume_output_side_separator:        (false, false),
+    muted_volume_output_side_separator_color:  (75, 75, 75),
+    muted_volume_output_side_separator_width:  1.,
+    muted_volume_output_side_separator_height: 20.,
+ 
+    volume_input_side_separator:        (false, false),
+    volume_input_side_separator_color:  (75, 75, 75),
+    volume_input_side_separator_width:  1.,
+    volume_input_side_separator_height: 20.,
+
+    muted_volume_input_side_separator:        (false, false),
+    muted_volume_input_side_separator_color:  (75, 75, 75),
+    muted_volume_input_side_separator_width:  1.,
+    muted_volume_input_side_separator_height: 20.,
 
 
     // ================= TRAY (STYLE) =================
@@ -450,6 +544,11 @@ BarConfig
     [
     	//Example of an button that just runs an app or command
 	(
+                side_separator: (true, false),
+                separator_color: (75, 75, 75),
+                separator_width: 1.,
+                separator_height: 16.,
+
 		name: "Wofi Custom Module",
 		text: "[Color=(150, 40, 80), String=󰣇] ",
                 text_size: 15,
