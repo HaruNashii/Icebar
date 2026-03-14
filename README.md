@@ -101,6 +101,7 @@ or
 
 Requirements for building:
 - Rust/Cargo (stable/2024)
+- libpulse (or "libpulse-dev")
 - gcc-libs
 - libxrandr
 - libxcb
