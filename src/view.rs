@@ -6,7 +6,7 @@ use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, col
 
 
 // ============ CRATES ============
-use crate::{helpers::{misc::create_button_container, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized, ellipsize}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_text, cpu_temp::{define_cpu_temp_style, define_cpu_temp_text}, focused_window::{define_focused_window_style, define_focused_window_text}, ram::{define_ram_style, define_ram_text}, volume::define_volume_text}};
+use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized, ellipsize}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_text, cpu_temp::{define_cpu_temp_style, define_cpu_temp_text}, focused_window::{define_focused_window_style, define_focused_window_text}, ram::{define_ram_style, define_ram_text}, volume::define_volume_text}};
 use crate::modules::{cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_padding, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::update::Message;
@@ -223,7 +223,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ),
                     app.ron_config.focused_window_text_size,
                 );
-                let inner = create_button_container(app, app.ron_config.focused_window_padding, text_data, (Message::Nothing, Message::Nothing), Message::Nothing, Message::Nothing, define_focused_window_style);
+                let inner = create_button_container_without_hover_message(app, app.ron_config.focused_window_padding, text_data, Message::Nothing, Message::Nothing, define_focused_window_style);
              
                 apply_separator
                 (
@@ -240,7 +240,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::Ram =>
             {
                 let text_data = (convert_text_to_rich_text::<Message>(&define_ram_text(app), Some(Color::from_rgb8(app.ron_config.ram_text_color_rgb[0], app.ron_config.ram_text_color_rgb[1], app.ron_config.ram_text_color_rgb[2]))), app.ron_config.ram_text_size);
-                let inner = create_button_container(app, app.ron_config.ram_padding, text_data, (Message::Nothing, Message::Nothing), Message::Nothing, Message::Nothing, define_ram_style);
+                let inner = create_button_container_without_hover_message(app, app.ron_config.ram_padding, text_data, Message::Nothing, Message::Nothing, define_ram_style);
              
                 apply_separator
                 (
@@ -262,7 +262,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let [r, g, b] = &app.ron_config.cpu_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let colored_formated_metadata = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
-                let inner = create_button_container(app, app.ron_config.cpu_padding, (colored_formated_metadata, app.ron_config.cpu_text_size), (Message::Nothing, Message::Nothing), left_click_metadata_message, right_click_metadata_message, define_cpu_style);
+                let inner = create_button_container_without_hover_message(app, app.ron_config.cpu_padding, (colored_formated_metadata, app.ron_config.cpu_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_style);
              
                 apply_separator
                 (
@@ -288,7 +288,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let [r, g, b] = &app.ron_config.cpu_temp_text_color_rgb;
                 let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let colored_cpu_temp = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
-                let inner = create_button_container(app, app.ron_config.cpu_temp_padding, (colored_cpu_temp, app.ron_config.cpu_temp_text_size), (Message::Nothing, Message::Nothing), left_click_metadata_message, right_click_metadata_message, define_cpu_temp_style);
+                let inner = create_button_container_without_hover_message(app, app.ron_config.cpu_temp_padding, (colored_cpu_temp, app.ron_config.cpu_temp_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_temp_style);
              
                 apply_separator
                 (
@@ -324,7 +324,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
                 let text_to_send = define_network_text(app);
                 let colored_network_string = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
-                let inner = create_button_container(app, padding, (colored_network_string, text_size), (Message::Nothing, Message::Nothing), left_click_message, right_click_message, define_network_style);
+                let inner = create_button_container_without_hover_message(app, padding, (colored_network_string, text_size), left_click_message, right_click_message, define_network_style);
              
                 apply_separator
                 (
@@ -467,7 +467,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 };
                 let text_string = orient_text(&app.modules_data.clock_data.current_time, text_orientation);
                 let colored_clock_string = convert_text_to_rich_text::<Message>(&text_string, Some(color_to_send));
-                let inner = create_button_container(app, padding, (colored_clock_string, text_size), (Message::Nothing, Message::Nothing), left_click_message, right_click_message, define_clock_style);
+                let inner = create_button_container_without_hover_message(app, padding, (colored_clock_string, text_size), left_click_message, right_click_message, define_clock_style);
 
                 apply_separator
                 (

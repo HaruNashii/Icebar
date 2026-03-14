@@ -1,115 +1,188 @@
+
 // ============ IMPORTS ============
-use std::process::Command;
+use libpulse_binding::{callbacks::ListResult, context::{Context, FlagSet as ContextFlagSet, introspect::Introspector, subscribe::{Facility, InterestMaskSet}}, mainloop::threaded::Mainloop, volume::Volume};
+use std::{pin::Pin, sync::{Arc, Mutex}};
 use iced::widget::button;
-
-
-
-
-
+ 
+ 
+ 
+ 
 // ============ CRATES ============
-use crate::helpers::style::{TextOrientation, UserStyle, orient_text, set_style};
+use crate::helpers::{style::{TextOrientation, UserStyle, orient_text, set_style}};
+use crate::update::Message;
 use crate::AppData;
-
-
-
-
-
+ 
+ 
+ 
+ 
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Clone)]
 pub struct VolumeData
 {
     pub output_volume_level: String,
-    pub input_volume_level: String
+    pub input_volume_level:  String,
 }
-
-pub enum VolumeAction<'a>
+ 
+#[derive(Default, Clone)]
+struct PulseState
 {
-    GetOutput((&'a [String;6], &'a String)),
-    GetInput((&'a [String;6], &'a String)),
+    output_volume: f32,   
+    output_muted:  bool,
+    input_volume:  f32,
+    input_muted:   bool,
+}
+ 
+pub enum VolumeAction
+{
     IncreaseOutput(u8),
     DecreaseOutput(u8),
     IncreaseInput(u8),
     DecreaseInput(u8),
     MuteOutput,
-    MuteInput
+    MuteInput,
 }
+ 
+ 
+ 
+pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Send>>
+{
+    Box::pin(async_stream::stream!
+    {
+        let state: Arc<Mutex<PulseState>> = Arc::new(Mutex::new(PulseState::default()));
+        let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<()>();
+        let state_cb  = Arc::clone(&state);
+        let tx_clone  = tx.clone();
+ 
+        std::thread::spawn(move ||
+        {
+            let mut mainloop = match Mainloop::new()
+            {
+                Some(m) => m,
+                None    => return,
+            };
+            if mainloop.start().is_err() { return; }
+ 
+            let context = match Context::new(&mainloop, "icebar-volume")
+            {
+                Some(c) => Arc::new(Mutex::new(c)),
+                None    => return,
+            };
+ 
+            if context.lock().unwrap().connect(None, ContextFlagSet::NOFLAGS, None).is_err()
+            {
+                return;
+            }
+ 
+            loop
+            {
+                std::thread::sleep(std::time::Duration::from_millis(10));
+                match context.lock().unwrap().get_state()
+                {
+                    libpulse_binding::context::State::Ready => break,
+                    libpulse_binding::context::State::Failed | libpulse_binding::context::State::Terminated => return,
+                    _ => {}
+                }
+            }
+ 
+            // ── fetch initial state ─────────────────────────────────────────
+            {
+                let s = Arc::clone(&state_cb);
+                let t = tx_clone.clone();
+                let introspector = context.lock().unwrap().introspect();
+                fetch_sink(&introspector, Arc::clone(&s), t.clone());
+                fetch_source(&introspector, Arc::clone(&s), t.clone());
+            }
+ 
+            // ── subscribe to sink + source change events ────────────────────
+            {
+                let ctx     = Arc::clone(&context);
+                let s       = Arc::clone(&state_cb);
+                let t       = tx_clone.clone();
+ 
+                context.lock().unwrap().subscribe(
+                    InterestMaskSet::SINK | InterestMaskSet::SOURCE,
+                    |_| {},
+                );
+ 
+                context.lock().unwrap().set_subscribe_callback(Some(Box::new(
+                    move |facility, _op, _index|
+                    {
+                        let introspector = ctx.lock().unwrap().introspect();
+                        match facility
+                        {
+                            Some(Facility::Sink)   => fetch_sink(&introspector, Arc::clone(&s), t.clone()),
+                            Some(Facility::Source) => fetch_source(&introspector, Arc::clone(&s), t.clone()),
+                            _ => {}
+                        }
+                    }
+                )));
+            }
+ 
+            // Keep the thread (and mainloop) alive forever
+            loop { std::thread::sleep(std::time::Duration::from_secs(60)); }
+        });
+ 
+        // ── yield a Message each time the callback fires ────────────────────
+        while rx.recv().await.is_some()
+        {
+            let s = state.lock().unwrap().clone();
+            yield Message::VolumeUpdated(s.output_volume, s.output_muted, s.input_volume, s.input_muted);
+        }
+    })
+}
+ 
 
 
+fn fetch_sink(introspector: &Introspector, state: Arc<Mutex<PulseState>>, tx: tokio::sync::mpsc::UnboundedSender<()>)
+{
+    introspector.get_sink_info_by_name("@DEFAULT_SINK@", move |list|
+    {
+        if let ListResult::Item(info) = list
+        {
+            let vol = info.volume.avg().0 as f32 / Volume::NORMAL.0 as f32;
+            let mut s = state.lock().unwrap();
+            s.output_volume = vol;
+            s.output_muted  = info.mute;
+            let _ = tx.send(());
+        }
+    });
+}
+ 
 
 
-
-// ============ FUNCTIONS ============
+fn fetch_source(introspector: &Introspector, state: Arc<Mutex<PulseState>>, tx: tokio::sync::mpsc::UnboundedSender<()>)
+{
+    introspector.get_source_info_by_name("@DEFAULT_SOURCE@", move |list|
+    {
+        if let ListResult::Item(info) = list
+        {
+            let vol = info.volume.avg().0 as f32 / Volume::NORMAL.0 as f32;
+            let mut s = state.lock().unwrap();
+            s.input_volume = vol;
+            s.input_muted  = info.mute;
+            let _ = tx.send(());
+        }
+    });
+}
+ 
+ 
+ 
 pub fn volume(volume_modifier: VolumeAction) -> (String, bool)
 {
-    match volume_modifier 
+    use std::process::Command;
+    match volume_modifier
     {
-        VolumeAction::IncreaseOutput(v) => {let _ = Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%+", v)).output();},
-        VolumeAction::DecreaseOutput(v) => {let _ = Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SINK@").arg(format!("{}%-", v)).output();},
-        VolumeAction::MuteOutput => {let _ = Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SINK@").arg("toggle").output();},
-        VolumeAction::GetOutput((formats, muted_format)) => 
-        {
-            let output = Command::new("wpctl").arg("get-volume").arg("@DEFAULT_SINK@").output().expect("Failed To Get Current Volume With wpctl");
-            let stdout_bytes = output.stdout;
-            let get_volume_output = String::from_utf8(stdout_bytes).unwrap_or_default();
-            let mut is_muted = false;
-            if get_volume_output.contains("[MUTED]") { is_muted = true };
-
-            if is_muted
-            {
-                return (muted_format.to_string(), is_muted);
-            }
-            else
-            {
-                let parsed = get_volume_output.replace("Volume: ", "").replace("[MUTED]", "").replace(" ", "").replace("\n", "").parse::<f32>().unwrap_or_default();
-                let thresholds = 
-                [
-                    (0.0, &formats[0]),
-                    (0.240, &formats[1]),
-                    (0.490, &formats[2]),
-                    (0.900, &formats[3]),
-                    (1.00, &formats[4]),
-                    (999.9, &formats[5]),
-                ];
-                let format = thresholds.iter().find(|&&(max, _)| parsed <= max).map(|&(_, fmt)| fmt).unwrap_or(&formats[0]);
-                let rounded_result = ((parsed * 100.0).round() as u32).to_string();
-                return (format.to_string().replace("{}", &rounded_result), is_muted);
-            };
-        }
-
-        VolumeAction::IncreaseInput(v) => {let _ = Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg(format!("{}%+", v)).output();},
-        VolumeAction::DecreaseInput(v) => {let _ = Command::new("wpctl").arg("set-volume").arg("@DEFAULT_SOURCE@").arg(format!("{}%-", v)).output();},
-        VolumeAction::MuteInput => {let _ = Command::new("wpctl").arg("set-mute").arg("@DEFAULT_SOURCE@").arg("toggle").output();},
-        VolumeAction::GetInput((formats, muted_format)) => 
-        {
-            let output = Command::new("wpctl").arg("get-volume").arg("@DEFAULT_SOURCE@").output().expect("Failed To Get Current Volume With wpctl");
-            let stdout_bytes = output.stdout;
-            let get_volume_output = String::from_utf8(stdout_bytes).unwrap_or_default();
-            let mut is_muted = false;
-            if get_volume_output.contains("[MUTED]") { is_muted = true };
-
-            if is_muted
-            {
-                return (muted_format.to_string(), is_muted);
-            }
-            else
-            {
-                let parsed = get_volume_output.replace("Volume: ", "").replace("[MUTED]", "").replace(" ", "").replace("\n", "").parse::<f32>().unwrap_or_default();
-                let thresholds = 
-                [
-                    (0.0, &formats[0]),
-                    (0.240, &formats[1]),
-                    (0.490, &formats[2]),
-                    (0.990, &formats[3]),
-                    (1.00, &formats[4]),
-                ];
-                let format = thresholds.iter().find(|&&(max, _)| parsed <= max).map(|&(_, fmt)| fmt).unwrap_or(&formats[0]);
-                let rounded_result = ((parsed * 100.0).round() as u32).to_string();
-                return (format.to_string().replace("{}", &rounded_result), is_muted);
-            };
-        }
-    };
+        VolumeAction::IncreaseOutput(v) => { let _ = Command::new("wpctl").args(["set-volume", "@DEFAULT_SINK@",   &format!("{}%+", v)]).output(); }
+        VolumeAction::DecreaseOutput(v) => { let _ = Command::new("wpctl").args(["set-volume", "@DEFAULT_SINK@",   &format!("{}%-", v)]).output(); }
+        VolumeAction::MuteOutput        => { let _ = Command::new("wpctl").args(["set-mute",   "@DEFAULT_SINK@",   "toggle"           ]).output(); }
+        VolumeAction::IncreaseInput(v)  => { let _ = Command::new("wpctl").args(["set-volume", "@DEFAULT_SOURCE@", &format!("{}%+", v)]).output(); }
+        VolumeAction::DecreaseInput(v)  => { let _ = Command::new("wpctl").args(["set-volume", "@DEFAULT_SOURCE@", &format!("{}%-", v)]).output(); }
+        VolumeAction::MuteInput         => { let _ = Command::new("wpctl").args(["set-mute",   "@DEFAULT_SOURCE@", "toggle"           ]).output(); }
+    }
     (String::new(), false)
 }
+ 
+
 
 pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
@@ -139,6 +212,8 @@ pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced
     }
 }
 
+
+
 pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
     if app.volume_input_is_muted
@@ -167,10 +242,9 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
     }
 }
 
-pub fn define_volume_text(text: &str, text_orientation: &TextOrientation) -> String 
-{
-    orient_text(text, text_orientation)
-}
+
+
+pub fn define_volume_text(text: &str, text_orientation: &TextOrientation) -> String { orient_text(text, text_orientation) }
 
 
 

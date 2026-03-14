@@ -10,7 +10,7 @@ use std::time::Instant;
 
 
 // ============ CRATES ============
-use crate::{helpers::{fs::check_if_config_file_exists, misc::{is_active_module, validade_bar_data}, monitor::get_monitor_res, string::weight_from_str, style::{UserStyle, set_style, style} }};
+use crate::helpers::{fs::check_if_config_file_exists, misc::{is_active_module, validade_bar_data}, monitor::get_monitor_res, string::{intern_string, weight_from_str}, style::{UserStyle, set_style, style} };
 use crate::modules::{data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{read_ron_config, BarConfig};
 use crate::subscription::subscription;
@@ -86,7 +86,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     };
     let app_data = AppData
     {
-        default_font: Font { family: Family::Name(Box::leak(font_name.into_boxed_str())), weight: weight_from_str(&ron_config.font_style), ..iced::Font::DEFAULT}, 
+        default_font: Font { family: Family::Name(intern_string(font_name)), weight: weight_from_str(&ron_config.font_style), ..iced::Font::DEFAULT}, 
         monitor_size: (monitor_res.0, monitor_res.1),
         custom_module_last_run: vec![Instant::now(); ron_config.custom_modules.len()],
         network_icons: ron_config.network_level_format,

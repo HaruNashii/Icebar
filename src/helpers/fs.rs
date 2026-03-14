@@ -147,9 +147,12 @@ BarConfig
 
 
     // ================= UPDATE INTERVAL =================
-    cpu_update_interval: 500,
-    cpu_temp_update_interval: 500,
-    ram_update_interval: 500,
+    media_player_metadata_update_interval: 750,
+    niri_workspaces_update_interval: 225,
+    clock_update_interval: 400,
+    cpu_update_interval: 1050,
+    cpu_temp_update_interval: 1050,
+    ram_update_interval: 1050,
     focused_window_update_interval: 500,
 	
 

@@ -1,5 +1,6 @@
 // ============ IMPORTS ============
 use serde::{Serialize, Deserialize};
+use std::collections::{HashSet};
 use iced::widget::image;
 
 
@@ -14,7 +15,7 @@ use crate::modules::{clock::ClockData, cpu::CpuData, cpu_temp::CpuTempData, focu
 
 
 // ============ STRUCTS/ENUM'S ============
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Debug, Hash, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub enum Modules 
 {
     CustomModule(usize),
@@ -43,7 +44,7 @@ pub struct ModulesData
     pub focused_window_data: FocusedWindowData,
     pub media_player_data: MediaPlayerData,
     pub workspace_data: WorkspaceData,
-    pub active_modules: Vec<Modules>,
+    pub active_modules: HashSet<Modules>,
     pub cpu_temp_data: CpuTempData,
     pub network_data: NetworkData,
     pub volume_data: VolumeData,

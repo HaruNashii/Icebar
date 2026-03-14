@@ -1,6 +1,7 @@
 // ============ IMPORTS ============
 use iced_layershell::reexport::Anchor;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::fs;
 
 
@@ -96,6 +97,9 @@ pub struct BarConfig
 
 
     // ================= UPDATE INTERVAL =================
+    pub media_player_metadata_update_interval: u64,
+    pub niri_workspaces_update_interval: u64,
+    pub clock_update_interval: u64,
     pub cpu_update_interval: u64,
     pub cpu_temp_update_interval: u64,
     pub ram_update_interval: u64,
@@ -538,9 +542,12 @@ impl Default for BarConfig
 
 
             // ================= UPDATE INTERVAL =================
-            cpu_update_interval: 500,
-            cpu_temp_update_interval: 500,
-            ram_update_interval: 500,
+            media_player_metadata_update_interval: 750,
+            niri_workspaces_update_interval: 225,
+            clock_update_interval: 400,
+            cpu_update_interval: 1050,
+            cpu_temp_update_interval: 1050,
+            ram_update_interval: 1050,
             focused_window_update_interval: 500,
 
 
@@ -981,7 +988,7 @@ impl Default for BarConfig
 
 
 
-pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, Vec<Modules>)
+pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, HashSet<Modules>)
 {
     println!("\n=== READING CONFIG FILE ===");
     let home_path = home::home_dir().expect("Failed To Get Home Directory");
@@ -1016,7 +1023,7 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, Vec<Modul
         None
     };
 
-    let mut active_modules: Vec<Modules> = Vec::new();
+    let mut active_modules: HashSet<Modules> = HashSet::new();
     let all_possible_default_modules = [Modules::FocusedWindowSway, Modules::FocusedWindowHypr, Modules::FocusedWindowNiri, Modules::CpuTemp, Modules::Ram, Modules::Cpu, Modules::NiriWorkspaces, Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
     let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
     for position in all_possible_position
@@ -1025,13 +1032,13 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, Vec<Modul
         {
             if let Modules::CustomModule(_) = item
             {
-                active_modules.push(item.to_owned());
+                active_modules.insert(item.to_owned());
             }
             for module in &all_possible_default_modules
             {
                 if *item == *module
                 {
-                    active_modules.push(module.to_owned());
+                    active_modules.insert(module.to_owned());
                 }
             }
         }

@@ -16,11 +16,11 @@ static WARNING_ONCE: Once = Once::new();
 
 // ============ CRATES ============
 use crate::modules::focused_window::{read_focused_window_hypr, read_focused_window_sway, read_focused_window_niri, };
-use crate::helpers::string::weight_from_str;
+use crate::helpers::string::{format_input_volume, format_output_volume, intern_string, weight_from_str};
 use crate::modules::cpu_temp::read_cpu_temp;
 use crate::modules::ram::read_ram_data;
 use crate::modules::{clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
-use crate::{helpers::{fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::{Modules, ModulesData}, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume::{self, VolumeAction}, workspaces::UserWorkspaceAction }};
+use crate::{helpers::{fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::{Modules, ModulesData}, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
 use crate::helpers::{misc::{is_active_module, validade_bar_data}, workspaces::build_workspace_list };
 use crate::context_menu::run_context_menu;
 use crate::ron::read_ron_config;
@@ -39,6 +39,7 @@ pub enum Message
     MenuLoaded(String, String, Vec<MenuItem>),
     ToggleAltClockAndCycleClockTimeZones,
     IsHoveringMediaPlayerMetaData(bool),
+    TrayIconClicked(usize),
     MouseWheelScrolled(ScrollDelta),
     CommandFinished(usize, String),
     WorkspaceButtonPressed(usize),
@@ -48,24 +49,31 @@ pub enum Message
     IsHoveringWorkspace(bool),
     MediaPlayerClickPlayPause,
     CursorMoved(iced::Point),
-    TrayIconClicked(usize),
     MuteAudioPressedOutput,
     MuteAudioPressedInput,
     MediaPlayerClickNext,
     MediaPlayerClickPrev,
     TrayEvent(TrayEvent),
-    UpdateFocusedWindowNiri,
-    UpdateFocusedWindowSway,
-    UpdateFocusedWindowHypr,
     CycleClockTimeZones,
     ToggleAltNetwork,
     ToggleAltClock,
-    UpdateCpuTemp,
     ConfigChanged,
+    Nothing,
+
+    Tick,
+    VolumeUpdated(f32, bool, f32, bool),
+
     UpdateRam,
     UpdateCpu,
-    Nothing,
-    Tick
+    UpdateCpuTemp,
+    UpdateFocusedWindowNiri,
+    UpdateFocusedWindowSway,
+    UpdateFocusedWindowHypr,
+    UpdateMediaPlayerMetadata,
+    UpdateNiriWorkspaces,
+    UpdateSwayWorkspaces,
+    UpdateHyprWorkspaces,
+    UpdateClock
 }
 
 
@@ -83,22 +91,15 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::IsHoveringMediaPlayerMetaData(bool) => { app.is_hovering_media_player_meta_data = bool; }
         Message::MuteAudioPressedOutput => { volume::volume( volume::VolumeAction::MuteOutput); }
         Message::MuteAudioPressedInput => { volume::volume( volume::VolumeAction::MuteInput); }
-        Message::ToggleAltNetwork => 
-        { 
-            app.is_showing_alt_network_module = !app.is_showing_alt_network_module; 
-            if app.is_showing_alt_network_module 
-            { 
-                app.connection_type_icons = app.ron_config.alt_network_connection_type_icons.clone();
-                app.network_icons = app.ron_config.alt_network_level_format.clone();
-            }
-            else 
-            {
-                app.connection_type_icons = app.ron_config.network_connection_type_icons.clone();
-                app.network_icons = app.ron_config.network_level_format.clone();
-            };
-        }
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
-        Message::CursorMoved(point) => { app.mouse_position = (point.x as i32, point.y as i32); }
+        Message::CursorMoved(point) => 
+        { 
+            let new_pos = (point.x as i32, point.y as i32);
+            if new_pos != app.mouse_position
+            {
+                app.mouse_position = new_pos;
+            }
+        }
         Message::CommandFinished(index, text) => { if app.cached_command_outputs.len() <= index { app.cached_command_outputs.resize(index + 1, String::new()); } app.cached_command_outputs[index] = text; }
         Message::WorkspaceButtonPressed(id) => { if is_active_module(&app.modules_data.active_modules,  Modules::HyprWorkspaces) { change_workspace_hypr(UserWorkspaceAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces) { change_workspace_sway(UserWorkspaceAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::NiriWorkspaces) { change_workspace_niri(UserWorkspaceAction::ChangeWithIndex(id)); } }
         Message::NetworkUpdated(data) => { app.modules_data.network_data = data }
@@ -112,6 +113,23 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::UpdateFocusedWindowNiri => { app.modules_data.focused_window_data.title = read_focused_window_niri().unwrap_or_default(); }, 
         Message::UpdateFocusedWindowSway => { app.modules_data.focused_window_data.title = read_focused_window_sway().unwrap_or_default(); },
         Message::UpdateFocusedWindowHypr => { app.modules_data.focused_window_data.title = read_focused_window_hypr().unwrap_or_default(); },
+        Message::UpdateHyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); },
+        Message::UpdateSwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); },
+        Message::UpdateMediaPlayerMetadata => { app.modules_data.media_player_data = get_player_data_with_format(&app.ron_config); },
+
+        Message::VolumeUpdated(out_vol, out_muted, in_vol, in_muted) =>
+        {
+            // Format output
+            let (output_str, _) = format_output_volume(out_vol, out_muted, &app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format);
+            app.modules_data.volume_data.output_volume_level = output_str;
+            app.volume_output_is_muted = out_muted;
+ 
+            // Format input
+            let (input_str, _) = format_input_volume(in_vol, in_muted, &app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format);
+            app.modules_data.volume_data.input_volume_level = input_str;
+            app.volume_input_is_muted = in_muted;
+        }
+ 
         Message::UpdateCpu =>
         {
             if let Some(curr) = read_cpu_snapshot()
@@ -122,6 +140,52 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 }
                 app.cpu_snapshot = Some(curr);
             }
+        }
+
+        Message::UpdateNiriWorkspaces =>
+        { 
+            WARNING_ONCE.call_once(|| 
+            {
+                if app.ron_config.persistent_workspaces.is_some()
+                {
+                    println!("\n=== Niri Workspaces Warning ===");
+                    for _ in 0..3
+                    {
+                        println!("Warning!!!: Persistent Elements Defined But Niri Doesn't Support Persistent Workspaces.");
+                    }
+                    println!("\n");
+                }
+            });
+            app.modules_data.workspace_data.current_workspace = niri::current_workspace(); 
+            app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&niri::workspace_count(), None); 
+        }
+
+        Message::UpdateClock =>
+        {
+            let format_to_send = if app.is_showing_alt_clock 
+            { 
+                &app.ron_config.clock_alt_format 
+            } 
+            else 
+            {
+                &app.ron_config.clock_format 
+            }; 
+            app.modules_data.clock_data.current_time = get_current_time(format_to_send, &app.current_clock_timezone)
+        },
+
+        Message::ToggleAltNetwork => 
+        { 
+            app.is_showing_alt_network_module = !app.is_showing_alt_network_module; 
+            if app.is_showing_alt_network_module 
+            { 
+                app.connection_type_icons = app.ron_config.alt_network_connection_type_icons.clone();
+                app.network_icons = app.ron_config.alt_network_level_format.clone();
+            }
+            else 
+            {
+                app.connection_type_icons = app.ron_config.network_connection_type_icons.clone();
+                app.network_icons = app.ron_config.network_level_format.clone();
+            };
         }
 
         Message::ConfigChanged =>
@@ -152,7 +216,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             };
             *app = AppData
             {
-                default_font: Font { family: Family::Name(Box::leak(font_name.into_boxed_str())), weight: weight_from_str(&new_config.font_style), ..iced::Font::DEFAULT}, 
+                default_font: Font { family: Family::Name(intern_string(font_name)), weight: weight_from_str(&new_config.font_style), ..iced::Font::DEFAULT}, 
                 monitor_size: monitor_res,
                 custom_module_last_run: vec![Instant::now(); new_config.custom_modules.len()],
                 current_clock_timezone,
@@ -271,121 +335,46 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         }
 
 
-
+        
+        
+        
+        
         Message::Tick =>
         {
+            let mut tasks = Vec::new();
             for module_name in &app.modules_data.active_modules
             {
-                match module_name
+                if let Modules::CustomModule(index) = module_name
                 {
-                    Modules::MediaPlayerMetaData => { app.modules_data.media_player_data = get_player_data_with_format(&app.ron_config); }
-                    Modules::HyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); }
-                    Modules::SwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); }
-                    Modules::NiriWorkspaces => 
-                    { 
-                        WARNING_ONCE.call_once(|| 
-                        {
-                            if app.ron_config.persistent_workspaces.is_some()
-                            {
-                                println!("\n=== Niri Workspaces Warning ===");
-                                for _ in 0..3
-                                {
-                                    println!("Warning!!!: Persistent Elements Defined But Niri Doesn't Support Persistent Workspaces.");
-                                }
-                                println!("\n");
-                            }
-                        });
-                        app.modules_data.workspace_data.current_workspace = niri::current_workspace(); 
-                        app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&niri::workspace_count(), None); 
-                    }
-
-
-                    Modules::Clock => 
+                    let index  = *index;
+                    let module = &app.ron_config.custom_modules[index];
+                    if module.continous_command.is_empty() { continue; }
+                    if app.custom_module_last_run[index].elapsed() < Duration::from_millis(module.continous_command_interval) { continue; }
+                    app.custom_module_last_run[index] = Instant::now();
+        
+                    if let Some((program, args)) = module.continous_command.split_first()
                     {
-                        let format_to_send = if app.is_showing_alt_clock 
-                        { 
-                            &app.ron_config.clock_alt_format 
-                        } 
-                        else 
-                        {
-                            &app.ron_config.clock_format 
-                        }; 
-                        app.modules_data.clock_data.current_time = get_current_time(format_to_send, &app.current_clock_timezone)
-                    },
-
-
-                    Modules::VolumeOutput => 
-                    {
-                        let (volume_output, is_muted) = volume::volume(VolumeAction::GetOutput((&app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format)));
-                        app.modules_data.volume_data.output_volume_level = volume_output;
-                        app.volume_output_is_muted = is_muted;
+                        let program     = program.clone();
+                        let args        = args.to_vec();
+                        let display_err = module.display_err_output_if_failed;
+        
+                        tasks.push(Task::perform(
+                            async move {
+                                let out = tokio::process::Command::new(program).args(args).output().await.ok();
+                                out.map(|o| {
+                                    if o.stdout.is_empty() && display_err { String::from_utf8_lossy(&o.stderr).into() }
+                                    else { String::from_utf8_lossy(&o.stdout).into() }
+                                }).unwrap_or_default()
+                            },
+                            move |text| Message::CommandFinished(index, text),
+                        ));
                     }
-
-                    Modules::VolumeInput => 
-                    {
-                        let (volume_input, is_muted) = volume::volume(VolumeAction::GetInput((&app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format)));
-                        app.modules_data.volume_data.input_volume_level = volume_input;
-                        app.volume_input_is_muted = is_muted;
-                    }
-
-                    Modules::CustomModule(borrowed_index) =>
-                    {
-                        let index = *borrowed_index;
-                        let module = &app.ron_config.custom_modules[index];
-                        if module.continous_command.is_empty() { continue; }
-                        if app.custom_module_last_run[index].elapsed() < Duration::from_millis(module.continous_command_interval) { continue; }
-                        app.custom_module_last_run[index] = Instant::now();
-                        let command_vec = &module.continous_command;
-                        if !command_vec.is_empty() && let Some((program, args)) = command_vec.split_first() 
-                        {
-                            let mut command = std::process::Command::new(program);
-                            command.args(args);
-                            let output = command.output();
-                            if module.use_continous_output_as_text 
-                            {
-                                match output
-                                {
-                                    Ok(result_output) =>
-                                    {
-                                        let output_string = if result_output.stdout.is_empty() && module.display_err_output_if_failed
-                                        {
-                                            &result_output.stderr
-                                        }
-                                        else
-                                        {
-                                            &result_output.stdout
-                                        };
-
-                                        if !app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
-                                        {
-                                            app.cached_continuous_outputs[index] = String::from_utf8_lossy(output_string).to_string();
-                                        }
-                                        else
-                                        {
-                                            app.cached_continuous_outputs.push(String::from_utf8_lossy(output_string).to_string());
-                                        }
-                                    }
-                                    Err(err) =>
-                                    {
-                                        let error_msg = "WARING!!!: Failed To Execute Continous Command!!!".to_string();
-                                        println!("\n\n\n{error_msg}\nErr: {err}\n\n\n");
-                                        if !app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
-                                        {
-                                            app.cached_continuous_outputs[index] = error_msg;
-                                        }
-                                        else
-                                        {
-                                            app.cached_continuous_outputs.push(error_msg);
-                                        }
-                                    }
-                                }
-                            };
-                        };
-                    }
-                    _=> {},
                 }
             }
+            return Task::batch(tasks);
         }
+        
+        
     
 
 
@@ -411,7 +400,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                     return Task::perform
                     (async move 
                         {
-                                let output = std::process::Command::new(program).args(args).output().ok();
+                                let output = tokio::process::Command::new(program).args(args).output().await.ok();
                                 if custom_name.is_empty() { println!("Custom Module Output:\n{:?}", output); } else { println!( "'{custom_name}' Command Was Running!!!, The Output Was:\n{:?}", output); }
                                 output.map(|o| String::from_utf8_lossy(&o.stdout).to_string()).unwrap_or_default()
                         },
@@ -423,9 +412,9 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 // ==============================
                 // FIRE & FORGET → no message
                 // ==============================
-                std::thread::spawn(move || 
+                tokio::spawn(async move 
                 {
-                    let output = std::process::Command::new(program).args(args).output();
+                    let output = tokio::process::Command::new(program).args(args).output().await;
                     if custom_name.is_empty() { println!("Custom Module Output:\n{:?}", output); } else { println!( "'{custom_name}' Command executed (no output capture):\n{:?}", output); }
                 });
         
@@ -651,7 +640,7 @@ mod tests
         let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 123.7, y: 456.2 }));
         assert_eq!(app.mouse_position, (123, 456));
     }
- 
+
     #[test]
     fn cursor_moved_truncates_not_rounds()
     {

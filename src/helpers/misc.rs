@@ -1,6 +1,7 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Element, Theme};
 use iced::widget::{button, container, mouse_area};
+use iced::{Alignment, Element, Theme};
+use std::collections::HashSet;
 
 
 
@@ -29,25 +30,19 @@ pub struct ValidatedBarSizeAndMargin
 
 
 // ============ FUNCTIONS ============
-pub fn is_active_module(active_modules: &Vec<Modules>, module: Modules) -> bool
+pub fn is_active_module(active_modules: &HashSet<Modules>, module: Modules) -> bool
 {
-    for item in active_modules 
-    {
-        if *item == module 
-        {
-            return true;
-        }
-    }
-    false
+    active_modules.contains(&module)
 }
 
 
 
 pub fn validade_bar_data(ron_config: &BarConfig) -> ValidatedBarSizeAndMargin
 {
-    let bar_maximum_size: u32 = 200;
+    let bar_maximum_size: u32 = 400;
     let bar_size_x = ron_config.bar_size[0].clamp(0, bar_maximum_size);
     let bar_size_y = ron_config.bar_size[1].clamp(0, bar_maximum_size);
+
     // Here the bar width is always 0 when the bar is Up or Down, because the size showed is of the
     // container in the view.rs, the same occuors with the Left and Right bars but with the height
     match ron_config.bar_position 
@@ -55,6 +50,11 @@ pub fn validade_bar_data(ron_config: &BarConfig) -> ValidatedBarSizeAndMargin
         BarPosition::Up => 
         {
             if ron_config.bar_size[1] == 0 { panic!("ERROR!!!: Bar Heigth Can't Be Zero, When The Bar Is On Top!!!") }
+            if ron_config.bar_size[1] > 400 
+            { 
+                println!("\n=== BAR SIZE VALIDATION ===");
+                println!("Warning!!!: Bar width is greater than the bar size limit, clamping to: {}", bar_maximum_size); 
+            };
             ValidatedBarSizeAndMargin
             {
                 bar_size: (0, bar_size_y),
@@ -65,6 +65,11 @@ pub fn validade_bar_data(ron_config: &BarConfig) -> ValidatedBarSizeAndMargin
         BarPosition::Right =>
         {
             if ron_config.bar_size[0] == 0 { panic!("ERROR!!!: Bar Width Can't Be Zero, When The Bar Is On The Right!!!") }
+            if ron_config.bar_size[0] > 400 
+            { 
+                println!("\n=== BAR SIZE VALIDATION ===");
+                println!("Warning!!!: Bar width is greater than the bar size limit, clamping to: {}", bar_maximum_size); }
+            ;
             ValidatedBarSizeAndMargin
             {
                 bar_size: (bar_size_x, 0),
@@ -75,6 +80,11 @@ pub fn validade_bar_data(ron_config: &BarConfig) -> ValidatedBarSizeAndMargin
         BarPosition::Down =>
         {
             if ron_config.bar_size[1] == 0 { panic!("ERROR!!!: Bar Heigth Can't Be Zero, When The Bar Is On The Bottom!!!") }
+            if ron_config.bar_size[1] > 400 
+            { 
+                println!("\n=== BAR SIZE VALIDATION ===");
+                println!("Warning!!!: Bar width is greater than the bar size limit, clamping to: {}", bar_maximum_size); 
+            };
             ValidatedBarSizeAndMargin
             {
                 bar_size:  (0, bar_size_y),
@@ -85,6 +95,11 @@ pub fn validade_bar_data(ron_config: &BarConfig) -> ValidatedBarSizeAndMargin
         BarPosition::Left =>
         {
             if ron_config.bar_size[0] == 0 { panic!("ERROR!!!: Bar Width Can't Be Zero, When The Bar Is On The Left!!!") }
+            if ron_config.bar_size[0] > 400 
+            { 
+                println!("\n=== BAR SIZE VALIDATION ===");
+                println!("Warning!!!: Bar width is greater than the bar size limit, clamping to: {}", bar_maximum_size); 
+            };
             ValidatedBarSizeAndMargin
             {
                 bar_size: (bar_size_x, 0),
@@ -93,6 +108,34 @@ pub fn validade_bar_data(ron_config: &BarConfig) -> ValidatedBarSizeAndMargin
             }
         }
     }
+}
+
+
+
+pub fn create_button_container_without_hover_message<'a, F>(app: &'a AppData, padding: u16, text_data: (iced::widget::text::Rich<'a, (), Message>, u32), left_click_message: Message, right_click_message: Message, style_func: F) -> Element<'a, Message>
+where F: Fn(&AppData, button::Status) -> button::Style + 'a,
+{
+    container
+    (
+        button
+        (
+            mouse_area
+            (
+                text_data.0
+                .wrapping(iced::widget::text::Wrapping::Word)
+                .font(app.default_font)
+                .size(text_data.1)
+                .center()
+            )
+            .on_right_press(right_click_message)
+        )
+        .on_press(left_click_message)
+        .style(move |_: &Theme, status: button::Status| 
+        {
+            style_func(app, status)
+        })
+    ).align_y(Alignment::Center).padding(padding)
+    .into()
 }
 
 
@@ -141,7 +184,10 @@ mod tests
     #[test]
     fn is_active_module_found()
     {
-        let modules = vec![Modules::Clock, Modules::Network, Modules::Tray];
+        let mut modules: HashSet<Modules> = HashSet::new();
+        modules.insert(Modules::Clock);
+        modules.insert(Modules::Network);
+        modules.insert(Modules::Tray);
         assert!(is_active_module(&modules, Modules::Clock));
         assert!(is_active_module(&modules, Modules::Network));
         assert!(is_active_module(&modules, Modules::Tray));
@@ -150,20 +196,23 @@ mod tests
     #[test]
     fn is_active_module_not_found()
     {
-        let modules = vec![Modules::Clock];
+        let mut modules: HashSet<Modules> = HashSet::new();
+        modules.insert(Modules::Clock);
         assert!(!is_active_module(&modules, Modules::Network));
     }
  
     #[test]
     fn is_active_module_empty_list()
     {
-        assert!(!is_active_module(&vec![], Modules::Clock));
+        assert!(!is_active_module(&HashSet::new(), Modules::Clock));
     }
  
     #[test]
     fn is_active_module_custom_module_matches_by_index()
     {
-        let modules = vec![Modules::CustomModule(0), Modules::CustomModule(2)];
+        let mut modules: HashSet<Modules> = HashSet::new();
+        modules.insert(Modules::CustomModule(0));
+        modules.insert(Modules::CustomModule(2));
         assert!(is_active_module(&modules, Modules::CustomModule(0)));
         assert!(is_active_module(&modules, Modules::CustomModule(2)));
         assert!(!is_active_module(&modules, Modules::CustomModule(1)));

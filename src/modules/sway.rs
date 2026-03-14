@@ -1,18 +1,76 @@
-// ============ IMPORTS ============
-use swayipc::Connection;
+use std::pin::Pin;
 
+// ============ IMPORTS ============
+use swayipc::{Connection, EventType, Event};
+ 
 
 
 
 
 // ============ CRATES ============
-use crate::modules::workspaces::UserWorkspaceAction;
+use crate::{modules::workspaces::UserWorkspaceAction, update::Message};
 
 
 
 
 
 // ============ FUNCTIONS ============
+pub fn sway_event_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Send>>
+{
+    Box::pin(async_stream::stream!
+    {
+        yield Message::UpdateSwayWorkspaces;
+        yield Message::UpdateFocusedWindowSway;
+        loop
+        {
+            let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<Message>();
+            let tx_thread = tx.clone();
+            std::thread::spawn(move ||
+            {
+                let subs = [EventType::Workspace, EventType::Window];
+ 
+                let events = match Connection::new().and_then(|conn| conn.subscribe(subs))
+                {
+                    Ok(e)  => e,
+                    Err(e) =>
+                    {
+                        eprintln!("[icebar] sway subscribe failed: {e}");
+                        return; // thread exits → tx drops → reconnect
+                    }
+                };
+ 
+                for event in events
+                {
+                    match event
+                    {
+                        Ok(Event::Workspace(_)) =>
+                        {
+                            let _ = tx_thread.send(Message::UpdateSwayWorkspaces);
+                        }
+                        Ok(Event::Window(_)) =>
+                        {
+                            let _ = tx_thread.send(Message::UpdateFocusedWindowSway);
+                        }
+                        Ok(_)  => {}
+                        Err(e) =>
+                        {
+                            eprintln!("[icebar] sway event error: {e}");
+                            break; // socket error → thread exits → reconnect
+                        }
+                    }
+                }
+            });
+            drop(tx);
+            while let Some(msg) = rx.recv().await { yield msg; }
+ 
+            eprintln!("[icebar] sway event listener stopped — reconnecting in 2s");
+            tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+        }
+    })
+}
+
+
+
 pub fn current_workspace() -> i32
 {
     let result_connection = Connection::new();

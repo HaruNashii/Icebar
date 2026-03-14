@@ -1,5 +1,14 @@
 // ============ IMPORTS ============
 use iced::{Alignment, Color, font::Weight, widget::{rich_text, span, text::{Rich, Span}}};
+use std::collections::HashSet;
+use std::sync::Mutex;
+
+
+
+
+
+// ============ STATIC'S ============
+static INTERNED_STRINGS: Mutex<Option<HashSet<&'static str>>> = Mutex::new(None);
 
 
 
@@ -13,6 +22,55 @@ struct Segment
 }
 
 
+
+pub fn format_output_volume(vol: f32, muted: bool, formats: &[String; 6], muted_format: &str) -> (String, bool)
+{
+    if muted { return (muted_format.to_string(), true); }
+    (apply_format(vol, formats), false)
+}
+ 
+
+
+pub fn format_input_volume(vol: f32, muted: bool, formats: &[String; 6], muted_format: &str) -> (String, bool)
+{
+    if muted { return (muted_format.to_string(), true); }
+    (apply_format(vol, formats), false)
+}
+ 
+
+pub fn intern_string(s: String) -> &'static str
+{
+    let mut guard = INTERNED_STRINGS.lock().unwrap_or_else(|p| p.into_inner());
+    let set = guard.get_or_insert_with(HashSet::new);
+
+    // If this exact string was already interned, return the existing pointer
+    if let Some(&existing) = set.iter().find(|&&interned| interned == s.as_str())
+    {
+        return existing;
+    }
+
+    // New string — leak it once and store the pointer
+    let leaked: &'static str = Box::leak(s.into_boxed_str());
+    set.insert(leaked);
+    leaked
+}
+
+
+pub fn apply_format(vol: f32, formats: &[String; 6]) -> String
+{
+    let thresholds = 
+    [
+        (0.000, &formats[0]),
+        (0.240, &formats[1]),
+        (0.490, &formats[2]),
+        (0.900, &formats[3]),
+        (1.000, &formats[4]),
+        (999.9, &formats[5]),
+    ];
+    let fmt = thresholds.iter().find(|&&(max, _)| vol <= max).map(|&(_, f)| f).unwrap_or(&formats[0]);
+    let percent = ((vol * 100.0).round() as u32).to_string();
+    fmt.replace("{}", &percent)
+}
 
 
 

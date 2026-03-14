@@ -76,8 +76,8 @@ pub fn media_player_action(player: &String, action: MediaPlayerAction)
     let base_command = binding.arg(format!("--player={}", player));
     match action
     {
-        MediaPlayerAction::PlayPause => {let _ = base_command.arg(format!("--player={}", player)).arg("play-pause").output();}
-        MediaPlayerAction::Next => {let _ = base_command.arg(format!("--player={}", player)).arg("next").output();}
+        MediaPlayerAction::PlayPause => {let _ = base_command.arg("play-pause").output();}
+        MediaPlayerAction::Next => {let _ = base_command.arg("next").output();}
         MediaPlayerAction::Prev => {let _ = base_command.arg("previous").output();}
         MediaPlayerAction::VolumeUp => {let _ = base_command.arg("volume").arg("0.1+").output();}
         MediaPlayerAction::VolumeDown => {let _ = base_command.arg("volume").arg("0.1-").output();}
