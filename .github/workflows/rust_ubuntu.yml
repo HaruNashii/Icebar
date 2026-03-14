@@ -19,7 +19,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y --fix-missing pkg-config cmake build-essential git libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libfontconfig-dev
+        sudo apt-get install -y --fix-missing libpulse-dev pkg-config cmake build-essential git libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libfontconfig-dev
     - name: Build The Project
       run: cargo build
     - name: Run tests
