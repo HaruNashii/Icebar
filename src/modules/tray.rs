@@ -39,6 +39,7 @@ pub enum TrayEvent
     ItemRegistered(String),
     Icon 
     {
+        combined: String,
         data: Vec<u8>,
         height: u32,
         width: u32,

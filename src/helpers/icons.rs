@@ -21,22 +21,22 @@ pub async fn fetch_icon(conn: &Connection, combined: &str) -> zbus::Result<TrayE
     let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
     if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("IconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().max_by_key(|(w, h, _)| w * h)
     {
-        return Ok(TrayEvent::Icon {data, width: w as u32, height: h as u32});
+        return Ok(TrayEvent::Icon {combined: combined.to_string(), data, width: w as u32, height: h as u32});
     }
     let theme_path = proxy.get_property::<String>("IconThemePath").await.ok();
     let try_name = |name: String| {load_icon_with_theme_path(&name, theme_path.as_deref())};
     if let Ok(name) = proxy.get_property::<String>("IconName").await && let Some((d, w, h)) = try_name(name) 
     {
-        return Ok(TrayEvent::Icon { data: d, width: w, height: h });
+        return Ok(TrayEvent::Icon { combined: combined.to_string(), data: d, width: w, height: h });
     }
     if let Ok(name) = proxy.get_property::<String>("AttentionIconName").await && let Some((d, w, h)) = try_name(name) 
     {
-        return Ok(TrayEvent::Icon { data: d, width: w, height: h });
+        return Ok(TrayEvent::Icon { combined: combined.to_string(), data: d, width: w, height: h });
     }
     if let Ok(title) = proxy.get_property::<String>("Title").await && let Some(icon) = load_icon_from_desktop(&title) 
     {
         let (d, w, h) = icon;
-        return Ok(TrayEvent::Icon { data: d, width: w, height: h });
+        return Ok(TrayEvent::Icon { combined: combined.to_string(), data: d, width: w, height: h });
     }
     Err(zbus::Error::Failure("No icon available".into()))
 }

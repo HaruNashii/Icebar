@@ -441,15 +441,11 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                     app.modules_data.tray_icons.retain(|(_, s)| s != &service);
                 }
 
-                TrayEvent::Icon { data, width, height } =>
+                TrayEvent::Icon { combined, data, width, height } =>
                 {
-                    for (handle, _) in &mut app.modules_data.tray_icons
+                    if let Some((handle, _)) = app.modules_data.tray_icons.iter_mut().find(|(_, s)| s == &combined)
                     {
-                        if handle.is_none()
-                        {
-                            *handle = Some(image::Handle::from_rgba(width, height, data.clone()));
-                            return Task::none();
-                        }
+                        *handle = Some(image::Handle::from_rgba(width, height, data));
                     }
                 }
 
