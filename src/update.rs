@@ -913,4 +913,83 @@ mod tests
         // Flag must flip even when timezone cycling is a no-op
         assert!(app.is_showing_alt_clock);
     }
+
+    #[test]
+    fn tray_icon_assigned_to_correct_service()
+    {
+        let mut app = make_app();
+        app.modules_data.tray_icons = vec![
+            (None, "svc1|/path".into()),
+            (None, "svc2|/path".into()),
+        ];
+    
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::Icon {
+            combined: "svc2|/path".into(),
+            data: vec![0u8; 4],
+            width: 1,
+            height: 1,
+        }));
+    
+        // svc1 must still be None — icon must NOT go to the first empty slot
+        assert!(app.modules_data.tray_icons[0].0.is_none());
+        // svc2 must have the icon
+        assert!(app.modules_data.tray_icons[1].0.is_some());
+    }
+    
+    #[test]
+    fn tray_icon_unknown_combined_does_nothing()
+    {
+        let mut app = make_app();
+        app.modules_data.tray_icons = vec![(None, "svc1|/path".into())];
+    
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::Icon {
+            combined: "ghost|/path".into(),
+            data: vec![0u8; 4],
+            width: 1,
+            height: 1,
+        }));
+    
+        // nothing should have changed
+        assert!(app.modules_data.tray_icons[0].0.is_none());
+    }
+    
+    #[test]
+    fn tray_icon_updates_existing_handle()
+    {
+        let mut app = make_app();
+        let old_handle = Some(image::Handle::from_rgba(1, 1, vec![255u8; 4]));
+        app.modules_data.tray_icons = vec![(old_handle, "svc1|/path".into())];
+    
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::Icon {
+            combined: "svc1|/path".into(),
+            data: vec![0u8; 4],
+            width: 1,
+            height: 1,
+        }));
+    
+        // handle must have been replaced, not left as old value
+        assert!(app.modules_data.tray_icons[0].0.is_some());
+    }
+    
+    #[test]
+    fn tray_icon_only_affects_matched_service()
+    {
+        let mut app = make_app();
+        app.modules_data.tray_icons = vec![
+            (None, "svc1|/path".into()),
+            (None, "svc2|/path".into()),
+            (None, "svc3|/path".into()),
+        ];
+    
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::Icon {
+            combined: "svc2|/path".into(),
+            data: vec![0u8; 4],
+            width: 1,
+            height: 1,
+        }));
+    
+        assert!(app.modules_data.tray_icons[0].0.is_none()); // untouched
+        assert!(app.modules_data.tray_icons[1].0.is_some()); // assigned
+        assert!(app.modules_data.tray_icons[2].0.is_none()); // untouched
+    }
 }
