@@ -142,16 +142,28 @@ pub fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
 }
 
 
-
 pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option<(Vec<u8>, u32, u32)> 
 {
     println!("Trying to load icon: {name} with theme_path: {:?}", theme_path);
     if let Some(base) = theme_path && !base.is_empty()
     {
         let base = PathBuf::from(base);
+        
+        // Try direct paths in theme_path root (for apps like Spotify)
+        for ext in ["svg","png"]
+        {
+            let candidate = base.join(format!("{name}.{ext}"));
+            if let Some(icon) = try_load_icon(&candidate)
+            {
+                println!("Loaded icon from app theme root: {:?}", candidate);
+                return Some(icon);
+            }
+        }
+        
+        // Original nested path search
         for size in ["16x16","22x22","24x24","32x32","48x48","scalable"]
         {
-            for ext in ["svg","png"] // prefer svg first
+            for ext in ["svg","png"]
             {
                 let candidate = base.join(size).join("apps").join(format!("{name}.{ext}"));
                 if let Some(icon) = try_load_icon(&candidate)
