@@ -36,10 +36,10 @@ BarConfig
 
 
     // ================= FORMATS =================
-    media_player_buttons_format: ("󰒮", " ⏸  ", "▶", "󰒭"),
+    media_player_buttons_format: ("󰒮", "⏸", "▶", "󰒭"),
     media_player_metadata_format: "{{artist}} - {{title}}",
     alt_network_module_format: "{level}   {id}",
-    network_module_format: "{level} ",
+    network_module_format: "{level}",
     network_level_format: 
     (
         "󰖩",
@@ -49,21 +49,21 @@ BarConfig
     ),
     output_volume_format: 
     (
-        "   {}%", 
-        "󰖀   {}%", 
-        "   {}%", 
-        "   {}%", 
-        "   {}%", 
-        "   + {}%"
+        "  {}%", 
+        "󰖀  {}%", 
+        "  {}%", 
+        "  {}%", 
+        "  {}%", 
+        "+ {}%"
     ),
     input_volume_format: 
     (
-        "   {}%", 
-        "  {}%", 
-        "  {}%", 
-        "  {}%", 
-        "  {}%", 
-        "󰢴  {}%"
+        " {}%", 
+        " {}%", 
+	" {}%", 
+        " {}%", 
+        " {}%", 
+        "󰢴 {}%"
     ),
     output_volume_muted_format: "   Muted",
     input_volume_muted_format: "   Muted",
@@ -263,7 +263,7 @@ BarConfig
     [
 	(
 		name: "Wofi Custom Module",
-		text: "󰄛 ",
+		text: "󰄛",
                 text_size: 15,
 		height: 30,
 		border_size: 0.,
