@@ -228,8 +228,6 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 ..Default::default()
             };
 
-            //if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
-
             println!("\n=== CONFIG RELOAD ===");
             println!("Reloaded Successfully");
             return Task::batch(vec!

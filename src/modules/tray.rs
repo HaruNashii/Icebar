@@ -1,8 +1,9 @@
 // ============ IMPORTS ============
 use zbus::{Connection, fdo::DBusProxy, interface, message::Header, object_server::SignalEmitter};
 use std::{pin::Pin, collections::{HashMap, HashSet}, process::Command, sync::Mutex};
-use iced::{Element, widget::{button, image, text}, futures::{Stream, StreamExt}};
+use iced::{Element, widget::{button, image, text}, futures::Stream};
 use tokio::sync::mpsc::{self, Sender};
+use futures_util::StreamExt;
 use once_cell::sync::Lazy;
 
 
@@ -78,6 +79,12 @@ pub fn tray_stream(_: &TraySubscription) -> Pin<Box<dyn Stream<Item = Message> +
 
 pub fn start_tray() 
 {
+    if TRAY_RECEIVER.lock().unwrap_or_else(|p| p.into_inner()).is_some() 
+    {
+        println!("\n=== TRAY ===");
+        println!("Tray already initialized. Skipping...");
+        return;
+    }
     println!("\n=== TRAY ===");
     println!("Starting Tray...");
     match std::env::var("DBUS_SESSION_BUS_ADDRESS") 
@@ -179,7 +186,6 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
     println!("\n=== StatusNotifier ===");
     println!("StatusNotifierHost registered");
 
-    use futures_util::StreamExt;
     let dbus = match DBusProxy::new(&connection).await
     {
         Ok(d) => d,
