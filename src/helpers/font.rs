@@ -1,23 +1,53 @@
 // ============ IMPORTS ============
 use std::collections::HashSet;
 use strsim::levenshtein;
+use iced::font::Family;
+use iced::Font;
 
-
+use crate::weight_from_str;
+use crate::intern_string;
 
 
 
 // ============ CONST ============
-const MAX_DISTANCE: usize = 6;
-
-
+const MIN_FUZZY_LEN: usize = 4;
+const MAX_FUZZY_RATIO: f32 = 0.3;
 
 
 
 // ============ FUNCTIONS ============
-pub fn resolve_font(requested: &str) -> String
+pub fn build_font(requested: &str, style: &str) -> Font
+{
+    match resolve_font(requested)
+    {
+        Some(resolved) =>
+        {
+            if resolved != requested
+            {
+                println!("\n=== FONT RESOLVER ===");
+                println!("Font '{}' resolved to '{}'", requested, resolved);
+            }
+            Font
+            {
+                family: Family::Name(intern_string(resolved)),
+                weight: weight_from_str(style),
+                ..Font::DEFAULT
+            }
+        }
+        None =>
+        {
+            println!("\n=== FONT RESOLVER ===");
+            println!("Font '{}' not found, using system default", requested);
+            Font::DEFAULT
+        }
+    }
+}
+
+
+
+pub fn resolve_font(requested: &str) -> Option<String>
 {
     let normalized_requested = normalize(requested);
-
     let fonts = system_fonts();
 
     // exact normalized match
@@ -25,7 +55,7 @@ pub fn resolve_font(requested: &str) -> String
     {
         if normalize(font) == normalized_requested
         {
-            return font.clone();
+            return Some(font.clone());
         }
     }
 
@@ -34,62 +64,72 @@ pub fn resolve_font(requested: &str) -> String
     {
         if normalize(font).starts_with(&normalized_requested)
         {
-            return font.clone();
+            return Some(font.clone());
         }
     }
 
     // reverse prefix match: what user asked starts with a system font name
     // e.g. user types "JetBrains Mono Nerd Font" and system has "JetBrainsMono NF"
+    // reverse prefix match
     for font in &fonts
     {
         let nf = normalize(font);
-        if !nf.is_empty() && normalized_requested.starts_with(&nf)
+        if nf.len() >= MIN_FUZZY_LEN && normalized_requested.starts_with(&nf)
         {
-            return font.clone();
+            return Some(font.clone());
         }
     }
 
     // substring match (both directions)
-    for font in &fonts
+    if normalized_requested.len() >= MIN_FUZZY_LEN
     {
-        let nf = normalize(font);
-        if nf.contains(&normalized_requested) || normalized_requested.contains(&nf)
+        for font in &fonts
         {
-            return font.clone();
+            let nf = normalize(font);
+            if nf.contains(&normalized_requested) || normalized_requested.contains(&nf)
+            {
+                return Some(font.clone());
+            }
         }
     }
 
-    // fuzzy match — compare against the normalized font name to keep distances fair
-    let mut best_font = None;
-    let mut best_distance = usize::MAX;
-
-    for font in &fonts
+    // fuzzy match — only for inputs long enough to be meaningful, with a
+    // distance threshold proportional to the input length (30%) so short
+    // strings like "a" or "ab" don't spuriously match random fonts
+    if normalized_requested.len() >= MIN_FUZZY_LEN
     {
-        let nf = normalize(font);
-        let candidate = if nf.len() > normalized_requested.len()
+        let max_allowed = ((normalized_requested.len() as f32 * MAX_FUZZY_RATIO).floor() as usize).max(1);
+        let mut best_font = None;
+        let mut best_distance = usize::MAX;
+
+        for font in &fonts
         {
-            &nf[..normalized_requested.len().min(nf.len())]
+            let nf = normalize(font);
+            let candidate = if nf.len() > normalized_requested.len()
+            {
+                nf[..normalized_requested.len()].to_string()
+            }
+            else
+            {
+                nf
+            };
+
+            let dist = levenshtein(&normalized_requested, &candidate);
+
+            if dist < best_distance
+            {
+                best_distance = dist;
+                best_font = Some(font.clone());
+            }
         }
-        else
-        {
-            &nf
-        };
 
-        let dist = levenshtein(&normalized_requested, candidate);
-
-        if dist < best_distance
+        if best_distance <= max_allowed && let Some(font) = best_font
         {
-            best_distance = dist;
-            best_font = Some(font.clone());
+                return Some(font);
         }
     }
 
-    if best_distance <= MAX_DISTANCE && let Some(font) = best_font
-    {
-        return font;
-    }
-
-    requested.to_string()
+    None
 }
 
 
@@ -101,6 +141,7 @@ fn system_fonts() -> Vec<String>
     if let Ok(out) = output
     {
         let mut set = HashSet::new();
+
         for line in String::from_utf8_lossy(&out.stdout).lines()
         {
             for fam in line.split(',')
@@ -109,7 +150,11 @@ fn system_fonts() -> Vec<String>
             }
         }
 
-        set.into_iter().collect()
+        // Sort so shorter/simpler names come first — base families like
+        // "JetBrainsMono Nerd Font" beat "JetBrainsMono NFM ExtraBold"
+        let mut fonts: Vec<String> = set.into_iter().collect();
+        fonts.sort_by_key(|f| f.len());
+        fonts
     }
     else
     {
@@ -122,13 +167,11 @@ fn system_fonts() -> Vec<String>
 fn normalize(name: &str) -> String
 {
     let lower = name.to_lowercase();
-    lower.split([' ', '-', '_']).filter(|word| 
+    lower.split([' ', '-', '_']).filter(|word|
     {
         !matches!(*word, "nerd" | "font" | "fonts" | "nf" | "nfm" | "nfp")
     }).collect::<String>()
 }
-
-
 
 
 
@@ -177,60 +220,65 @@ mod tests
     }
 
     // ============ RESOLVE FONT TESTS ============
-    // These test the matching logic directly without hitting the real fc-list.
-    // We shadow system_fonts() by extracting the match logic into a testable helper.
-
-    fn resolve_from(requested: &str, fonts: &[&str]) -> String
+    fn resolve_from(requested: &str, fonts: &[&str]) -> Option<String>
     {
         let normalized_requested = normalize(requested);
         let fonts: Vec<String> = fonts.iter().map(|s| s.to_string()).collect();
-
+    
         for font in &fonts
         {
-            if normalize(font) == normalized_requested { return font.clone(); }
+            if normalize(font) == normalized_requested { return Some(font.clone()); }
         }
         for font in &fonts
         {
-            if normalize(font).starts_with(&normalized_requested) { return font.clone(); }
+            if normalize(font).starts_with(&normalized_requested) { return Some(font.clone()); }
         }
+        // reverse prefix — guard added
         for font in &fonts
         {
             let nf = normalize(font);
-            if !nf.is_empty() && normalized_requested.starts_with(&nf) { return font.clone(); }
+            if nf.len() >= MIN_FUZZY_LEN && normalized_requested.starts_with(&nf) { return Some(font.clone()); }
         }
-        for font in &fonts
+        // substring — guard added
+        if normalized_requested.len() >= MIN_FUZZY_LEN
         {
-            let nf = normalize(font);
-            if nf.contains(&normalized_requested) || normalized_requested.contains(&nf) { return font.clone(); }
-        }
-
-        let mut best_font = None;
-        let mut best_distance = usize::MAX;
-        for font in &fonts
-        {
-            let nf = normalize(font);
-            let candidate = if nf.len() > normalized_requested.len()
+            for font in &fonts
             {
-                nf[..normalized_requested.len()].to_string()
-            }
-            else
-            {
-                nf
-            };
-            let dist = levenshtein(&normalized_requested, &candidate);
-            if dist < best_distance
-            {
-                best_distance = dist;
-                best_font = Some(font.clone());
+                let nf = normalize(font);
+                if nf.contains(&normalized_requested) || normalized_requested.contains(&nf) { return Some(font.clone()); }
             }
         }
-
-        if best_distance <= MAX_DISTANCE
+    
+        if normalized_requested.len() >= MIN_FUZZY_LEN
         {
-            if let Some(font) = best_font { return font; }
+            let max_allowed = ((normalized_requested.len() as f32 * MAX_FUZZY_RATIO).floor() as usize).max(1);
+            let mut best_font = None;
+            let mut best_distance = usize::MAX;
+    
+            for font in &fonts
+            {
+                let nf = normalize(font);
+                let candidate = if nf.len() > normalized_requested.len()
+                {
+                    nf[..normalized_requested.len()].to_string()
+                }
+                else { nf };
+    
+                let dist = levenshtein(&normalized_requested, &candidate);
+                if dist < best_distance
+                {
+                    best_distance = dist;
+                    best_font = Some(font.clone());
+                }
+            }
+    
+            if best_distance <= max_allowed
+            {
+                if let Some(font) = best_font { return Some(font); }
+            }
         }
-
-        requested.to_string()
+    
+        None
     }
 
     const JETBRAINS_FONTS: &[&str] = &[
@@ -249,50 +297,57 @@ mod tests
     #[test]
     fn exact_name_matches()
     {
-        assert_eq!(resolve_from("JetBrains Mono", JETBRAINS_FONTS), "JetBrainsMono Nerd Font");
+        assert_eq!(resolve_from("JetBrains Mono", JETBRAINS_FONTS), Some("JetBrainsMono Nerd Font".to_string()));
     }
 
     #[test]
     fn name_without_spaces_matches()
     {
-        assert_eq!(resolve_from("JetBrainsMono", JETBRAINS_FONTS), "JetBrainsMono Nerd Font");
+        assert_eq!(resolve_from("JetBrainsMono", JETBRAINS_FONTS), Some("JetBrainsMono Nerd Font".to_string()));
     }
 
     #[test]
     fn full_nerd_font_name_matches()
     {
-        assert_eq!(resolve_from("JetBrainsMono Nerd Font", JETBRAINS_FONTS), "JetBrainsMono Nerd Font");
+        assert_eq!(resolve_from("JetBrainsMono Nerd Font", JETBRAINS_FONTS), Some("JetBrainsMono Nerd Font".to_string()));
     }
 
     #[test]
     fn fira_code_matches()
     {
-        assert_eq!(resolve_from("Fira Code", JETBRAINS_FONTS), "FiraCode Nerd Font");
+        assert_eq!(resolve_from("Fira Code", JETBRAINS_FONTS), Some("FiraCode Nerd Font".to_string()));
     }
 
     #[test]
     fn ubuntu_exact_match()
     {
-        assert_eq!(resolve_from("Ubuntu", JETBRAINS_FONTS), "Ubuntu");
+        assert_eq!(resolve_from("Ubuntu", JETBRAINS_FONTS), Some("Ubuntu".to_string()));
     }
 
     #[test]
-    fn unknown_font_falls_back_to_requested()
+    fn unknown_font_returns_none()
     {
-        assert_eq!(resolve_from("Nonexistent Font XYZ", JETBRAINS_FONTS), "Nonexistent Font XYZ");
+        assert_eq!(resolve_from("Nonexistent Font XYZ", JETBRAINS_FONTS), None);
+    }
+
+    #[test]
+    fn short_input_returns_none()
+    {
+        assert_eq!(resolve_from("a", JETBRAINS_FONTS), None);
+        assert_eq!(resolve_from("ab", JETBRAINS_FONTS), None);
+        assert_eq!(resolve_from("abc", JETBRAINS_FONTS), None);
     }
 
     #[test]
     fn fuzzy_typo_matches()
     {
-        // "JetBrainsMono" with one char typo
-        assert_eq!(resolve_from("JetBrainsMono", JETBRAINS_FONTS), "JetBrainsMono Nerd Font");
+        assert_eq!(resolve_from("JetBrainsMono", JETBRAINS_FONTS), Some("JetBrainsMono Nerd Font".to_string()));
     }
 
     #[test]
     fn does_not_match_wrong_font()
     {
         let result = resolve_from("JetBrains Mono", JETBRAINS_FONTS);
-        assert!(!result.to_lowercase().contains("fira"), "Should not match FiraCode for JetBrains Mono request");
+        assert!(result.as_deref().map(|r| !r.to_lowercase().contains("fira")).unwrap_or(true));
     }
 }

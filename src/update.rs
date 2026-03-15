@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{Font, font::Family, Task, mouse::ScrollDelta, widget::image};
+use iced::{Task, mouse::ScrollDelta, widget::image};
 use iced_layershell::to_layer_message;
 use std::time::{Duration, Instant};
 use std::sync::Once;
@@ -16,11 +16,11 @@ static WARNING_ONCE: Once = Once::new();
 
 // ============ CRATES ============
 use crate::modules::focused_window::{read_focused_window_hypr, read_focused_window_sway, read_focused_window_niri, };
-use crate::helpers::string::{format_input_volume, format_output_volume, intern_string, weight_from_str};
+use crate::helpers::string::{format_input_volume, format_output_volume};
 use crate::modules::cpu_temp::read_cpu_temp;
 use crate::modules::ram::read_ram_data;
 use crate::modules::{clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
-use crate::{helpers::{fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::{Modules, ModulesData}, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
+use crate::{helpers::{font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::{Modules, ModulesData}, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
 use crate::helpers::{misc::{is_active_module, validade_bar_data}, workspaces::build_workspace_list };
 use crate::context_menu::run_context_menu;
 use crate::ron::read_ron_config;
@@ -216,7 +216,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             };
             *app = AppData
             {
-                default_font: Font { family: Family::Name(intern_string(font_name)), weight: weight_from_str(&new_config.font_style), ..iced::Font::DEFAULT}, 
+                default_font: build_font(&font_name, &new_config.font_style),
                 monitor_size: monitor_res,
                 custom_module_last_run: vec![Instant::now(); new_config.custom_modules.len()],
                 current_clock_timezone,

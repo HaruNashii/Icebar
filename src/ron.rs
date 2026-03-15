@@ -10,7 +10,7 @@ use std::fs;
 
 // ============ CRATES ============
 use crate::modules::{custom_modules::CustomModule, data::Modules};
-use crate::helpers::{font::resolve_font, style::{SideOption, TextOrientation}};
+use crate::helpers::style::{SideOption, TextOrientation};
 
 
 
@@ -994,7 +994,7 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, HashSet<M
     let home_path = home::home_dir().expect("Failed To Get Home Directory");
     let path = home_path.join(".config/icebar/config.ron");
 
-    let mut bar_config: BarConfig = fs::read_to_string(&path).map_err(|e| {panic!("Failed to read config: {e}"); }).and_then(|content| 
+    let bar_config: BarConfig = fs::read_to_string(&path).map_err(|e| {panic!("Failed to read config: {e}"); }).and_then(|content| 
     {
             println!("Config loaded successfully!!!.");
             ron::from_str::<BarConfig>(&content).map_err(|e| 
@@ -1006,13 +1006,6 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, HashSet<M
             })
     }).unwrap();
 
-
-    let resolved = resolve_font(&bar_config.font_family);
-    if resolved != bar_config.font_family
-    {
-        println!("Font '{}' not found. Using closest match '{}'", bar_config.font_family, resolved);
-    }
-    bar_config.font_family = resolved;
 
     let anchor_position = match bar_config.bar_position
     {

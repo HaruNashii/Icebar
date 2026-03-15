@@ -134,7 +134,7 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
         {
             style_func(app, status)
         })
-    ).align_y(Alignment::Center).padding(padding)
+    ).align_x(Alignment::Center).align_y(Alignment::Center).padding(padding)
     .into()
 }
 
@@ -164,7 +164,7 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
         {
             style_func(app, status)
         })
-    ).align_y(Alignment::Center).padding(padding)
+    ).align_x(Alignment::Center).align_y(Alignment::Center).padding(padding)
     .into()
 }
 
