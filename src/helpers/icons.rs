@@ -161,7 +161,7 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
         }
         
         // Original nested path search
-        for size in ["16x16","22x22","24x24","32x32","48x48","scalable"]
+        for size in ["scalable","512x512","256x256","128x128","96x96","72x72","64x64","48x48","36x36","32x32","24x24","22x22","16x16"]
         {
             for ext in ["svg","png"]
             {
