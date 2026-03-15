@@ -4,5 +4,6 @@ pub mod monitor;
 pub mod string;
 pub mod style;
 pub mod icons;
+pub mod font;
 pub mod misc;
 pub mod fs;
