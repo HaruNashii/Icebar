@@ -103,7 +103,7 @@ pub fn start_tray()
         }
     }
     let (tx, rx) = mpsc::channel(32);
-    *TRAY_RECEIVER.lock().unwrap() = Some(rx);
+    *TRAY_RECEIVER.lock().unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(rx);
     
     tokio::spawn(async move 
     {
@@ -119,7 +119,7 @@ impl StatusNotifierWatcher
     pub async fn register_status_notifier_item(&self, service: &str, #[zbus(header)] header: Header<'_>) 
     {
         let sender = header.sender().map(|s| s.to_string()).unwrap_or_default();
-        REGISTERED.lock().unwrap().insert(sender.clone());
+        REGISTERED.lock().unwrap_or_else(|p| p.into_inner()).insert(sender.clone());
         let (dest, path) = if service.starts_with('/') 
         {
             (sender.clone(), service.to_string())
@@ -130,11 +130,18 @@ impl StatusNotifierWatcher
         };
 
         let combined = format!("{dest}|{path}");
-        let ctxt = SignalEmitter::new(&self.connection, "/StatusNotifierWatcher").unwrap();
-        StatusNotifierWatcher::status_notifier_item_registered(&ctxt, &combined).await.unwrap();
+        let ctxt = match SignalEmitter::new(&self.connection, "/StatusNotifierWatcher")
+        {
+            Ok(c) => c,
+            Err(e) => { eprintln!("Failed to create signal emitter: {e}"); return; }
+        };
+        if let Err(e) = StatusNotifierWatcher::status_notifier_item_registered(&ctxt, &combined).await
+        {
+            eprintln!("Failed to emit tray signal: {e}");
+        }
         println!("\n=== Tray item registered ===\nService: '{dest}'\nPath: {path}");
         let _ = self.sender.send(TrayEvent::ItemRegistered(combined.clone())).await;
-        OWNER_MAP.lock().unwrap().insert(sender.clone(), combined.clone());
+        OWNER_MAP.lock().unwrap_or_else(|p| p.into_inner()).insert(sender.clone(), combined.clone());
         if let Ok(icon) = fetch_icon(&self.connection, &combined).await 
         {
             let _ = self.sender.send(icon).await;
@@ -142,7 +149,7 @@ impl StatusNotifierWatcher
     }
 
     #[zbus(property)]
-    fn registered_status_notifier_items(&self) -> Vec<String> { OWNER_MAP.lock().unwrap().values().cloned().collect() }
+    fn registered_status_notifier_items(&self) -> Vec<String> { OWNER_MAP.lock().unwrap_or_else(|p| p.into_inner()).values().cloned().collect() }
     
     #[zbus(property)]
     fn is_status_notifier_host_registered(&self) -> bool { true }
@@ -173,27 +180,46 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
     println!("StatusNotifierHost registered");
 
     use futures_util::StreamExt;
-    let dbus = DBusProxy::new(&connection).await.unwrap();
-    let mut name_changes = dbus.receive_name_owner_changed().await.unwrap();
+    let dbus = match DBusProxy::new(&connection).await
+    {
+        Ok(d) => d,
+        Err(e) => { eprintln!("Failed to create DBusProxy: {e}"); return Ok(()); }
+    };
+    let mut name_changes = match dbus.receive_name_owner_changed().await
+    {
+        Ok(n) => n,
+        Err(e) => { eprintln!("Failed to subscribe to name changes: {e}"); return Ok(()); }
+    };
     let tx_clone = sender.clone();
 
     tokio::spawn(async move 
     {
         while let Some(signal) = name_changes.next().await 
         {
-            let args = signal.args().unwrap();
+            let args = match signal.args()
+            {
+                Ok(a) => a,
+                Err(e) => { eprintln!("Failed to parse signal args: {e}"); continue; }
+            };
             let name = args.name().to_string();
             let new_owner = args.new_owner();
             if new_owner.is_none() 
             {
-                let was_registered = REGISTERED.lock().unwrap().remove(&name);
+                let was_registered = REGISTERED.lock().unwrap_or_else(|p| p.into_inner()).remove(&name);
                 if was_registered 
                 {
-                    let combined_opt = OWNER_MAP.lock().unwrap().remove(&name);
+                    let combined_opt = OWNER_MAP.lock().unwrap_or_else(|p| p.into_inner()).remove(&name);
                     if let Some(combined) = combined_opt 
                     {
-                        let ctxt = SignalEmitter::new(&connection, "/StatusNotifierWatcher").unwrap();
-                        StatusNotifierWatcher::status_notifier_item_unregistered(&ctxt, &combined).await.unwrap();
+                        let ctxt = match SignalEmitter::new(&connection, "/StatusNotifierWatcher")
+                        {
+                            Ok(c) => c,
+                            Err(e) => { eprintln!("Failed to create signal emitter: {e}"); continue; }
+                        };
+                        if let Err(e) = StatusNotifierWatcher::status_notifier_item_unregistered(&ctxt, &combined).await
+                        {
+                            eprintln!("Failed to emit tray unregistered signal: {e}");
+                        }
                         let _ = tx_clone.send(TrayEvent::ItemUnregistered(combined)).await;
                     }
                 }
@@ -242,7 +268,11 @@ fn extract_nodes(v: &serde_json::Value, out: &mut Vec<MenuItem>)
 pub async fn load_menu(service: &str, menu_path: &str) -> zbus::Result<Vec<MenuItem>> 
 {
     let output = Command::new("busctl").args(["--user", "--json=short", "call", service, menu_path, "com.canonical.dbusmenu", "GetLayout", "iias", "0", "1", "0", ]).output()?;
-    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let json: serde_json::Value = match serde_json::from_slice(&output.stdout)
+    {
+        Ok(j) => j,
+        Err(e) => { eprintln!("Failed to parse contextmenu JSON: {e}"); return Ok(Vec::new()); }
+    };
     let mut entries = Vec::new();
     extract_nodes(&json, &mut entries);
     Ok(entries)
