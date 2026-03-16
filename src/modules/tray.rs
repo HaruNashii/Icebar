@@ -1,9 +1,10 @@
 // ============ IMPORTS ============
 use zbus::{Connection, fdo::DBusProxy, interface, message::Header, object_server::SignalEmitter};
-use std::{pin::Pin, collections::{HashMap, HashSet}, process::Command, sync::Mutex};
 use iced::{Element, widget::{button, image, text}, futures::Stream};
+use std::{pin::Pin, collections::{HashMap, HashSet}, sync::Mutex};
 use tokio::sync::mpsc::{self, Sender};
 use futures_util::StreamExt;
+use zbus::zvariant::Value;
 use once_cell::sync::Lazy;
 
 
@@ -19,16 +20,32 @@ use crate::AppData;
 
 
 
+// ============ TYPE'S ============
+type DBusMenuLayout = (i32, HashMap<String, zbus::zvariant::OwnedValue>, Vec<zbus::zvariant::OwnedValue>);
+
+
+
+
+
 // ============ STATICS ============
 static TRAY_RECEIVER: Lazy<Mutex<Option<mpsc::Receiver<TrayEvent>>>> = Lazy::new(|| Mutex::new(None));
-static OWNER_MAP: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| Mutex::new(HashMap::new()));
-static REGISTERED: Lazy<Mutex<HashSet<String>>> = Lazy::new(|| Mutex::new(HashSet::new()));
+static TRAY_STATE: Lazy<Mutex<TrayState>> = Lazy::new(|| Mutex::new(TrayState
+{
+    registered: HashSet::new(),
+    owner_map:  HashMap::new(),
+}));
 
 
 
 
 
 // ============ ENUM/STRUCT ============
+struct TrayState
+{
+    registered: HashSet<String>,
+    owner_map:  HashMap<String, String>,
+}
+
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct TraySubscription;
 
@@ -127,7 +144,6 @@ impl StatusNotifierWatcher
     pub async fn register_status_notifier_item(&self, service: &str, #[zbus(header)] header: Header<'_>) 
     {
         let sender = header.sender().map(|s| s.to_string()).unwrap_or_default();
-        REGISTERED.lock().unwrap_or_else(|p| p.into_inner()).insert(sender.clone());
         let (dest, path) = if service.starts_with('/') 
         {
             (sender.clone(), service.to_string())
@@ -138,6 +154,11 @@ impl StatusNotifierWatcher
         };
 
         let combined = format!("{dest}|{path}");
+        {
+            let mut state = TRAY_STATE.lock().unwrap_or_else(|p| p.into_inner());
+            state.registered.insert(sender.clone());
+            state.owner_map.insert(sender.clone(), combined.clone());
+        }
         let ctxt = match SignalEmitter::new(&self.connection, "/StatusNotifierWatcher")
         {
             Ok(c) => c,
@@ -149,7 +170,6 @@ impl StatusNotifierWatcher
         }
         println!("\n=== Tray item registered ===\nService: '{dest}'\nPath: {path}");
         let _ = self.sender.send(TrayEvent::ItemRegistered(combined.clone())).await;
-        OWNER_MAP.lock().unwrap_or_else(|p| p.into_inner()).insert(sender.clone(), combined.clone());
         if let Ok(icon) = fetch_icon(&self.connection, &combined).await 
         {
             let _ = self.sender.send(icon).await;
@@ -157,7 +177,7 @@ impl StatusNotifierWatcher
     }
 
     #[zbus(property)]
-    fn registered_status_notifier_items(&self) -> Vec<String> { OWNER_MAP.lock().unwrap_or_else(|p| p.into_inner()).values().cloned().collect() }
+    fn registered_status_notifier_items(&self) -> Vec<String> { TRAY_STATE.lock().unwrap_or_else(|p| p.into_inner()).owner_map.values().cloned().collect() }
     
     #[zbus(property)]
     fn is_status_notifier_host_registered(&self) -> bool { true }
@@ -212,23 +232,24 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
             let new_owner = args.new_owner();
             if new_owner.is_none() 
             {
-                let was_registered = REGISTERED.lock().unwrap_or_else(|p| p.into_inner()).remove(&name);
-                if was_registered 
+                let combined_opt = 
                 {
-                    let combined_opt = OWNER_MAP.lock().unwrap_or_else(|p| p.into_inner()).remove(&name);
-                    if let Some(combined) = combined_opt 
+                    let mut state = TRAY_STATE.lock().unwrap_or_else(|p| p.into_inner());
+                    let was_registered = state.registered.remove(&name);
+                    if was_registered { state.owner_map.remove(&name) } else { None }
+                };
+                if let Some(combined) = combined_opt 
+                {
+                    let ctxt = match SignalEmitter::new(&connection, "/StatusNotifierWatcher")
                     {
-                        let ctxt = match SignalEmitter::new(&connection, "/StatusNotifierWatcher")
-                        {
-                            Ok(c) => c,
-                            Err(e) => { eprintln!("Failed to create signal emitter: {e}"); continue; }
-                        };
-                        if let Err(e) = StatusNotifierWatcher::status_notifier_item_unregistered(&ctxt, &combined).await
-                        {
-                            eprintln!("Failed to emit tray unregistered signal: {e}");
-                        }
-                        let _ = tx_clone.send(TrayEvent::ItemUnregistered(combined)).await;
+                        Ok(c) => c,
+                        Err(e) => { eprintln!("Failed to create signal emitter: {e}"); continue; }
+                    };
+                    if let Err(e) = StatusNotifierWatcher::status_notifier_item_unregistered(&ctxt, &combined).await
+                    {
+                        eprintln!("Failed to emit tray unregistered signal: {e}");
                     }
+                    let _ = tx_clone.send(TrayEvent::ItemUnregistered(combined)).await;
                 }
             }
         }
@@ -242,54 +263,66 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
 
 
 
-fn extract_nodes(v: &serde_json::Value, out: &mut Vec<MenuItem>) 
+fn extract_layout_node(id: i32, props: &HashMap<String, zbus::zvariant::OwnedValue>, children: &[zbus::zvariant::OwnedValue], out: &mut Vec<MenuItem>) 
 {
-    match v 
+    let get_str = |key: &str| -> Option<String> 
     {
-        serde_json::Value::Array(arr) => 
+        match &**props.get(key)? 
         {
-            if let [id, props, ..] = &arr[..] 
-            {
-                let id = id.as_i64().unwrap_or(0) as i32;
-                if let Some(label) = props.get("label").and_then(|v| v.get("data")).and_then(|v| v.as_str())
-                {
-                    let visible = props.get("visible").and_then(|v| v.get("data")).and_then(|v| v.as_bool()).unwrap_or(true);
-                    let enabled = props.get("enabled").and_then(|v| v.get("data")).and_then(|v| v.as_bool()).unwrap_or(true);
-                    let ty = props.get("type").and_then(|v| v.get("data")).and_then(|v| v.as_str()).unwrap_or("default");
-                    if visible && enabled && ty != "separator" 
-                    {
-                        out.push(MenuItem {id, label: label.into(), _visible: visible});
-                    }
-                }
-            }
-
-            for e in arr { extract_nodes(e, out) }
+            Value::Str(s) => Some(s.to_string()),
+            _ => None,
         }
-        serde_json::Value::Object(map) => { map.values().for_each(|v| extract_nodes(v, out)) }
-        _ => {}
+    };
+    
+    let get_bool = |key: &str| -> Option<bool> 
+    {
+        match &**props.get(key)? 
+        {
+            Value::Bool(b) => Some(*b),
+            _ => None,
+        }
+    };
+
+    if let Some(label) = get_str("label") 
+    {
+        let visible = get_bool("visible").unwrap_or(true);
+        let enabled = get_bool("enabled").unwrap_or(true);
+        let ty      = get_str("type").unwrap_or_else(|| "default".into());
+        if id != 0 && visible && enabled && ty != "separator" 
+        {
+            out.push(MenuItem { id, label, _visible: visible });
+        }
+    }
+
+    for child in children 
+    {
+        if let Ok((child_id, child_props, child_children)) = DBusMenuLayout::try_from(child.clone()) 
+        {
+            extract_layout_node(child_id, &child_props, &child_children, out);
+        }
     }
 }
 
 
 
-pub async fn load_menu(service: &str, menu_path: &str) -> zbus::Result<Vec<MenuItem>> 
+pub async fn load_menu(service: &str, menu_path: &str) -> zbus::Result<Vec<MenuItem>>
 {
-    let output = Command::new("busctl").args(["--user", "--json=short", "call", service, menu_path, "com.canonical.dbusmenu", "GetLayout", "iias", "0", "1", "0", ]).output()?;
-    let json: serde_json::Value = match serde_json::from_slice(&output.stdout)
-    {
-        Ok(j) => j,
-        Err(e) => { eprintln!("Failed to parse contextmenu JSON: {e}"); return Ok(Vec::new()); }
-    };
+    let conn = Connection::session().await?;
+    let proxy = zbus::Proxy::new(&conn, service, menu_path, "com.canonical.dbusmenu").await?;
+    let (_, (root_id, root_props, root_children)): (u32, DBusMenuLayout) =
+        proxy.call("GetLayout", &(0i32, 1i32, Vec::<String>::new())).await?;
     let mut entries = Vec::new();
-    extract_nodes(&json, &mut entries);
+    extract_layout_node(root_id, &root_props, &root_children, &mut entries);
     Ok(entries)
 }
 
 
 
-pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus::Result<()> 
+pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus::Result<()>
 {
-    Command::new("busctl").args(["--user", "call", service, menu_path, "com.canonical.dbusmenu", "Event", "isvu", &id.to_string(), "clicked", "i", "0", "0", ]).status()?;
+    let conn = Connection::session().await?;
+    let proxy = zbus::Proxy::new(&conn, service, menu_path, "com.canonical.dbusmenu").await?;
+    proxy.call_noreply("Event", &(id, "clicked", zbus::zvariant::Value::I32(0), 0u32)).await?;
     Ok(())
 }
 
@@ -333,161 +366,102 @@ mod tests
 {
     use super::*;
     use crate::AppData;
-    use iced::{Background, Color};
-    use iced::widget::button;
-    use serde_json::json;
+    use zbus::zvariant::{OwnedValue, Value};
+    use iced::{widget::button, Background, Color};
  
     // ---- extract_nodes ------------------------------------------------------
- 
-    #[test]
-    fn extract_nodes_empty_array_produces_nothing()
+
+    fn str_val(s: &str) -> OwnedValue { OwnedValue::try_from(Value::Str(s.into())).unwrap() }
+    fn bool_val(b: bool) -> OwnedValue { OwnedValue::try_from(Value::Bool(b)).unwrap() }
+
+    fn make_props(label: &str, visible: bool, enabled: bool, ty: &str) -> HashMap<String, OwnedValue>
     {
-        let mut out = Vec::new();
-        extract_nodes(&json!([]), &mut out);
-        assert!(out.is_empty());
+        let mut m = HashMap::new();
+        m.insert("label".into(),   str_val(label));
+        m.insert("visible".into(), bool_val(visible));
+        m.insert("enabled".into(), bool_val(enabled));
+        m.insert("type".into(),    str_val(ty));
+        m
     }
- 
+
     #[test]
-    fn extract_nodes_visible_enabled_default_item_extracted()
+    fn extract_layout_visible_enabled_default_item_extracted()
     {
-        let v = json!([
-            7,
-            { "label": {"data": "Open"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "default"} },
-            []
-        ]);
         let mut out = Vec::new();
-        extract_nodes(&v, &mut out);
+        extract_layout_node(7, &make_props("Open", true, true, "default"), &[], &mut out);
         assert_eq!(out.len(), 1);
         assert_eq!(out[0].label, "Open");
         assert_eq!(out[0].id, 7);
     }
- 
+
     #[test]
-    fn extract_nodes_invisible_item_skipped()
+    fn extract_layout_invisible_item_skipped()
     {
-        let v = json!([
-            1,
-            { "label": {"data": "Hidden"}, "visible": {"data": false}, "enabled": {"data": true}, "type": {"data": "default"} },
-            []
-        ]);
         let mut out = Vec::new();
-        extract_nodes(&v, &mut out);
+        extract_layout_node(1, &make_props("Hidden", false, true, "default"), &[], &mut out);
         assert!(out.is_empty());
     }
- 
+
     #[test]
-    fn extract_nodes_disabled_item_skipped()
+    fn extract_layout_disabled_item_skipped()
     {
-        let v = json!([
-            2,
-            { "label": {"data": "Grey"}, "visible": {"data": true}, "enabled": {"data": false}, "type": {"data": "default"} },
-            []
-        ]);
         let mut out = Vec::new();
-        extract_nodes(&v, &mut out);
+        extract_layout_node(2, &make_props("Grey", true, false, "default"), &[], &mut out);
         assert!(out.is_empty());
     }
- 
+
     #[test]
-    fn extract_nodes_separator_type_skipped()
+    fn extract_layout_separator_skipped()
     {
-        let v = json!([
-            3,
-            { "label": {"data": "-"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "separator"} },
-            []
-        ]);
         let mut out = Vec::new();
-        extract_nodes(&v, &mut out);
+        extract_layout_node(3, &make_props("-", true, true, "separator"), &[], &mut out);
         assert!(out.is_empty());
     }
- 
+
     #[test]
-    fn extract_nodes_missing_visible_defaults_to_true()
+    fn extract_layout_root_id_zero_skipped()
     {
-        let v = json!([
-            4,
-            { "label": {"data": "NoVis"}, "enabled": {"data": true}, "type": {"data": "default"} },
-            []
-        ]);
+        // id=0 is the invisible root node, must never appear in results
         let mut out = Vec::new();
-        extract_nodes(&v, &mut out);
+        extract_layout_node(0, &make_props("Root", true, true, "default"), &[], &mut out);
+        assert!(out.is_empty());
+    }
+
+    #[test]
+    fn extract_layout_missing_visible_defaults_to_true()
+    {
+        let mut props = HashMap::new();
+        props.insert("label".into(),   str_val("NoVis"));
+        props.insert("enabled".into(), bool_val(true));
+        props.insert("type".into(),    str_val("default"));
+        let mut out = Vec::new();
+        extract_layout_node(4, &props, &[], &mut out);
         assert_eq!(out.len(), 1);
     }
- 
+
     #[test]
-    fn extract_nodes_missing_enabled_defaults_to_true()
+    fn extract_layout_missing_enabled_defaults_to_true()
     {
-        let v = json!([
-            5,
-            { "label": {"data": "NoEna"}, "visible": {"data": true}, "type": {"data": "default"} },
-            []
-        ]);
+        let mut props = HashMap::new();
+        props.insert("label".into(),   str_val("NoEna"));
+        props.insert("visible".into(), bool_val(true));
+        props.insert("type".into(),    str_val("default"));
         let mut out = Vec::new();
-        extract_nodes(&v, &mut out);
+        extract_layout_node(5, &props, &[], &mut out);
         assert_eq!(out.len(), 1);
     }
- 
+
     #[test]
-    fn extract_nodes_id_parsed_correctly()
+    fn extract_layout_no_label_produces_nothing()
     {
-        let v = json!([
-            42,
-            { "label": {"data": "Item"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "default"} },
-            []
-        ]);
+        let mut props = HashMap::new();
+        props.insert("visible".into(), bool_val(true));
+        props.insert("enabled".into(), bool_val(true));
         let mut out = Vec::new();
-        extract_nodes(&v, &mut out);
-        assert_eq!(out[0].id, 42);
-    }
- 
-    #[test]
-    fn extract_nodes_nested_children_both_extracted()
-    {
-        let v = json!([
-            [
-                10,
-                { "label": {"data": "A"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "default"} },
-                []
-            ],
-            [
-                11,
-                { "label": {"data": "B"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "default"} },
-                []
-            ]
-        ]);
-        let mut out = Vec::new();
-        extract_nodes(&v, &mut out);
-        assert_eq!(out.len(), 2);
-        let labels: Vec<&str> = out.iter().map(|i| i.label.as_str()).collect();
-        assert!(labels.contains(&"A") && labels.contains(&"B"));
-    }
- 
-    #[test]
-    fn extract_nodes_object_recurses_into_values()
-    {
-        let v = json!({
-            "menu": [
-                20,
-                { "label": {"data": "Nested"}, "visible": {"data": true}, "enabled": {"data": true}, "type": {"data": "default"} },
-                []
-            ]
-        });
-        let mut out = Vec::new();
-        extract_nodes(&v, &mut out);
-        assert_eq!(out.len(), 1);
-        assert_eq!(out[0].label, "Nested");
-    }
- 
-    #[test]
-    fn extract_nodes_scalar_values_ignored()
-    {
-        let mut out = Vec::new();
-        extract_nodes(&json!(42),    &mut out);
-        extract_nodes(&json!("str"), &mut out);
-        extract_nodes(&json!(true),  &mut out);
-        extract_nodes(&json!(null),  &mut out);
+        extract_layout_node(6, &props, &[], &mut out);
         assert!(out.is_empty());
     }
+
  
     // ---- define_tray_style --------------------------------------------------
  
