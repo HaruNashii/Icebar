@@ -178,11 +178,11 @@ pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widg
         let hovered_text =      app.ron_config.alt_network_button_hovered_text_color_rgb;
         let pressed =           app.ron_config.alt_network_button_pressed_color_rgb;
         let normal =            app.ron_config.alt_network_button_color_rgb;
-        let normal_text =       app.ron_config.alt_network_button_text_color_rgb;
+        let normal_text =       app.ron_config.alt_network_text_color_rgb;
         let border_size =           app.ron_config.alt_network_border_size;
-        let border_color_rgba = app.ron_config.alt_network_border_color_rgba;
+        let border_color_rgb = app.ron_config.alt_network_border_color_rgb;
         let border_radius =    app.ron_config.alt_network_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
     }
     else
     {
@@ -190,11 +190,11 @@ pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widg
         let hovered_text =      app.ron_config.network_button_hovered_text_color_rgb;
         let pressed =           app.ron_config.network_button_pressed_color_rgb;
         let normal =            app.ron_config.network_button_color_rgb;
-        let normal_text =       app.ron_config.network_button_text_color_rgb;
+        let normal_text =       app.ron_config.network_text_color_rgb;
         let border_size =           app.ron_config.network_border_size;
-        let border_color_rgba = app.ron_config.network_border_color_rgba;
+        let border_color_rgb = app.ron_config.network_border_color_rgb;
         let border_radius =    app.ron_config.network_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
     }
 }
 

@@ -19,6 +19,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
 WHITE='\033[0;37m'
 BWHITE='\033[1;37m'
 
@@ -105,6 +106,80 @@ echo
 echo -e "  ${BWHITE}Selected:${RESET}  ${CYAN}${BOLD}${CHOSEN_THEME}${RESET}"
 echo
 
+# ── Workspace module detection ─────────────────────────────────────────────
+# Check which workspace module(s) exist in the chosen theme's config
+WM_MODULES=("SwayWorkspaces" "HyprWorkspaces" "NiriWorkspaces")
+WM_LABELS=("Sway" "Hyprland" "Niri")
+WM_DESCRIPTIONS=(
+    "SwayWorkspaces  ${DIM}(Sway)${RESET}"
+    "HyprWorkspaces  ${DIM}(Hyprland)${RESET}"
+    "NiriWorkspaces  ${DIM}(Niri)${RESET}"
+)
+
+FOUND_MODULE=""
+for module in "${WM_MODULES[@]}"; do
+    if grep -q "$module" "$CHOSEN_CONFIG"; then
+        FOUND_MODULE="$module"
+        break
+    fi
+done
+
+CHOSEN_WM_MODULE=""   # will hold the module name to write into the final config
+
+if [[ -n "$FOUND_MODULE" ]]; then
+    echo
+    divider
+    echo
+    echo -e "  ${MAGENTA}${BOLD}  Workspace Module Detected${RESET}"
+    echo
+    print_warn "This theme uses the ${BOLD}${FOUND_MODULE}${RESET} module."
+    print_info "Workspace modules are window-manager specific and only work"
+    print_info "in their respective compositors."
+    echo
+    echo -e "  ${BWHITE}Which workspace module would you like to use?${RESET}"
+    echo
+    for i in "${!WM_MODULES[@]}"; do
+        marker="  "
+        # Highlight the one currently in the file
+        if [[ "${WM_MODULES[$i]}" == "$FOUND_MODULE" ]]; then
+            marker="${GREEN}${BOLD}*${RESET} "
+        fi
+        num=$(printf "%2d" $((i + 1)))
+        echo -e "  ${DIM}${num}.${RESET}  ${marker}${WM_DESCRIPTIONS[$i]}"
+    done
+    echo
+    echo -e "  ${DIM}(${GREEN}*${RESET}${DIM} = currently set in this theme)${RESET}"
+    echo
+
+    while true; do
+        echo -ne "  ${BWHITE}Choose a module ${DIM}[1-${#WM_MODULES[@]}]${RESET}${BWHITE} or ${DIM}[q]${RESET}${BWHITE} to quit:${RESET} "
+        read -r wm_selection
+
+        if [[ "$wm_selection" =~ ^[qQ]$ ]]; then
+            echo
+            print_info "Aborted. No changes made."
+            echo
+            exit 0
+        fi
+
+        if [[ "$wm_selection" =~ ^[0-9]+$ ]] &&
+           (( wm_selection >= 1 && wm_selection <= ${#WM_MODULES[@]} )); then
+            CHOSEN_WM_MODULE="${WM_MODULES[$((wm_selection - 1))]}"
+            CHOSEN_WM_LABEL="${WM_LABELS[$((wm_selection - 1))]}"
+            break
+        fi
+
+        print_warn "Invalid choice. Enter a number between 1 and ${#WM_MODULES[@]}, or q to quit."
+    done
+
+    echo
+    print_info "Workspace module: ${CYAN}${BOLD}${CHOSEN_WM_MODULE}${RESET}  ${DIM}(${CHOSEN_WM_LABEL})${RESET}"
+fi
+
+echo
+divider
+echo
+
 # ── Ensure icebar config dir exists ───────────────────────────────────────
 mkdir -p "$ICEBAR_DIR"
 
@@ -178,11 +253,21 @@ fi
 # ── Copy the chosen config ─────────────────────────────────────────────────
 echo
 if cp "$CHOSEN_CONFIG" "$ICEBAR_CONFIG"; then
+
+    # ── Patch workspace module if the user picked one ──────────────────────
+    if [[ -n "$CHOSEN_WM_MODULE" && -n "$FOUND_MODULE" && "$CHOSEN_WM_MODULE" != "$FOUND_MODULE" ]]; then
+        # Replace every occurrence of the old module name with the new one
+        sed -i "s/${FOUND_MODULE}/${CHOSEN_WM_MODULE}/g" "$ICEBAR_CONFIG"
+        print_info "Workspace module replaced: ${DIM}${FOUND_MODULE}${RESET} → ${CYAN}${BOLD}${CHOSEN_WM_MODULE}${RESET}"
+    fi
+
     divider
     echo
     print_success "${BOLD}Theme installed successfully!${RESET}"
     echo
     print_info "Theme:   ${CYAN}${BOLD}${CHOSEN_THEME}${RESET}"
+    [[ -n "$CHOSEN_WM_MODULE" ]] && \
+    print_info "Module:  ${CYAN}${BOLD}${CHOSEN_WM_MODULE}${RESET}  ${DIM}(${CHOSEN_WM_LABEL})${RESET}"
     print_info "Config:  ${DIM}$ICEBAR_CONFIG${RESET}"
     echo
     divider

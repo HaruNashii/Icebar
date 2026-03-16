@@ -179,11 +179,11 @@ fn view(data: &ContextMenuData) -> Element<'_, ContextMenuMessage>
             let hovered_text = data.ron_config.context_menu_button_hovered_text_color_rgb;
             let pressed = data.ron_config.context_menu_button_pressed_color_rgb;
             let normal = data.ron_config.context_menu_button_color_rgb;
-            let normal_text = data.ron_config.context_menu_button_text_color_rgb;
-            let border_color_rgba = data.ron_config.context_menu_border_color_rgba;
+            let normal_text = data.ron_config.context_menu_text_color_rgb;
+            let border_color_rgb = data.ron_config.context_menu_border_color_rgb;
             let border_size = data.ron_config.context_menu_border_size;
             let border_radius = data.ron_config.context_menu_border_radius;
-            set_style(crate::UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius })
+            set_style(crate::UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius })
         }).into()}
     ).collect();
     

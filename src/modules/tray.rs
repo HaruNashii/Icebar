@@ -334,11 +334,11 @@ pub fn define_tray_style(app: &AppData, status: button::Status) -> iced::widget:
     let hovered_text = app.ron_config.tray_button_hovered_text_color_rgb;
     let pressed = app.ron_config.tray_button_pressed_color_rgb;
     let normal = app.ron_config.tray_button_color_rgb;
-    let normal_text = app.ron_config.tray_button_text_color_rgb;
+    let normal_text = [255, 255, 255];
     let border_size = app.ron_config.tray_border_size;
-    let border_color_rgba = app.ron_config.tray_border_color_rgba;
+    let border_color_rgb = app.ron_config.tray_border_color_rgb;
     let border_radius = app.ron_config.tray_border_radius;
-    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius})
+    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius})
 }
 
 
@@ -471,7 +471,6 @@ mod tests
         app.ron_config.tray_button_color_rgb         = [10, 20, 30];
         app.ron_config.tray_button_hovered_color_rgb = [50, 60, 70];
         app.ron_config.tray_button_pressed_color_rgb = [80, 90, 100];
-        app.ron_config.tray_button_text_color_rgb    = [200, 210, 220];
         app.ron_config.tray_button_hovered_text_color_rgb = [255, 255, 255];
         app
     }
@@ -495,13 +494,6 @@ mod tests
     {
         let style = define_tray_style(&make_tray_app(), button::Status::Pressed);
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(80, 90, 100))));
-    }
- 
-    #[test]
-    fn tray_style_active_text_color_correct()
-    {
-        let style = define_tray_style(&make_tray_app(), button::Status::Active);
-        assert_eq!(style.text_color, Color::from_rgb8(200, 210, 220));
     }
  
     #[test]

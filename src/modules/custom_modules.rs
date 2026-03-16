@@ -36,7 +36,7 @@ pub struct CustomModule
     pub button_hovered_color_rgb: [u8;3],
     pub button_hovered_text_color_rgb: [u8;3],
     pub button_pressed_color_rgb: [u8;3],
-    pub border_color_rgba: [u8;4],
+    pub border_color_rgb: [u8;3],
     pub border_size: f32,
     pub border_radius: [f32;4],
     pub dont_show_if_any_output_is_empty: bool,
@@ -79,7 +79,7 @@ impl Default for CustomModule
             button_hovered_color_rgb: [110, 40, 80],
             button_hovered_text_color_rgb: [255, 255, 255],
             button_pressed_color_rgb: [70, 20, 40],
-            border_color_rgba: [90, 70, 100, 100],
+            border_color_rgb: [90, 70, 100],
             border_size: 1.0,
             border_radius: [3., 3., 3., 3.],
             display_err_output_if_failed: true,
@@ -106,9 +106,9 @@ pub fn define_custom_module_style(custom_module: &CustomModule, status: button::
     let normal = custom_module.button_color_rgb; 
     let normal_text = custom_module.button_text_color_rgb; 
     let border_size = custom_module.border_size; 
-    let border_color_rgba = custom_module.border_color_rgba; 
+    let border_color_rgb = custom_module.border_color_rgb; 
     let border_radius = custom_module.border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
 }
 
 
@@ -255,7 +255,7 @@ mod tests
             button_hovered_color_rgb:       [50, 60, 70],
             button_hovered_text_color_rgb:  [255, 255, 255],
             button_pressed_color_rgb:       [80, 90, 100],
-            border_color_rgba:              [1, 2, 3, 50],
+            border_color_rgb:               [1, 2, 3],
             border_size:                    2.0,
             border_radius:                  [1.0, 2.0, 3.0, 4.0],
             ..CustomModule::default()

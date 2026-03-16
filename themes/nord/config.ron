@@ -45,10 +45,43 @@ BarConfig
     bar_border_radius: (8., 8., 8., 8.),
     bar_border_size: 0.0,                             // no bar border — clean silhouette
     bar_border_color_rgb: (76, 86, 106),
-    bar_background_color_rgba: (59, 66, 82, 97),      // nord1
+    bar_background_color_rgb: (59, 66, 82),      // nord1
 
     font_family: "JetBrains Mono",
-    font_style: "Bold",
+    font_style: "Bold", 
+
+
+    // ================= GENERAL (STYLE) =================
+    //general_padding: Some(0),
+    //general_text_size: Some(15),
+    //general_text_orientation: Some(Horizontal),
+    //general_text_color: Some((255, 255, 255)),
+    //general_button_color: Some((50, 45, 60)),
+    //general_button_hovered_color_rgb: Some((130, 35, 70)),
+    //general_button_hovered_text_color_rgb: Some((255, 255, 255)),
+    //general_button_pressed_color_rgb: Some((80, 25, 45)),
+    //general_border_color_rgba: Some((120, 80, 130, 100)),
+    //general_border_size: Some(1.0),
+    //general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),
+    //general_side_separator: None,
+    //general_side_separator_color: Some((75, 75, 75)),
+    //general_side_separator_width: Some(1.0),
+    //general_side_separator_height: Some(16.0),
+    //general_alt_padding: None,
+    //general_alt_text_size: None,
+    //general_alt_text_orientation: None,
+    //general_alt_text_color: None,
+    //general_alt_button_color: None,
+    //general_alt_button_hovered_color_rgb: None,
+    //general_alt_button_hovered_text_color_rgb: None,
+    //general_alt_button_pressed_color_rgb: None,
+    //general_alt_border_color_rgba: None,
+    //general_alt_border_size: None,
+    //general_alt_border_radius: None,
+    //general_alt_side_separator: None,
+    //general_alt_side_separator_color: None,
+    //general_alt_side_separator_width: None,
+    //general_alt_side_separator_height: None,
 
 
     // ================= MODULES =================
@@ -131,7 +164,7 @@ BarConfig
     tray_button_hovered_color_rgb: (76, 86, 106),
     tray_button_hovered_text_color_rgb: (229, 233, 240),
     tray_button_pressed_color_rgb: (46, 52, 64),
-    tray_border_color_rgba: (0, 0, 0, 0),
+    tray_border_color_rgb: (0, 0, 0),
     tray_border_size: 0.0,
     tray_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -145,7 +178,7 @@ BarConfig
     media_player_metadata_button_hovered_color_rgb: (76, 86, 106),
     media_player_metadata_button_hovered_text_color_rgb: (143, 188, 187),
     media_player_metadata_button_pressed_color_rgb: (46, 52, 64),
-    media_player_metadata_border_color_rgba: (0, 0, 0, 0),
+    media_player_metadata_border_color_rgb: (0, 0, 0),
     media_player_metadata_border_size: 0.0,
     media_player_metadata_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -159,7 +192,7 @@ BarConfig
     media_player_button_hovered_color_rgb: (76, 86, 106),
     media_player_button_hovered_text_color_rgb: (136, 192, 208),
     media_player_button_pressed_color_rgb: (46, 52, 64),
-    media_player_button_border_color_rgba: (0, 0, 0, 0),
+    media_player_button_border_color_rgb: (0, 0, 0),
     media_player_button_border_size: 0.0,
     media_player_button_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -173,7 +206,7 @@ BarConfig
     network_button_hovered_color_rgb: (76, 86, 106),
     network_button_hovered_text_color_rgb: (163, 190, 140),
     network_button_pressed_color_rgb: (46, 52, 64),
-    network_border_color_rgba: (0, 0, 0, 0),
+    network_border_color_rgb: (0, 0, 0),
     network_border_size: 0.0,
     network_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -186,24 +219,21 @@ BarConfig
     alt_network_button_hovered_color_rgb: (86, 96, 118),
     alt_network_button_hovered_text_color_rgb: (229, 233, 240),
     alt_network_button_pressed_color_rgb: (46, 52, 64),
-    alt_network_border_color_rgba: (0, 0, 0, 0),
+    alt_network_border_color_rgb: (0, 0, 0),
     alt_network_border_size: 0.0,
     alt_network_border_radius: (6.0, 6.0, 6.0, 6.0),
 
 
     // ================= CLOCK =================
-    // Same pill style as every other module — no special-casing.
-    // nord8 glacier text makes it the accent centerpiece without
-    // needing any border tricks or size games.
     clock_text_size: 15,
-    clock_text_color_rgb: (136, 192, 208),            // nord8 — glacier, the one warm spot
+    clock_text_color_rgb: (136, 192, 208),            
     clock_text_orientation: Horizontal,
-    clock_button_color_rgb: (67, 76, 94),             // nord2 — same as all others
+    clock_button_color_rgb: (67, 76, 94),
     clock_button_text_color_rgb: (136, 192, 208),
     clock_button_hovered_color_rgb: (76, 86, 106),
     clock_button_hovered_text_color_rgb: (136, 192, 208),
     clock_button_pressed_color_rgb: (46, 52, 64),
-    clock_border_color_rgba: (0, 0, 0, 0),            // no border — same as everything
+    clock_border_color_rgb: (0, 0, 0),
     clock_border_size: 0.0,
     clock_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -216,7 +246,7 @@ BarConfig
     alt_clock_button_hovered_color_rgb: (76, 86, 106),
     alt_clock_button_hovered_text_color_rgb: (136, 192, 208),
     alt_clock_button_pressed_color_rgb: (46, 52, 64),
-    alt_clock_border_color_rgba: (0, 0, 0, 0),
+    alt_clock_border_color_rgb: (0, 0, 0),
     alt_clock_border_size: 0.0,
     alt_clock_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -230,7 +260,7 @@ BarConfig
     volume_output_button_hovered_color_rgb: (76, 86, 106),
     volume_output_button_hovered_text_color_rgb: (129, 161, 193),
     volume_output_button_pressed_color_rgb: (46, 52, 64),
-    volume_output_border_color_rgba: (0, 0, 0, 0),
+    volume_output_border_color_rgb: (0, 0, 0),
     volume_output_border_size: 0.0,
     volume_output_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -243,7 +273,7 @@ BarConfig
     muted_volume_output_button_hovered_color_rgb: (76, 86, 106),
     muted_volume_output_button_hovered_text_color_rgb: (191, 97, 106),
     muted_volume_output_button_pressed_color_rgb: (46, 52, 64),
-    muted_volume_output_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_output_border_color_rgb: (0, 0, 0),
     muted_volume_output_border_size: 0.0,
     muted_volume_output_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -256,7 +286,7 @@ BarConfig
     volume_input_button_hovered_color_rgb: (76, 86, 106),
     volume_input_button_hovered_text_color_rgb: (129, 161, 193),
     volume_input_button_pressed_color_rgb: (46, 52, 64),
-    volume_input_border_color_rgba: (0, 0, 0, 0),
+    volume_input_border_color_rgb: (0, 0, 0),
     volume_input_border_size: 0.0,
     volume_input_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -269,7 +299,7 @@ BarConfig
     muted_volume_input_button_hovered_color_rgb: (76, 86, 106),
     muted_volume_input_button_hovered_text_color_rgb: (191, 97, 106),
     muted_volume_input_button_pressed_color_rgb: (46, 52, 64),
-    muted_volume_input_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_input_border_color_rgb: (0, 0, 0),
     muted_volume_input_border_size: 0.0,
     muted_volume_input_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -298,15 +328,15 @@ BarConfig
     workspace_button_hovered_color_rgb: (76, 86, 106),
     workspace_button_hovered_text_color_rgb: (229, 233, 240),
     workspace_button_pressed_color_rgb: (46, 52, 64),
-    workspace_border_color_rgba: (0, 0, 0, 0),
+    workspace_border_color_rgb: (0, 0, 0),
     workspace_border_size: 0.0,
     workspace_border_radius: (6.0, 6.0, 6.0, 6.0),
 
 
     // ================= CONTEXT MENU =================
-    context_menu_background_color_rgba: (46, 52, 64, 97),
+    context_menu_background_color_rgb: (46, 52, 64),
     context_menu_background_size: 5,
-    context_menu_background_border_color_rgba: (0, 0, 0, 0),
+    context_menu_background_border_color_rgb: (0, 0, 0),
     context_menu_background_border_size: 0.0,
     context_menu_background_border_radius: (8.0, 8.0, 8.0, 8.0),
     context_menu_text_size: 13,
@@ -319,7 +349,7 @@ BarConfig
     context_menu_button_hovered_color_rgb: (76, 86, 106),
     context_menu_button_hovered_text_color_rgb: (229, 233, 240),
     context_menu_button_pressed_color_rgb: (46, 52, 64),
-    context_menu_border_color_rgba: (0, 0, 0, 0),
+    context_menu_border_color_rgb: (0, 0, 0),
     context_menu_border_size: 0.0,
     context_menu_border_radius: (6.0, 6.0, 6.0, 6.0),
 
@@ -343,7 +373,7 @@ BarConfig
             button_hovered_color_rgb: (143, 188, 187),
             button_hovered_text_color_rgb: (46, 52, 64),
             button_pressed_color_rgb: (94, 129, 172),
-            border_color_rgba: (0, 0, 0, 0),
+            border_color_rgb: (0, 0, 0),
             border_size: 0.0,
             border_radius: (6.0, 6.0, 6.0, 6.0),
             display_err_output_if_failed: false,

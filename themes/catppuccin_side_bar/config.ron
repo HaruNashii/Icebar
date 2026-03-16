@@ -59,10 +59,43 @@ BarConfig
     bar_border_radius: (10., 10., 10., 10.),
     bar_border_size: 0.0,
     bar_border_color_rgb: (0, 0, 0),
-    bar_background_color_rgba: (17, 17, 27, 97),      // Crust — deepest layer
+    bar_background_color_rgb: (17, 17, 27),      // Crust — deepest layer
 
     font_family: "JetBrains Mono",
     font_style: "Bold",
+
+
+    // ================= GENERAL (STYLE) =================
+    //general_padding: Some(0),
+    //general_text_size: Some(15),
+    //general_text_orientation: Some(Horizontal),
+    //general_text_color: Some((255, 255, 255)),
+    //general_button_color: Some((50, 45, 60)),
+    //general_button_hovered_color_rgb: Some((130, 35, 70)),
+    //general_button_hovered_text_color_rgb: Some((255, 255, 255)),
+    //general_button_pressed_color_rgb: Some((80, 25, 45)),
+    //general_border_color_rgba: Some((120, 80, 130, 100)),
+    //general_border_size: Some(1.0),
+    //general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),
+    //general_side_separator: None,
+    //general_side_separator_color: Some((75, 75, 75)),
+    //general_side_separator_width: Some(1.0),
+    //general_side_separator_height: Some(16.0),
+    //general_alt_padding: None,
+    //general_alt_text_size: None,
+    //general_alt_text_orientation: None,
+    //general_alt_text_color: None,
+    //general_alt_button_color: None,
+    //general_alt_button_hovered_color_rgb: None,
+    //general_alt_button_hovered_text_color_rgb: None,
+    //general_alt_button_pressed_color_rgb: None,
+    //general_alt_border_color_rgba: None,
+    //general_alt_border_size: None,
+    //general_alt_border_radius: None,
+    //general_alt_side_separator: None,
+    //general_alt_side_separator_color: None,
+    //general_alt_side_separator_width: None,
+    //general_alt_side_separator_height: None,
 
 
     // ================= MODULES =================
@@ -145,7 +178,7 @@ BarConfig
     tray_button_hovered_color_rgb: (69, 71, 90),
     tray_button_hovered_text_color_rgb: (205, 214, 244),
     tray_button_pressed_color_rgb: (24, 24, 37),
-    tray_border_color_rgba: (0, 0, 0, 0),
+    tray_border_color_rgb: (0, 0, 0),
     tray_border_size: 0.0,
     tray_border_radius: (8.0, 8.0, 8.0, 8.0),
 
@@ -160,7 +193,7 @@ BarConfig
     media_player_metadata_button_hovered_color_rgb: (69, 71, 90),
     media_player_metadata_button_hovered_text_color_rgb: (250, 179, 135),
     media_player_metadata_button_pressed_color_rgb: (24, 24, 37),
-    media_player_metadata_border_color_rgba: (0, 0, 0, 0),
+    media_player_metadata_border_color_rgb: (0, 0, 0),
     media_player_metadata_border_size: 0.0,
     media_player_metadata_border_radius: (8.0, 8.0, 8.0, 8.0),
 
@@ -174,7 +207,7 @@ BarConfig
     media_player_button_hovered_color_rgb: (69, 71, 90),
     media_player_button_hovered_text_color_rgb: (203, 166, 247),
     media_player_button_pressed_color_rgb: (24, 24, 37),
-    media_player_button_border_color_rgba: (0, 0, 0, 0),
+    media_player_button_border_color_rgb: (0, 0, 0),
     media_player_button_border_size: 0.0,
     media_player_button_border_radius: (8.0, 8.0, 8.0, 8.0),
 
@@ -189,7 +222,7 @@ BarConfig
     network_button_hovered_color_rgb: (69, 71, 90),
     network_button_hovered_text_color_rgb: (166, 227, 161),
     network_button_pressed_color_rgb: (24, 24, 37),
-    network_border_color_rgba: (0, 0, 0, 0),
+    network_border_color_rgb: (0, 0, 0),
     network_border_size: 0.0,
     network_border_radius: (8.0, 8.0, 8.0, 8.0),
 
@@ -205,7 +238,7 @@ BarConfig
     clock_button_hovered_color_rgb: (49, 50, 68),
     clock_button_hovered_text_color_rgb: (203, 166, 247),
     clock_button_pressed_color_rgb: (24, 24, 37),
-    clock_border_color_rgba: (0, 0, 0, 0),
+    clock_border_color_rgb: (0, 0, 0),
     clock_border_size: 0.0,
     clock_border_radius: (10.0, 10.0, 10.0, 10.0),
 
@@ -218,7 +251,7 @@ BarConfig
     alt_clock_button_hovered_color_rgb: (69, 71, 90),
     alt_clock_button_hovered_text_color_rgb: (180, 190, 254),
     alt_clock_button_pressed_color_rgb: (24, 24, 37),
-    alt_clock_border_color_rgba: (0, 0, 0, 0),
+    alt_clock_border_color_rgb: (0, 0, 0),
     alt_clock_border_size: 0.0,
     alt_clock_border_radius: (8.0, 8.0, 8.0, 8.0),
 
@@ -233,7 +266,7 @@ BarConfig
     volume_output_button_hovered_color_rgb: (69, 71, 90),
     volume_output_button_hovered_text_color_rgb: (148, 226, 213),
     volume_output_button_pressed_color_rgb: (24, 24, 37),
-    volume_output_border_color_rgba: (0, 0, 0, 0),
+    volume_output_border_color_rgb: (0, 0, 0),
     volume_output_border_size: 0.0,
     volume_output_border_radius: (8.0, 8.0, 8.0, 8.0),
 
@@ -246,7 +279,7 @@ BarConfig
     muted_volume_output_button_hovered_color_rgb: (69, 71, 90),
     muted_volume_output_button_hovered_text_color_rgb: (243, 139, 168),
     muted_volume_output_button_pressed_color_rgb: (24, 24, 37),
-    muted_volume_output_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_output_border_color_rgb: (0, 0, 0),
     muted_volume_output_border_size: 0.0,
     muted_volume_output_border_radius: (8.0, 8.0, 8.0, 8.0),
 
@@ -259,7 +292,7 @@ BarConfig
     volume_input_button_hovered_color_rgb: (69, 71, 90),
     volume_input_button_hovered_text_color_rgb: (148, 226, 213),
     volume_input_button_pressed_color_rgb: (24, 24, 37),
-    volume_input_border_color_rgba: (0, 0, 0, 0),
+    volume_input_border_color_rgb: (0, 0, 0),
     volume_input_border_size: 0.0,
     volume_input_border_radius: (8.0, 8.0, 8.0, 8.0),
 
@@ -272,7 +305,7 @@ BarConfig
     muted_volume_input_button_hovered_color_rgb: (69, 71, 90),
     muted_volume_input_button_hovered_text_color_rgb: (243, 139, 168),
     muted_volume_input_button_pressed_color_rgb: (24, 24, 37),
-    muted_volume_input_border_color_rgba: (0, 0, 0, 0),
+    muted_volume_input_border_color_rgb: (0, 0, 0),
     muted_volume_input_border_size: 0.0,
     muted_volume_input_border_radius: (8.0, 8.0, 8.0, 8.0),
 
@@ -303,15 +336,15 @@ BarConfig
     workspace_button_hovered_color_rgb: (69, 71, 90),
     workspace_button_hovered_text_color_rgb: (203, 166, 247),  // Mauve on hover
     workspace_button_pressed_color_rgb: (24, 24, 37),
-    workspace_border_color_rgba: (0, 0, 0, 0),
+    workspace_border_color_rgb: (0, 0, 0),
     workspace_border_size: 0.0,
     workspace_border_radius: (8.0, 8.0, 8.0, 8.0),
 
 
     // ================= CONTEXT MENU =================
-    context_menu_background_color_rgba: (24, 24, 37, 97),   // Mantle
+    context_menu_background_color_rgb: (24, 24, 37),   // Mantle
     context_menu_background_size: 6,
-    context_menu_background_border_color_rgba: (0, 0, 0, 0),
+    context_menu_background_border_color_rgb: (0, 0, 0),
     context_menu_background_border_size: 0.0,
     context_menu_background_border_radius: (10.0, 10.0, 10.0, 10.0),
     context_menu_text_size: 13,
@@ -324,7 +357,7 @@ BarConfig
     context_menu_button_hovered_color_rgb: (69, 71, 90),
     context_menu_button_hovered_text_color_rgb: (205, 214, 244),
     context_menu_button_pressed_color_rgb: (24, 24, 37),
-    context_menu_border_color_rgba: (0, 0, 0, 0),
+    context_menu_border_color_rgb: (0, 0, 0),
     context_menu_border_size: 0.0,
     context_menu_border_radius: (8.0, 8.0, 8.0, 8.0),
 
@@ -349,7 +382,7 @@ BarConfig
             button_hovered_color_rgb: (69, 71, 90),
             button_hovered_text_color_rgb: (245, 224, 220),  // Rosewater on hover — a wink
             button_pressed_color_rgb: (24, 24, 37),
-            border_color_rgba: (0, 0, 0, 0),
+            border_color_rgb: (0, 0, 0),
             border_size: 0.0,
             border_radius: (10.0, 10.0, 10.0, 10.0),
             display_err_output_if_failed: false,

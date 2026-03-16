@@ -50,6 +50,8 @@ pub fn check_if_config_file_exists()
 // ===== TIPS =====
 // All possible modules: "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri", "CpuTemp", "Ram", "Cpu", "MediaPlayerMetaData", "MediaPlayerButtons", "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Network", "Clock", "Tray".
 //
+// The "general_option_xzy" overwrites every respective option, so if you set "general_border_color_rgb" your [ModuleName]_border_color_rgb will not be used.
+//
 // All texts supports per color flags per string, you just need to have "[Color=(Red, Green, Blue), String=YourString]", you can have multiples color flags for text 
 // like: "[Color=(255, 0, 0), String=red_string], non_colored_String [Color=(0, 0, 255), String=blue_string]", this will display "red_string non_colored_String, blue_string", all with your respective colors
 //
@@ -107,6 +109,38 @@ BarConfig
     bar_background_color_rgba: (18, 18, 22, 100),
     font_family: "JetBrains Mono",
     font_style: "Bold",
+
+    // ================= GENERAL (STYLE) =================
+    general_padding: Some(0),
+    general_text_size: Some(15),
+    general_text_orientation: Some(Horizontal),
+    general_text_color: Some((255, 255, 255)),
+    general_button_color: Some((50, 45, 60)),
+    general_button_hovered_color_rgb: Some((130, 35, 70)),
+    general_button_hovered_text_color_rgb: Some((255, 255, 255)),
+    general_button_pressed_color_rgb: Some((80, 25, 45)),
+    general_border_color_rgba: Some((120, 80, 130, 100)),
+    general_border_size: Some(1.0),
+    general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),
+    general_side_separator: None,
+    general_side_separator_color: Some((75, 75, 75)),
+    general_side_separator_width: Some(1.0),
+    general_side_separator_height: Some(16.0),
+    general_alt_padding: None,
+    general_alt_text_size: None,
+    general_alt_text_orientation: None,
+    general_alt_text_color: None,
+    general_alt_button_color: None,
+    general_alt_button_hovered_color_rgb: None,
+    general_alt_button_hovered_text_color_rgb: None,
+    general_alt_button_pressed_color_rgb: None,
+    general_alt_border_color_rgba: None,
+    general_alt_border_size: None,
+    general_alt_border_radius: None,
+    general_alt_side_separator: None,
+    general_alt_side_separator_color: None,
+    general_alt_side_separator_width: None,
+    general_alt_side_separator_height: None,
 
 
     // ================= MODULES =================

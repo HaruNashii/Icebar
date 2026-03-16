@@ -43,11 +43,11 @@ pub fn define_workspaces_style(app: &AppData, status: button::Status, i: &i32) -
     { app.ron_config.workspace_button_selected_color_rgb }
     else 
     { app.ron_config.workspace_button_color_rgb };
-    let normal_text = app.ron_config.workspace_button_text_color_rgb;
+    let normal_text = app.ron_config.workspace_text_color_rgb;
     let border_size = app.ron_config.workspace_border_size;
-    let border_color_rgba = app.ron_config.workspace_border_color_rgba;
+    let border_color_rgb = app.ron_config.workspace_border_color_rgb;
     let border_radius = app.ron_config.workspace_border_radius;
-    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius})
+    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius})
 }
 
 

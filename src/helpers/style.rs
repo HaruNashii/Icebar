@@ -12,7 +12,7 @@ use crate::AppData;
 
 
 // ============ ENUM/STRUCT, ETC ============
-#[derive(Default, Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Default, Copy, Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum TextOrientation
 {
     #[default] Horizontal,
@@ -22,7 +22,7 @@ pub enum TextOrientation
 pub struct UserStyle
 {
     pub status: iced::widget::button::Status, 
-    pub border_color_rgba: [u8;4], 
+    pub border_color_rgb: [u8;3], 
     pub hovered_text: [u8;3], 
     pub border_radius: [f32;4],
     pub normal_text: [u8;3], 
@@ -79,7 +79,7 @@ pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
             style.text_color = Color::from_rgb8(user_style.normal_text[0], user_style.normal_text[1], user_style.normal_text[2]);
         }
     }
-    style.border.color = Color::from_rgba8(user_style.border_color_rgba[0], user_style.border_color_rgba[1],  user_style.border_color_rgba[2], user_style.border_color_rgba[3] as f32);
+    style.border.color = Color::from_rgb8(user_style.border_color_rgb[0], user_style.border_color_rgb[1],  user_style.border_color_rgb[2]);
     style.border.width = user_style.border_size;
     style.border.radius = Radius { top_left: user_style.border_radius[0], top_right: user_style.border_radius[1], bottom_left: user_style.border_radius[2], bottom_right: user_style.border_radius[3]};
     style
@@ -206,7 +206,7 @@ mod tests
             hovered:           [50, 60, 70],
             hovered_text:      [255, 255, 255],
             pressed:           [80, 90, 100],
-            border_color_rgba: [1, 2, 3, 128],
+            border_color_rgb:  [1, 2, 3],
             border_size:       2.5,
             border_radius:     [1.0, 2.0, 3.0, 4.0],
         }
@@ -312,7 +312,7 @@ mod tests
             hovered:           [50, 60, 70],
             hovered_text:      [255, 255, 255],
             pressed:           [80, 90, 100],
-            border_color_rgba: [1, 2, 3, 50],
+            border_color_rgb:  [1, 2, 3],
             border_size:       2.0,
             border_radius:     [1.0, 2.0, 3.0, 4.0],
         })
@@ -386,7 +386,7 @@ mod tests
     {
         use iced::Color;
         let style = make_style(button::Status::Active);
-        assert_eq!(style.border.color, Color::from_rgba8(1, 2, 3, 50.0));
+        assert_eq!(style.border.color, Color::from_rgb8(1, 2, 3));
     }
  
     // ---- set_style: all statuses produce non-None background ---------------

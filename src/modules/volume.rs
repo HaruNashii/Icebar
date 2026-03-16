@@ -192,11 +192,11 @@ pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced
         let hovered_text =      app.ron_config.muted_volume_output_button_hovered_text_color_rgb;
         let pressed =           app.ron_config.muted_volume_output_button_pressed_color_rgb;
         let normal =            app.ron_config.muted_volume_output_button_color_rgb;
-        let normal_text =       app.ron_config.muted_volume_output_button_text_color_rgb;
+        let normal_text =       app.ron_config.muted_volume_output_text_color_rgb;
         let border_size =           app.ron_config.muted_volume_output_border_size;
-        let border_color_rgba = app.ron_config.muted_volume_output_border_color_rgba;
+        let border_color_rgb = app.ron_config.muted_volume_output_border_color_rgb;
         let border_radius =    app.ron_config.muted_volume_output_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
     }
     else
     {
@@ -204,11 +204,11 @@ pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced
         let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
         let pressed = app.ron_config.volume_output_button_pressed_color_rgb;
         let normal = app.ron_config.volume_output_button_color_rgb;
-        let normal_text = app.ron_config.volume_output_button_text_color_rgb;
+        let normal_text = app.ron_config.volume_output_text_color_rgb;
         let border_size = app.ron_config.volume_output_border_size;
-        let border_color_rgba = app.ron_config.volume_output_border_color_rgba;
+        let border_color_rgb = app.ron_config.volume_output_border_color_rgb;
         let border_radius = app.ron_config.volume_output_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
     }
 }
 
@@ -222,11 +222,11 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
         let hovered_text =         app.ron_config.muted_volume_input_button_hovered_text_color_rgb;
         let pressed =              app.ron_config.muted_volume_input_button_pressed_color_rgb;
         let normal =               app.ron_config.muted_volume_input_button_color_rgb;
-        let normal_text =          app.ron_config.muted_volume_input_button_text_color_rgb;
+        let normal_text =          app.ron_config.muted_volume_input_text_color_rgb;
         let border_size =              app.ron_config.muted_volume_input_border_size;
-        let border_color_rgba =    app.ron_config.muted_volume_input_border_color_rgba;
+        let border_color_rgb =    app.ron_config.muted_volume_input_border_color_rgb;
         let border_radius =       app.ron_config.muted_volume_input_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
     }
     else
     {
@@ -234,11 +234,11 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
         let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
         let pressed = app.ron_config.volume_input_button_pressed_color_rgb;
         let normal = app.ron_config.volume_input_button_color_rgb;
-        let normal_text = app.ron_config.volume_input_button_text_color_rgb;
+        let normal_text = app.ron_config.volume_input_text_color_rgb;
         let border_size = app.ron_config.volume_input_border_size;
-        let border_color_rgba = app.ron_config.volume_input_border_color_rgba;
+        let border_color_rgb = app.ron_config.volume_input_border_color_rgb;
         let border_radius = app.ron_config.volume_input_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgba, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
     }
 }
 

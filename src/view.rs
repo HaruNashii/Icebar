@@ -311,15 +311,17 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let left_click_message: Message  = match &app.ron_config.action_on_left_click_network  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::ToggleAltNetwork, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false)) };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_network { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false)) };
              
-                let (color_to_send, text_size, padding) = if app.is_showing_alt_network_module
+                let (color_to_send, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.is_showing_alt_network_module
                 {
+                    let [sr, sg, sb] = &app.ron_config.alt_network_side_separator_color;
                     let [r, g, b] = &app.ron_config.alt_network_text_color_rgb;
-                    (Color::from_rgb8(*r, *g, *b), app.ron_config.alt_network_text_size, app.ron_config.alt_network_padding)
+                    (Color::from_rgb8(*r, *g, *b), app.ron_config.alt_network_text_size, app.ron_config.alt_network_padding, app.ron_config.alt_network_side_separator, Color::from_rgb8(*sr, *sg, *sb), app.ron_config.alt_network_side_separator_width, app.ron_config.alt_network_side_separator_height)
                 }
                 else
                 {
+                    let [sr, sg, sb] = &app.ron_config.network_side_separator_color;
                     let [r, g, b] = &app.ron_config.network_text_color_rgb;
-                    (Color::from_rgb8(*r, *g, *b), app.ron_config.network_text_size, app.ron_config.network_padding)
+                    (Color::from_rgb8(*r, *g, *b), app.ron_config.network_text_size, app.ron_config.network_padding, app.ron_config.network_side_separator, Color::from_rgb8(*sr, *sg, *sb), app.ron_config.network_side_separator_width, app.ron_config.network_side_separator_height)
                 };
              
                 let text_to_send = define_network_text(app);
@@ -333,10 +335,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
                         Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
                     },
-                    app.ron_config.network_side_separator,
-                    Color::from_rgb8(app.ron_config.network_side_separator_color[0], app.ron_config.network_side_separator_color[1], app.ron_config.network_side_separator_color[2]),
-                    app.ron_config.network_side_separator_width,
-                    app.ron_config.network_side_separator_height,
+                    side_separator,
+                    side_separator_color,
+                    side_separator_width,
+                    side_separator_height
                 )
             },
              
@@ -347,15 +349,23 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let left_click_message: Message  = match &app.ron_config.action_on_left_click_volume_output  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false)) };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_output { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false)) };
              
-                let (text_orientation, color_to_send, text_size, padding) = if app.volume_output_is_muted
+                let (text_orientation, color_to_send, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.volume_output_is_muted
                 {
+                    let [sr, sg, sb] = &app.ron_config.muted_volume_output_side_separator_color;
                     let [r, g, b] = &app.ron_config.muted_volume_output_text_color_rgb;
-                    (&app.ron_config.muted_volume_output_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.muted_volume_output_text_size, app.ron_config.muted_volume_output_padding)
+                    (
+                        &app.ron_config.muted_volume_output_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.muted_volume_output_text_size, app.ron_config.muted_volume_output_padding,
+                        &app.ron_config.muted_volume_output_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.muted_volume_output_side_separator_width, &app.ron_config.muted_volume_output_side_separator_height
+                    )
                 }
                 else
                 {
+                    let [sr, sg, sb] = &app.ron_config.volume_output_side_separator_color;
                     let [r, g, b] = &app.ron_config.volume_output_text_color_rgb;
-                    (&app.ron_config.volume_output_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.volume_output_text_size, app.ron_config.volume_output_padding)
+                    (
+                        &app.ron_config.volume_output_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.volume_output_text_size, app.ron_config.volume_output_padding,
+                        &app.ron_config.volume_output_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.volume_output_side_separator_width, &app.ron_config.volume_output_side_separator_height
+                    )
                 };
              
                 let text_to_send = define_volume_text(&app.modules_data.volume_data.output_volume_level, text_orientation);
@@ -369,10 +379,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
                         Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
                     },
-                    app.ron_config.volume_output_side_separator,
-                    Color::from_rgb8(app.ron_config.volume_output_side_separator_color[0], app.ron_config.volume_output_side_separator_color[1], app.ron_config.volume_output_side_separator_color[2]),
-                    app.ron_config.volume_output_side_separator_width,
-                    app.ron_config.volume_output_side_separator_height,
+                    *side_separator,
+                    side_separator_color,
+                    *side_separator_width,
+                    *side_separator_height
                 )
             },
              
@@ -383,15 +393,23 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let left_click_message: Message  = match &app.ron_config.action_on_left_click_volume_input  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedInput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false)) };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_input { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false)) };
              
-                let (text_orientation, color_to_send, text_size, padding) = if app.volume_input_is_muted
+                let (text_orientation, color_to_send, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.volume_input_is_muted
                 {
+                    let [sr, sg, sb] = &app.ron_config.muted_volume_input_side_separator_color;
                     let [r, g, b] = &app.ron_config.muted_volume_input_text_color_rgb;
-                    (&app.ron_config.muted_volume_input_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.muted_volume_input_text_size, app.ron_config.muted_volume_input_padding)
+                    (
+                        &app.ron_config.muted_volume_input_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.muted_volume_input_text_size, app.ron_config.muted_volume_input_padding,
+                        &app.ron_config.muted_volume_input_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.muted_volume_input_side_separator_width, &app.ron_config.muted_volume_input_side_separator_height
+                    )
                 }
                 else
                 {
+                    let [sr, sg, sb] = &app.ron_config.volume_input_side_separator_color;
                     let [r, g, b] = &app.ron_config.volume_input_text_color_rgb;
-                    (&app.ron_config.volume_input_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.volume_input_text_size, app.ron_config.volume_input_padding)
+                    (
+                        &app.ron_config.volume_input_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.volume_input_text_size, app.ron_config.volume_input_padding,
+                        &app.ron_config.volume_input_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.volume_input_side_separator_width, &app.ron_config.volume_input_side_separator_height
+                    )
                 };
              
                 let text_to_send = define_volume_text(&app.modules_data.volume_data.input_volume_level, text_orientation);
@@ -405,10 +423,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
                         Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
                     },
-                    app.ron_config.volume_input_side_separator,
-                    Color::from_rgb8(app.ron_config.volume_input_side_separator_color[0], app.ron_config.volume_input_side_separator_color[1], app.ron_config.volume_input_side_separator_color[2]),
-                    app.ron_config.volume_input_side_separator_width,
-                    app.ron_config.volume_input_side_separator_height,
+                    *side_separator,
+                    side_separator_color,
+                    *side_separator_width,
+                    *side_separator_height
                 )
             },
 
