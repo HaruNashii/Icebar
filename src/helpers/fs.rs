@@ -32,64 +32,73 @@ pub fn check_if_config_file_exists()
     else
     {
         println!("Ron config file doesn't exist, Creating...");
-        let ron_default_data = r#"// This File Is Auto-Generated When Icebar Detects That The Config File Or Config Directory Doesn't Exists.
-
+        let ron_default_data = r#"// This file is auto-generated when icebar detects that the config file or config directory doesn't exist.
+ 
 // ===== WARNINGS =====
-// WARNING!!!: THE ALPHA OF THE RGBA HAS THE RANGE BETWEEN 0 TO 100, PARSING MORE THAN 100 WILL RESULT IN CRASH
-// WARNING!!!: "bar_size" FIRST OPTION DEFINED TO "0" WILL MAKE THE BAR FILL THE ENTIRE SCREEN X AXIS
-// WARNING!!!: IF THE NUMBERS OF WORKSPACE IS GREATER THAN THE PARSED "hypr_workspace_text:" AND "hypr_workspace_selected_text:", THE NON-PARSED FORMAT WORKSPACE WILL HAVE THE NUMBER OF THE DETERMINED WORKSPACE
-// WARNING!!!: IS VERY IMPORTANT TO SET THE DISPLAY VARIABLE, NOT SETING IT UP MAY CAUSE UNDEFINED BEHAVIOUR
-// WARNING!!!: MISSING OPTIONS IS FINE AND WILL HAVE FALLBACK TO THE DEFAULT CONFIG, BUT MISSED SYNTAX WILL RESULT IN CRASH!!!
-// WARNING!!!: THE FIELD: "continous_command" MAY GENERATA HIGH CPU USAGE, DEPENDING ON HOW HEAVY IS THE COMMAND YOU PARSED
-// WARNING!!!: THE FIELD: "continous_command" MAY NOT BE SET TO RUN AN LOOP OF ANY KIND, THE PROCESS WILL HANG FOREVER IF YOU RUN AN LOOP WITH IT
-// WARNING!!!: THE OPTION "bar_size: ()" HAS THE TYPE AS: (WIDTH, HEIGTH), IF YOU ARE CREATING AN SIDE BAR, THE VALUE OF 0 IN THE FIRST OPTION IS NOT VALID, AND WILL RESULT IN CRASH OR THE APP HANGING!!!
-// WARNING!!!: "NiriWorkspaces" DOESN'T SUPPORT "persistent_workspaces", IF YOU PARSED IT, IT WILL BE IGNORED
-
-
-     
+// - The alpha channel of RGBA values has a range of 0 to 100. Parsing a value greater than 100 will crash.
+// - Setting the first value of "bar_size" to 0 will make the bar fill the entire screen on the X axis.
+// - If the number of workspaces exceeds the number of entries in "workspace_text" or "workspace_selected_text",
+//   the extra workspaces will display their number as text instead.
+// - It is very important to set the "display" variable. Not setting it may cause undefined behaviour.
+// - Missing options are fine and will fall back to their default values, but invalid syntax will crash.
+// - The "continous_command" field may generate high CPU usage depending on how heavy the command is.
+// - The "continous_command" field must not run a loop of any kind — the process will hang forever if it does.
+// - "bar_size" has the format (width, height). For side bars, a width of 0 is not valid and will crash.
+// - "NiriWorkspaces" does not support "persistent_workspaces". If set, it will be ignored.
+ 
+ 
 // ===== TIPS =====
-// All possible modules: "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri", "CpuTemp", "Ram", "Cpu", "MediaPlayerMetaData", "MediaPlayerButtons", "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "CustomModule(index)", "VolumeOutput", "VolumeInput", "Network", "Clock", "Tray".
+// All possible modules:
+//   "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri",
+//   "CpuTemp", "Ram", "Cpu",
+//   "MediaPlayerMetaData", "MediaPlayerButtons",
+//   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces",
+//   "CustomModule(index)",
+//   "VolumeOutput", "VolumeInput",
+//   "Network", "Clock", "Tray"
 //
-// The "general_option_xzy" overwrites every respective option, so if you set "general_border_color_rgb" your [ModuleName]_border_color_rgb will not be used.
+// The "general_option_xyz" fields overwrite every respective per-module option.
+// For example, setting "general_border_color_rgb" will override all "[ModuleName]_border_color_rgb" values.
 //
-// All texts supports per color flags per string, you just need to have "[Color=(Red, Green, Blue), String=YourString]", you can have multiples color flags for text 
-// like: "[Color=(255, 0, 0), String=red_string], non_colored_String [Color=(0, 0, 255), String=blue_string]", this will display "red_string non_colored_String, blue_string", all with your respective colors
+// All text fields support per-string color flags with the syntax:
+//   "[Color=(R, G, B), String=YourText]"
+// Multiple flags can be combined, for example:
+//   "[Color=(255, 0, 0), String=red], normal text [Color=(0, 0, 255), String=blue]"
 //
-// Volume (output and input) format steps have an incremental of 25%, like this: "0%", 25%, 50%, 75%, 100%, > 100+%.
+// Volume format steps increment by 25%: 0%, 25%, 50%, 75%, 100%, >100%.
 //
-// If "clock_timezones" is not setted or is explicited setted to "None", your clock will use your local timezone 
+// If "clock_timezones" is not set or is explicitly set to "None", your local timezone will be used.
 //
-// Available options for "MODULENAME_side_separator" are: Some(Left), Some(Right), Some(Up), Some(Dowm), Some(LeftAndRight), Some(UpAndDown)
-// You may ask why doesn't exist  and "Some(All)" option, it's because that would be exactly like a border, that already exists for all  modules
+// Available options for "MODULENAME_side_separator":
+//   Some(Left), Some(Right), Some(Up), Some(Down), Some(LeftAndRight), Some(UpAndDown)
 //
-// Available options for "bar_position" are: "Up", "Down", "Left" and "Right" 
+// Available options for "bar_position": "Up", "Down", "Left", "Right"
 //
-// To configure diffents texts for diferents orientations, how can set the variables "text_orientation:" on any module (excluding "Tray"), with the values:
-//Vertical:
-//|A|
-//|B|
-//|C|
+// Text orientation options for "text_orientation" (available on all modules except Tray):
+//   Horizontal:  |A|B|C|
+//   Vertical:    |A|
+//                |B|
+//                |C|
 //
-//Horizontal:
-//|A|B|C|
+// To find the correct "font_family" and "font_style" values, run: fc-scan $PATH_TO_FONT_FILE
 //
+// Custom modules are assigned an index based on their position (top to bottom): first = 0, second = 1, etc.
+// Reference them in the module lists as "CustomModule(index)".
 //
-// To see the correct "font_family" and "font_style" i recommend using "fc-scan $PATH_TO_FONT_FILE".
+// Setting "bar_check_reload_interval_ms" to "None" disables hot-reload.
+// This can make the bar lighter if you don't need live config reloading.
 //
-// every custom module you make will be assigned an index based on the position they are, from top to bottom, the first = 0, the second = 1
-// so for parsing your custom_module to the position just put on the position modules your "custom_module[index]"
+// Fields with unique syntax:
+//   display                          = Some("HDMI-A-1")
+//   force_static_position_context_menu = Some((x, y))
+//   persistent_workspaces            = Some(number)
 //
-// if "bar_check_reload_interval_ms" is set to "None" the bar will not hot-reload, 
-// it may make the bar lighter if it's turned off, so if you don't pretend to use this feature is reccommended to turn it off.
+// This file lists all currently available options.
+// If an option is missing, it may not be implemented yet.
 //
-// The unique syntax for each some modules are: "display" = Some("HDMI-A-1"), "force_static_position_context_menu" = Some((x, y)) and "persistent_workspaces" = Some(number_of_persistent_elements)
-//
-// This file have all the currently available options, if you are not finding an option maybe is
-// not implemented yet, make sure to make me know.
-//
-// If you notice some bug or want more features, please feel free to publish your thoughs on: https://github.com/HaruNashii/Icebar.git
-// Or if you want talk directly to me to clear up any questions, my discord id is: harunashiii
-// you can also join my contact server with: https://discord.gg/CRsz24Ts3a
+// Report bugs or request features at: https://github.com/HaruNashii/Icebar
+// Contact directly on Discord: harunashiii
+// Join the contact server: https://discord.gg/CRsz24Ts3a
 
 
 
@@ -169,6 +178,10 @@ BarConfig
     action_on_left_click_media_player_metadata: Nothing, 
     action_on_right_click_media_player_metadata: Nothing, 
     action_on_left_click_clock: DefaultAction,
+    action_on_left_click_cpu: DefaultAction,
+    action_on_right_click_cpu: DefaultAction,
+    action_on_left_click_cpu_temp: DefaultAction,
+    action_on_right_click_cpu_temp: DefaultAction,
     //action_on_right_click_clock: CycleClockTimezones,
     // action_on_right_click_clock: ToggleAltClockAndCycleClockTimezones,
     action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo 'Press Enter To Exit' && read -n 1"]), 
@@ -195,7 +208,7 @@ BarConfig
     media_player_metadata_format: "{{artist}} | {{album}} | {{title}}",
     network_disconnected_text: "No Connection Found.",
     alt_network_module_format: "{level} | {connection_type} | [Color=(0, 255, 255), String={id}]  | [Color=(0, 255, 0), String={speed}MB/s]",
-    network_module_format: "{level} ",
+    network_module_format: "{level}    ",
     network_level_format: 
     (
         "[Color=(150, 40, 80), String=󰖩]",
@@ -240,8 +253,8 @@ BarConfig
         "[Color=(150, 40, 80), String=]  {}%", 
         "[Color=(150, 40, 80), String=󰢴]  {}%"
     ),
-    output_volume_muted_format: "   Muted",
-    input_volume_muted_format: "   Muted",
+    output_volume_muted_format: "  Muted",
+    input_volume_muted_format: "  Muted",
     clock_format: "[Color=(150, 40, 80), String=󰥔]  %H:%M",
     clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S",
     focused_window_format: "{title}",
@@ -251,6 +264,7 @@ BarConfig
 
     
     // ================= PADDING CONFIGS =================
+    workspace_padding: 0,
     focused_window_padding: 0,
     cpu_padding: 0,
     cpu_temp_padding: 0,
@@ -323,6 +337,11 @@ BarConfig
     network_side_separator_width:  1.,
     network_side_separator_height: 16.,
 
+    alt_network_side_separator:        None,
+    alt_network_side_separator_color:  (75, 75, 75),
+    alt_network_side_separator_width:  1.,
+    alt_network_side_separator_height: 16.,
+
     volume_output_side_separator:        None,
     volume_output_side_separator_color:  (75, 75, 75),
     volume_output_side_separator_width:  1.,
@@ -349,7 +368,6 @@ BarConfig
     tray_spacing: 5,
     tray_button_size: 5,
     tray_button_color_rgb: (60, 50, 70),
-    tray_button_text_color_rgb: (220, 220, 230),
     tray_button_hovered_color_rgb: (110, 40, 80),
     tray_button_hovered_text_color_rgb: (255, 255, 255),
     tray_button_pressed_color_rgb: (70, 20, 40),
@@ -363,7 +381,6 @@ BarConfig
     focused_window_text_color_rgb: (220, 220, 220),
     focused_window_text_orientation: Horizontal,
     focused_window_button_color_rgb: (40, 40, 50),
-    focused_window_button_text_color_rgb: (220, 220, 220),
     focused_window_button_hovered_color_rgb: (60, 60, 75),
     focused_window_button_hovered_text_color_rgb: (255, 255, 255),
     focused_window_button_pressed_color_rgb: (30, 30, 40),
@@ -377,7 +394,6 @@ BarConfig
     cpu_text_color_rgb: (220, 220, 220),
     cpu_text_orientation: Horizontal,
     cpu_button_color_rgb: (40, 40, 50),
-    cpu_button_text_color_rgb: (220, 220, 220),
     cpu_button_hovered_color_rgb: (60, 60, 75),
     cpu_button_hovered_text_color_rgb: (255, 255, 255),
     cpu_button_pressed_color_rgb: (30, 30, 40),
@@ -391,7 +407,6 @@ BarConfig
     cpu_temp_text_color_rgb: (220, 220, 220),
     cpu_temp_text_orientation: Horizontal,
     cpu_temp_button_color_rgb: (40, 40, 50),
-    cpu_temp_button_text_color_rgb: (220, 220, 220),
     cpu_temp_button_hovered_color_rgb: (60, 60, 75),
     cpu_temp_button_hovered_text_color_rgb: (255, 255, 255),
     cpu_temp_button_pressed_color_rgb: (30, 30, 40),
@@ -405,7 +420,6 @@ BarConfig
     ram_text_color_rgb: (220, 220, 220),
     ram_text_orientation: Horizontal,
     ram_button_color_rgb: (40, 40, 50),
-    ram_button_text_color_rgb: (220, 220, 220),
     ram_button_hovered_color_rgb: (60, 60, 75),
     ram_button_hovered_text_color_rgb: (255, 255, 255),
     ram_button_pressed_color_rgb: (30, 30, 40),
@@ -419,7 +433,6 @@ BarConfig
     media_player_metadata_text_color_rgb: (255, 255, 255),
     media_player_metadata_text_orientation: Horizontal,
     media_player_metadata_button_color_rgb: (50, 45, 60),
-    media_player_metadata_button_text_color_rgb: (235, 235, 240),
     media_player_metadata_button_hovered_color_rgb: (130, 35, 70),
     media_player_metadata_button_hovered_text_color_rgb: (255, 255, 255),
     media_player_metadata_button_pressed_color_rgb: (80, 25, 45),
@@ -431,7 +444,7 @@ BarConfig
     // ================= MEDIA PLAYER BUTTONS (STYLE) =================
     media_player_button_spacing: 5,
     media_player_button_text_size: 15,
-    media_player_button_text_color_rgb: (255, 255, 255),
+    media_player_button_text_color_rgb: (50, 45, 60),
     media_player_button_text_orientation: Horizontal,
     media_player_button_color_rgb: (50, 45, 60),
     media_player_button_hovered_color_rgb: (130, 35, 70),
@@ -447,7 +460,6 @@ BarConfig
     network_text_color_rgb: (255, 255, 255),
     network_text_orientation: Horizontal,
     network_button_color_rgb: (50, 45, 60),
-    network_button_text_color_rgb: (235, 235, 240),
     network_button_hovered_color_rgb: (130, 35, 70),
     network_button_hovered_text_color_rgb: (255, 255, 255),
     network_button_pressed_color_rgb: (80, 25, 45),
@@ -460,7 +472,6 @@ BarConfig
     alt_network_text_color_rgb: (255, 255, 255),
     alt_network_text_orientation: Horizontal,
     alt_network_button_color_rgb: (150, 40, 80),
-    alt_network_button_text_color_rgb: (235, 235, 240),
     alt_network_button_hovered_color_rgb: (130, 35, 70),
     alt_network_button_hovered_text_color_rgb: (255, 255, 255),
     alt_network_button_pressed_color_rgb: (80, 25, 45),
@@ -474,7 +485,6 @@ BarConfig
     clock_text_color_rgb: (255, 255, 255),
     clock_text_orientation: Horizontal,
     clock_button_color_rgb: (50, 45, 60),
-    clock_button_text_color_rgb: (235, 235, 240),
     clock_button_hovered_color_rgb: (130, 35, 70),
     clock_button_hovered_text_color_rgb: (255, 255, 255),
     clock_button_pressed_color_rgb: (80, 25, 45),
@@ -488,7 +498,6 @@ BarConfig
     alt_clock_text_color_rgb: (255, 255, 255),
     alt_clock_text_orientation: Horizontal,
     alt_clock_button_color_rgb: (150, 40, 80),
-    alt_clock_button_text_color_rgb: (235, 235, 240),
     alt_clock_button_hovered_color_rgb: (130, 35, 70),
     alt_clock_button_hovered_text_color_rgb: (255, 255, 255),
     alt_clock_button_pressed_color_rgb: (80, 25, 45),
@@ -502,7 +511,6 @@ BarConfig
     volume_output_text_color_rgb: (255, 255, 255),
     volume_output_text_orientation: Horizontal,
     volume_output_button_color_rgb: (55, 45, 65),
-    volume_output_button_text_color_rgb: (220, 220, 230),
     volume_output_button_hovered_color_rgb: (150, 45, 85),
     volume_output_button_hovered_text_color_rgb: (255, 255, 255),
     volume_output_button_pressed_color_rgb: (85, 30, 50),
@@ -516,7 +524,6 @@ BarConfig
     muted_volume_output_text_color_rgb: (255, 255, 255),
     muted_volume_output_text_orientation: Horizontal,
     muted_volume_output_button_color_rgb: (150, 40, 80),
-    muted_volume_output_button_text_color_rgb: (220, 220, 230),
     muted_volume_output_button_hovered_color_rgb: (150, 45, 85),
     muted_volume_output_button_hovered_text_color_rgb: (255, 255, 255),
     muted_volume_output_button_pressed_color_rgb: (85, 30, 50),
@@ -530,7 +537,6 @@ BarConfig
     volume_input_text_color_rgb: (255, 255, 255),
     volume_input_text_orientation: Horizontal,
     volume_input_button_color_rgb: (55, 45, 65),
-    volume_input_button_text_color_rgb: (220, 220, 230),
     volume_input_button_hovered_color_rgb: (150, 45, 85),
     volume_input_button_hovered_text_color_rgb: (255, 255, 255),
     volume_input_button_pressed_color_rgb: (85, 30, 50),
@@ -544,7 +550,6 @@ BarConfig
     muted_volume_input_text_color_rgb: (255, 255, 255),
     muted_volume_input_text_orientation: Horizontal,
     muted_volume_input_button_color_rgb: (150, 40, 80),
-    muted_volume_input_button_text_color_rgb: (220, 220, 230),
     muted_volume_input_button_hovered_color_rgb: (150, 45, 85),
     muted_volume_input_button_hovered_text_color_rgb: (255, 255, 255),
     muted_volume_input_button_pressed_color_rgb: (85, 30, 50),
@@ -554,9 +559,10 @@ BarConfig
 
 
     // ================= HYPR WORKSPACES (STYLE) =================
-    workspace_heigth: 5,
-    workspace_width: 5,
+    workspace_height: 30,
+    workspace_width: 30,
     workspace_different_selected_width: None,
+    workspace_different_selected_height: None,
     workspace_text_size: 15,
     workspace_selected_text_color_rgb: (255, 255, 255),
     workspace_text_color_rgb: (255, 255, 255),
@@ -589,7 +595,6 @@ BarConfig
     ]),
     workspace_spacing: 3,
     workspace_button_color_rgb: (45, 40, 55),
-    workspace_button_text_color_rgb: (200, 200, 210),
     workspace_button_selected_color_rgb: (150, 40, 80),
     workspace_button_hovered_color_rgb: (140, 35, 75),
     workspace_button_hovered_text_color_rgb: (255, 255, 255),
@@ -611,7 +616,6 @@ BarConfig
     context_menu_size: 300,
     context_menu_item_size: 30,
     context_menu_button_color_rgb: (45, 40, 55),
-    context_menu_button_text_color_rgb: (230, 230, 240),
     context_menu_button_hovered_color_rgb: (150, 40, 80),
     context_menu_button_hovered_text_color_rgb: (255, 255, 255),
     context_menu_button_pressed_color_rgb: (85, 30, 55),
@@ -631,7 +635,7 @@ BarConfig
                 separator_height: 16.,
 
 		name: "Wofi Custom Module",
-		text: "[Color=(150, 40, 80), String=󰣇] ",
+                text: " [Color=(150, 40, 80), String=󰣇]    ",
                 text_size: 15,
                 text_color_rgb: (255, 255, 255),
 		text_orientation: Horizontal,

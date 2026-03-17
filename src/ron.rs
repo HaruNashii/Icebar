@@ -451,8 +451,11 @@ pub struct BarConfig
 
 
     // ================= HYPR/SWAY WORKSPACES (STYLE) =================
-    pub workspace_width: u16,
-    pub workspace_different_selected_width: Option<u16>,
+    pub workspace_padding: u16,
+    pub workspace_height: u32,
+    pub workspace_width: u32,
+    pub workspace_different_selected_width: Option<u32>,
+    pub workspace_different_selected_height: Option<u32>,
     pub workspace_text_size: u32,
     pub workspace_text: Vec<String>,
     pub workspace_text_color_rgb: [u8;3],
@@ -955,8 +958,11 @@ impl Default for BarConfig
             
 
             // ================= HYPR WORKSPACES (STYLE) =================
-            workspace_width: 5,
+            workspace_padding: 0,
+            workspace_height: 30,
+            workspace_width: 30,
             workspace_different_selected_width: None,
+            workspace_different_selected_height: None,
             workspace_text_size: 15,
             workspace_selected_text_color_rgb: [255, 255, 255],
             workspace_text_color_rgb: [255, 255, 255],

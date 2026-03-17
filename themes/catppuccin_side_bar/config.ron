@@ -133,14 +133,14 @@ BarConfig
     media_player_metadata_format: "{{title}}",        // title only — sidebar is narrow
 
     network_disconnected_text: "󰤭",
-    network_module_format: "{level}",
+    network_module_format: "{level}    ",
     alt_network_module_format: "{level}",
     network_level_format:
     (
-        "󰤨 ",
-        "󰤥 ",
-        "󰤢 ",
-        "󰤭 "
+        "󰤨",
+        "󰤥",
+        "󰤢",
+        "󰤭"
     ),
     network_connection_type_icons: ("󰈀", "󰤨", "󰤭"),
 
@@ -174,7 +174,6 @@ BarConfig
     tray_spacing: 6,
     tray_button_size: 6,
     tray_button_color_rgb: (49, 50, 68),
-    tray_button_text_color_rgb: (205, 214, 244),
     tray_button_hovered_color_rgb: (69, 71, 90),
     tray_button_hovered_text_color_rgb: (205, 214, 244),
     tray_button_pressed_color_rgb: (24, 24, 37),
@@ -189,7 +188,6 @@ BarConfig
     media_player_metadata_text_color_rgb: (250, 179, 135),   // Peach
     media_player_metadata_text_orientation: Vertical,
     media_player_metadata_button_color_rgb: (49, 50, 68),
-    media_player_metadata_button_text_color_rgb: (250, 179, 135),
     media_player_metadata_button_hovered_color_rgb: (69, 71, 90),
     media_player_metadata_button_hovered_text_color_rgb: (250, 179, 135),
     media_player_metadata_button_pressed_color_rgb: (24, 24, 37),
@@ -201,7 +199,6 @@ BarConfig
     // ================= MEDIA PLAYER BUTTONS =================
     media_player_button_spacing: 5,
     media_player_button_text_size: 16,
-    media_player_button_text_color_rgb: (203, 166, 247),     // Mauve
     media_player_button_text_orientation: Vertical,
     media_player_button_color_rgb: (49, 50, 68),
     media_player_button_hovered_color_rgb: (69, 71, 90),
@@ -218,7 +215,6 @@ BarConfig
     network_text_color_rgb: (166, 227, 161),          // Green
     network_text_orientation: Horizontal,
     network_button_color_rgb: (49, 50, 68),
-    network_button_text_color_rgb: (166, 227, 161),
     network_button_hovered_color_rgb: (69, 71, 90),
     network_button_hovered_text_color_rgb: (166, 227, 161),
     network_button_pressed_color_rgb: (24, 24, 37),
@@ -234,7 +230,6 @@ BarConfig
     clock_text_color_rgb: (203, 166, 247),            // Mauve — the accent
     clock_text_orientation: Vertical,
     clock_button_color_rgb: (30, 30, 46),             // Base — slightly lifted from Crust
-    clock_button_text_color_rgb: (203, 166, 247),
     clock_button_hovered_color_rgb: (49, 50, 68),
     clock_button_hovered_text_color_rgb: (203, 166, 247),
     clock_button_pressed_color_rgb: (24, 24, 37),
@@ -247,7 +242,6 @@ BarConfig
     alt_clock_text_color_rgb: (180, 190, 254),        // Lavender
     alt_clock_text_orientation: Vertical,
     alt_clock_button_color_rgb: (49, 50, 68),
-    alt_clock_button_text_color_rgb: (180, 190, 254),
     alt_clock_button_hovered_color_rgb: (69, 71, 90),
     alt_clock_button_hovered_text_color_rgb: (180, 190, 254),
     alt_clock_button_pressed_color_rgb: (24, 24, 37),
@@ -262,7 +256,6 @@ BarConfig
     volume_output_text_color_rgb: (148, 226, 213),    // Teal
     volume_output_text_orientation: Vertical,
     volume_output_button_color_rgb: (49, 50, 68),
-    volume_output_button_text_color_rgb: (148, 226, 213),
     volume_output_button_hovered_color_rgb: (69, 71, 90),
     volume_output_button_hovered_text_color_rgb: (148, 226, 213),
     volume_output_button_pressed_color_rgb: (24, 24, 37),
@@ -275,7 +268,6 @@ BarConfig
     muted_volume_output_text_color_rgb: (243, 139, 168),  // Red
     muted_volume_output_text_orientation: Vertical,
     muted_volume_output_button_color_rgb: (49, 50, 68),
-    muted_volume_output_button_text_color_rgb: (243, 139, 168),
     muted_volume_output_button_hovered_color_rgb: (69, 71, 90),
     muted_volume_output_button_hovered_text_color_rgb: (243, 139, 168),
     muted_volume_output_button_pressed_color_rgb: (24, 24, 37),
@@ -288,7 +280,6 @@ BarConfig
     volume_input_text_color_rgb: (148, 226, 213),
     volume_input_text_orientation: Vertical,
     volume_input_button_color_rgb: (49, 50, 68),
-    volume_input_button_text_color_rgb: (148, 226, 213),
     volume_input_button_hovered_color_rgb: (69, 71, 90),
     volume_input_button_hovered_text_color_rgb: (148, 226, 213),
     volume_input_button_pressed_color_rgb: (24, 24, 37),
@@ -301,7 +292,6 @@ BarConfig
     muted_volume_input_text_color_rgb: (243, 139, 168),
     muted_volume_input_text_orientation: Vertical,
     muted_volume_input_button_color_rgb: (49, 50, 68),
-    muted_volume_input_button_text_color_rgb: (243, 139, 168),
     muted_volume_input_button_hovered_color_rgb: (69, 71, 90),
     muted_volume_input_button_hovered_text_color_rgb: (243, 139, 168),
     muted_volume_input_button_pressed_color_rgb: (24, 24, 37),
@@ -315,11 +305,12 @@ BarConfig
     // Inactive = dim surface, barely visible.
     // Active = Mauve filled pill, Lavender text.
     // Hovered = Surface1 lift.
-    workspace_heigth: 8,
-    workspace_width: 5,
+    workspace_height: 30,
+    workspace_width: 30,
     workspace_different_selected_width: None,
     workspace_text_size: 12,
     workspace_text_color_rgb: (108, 112, 134),        // Overlay0 — dim when inactive
+    workspace_selected_text_color_rgb: (148, 226, 213),
     workspace_text_orientation: Vertical,
     workspace_text:
     [
@@ -331,7 +322,6 @@ BarConfig
     ]),
     workspace_spacing: 4,
     workspace_button_color_rgb: (30, 30, 46),         // Base — nearly invisible resting
-    workspace_button_text_color_rgb: (88, 91, 112),   // Surface2 — dim dot
     workspace_button_selected_color_rgb: (49, 50, 68),// Surface0 — subtle lift when active
     workspace_button_hovered_color_rgb: (69, 71, 90),
     workspace_button_hovered_text_color_rgb: (203, 166, 247),  // Mauve on hover
@@ -353,7 +343,6 @@ BarConfig
     context_menu_size: 240,
     context_menu_item_size: 30,
     context_menu_button_color_rgb: (30, 30, 46),
-    context_menu_button_text_color_rgb: (205, 214, 244),
     context_menu_button_hovered_color_rgb: (69, 71, 90),
     context_menu_button_hovered_text_color_rgb: (205, 214, 244),
     context_menu_button_pressed_color_rgb: (24, 24, 37),
@@ -374,7 +363,7 @@ BarConfig
             name: "distro",
             text: "󰣇    ",                               // Arch logo — change to your distro
             text_size: 15,
-            text_color_rgb: (203, 166, 247),          // Mauve
+            text_color_rgb: (166, 227, 161),          // Green 
             text_orientation: Vertical,
             height: 36,
             button_color_rgb: (49, 50, 68),           // Surface0 — sits quietly

@@ -6,19 +6,88 @@
 # │   and installs its config.ron to ~/.config/icebar/                      │
 # │                                                                         │
 # │   Flags:                                                                │
-# │     --no-exit  -n   After installing a theme, loop back to the          │
-# │                     theme list instead of exiting.                      │
-# │     --force    -f   Skip confirmation steps (backup is still offered).  │
+# │     --no-exit      -n          Loop back to theme list after install.   │
+# │     --force        -f          Skip confirmation prompts.               │
+# │     --cycle        -c          Cycle through all themes one by one.     │
+# │     --workspace    -w  <wm>    Bypass workspace picker. <wm>: Sway,     │
+# │                                Hypr, Niri, or None.                     │
+# │     --focused      -fw <wm>    Bypass focused window picker. <wm>:      │
+# │                                Sway, Hypr, Niri, or None.               │
+# │     --help         -h          Show this help message and exit.          │
 # ╰─────────────────────────────────────────────────────────────────────────╯
 
 # ── Flags ──────────────────────────────────────────────────────────────────
 NO_EXIT=false
 FORCE=false
-for arg in "$@"; do
-    case "$arg" in
-        --no-exit|-n) NO_EXIT=true ;;
-        --force|-f)   FORCE=true  ;;
+CYCLE=false
+BYPASS_WM=""    # Sway | Hypr | Niri | None
+BYPASS_FW=""    # Sway | Hypr | Niri | None
+
+# ── Help ───────────────────────────────────────────────────────────────────
+print_help()
+{
+    echo
+    echo -e "${CYAN}${BOLD}  icebar-theme-switcher${RESET}"
+    echo
+    echo -e "  ${BWHITE}Usage:${RESET}"
+    echo -e "    ${DIM}./icebar-theme-switcher.sh [flags]${RESET}"
+    echo
+    echo -e "  ${BWHITE}Flags:${RESET}"
+    echo -e "    ${CYAN}-n${RESET}, ${CYAN}--no-exit${RESET}              Loop back to the theme list after installing."
+    echo -e "    ${CYAN}-f${RESET}, ${CYAN}--force${RESET}                Skip all confirmation prompts."
+    echo -e "    ${CYAN}-c${RESET}, ${CYAN}--cycle${RESET}                Cycle through every theme one by one."
+    echo -e "    ${CYAN}-w${RESET}, ${CYAN}--workspace${RESET}  ${DIM}<wm>${RESET}      Bypass workspace module picker."
+    echo -e "    ${CYAN}-fw${RESET}, ${CYAN}--focused${RESET}   ${DIM}<wm>${RESET}      Bypass focused window module picker."
+    echo -e "    ${CYAN}-h${RESET}, ${CYAN}--help${RESET}                 Show this help message and exit."
+    echo
+    echo -e "  ${BWHITE}<w> and ${BWHITE}<fw> values:${RESET}  ${WHITE}Sway${RESET}  ${WHITE}Hypr${RESET}  ${WHITE}Niri${RESET}  ${WHITE}None${RESET}"
+    echo
+    echo -e "  ${BWHITE}Examples:${RESET}"
+    echo -e "    ${DIM}./icebar-theme-switcher.sh${RESET}"
+    echo -e "    ${DIM}./icebar-theme-switcher.sh --cycle -w Hypr -fw Hypr${RESET}"
+    echo -e "    ${DIM}./icebar-theme-switcher.sh --force --workspace Niri${RESET}"
+    echo -e "    ${DIM}./icebar-theme-switcher.sh -n${RESET}"
+    echo
+}
+
+# Resolve a wm shorthand to the matching module name fragment
+# resolve_wm_arg <arg> <type>  — type is "workspace" or "focused"
+resolve_wm_arg()
+{
+    local val="${1,,}"   # lowercase
+    local type="$2"
+    case "$val" in
+        sway)  echo "Sway" ;;
+        hypr)  echo "Hypr" ;;
+        niri)  echo "Niri" ;;
+        none)  echo "None" ;;
+        *)
+            echo -e "  ${RED}${BOLD}✗${RESET}  Unknown ${type} compositor '${1}'. Valid values: Sway, Hypr, Niri, None." >&2
+            exit 1
+            ;;
     esac
+}
+
+i=1
+while [[ $i -le $# ]]; do
+    arg="${!i}"
+    case "$arg" in
+        --help|-h)      print_help; exit 0 ;;
+        --no-exit|-n)   NO_EXIT=true ;;
+        --force|-f)     FORCE=true   ;;
+        --cycle|-c)     CYCLE=true   ;;
+        --workspace|-w)
+            i=$(( i + 1 ))
+            [[ $i -gt $# ]] && { echo -e "  ${RED}${BOLD}✗${RESET}  --workspace/-w requires a value (Sway, Hypr, Niri, None)." >&2; exit 1; }
+            BYPASS_WM="$(resolve_wm_arg "${!i}" "workspace")"
+            ;;
+        --focused|-fw)
+            i=$(( i + 1 ))
+            [[ $i -gt $# ]] && { echo -e "  ${RED}${BOLD}✗${RESET}  --focused/-fw requires a value (Sway, Hypr, Niri, None)." >&2; exit 1; }
+            BYPASS_FW="$(resolve_wm_arg "${!i}" "focused window")"
+            ;;
+    esac
+    i=$(( i + 1 ))
 done
 
 # ── Paths ──────────────────────────────────────────────────────────────────
@@ -108,7 +177,26 @@ pick_module() {
     echo -e "  ${DIM}(${GREEN}*${RESET}${DIM} = currently set in this theme)${RESET}"
     echo
 
-    if [[ "$FORCE" == true ]]; then
+    # ── Bypass via flag (--workspace / --focused / --force) ─────────────────
+    local bypass=""
+    if [[ "$_PICK_BYPASS" == "None" ]]; then
+        CHOSEN_MODULE=""
+        CHOSEN_MODULE_LABEL=""
+        print_info "Bypassed: no module selected."
+        return
+    elif [[ -n "$_PICK_BYPASS" ]]; then
+        # Find the module whose name contains the bypass fragment
+        for i in "${!modules[@]}"; do
+            if [[ "${modules[$i]}" == *"${_PICK_BYPASS}"* ]]; then
+                bypass="${modules[$i]}"
+                CHOSEN_MODULE="$bypass"
+                CHOSEN_MODULE_LABEL="${labels[$i]}"
+                print_info "Bypassed: using ${CYAN}${BOLD}${CHOSEN_MODULE}${RESET}"
+                return
+            fi
+        done
+        print_warn "Bypass value '${_PICK_BYPASS}' did not match any module — falling through to prompt."
+    elif [[ "$FORCE" == true ]]; then
         # In force mode keep the theme's existing module
         CHOSEN_MODULE="$found_module"
         CHOSEN_MODULE_LABEL="${labels[0]}"
@@ -150,7 +238,8 @@ pick_module() {
     done
 }
 
-# ── Main loop (repeated when --no-exit / -n is set) ───────────────────────
+# ── Main loop (repeated when --no-exit / -n or --cycle / -c is set) ───────
+CYCLE_INDEX=0
 while true; do
 
 # ── Sanity checks ──────────────────────────────────────────────────────────
@@ -177,6 +266,27 @@ if [[ ${#THEMES[@]} -eq 0 ]]; then
     echo
     exit 1
 fi
+
+# ── Cycle mode: auto-select next theme ────────────────────────────────────
+if [[ "$CYCLE" == true ]]; then
+    if (( CYCLE_INDEX >= ${#THEMES[@]} )); then
+        echo
+        print_info "All ${#THEMES[@]} themes have been cycled through."
+        echo
+        exit 0
+    fi
+    CHOSEN_THEME="${THEMES[$CYCLE_INDEX]}"
+    CHOSEN_CONFIG="$THEMES_DIR/$CHOSEN_THEME/config.ron"
+    CYCLE_INDEX=$(( CYCLE_INDEX + 1 ))
+
+    print_header
+    echo -e "  ${DIM}Theme ${CYCLE_INDEX} of ${#THEMES[@]}${RESET}"
+    echo
+    divider
+    echo
+    echo -e "  ${BWHITE}Selected:${RESET}  ${CYAN}${BOLD}${CHOSEN_THEME}${RESET}"
+    echo
+else
 
 # ── Display theme list ─────────────────────────────────────────────────────
 print_header
@@ -214,11 +324,7 @@ while true; do
     print_warn "Invalid choice. Enter a number between 1 and ${#THEMES[@]}, or q to quit."
 done
 
-echo
-divider
-echo
-echo -e "  ${BWHITE}Selected:${RESET}  ${CYAN}${BOLD}${CHOSEN_THEME}${RESET}"
-echo
+fi  # end of cycle/manual selection
 
 # ── Workspace module detection ─────────────────────────────────────────────
 WM_MODULES=("SwayWorkspaces" "HyprWorkspaces" "NiriWorkspaces")
@@ -235,7 +341,7 @@ CHOSEN_WM_MODULE=""
 CHOSEN_WM_LABEL=""
 
 if [[ -n "$FOUND_WM_MODULE" ]]; then
-    pick_module "$FOUND_WM_MODULE" "Workspace Module" "${WM_MODULES[@]}"
+    _PICK_BYPASS="$BYPASS_WM" pick_module "$FOUND_WM_MODULE" "Workspace Module" "${WM_MODULES[@]}"
     CHOSEN_WM_MODULE="$CHOSEN_MODULE"
     CHOSEN_WM_LABEL="$CHOSEN_MODULE_LABEL"
     if [[ -n "$CHOSEN_WM_MODULE" ]]; then
@@ -259,7 +365,7 @@ CHOSEN_FW_MODULE=""
 CHOSEN_FW_LABEL=""
 
 if [[ -n "$FOUND_FW_MODULE" ]]; then
-    pick_module "$FOUND_FW_MODULE" "FocusedWindow Module" "${FW_MODULES[@]}"
+    _PICK_BYPASS="$BYPASS_FW" pick_module "$FOUND_FW_MODULE" "FocusedWindow Module" "${FW_MODULES[@]}"
     CHOSEN_FW_MODULE="$CHOSEN_MODULE"
     CHOSEN_FW_LABEL="$CHOSEN_MODULE_LABEL"
     if [[ -n "$CHOSEN_FW_MODULE" ]]; then
@@ -277,9 +383,9 @@ mkdir -p "$ICEBAR_DIR"
 
 # ── Handle existing config ─────────────────────────────────────────────────
 if [[ -f "$ICEBAR_CONFIG" ]]; then
-    if [[ "$FORCE" == true ]]; then
-        # Force mode: overwrite silently
-        print_info "Force mode: overwriting existing config."
+    if [[ "$FORCE" == true || "$CYCLE" == true ]]; then
+        # Force/cycle mode: overwrite silently
+        print_info "Overwriting existing config."
     else
         print_warn "A config already exists at ${BOLD}$ICEBAR_CONFIG${RESET}"
         echo
@@ -391,7 +497,23 @@ if cp "$CHOSEN_CONFIG" "$ICEBAR_CONFIG"; then
     echo
 
     # ── Loop back or exit ──────────────────────────────────────────────────
-    if [[ "$NO_EXIT" == true ]]; then
+    if [[ "$CYCLE" == true ]]; then
+        if (( CYCLE_INDEX < ${#THEMES[@]} )); then
+            echo
+            echo -ne "  ${BWHITE}Try next theme (${THEMES[$CYCLE_INDEX]})? ${DIM}[y/n/q]:${RESET} "
+            read -r cycle_ans
+            case "${cycle_ans,,}" in
+                y|"") echo; continue ;;
+                q)    echo; print_info "Stopped cycling."; echo; exit 0 ;;
+                *)
+                    echo
+                    print_info "Keeping current theme. Goodbye."
+                    echo
+                    exit 0
+                    ;;
+            esac
+        fi
+    elif [[ "$NO_EXIT" == true ]]; then
         echo -ne "  ${BWHITE}Switch to another theme? ${DIM}[y/n]:${RESET} "
         read -r again
         if [[ "$again" =~ ^[yY]$ ]]; then

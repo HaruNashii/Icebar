@@ -169,7 +169,6 @@ BarConfig
     tray_spacing: 5,
     tray_button_size: 5,
     tray_button_color_rgb: (21, 25, 36),
-    tray_button_text_color_rgb: (163, 174, 205),
     tray_button_hovered_color_rgb: (27, 31, 44),
     tray_button_hovered_text_color_rgb: (163, 174, 205),
     tray_button_pressed_color_rgb: (15, 17, 26),
@@ -184,7 +183,6 @@ BarConfig
     media_player_metadata_text_color_rgb: (247, 118, 142),
     media_player_metadata_text_orientation: Horizontal,
     media_player_metadata_button_color_rgb: (21, 25, 36),
-    media_player_metadata_button_text_color_rgb: (247, 118, 142),
     media_player_metadata_button_hovered_color_rgb: (27, 31, 44),
     media_player_metadata_button_hovered_text_color_rgb: (247, 118, 142),
     media_player_metadata_button_pressed_color_rgb: (15, 17, 26),
@@ -196,7 +194,6 @@ BarConfig
     // ================= MEDIA PLAYER BUTTONS =================
     media_player_button_spacing: 3,
     media_player_button_text_size: 14,
-    media_player_button_text_color_rgb: (247, 118, 142),
     media_player_button_text_orientation: Horizontal,
     media_player_button_color_rgb: (21, 25, 36),
     media_player_button_hovered_color_rgb: (27, 31, 44),
@@ -213,7 +210,6 @@ BarConfig
     network_text_color_rgb: (82, 139, 255),
     network_text_orientation: Horizontal,
     network_button_color_rgb: (21, 25, 36),
-    network_button_text_color_rgb: (82, 139, 255),
     network_button_hovered_color_rgb: (27, 31, 44),
     network_button_hovered_text_color_rgb: (82, 139, 255),
     network_button_pressed_color_rgb: (15, 17, 26),
@@ -225,7 +221,6 @@ BarConfig
     alt_network_text_color_rgb: (82, 139, 255),
     alt_network_text_orientation: Horizontal,
     alt_network_button_color_rgb: (27, 31, 44),
-    alt_network_button_text_color_rgb: (82, 139, 255),
     alt_network_button_hovered_color_rgb: (21, 25, 36),
     alt_network_button_hovered_text_color_rgb: (82, 139, 255),
     alt_network_button_pressed_color_rgb: (15, 17, 26),
@@ -241,7 +236,6 @@ BarConfig
     clock_text_color_rgb: (137, 221, 255),            // cyan
     clock_text_orientation: Horizontal,
     clock_button_color_rgb: (15, 17, 26),             // ghost
-    clock_button_text_color_rgb: (137, 221, 255),
     clock_button_hovered_color_rgb: (21, 25, 36),
     clock_button_hovered_text_color_rgb: (137, 221, 255),
     clock_button_pressed_color_rgb: (15, 17, 26),
@@ -253,7 +247,6 @@ BarConfig
     alt_clock_text_color_rgb: (137, 221, 255),
     alt_clock_text_orientation: Horizontal,
     alt_clock_button_color_rgb: (21, 25, 36),
-    alt_clock_button_text_color_rgb: (137, 221, 255),
     alt_clock_button_hovered_color_rgb: (27, 31, 44),
     alt_clock_button_hovered_text_color_rgb: (137, 221, 255),
     alt_clock_button_pressed_color_rgb: (15, 17, 26),
@@ -268,7 +261,6 @@ BarConfig
     volume_output_text_color_rgb: (255, 203, 107),
     volume_output_text_orientation: Horizontal,
     volume_output_button_color_rgb: (21, 25, 36),
-    volume_output_button_text_color_rgb: (255, 203, 107),
     volume_output_button_hovered_color_rgb: (27, 31, 44),
     volume_output_button_hovered_text_color_rgb: (255, 203, 107),
     volume_output_button_pressed_color_rgb: (15, 17, 26),
@@ -280,7 +272,6 @@ BarConfig
     muted_volume_output_text_color_rgb: (255, 85, 114),   // red
     muted_volume_output_text_orientation: Horizontal,
     muted_volume_output_button_color_rgb: (21, 25, 36),
-    muted_volume_output_button_text_color_rgb: (255, 85, 114),
     muted_volume_output_button_hovered_color_rgb: (27, 31, 44),
     muted_volume_output_button_hovered_text_color_rgb: (255, 85, 114),
     muted_volume_output_button_pressed_color_rgb: (15, 17, 26),
@@ -292,7 +283,6 @@ BarConfig
     volume_input_text_color_rgb: (255, 203, 107),
     volume_input_text_orientation: Horizontal,
     volume_input_button_color_rgb: (21, 25, 36),
-    volume_input_button_text_color_rgb: (255, 203, 107),
     volume_input_button_hovered_color_rgb: (27, 31, 44),
     volume_input_button_hovered_text_color_rgb: (255, 203, 107),
     volume_input_button_pressed_color_rgb: (15, 17, 26),
@@ -304,7 +294,6 @@ BarConfig
     muted_volume_input_text_color_rgb: (255, 85, 114),
     muted_volume_input_text_orientation: Horizontal,
     muted_volume_input_button_color_rgb: (21, 25, 36),
-    muted_volume_input_button_text_color_rgb: (255, 85, 114),
     muted_volume_input_button_hovered_color_rgb: (27, 31, 44),
     muted_volume_input_button_hovered_text_color_rgb: (255, 85, 114),
     muted_volume_input_button_pressed_color_rgb: (15, 17, 26),
@@ -317,8 +306,8 @@ BarConfig
     // Cyan active fill — the structural accent carries through.
     // Numbers, not icons — wide bar has the room to read.
     // Inactive = very dim disabled grey — recedes completely.
-    workspace_heigth: 5,
-    workspace_width: 8,
+    workspace_height: 25,
+    workspace_width: 25,
     workspace_different_selected_width: None,
     workspace_text_size: 13,
     workspace_text_color_rgb: (66, 76, 104),          // disabled — barely there
@@ -335,7 +324,6 @@ BarConfig
     ]),
     workspace_spacing: 5,
     workspace_button_color_rgb: (21, 25, 36),
-    workspace_button_text_color_rgb: (66, 76, 104),
     workspace_button_selected_color_rgb: (137, 221, 255),   // cyan fill
     workspace_button_hovered_color_rgb: (27, 31, 44),
     workspace_button_hovered_text_color_rgb: (163, 174, 205),
@@ -357,7 +345,6 @@ BarConfig
     context_menu_size: 260,
     context_menu_item_size: 30,
     context_menu_button_color_rgb: (21, 25, 36),
-    context_menu_button_text_color_rgb: (163, 174, 205),
     context_menu_button_hovered_color_rgb: (137, 221, 255),
     context_menu_button_hovered_text_color_rgb: (15, 17, 26),
     context_menu_button_pressed_color_rgb: (15, 17, 26),

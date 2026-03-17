@@ -7,7 +7,7 @@ use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, col
 
 // ============ CRATES ============
 use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_text, cpu_temp::{define_cpu_temp_style, define_cpu_temp_text}, focused_window::{define_focused_window_style, define_focused_window_text}, ram::{define_ram_style, define_ram_text}, volume::define_volume_text}};
-use crate::modules::{cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_padding, define_workspaces_style, define_workspaces_text}};
+use crate::modules::{cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::context_menu::context_menu_view;
 use crate::update::Message;
@@ -104,7 +104,6 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let workspace_buttons = app.modules_data.workspace_data.visible_workspaces.iter().map(|i|
                 {
                     let non_color_workspace_text = define_workspaces_text(app, *i);
-                    let padding_y = define_workspaces_padding(app, *i);
                     let color_to_send = if *i == app.modules_data.workspace_data.current_workspace
                     {
                         let [r, g, b] = &app.ron_config.workspace_selected_text_color_rgb;
@@ -116,11 +115,13 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Color::from_rgb8(*r, *g, *b)
                     };
 
+                    let size = define_workspaces_size(app, *i);
                     let workspace_text = convert_text_to_rich_text(&non_color_workspace_text, Some(color_to_send));
                     button(workspace_text.wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace_text_size).center())
-                    .padding(padding_y)
+                    .padding(app.ron_config.workspace_padding)
                     .style(move |_: &Theme, status: button::Status| define_workspaces_style(app, status, i))
-                    .padding([app.ron_config.workspace_width, padding_y * 2])
+                    .width(size.0)
+                    .height(size.1)
                     .on_press(Message::WorkspaceButtonPressed(*i))
                     .into()
                 });

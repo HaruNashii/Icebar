@@ -75,16 +75,27 @@ pub fn define_workspaces_text(app: &AppData, id: i32) -> String
 
 
 
-pub fn define_workspaces_padding(app: &AppData, id: i32) -> u16
+pub fn define_workspaces_size(app: &AppData, id: i32) -> (u32, u32)
 {
-    if let Some(value) = app.ron_config.workspace_different_selected_width && id == app.modules_data.workspace_data.current_workspace
+    let width = if let Some(value) = app.ron_config.workspace_different_selected_width && id == app.modules_data.workspace_data.current_workspace
     {
-        value 
+        value
     } 
     else 
     {
-        app.ron_config.workspace_width 
-    }
+        app.ron_config.workspace_width
+    };
+
+    let height = if let Some(value) = app.ron_config.workspace_different_selected_height && id == app.modules_data.workspace_data.current_workspace
+    {
+        value
+    } 
+    else 
+    {
+        app.ron_config.workspace_height
+    };
+
+    (width, height)
 }
 
 
@@ -152,31 +163,7 @@ mod tests
         assert_eq!(text, "2");
     }
  
-    // ---- define_workspaces_padding ------------------------------------------
- 
     #[test]
-    fn workspace_padding_returns_different_width_for_selected()
-    {
-        let app = make_app(1);
-        assert_eq!(define_workspaces_padding(&app, 1), 20);
-    }
- 
-    #[test]
-    fn workspace_padding_returns_default_width_for_unselected()
-    {
-        let app = make_app(1);
-        assert_eq!(define_workspaces_padding(&app, 2), 10);
-    }
- 
-    #[test]
-    fn workspace_padding_no_different_selected_width_always_returns_default()
-    {
-        let mut app = make_app(1);
-        app.ron_config.workspace_different_selected_width = None;
-        assert_eq!(define_workspaces_padding(&app, 1), 10);
-        assert_eq!(define_workspaces_padding(&app, 2), 10);
-    }
-        #[test]
     fn workspace_text_id_1_returns_first_element()
     {
         let app = make_app(3);
