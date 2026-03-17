@@ -79,7 +79,8 @@ X11 is **not supported**.
 - iced_layershell
 - zbus (DBus communication)
 - Wayland layer-shell protocol
-- libpulse (Volume handling) 
+- libpulse (Volume Data Fetcher) 
+- wpctl (Volume Action handling) 
 
 
 `iced` provides a declarative UI model inspired by Elm architecture.

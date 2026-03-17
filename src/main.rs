@@ -1,21 +1,27 @@
 // ============ IMPORTS ============
-use iced_layershell::{application, settings::{LayerShellSettings, Settings, StartMode}};
+use iced_layershell::{daemon, settings::{StartMode, LayerShellSettings, Settings}};
+use std::{sync::OnceLock, collections::HashMap, time::Instant};
 use iced::Font;
-use std::time::Instant;
-
-
 
 
 
 
 
 // ============ CRATES ============
-use crate::helpers::{font::build_font, fs::check_if_config_file_exists, misc::{is_active_module, validade_bar_data}, monitor::get_monitor_res, string::{intern_string, weight_from_str}, style::{UserStyle, set_style, style} };
+use crate::helpers::{font::build_font, fs::check_if_config_file_exists, misc::{define_bar_anchor_position, is_active_module, validate_bar_data}, monitor::get_monitor_res, string::{intern_string, weight_from_str}, style::{UserStyle, set_style, style} };
 use crate::modules::{data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{read_ron_config, BarConfig};
+use crate::context_menu::ContextMenuData;
 use crate::subscription::subscription;
 use crate::update::update;
 use crate::view::view;
+
+
+
+
+
+// ============ STATIC'S ============
+pub static MAIN_ID: OnceLock<iced::window::Id> = OnceLock::new();
 
 
 
@@ -35,9 +41,22 @@ mod ron;
 
 
 // ============ ENUM/STRUCT, ETC ============
-#[derive(Default, Clone)]
-struct AppData
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WindowInfo 
 {
+    MainBar,
+    ContextMenu
+}
+
+#[derive(Default, Clone)]
+pub struct AppData
+{ 
+    ids: HashMap<iced::window::Id, WindowInfo>,
+    data: ContextMenuData,
+
+    volume_output_raw: f32,
+    volume_input_raw: f32,
+
     cpu_snapshot: Option<crate::modules::cpu::CpuSnapshot>,
     current_clock_timezone: Option<(String, u32)>,
     is_hovering_media_player_meta_data: bool,
@@ -70,14 +89,16 @@ struct AppData
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
     check_if_config_file_exists();
-    let (ron_config, anchor_position,  current_clock_timezone, active_modules) = read_ron_config();
+    let (ron_config, current_clock_timezone, active_modules) = read_ron_config();
+    let validated_bar_data = validate_bar_data(&ron_config);
+    let anchor_position = define_bar_anchor_position(&ron_config.bar_position);
     let monitor_res = get_monitor_res(ron_config.display.clone());
     if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
     let ron_config_clone = ron_config.clone();
-    let validated_bar_data = validade_bar_data(&ron_config);
-
-    let start_mode = match ron_config.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };
     let font_name = ron_config.font_family;
+    let start_mode = match ron_config.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };
+
+
 
     let modules_data = ModulesData
     {
@@ -98,8 +119,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     };
 
 
-
-    application(move || app_data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings
+    daemon(move || app_data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings
     {
         layer_settings: LayerShellSettings
         {
@@ -115,3 +135,4 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     }).run()
 }
 fn namespace() -> String { String::from("icebar") }
+pub fn id_info(app: &AppData, id: iced::window::Id) -> Option<WindowInfo> { app.ids.get(&id).cloned() }

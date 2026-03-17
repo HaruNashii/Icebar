@@ -6,12 +6,12 @@ pkgs.mkShell {
     pkgs.nerd-fonts.caskaydia-cove   
     pkgs.nerd-fonts.fira-code
 
-    pkgs.rustc
     pkgs.cargo
     pkgs.clippy
     pkgs.rust-analyzer
 
     pkgs.pkg-config
+    pkgs.gcc
     pkgs.cmake
 
     pkgs.openssl
@@ -38,6 +38,7 @@ shellHook = ''
     pkgs.xorg.libxcb
     pkgs.libGL
     pkgs.mesa
+    pkgs.openssl
   ]}
 
   export FONTCONFIG_FILE=${pkgs.makeFontsConf {

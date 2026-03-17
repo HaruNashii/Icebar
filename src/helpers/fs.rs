@@ -119,7 +119,7 @@ BarConfig
     general_button_hovered_color_rgb: Some((130, 35, 70)),
     general_button_hovered_text_color_rgb: Some((255, 255, 255)),
     general_button_pressed_color_rgb: Some((80, 25, 45)),
-    general_border_color_rgba: Some((120, 80, 130, 100)),
+    general_border_color_rgb: Some((120, 80, 130)),
     general_border_size: Some(1.0),
     general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),
     general_side_separator: None,
@@ -134,7 +134,7 @@ BarConfig
     general_alt_button_hovered_color_rgb: None,
     general_alt_button_hovered_text_color_rgb: None,
     general_alt_button_pressed_color_rgb: None,
-    general_alt_border_color_rgba: None,
+    general_alt_border_color_rgb: None,
     general_alt_border_size: None,
     general_alt_border_radius: None,
     general_alt_side_separator: None,
@@ -353,7 +353,7 @@ BarConfig
     tray_button_hovered_color_rgb: (110, 40, 80),
     tray_button_hovered_text_color_rgb: (255, 255, 255),
     tray_button_pressed_color_rgb: (70, 20, 40),
-    tray_border_color_rgba: (90, 70, 100, 100),
+    tray_border_color_rgb: (90, 70, 100),
     tray_border_size: 1.0,
     tray_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -367,7 +367,7 @@ BarConfig
     focused_window_button_hovered_color_rgb: (60, 60, 75),
     focused_window_button_hovered_text_color_rgb: (255, 255, 255),
     focused_window_button_pressed_color_rgb: (30, 30, 40),
-    focused_window_border_color_rgba: (80, 80, 100, 80),
+    focused_window_border_color_rgb: (80, 80, 100),
     focused_window_border_size: 1.0,
     focused_window_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -381,7 +381,7 @@ BarConfig
     cpu_button_hovered_color_rgb: (60, 60, 75),
     cpu_button_hovered_text_color_rgb: (255, 255, 255),
     cpu_button_pressed_color_rgb: (30, 30, 40),
-    cpu_border_color_rgba: (80, 80, 100, 80),
+    cpu_border_color_rgb: (80, 80, 100),
     cpu_border_size: 1.0,
     cpu_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -395,7 +395,7 @@ BarConfig
     cpu_temp_button_hovered_color_rgb: (60, 60, 75),
     cpu_temp_button_hovered_text_color_rgb: (255, 255, 255),
     cpu_temp_button_pressed_color_rgb: (30, 30, 40),
-    cpu_temp_border_color_rgba: (80, 80, 100, 80),
+    cpu_temp_border_color_rgb: (80, 80, 100),
     cpu_temp_border_size: 1.0,
     cpu_temp_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -409,7 +409,7 @@ BarConfig
     ram_button_hovered_color_rgb: (60, 60, 75),
     ram_button_hovered_text_color_rgb: (255, 255, 255),
     ram_button_pressed_color_rgb: (30, 30, 40),
-    ram_border_color_rgba: (80, 80, 100, 80),
+    ram_border_color_rgb: (80, 80, 100),
     ram_border_size: 1.0,
     ram_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -423,7 +423,7 @@ BarConfig
     media_player_metadata_button_hovered_color_rgb: (130, 35, 70),
     media_player_metadata_button_hovered_text_color_rgb: (255, 255, 255),
     media_player_metadata_button_pressed_color_rgb: (80, 25, 45),
-    media_player_metadata_border_color_rgba: (120, 80, 130, 100),
+    media_player_metadata_border_color_rgb: (120, 80, 130),
     media_player_metadata_border_size: 1.0,
     media_player_metadata_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -437,7 +437,7 @@ BarConfig
     media_player_button_hovered_color_rgb: (130, 35, 70),
     media_player_button_hovered_text_color_rgb: (255, 255, 255),
     media_player_button_pressed_color_rgb: (80, 25, 45),
-    media_player_button_border_color_rgba: (120, 80, 130, 100),
+    media_player_button_border_color_rgb: (120, 80, 130),
     media_player_button_border_size: 1.0,
     media_player_button_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -451,7 +451,7 @@ BarConfig
     network_button_hovered_color_rgb: (130, 35, 70),
     network_button_hovered_text_color_rgb: (255, 255, 255),
     network_button_pressed_color_rgb: (80, 25, 45),
-    network_border_color_rgba: (120, 80, 130, 100),
+    network_border_color_rgb: (120, 80, 130),
     network_border_size: 1.0,
     network_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -464,7 +464,7 @@ BarConfig
     alt_network_button_hovered_color_rgb: (130, 35, 70),
     alt_network_button_hovered_text_color_rgb: (255, 255, 255),
     alt_network_button_pressed_color_rgb: (80, 25, 45),
-    alt_network_border_color_rgba: (120, 80, 130, 100),
+    alt_network_border_color_rgb: (120, 80, 130),
     alt_network_border_size: 1.0,
     alt_network_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -478,7 +478,7 @@ BarConfig
     clock_button_hovered_color_rgb: (130, 35, 70),
     clock_button_hovered_text_color_rgb: (255, 255, 255),
     clock_button_pressed_color_rgb: (80, 25, 45),
-    clock_border_color_rgba: (120, 80, 130, 100),
+    clock_border_color_rgb: (120, 80, 130),
     clock_border_size: 1.0,
     clock_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -492,7 +492,7 @@ BarConfig
     alt_clock_button_hovered_color_rgb: (130, 35, 70),
     alt_clock_button_hovered_text_color_rgb: (255, 255, 255),
     alt_clock_button_pressed_color_rgb: (80, 25, 45),
-    alt_clock_border_color_rgba: (120, 80, 130, 100),
+    alt_clock_border_color_rgb: (120, 80, 130),
     alt_clock_border_size: 1.0,
     alt_clock_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -506,7 +506,7 @@ BarConfig
     volume_output_button_hovered_color_rgb: (150, 45, 85),
     volume_output_button_hovered_text_color_rgb: (255, 255, 255),
     volume_output_button_pressed_color_rgb: (85, 30, 50),
-    volume_output_border_color_rgba: (110, 80, 120, 100),
+    volume_output_border_color_rgb: (110, 80, 120),
     volume_output_border_size: 1.0,
     volume_output_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -520,7 +520,7 @@ BarConfig
     muted_volume_output_button_hovered_color_rgb: (150, 45, 85),
     muted_volume_output_button_hovered_text_color_rgb: (255, 255, 255),
     muted_volume_output_button_pressed_color_rgb: (85, 30, 50),
-    muted_volume_output_border_color_rgba: (110, 80, 120, 100),
+    muted_volume_output_border_color_rgb: (110, 80, 120),
     muted_volume_output_border_size: 1.0,
     muted_volume_output_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -534,7 +534,7 @@ BarConfig
     volume_input_button_hovered_color_rgb: (150, 45, 85),
     volume_input_button_hovered_text_color_rgb: (255, 255, 255),
     volume_input_button_pressed_color_rgb: (85, 30, 50),
-    volume_input_border_color_rgba: (110, 80, 120, 100),
+    volume_input_border_color_rgb: (110, 80, 120),
     volume_input_border_size: 1.0,
     volume_input_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -548,7 +548,7 @@ BarConfig
     muted_volume_input_button_hovered_color_rgb: (150, 45, 85),
     muted_volume_input_button_hovered_text_color_rgb: (255, 255, 255),
     muted_volume_input_button_pressed_color_rgb: (85, 30, 50),
-    muted_volume_input_border_color_rgba: (110, 80, 120, 100),
+    muted_volume_input_border_color_rgb: (110, 80, 120),
     muted_volume_input_border_size: 1.0,
     muted_volume_input_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -594,7 +594,7 @@ BarConfig
     workspace_button_hovered_color_rgb: (140, 35, 75),
     workspace_button_hovered_text_color_rgb: (255, 255, 255),
     workspace_button_pressed_color_rgb: (90, 25, 50),
-    workspace_border_color_rgba: (120, 90, 135, 100),
+    workspace_border_color_rgb: (120, 90, 135),
     workspace_border_size: 1.0,
     workspace_border_radius: (3.0, 3.0, 3.0, 3.0),
 
@@ -602,7 +602,7 @@ BarConfig
     // ================= CONTEXT MENU (STYLE) =================
     context_menu_background_color_rgba: (20, 20, 24, 98),
     context_menu_background_size: 5,
-    context_menu_background_border_color_rgba: (255, 255, 255, 100),
+    context_menu_background_border_color_rgb: (255, 255, 255),
     context_menu_background_border_size: 1.0,
     context_menu_background_border_radius: (3.0, 3.0, 3.0, 3.0),
     context_menu_text_size: 15,
@@ -615,7 +615,7 @@ BarConfig
     context_menu_button_hovered_color_rgb: (150, 40, 80),
     context_menu_button_hovered_text_color_rgb: (255, 255, 255),
     context_menu_button_pressed_color_rgb: (85, 30, 55),
-    context_menu_border_color_rgba: (130, 90, 140, 100),
+    context_menu_border_color_rgb: (130, 90, 140),
     context_menu_border_size: 1.0,
     context_menu_border_radius: (3.0, 3.0, 3.0, 3.0),
 

@@ -1,8 +1,8 @@
 // ============ IMPORTS ============
 use iced::{Task, mouse::ScrollDelta, widget::image};
+use std::{sync::Once, time::{Duration, Instant}};
 use iced_layershell::to_layer_message;
-use std::time::{Duration, Instant};
-use std::sync::Once;
+
 
 
 
@@ -20,29 +20,35 @@ use crate::helpers::string::{format_input_volume, format_output_volume};
 use crate::modules::cpu_temp::read_cpu_temp;
 use crate::modules::ram::read_ram_data;
 use crate::modules::{clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
-use crate::{helpers::{font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::{Modules, ModulesData}, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
-use crate::helpers::{misc::{is_active_module, validade_bar_data}, workspaces::build_workspace_list };
-use crate::context_menu::run_context_menu;
+use crate::{helpers::{misc::define_bar_anchor_position, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
+use crate::helpers::{misc::{is_active_module, validate_bar_data}, workspaces::build_workspace_list };
+use crate::context_menu::{create_context_menu, get_context_menu_size};
 use crate::ron::read_ron_config;
-use crate::AppData;
-
+use crate::{MAIN_ID, AppData, WindowInfo};
 
 
 
 
 // ============ ENUM/STRUCT, ETC ============
-#[to_layer_message]
+#[to_layer_message(multi)]
 #[derive(Debug, Clone)]
 pub enum Message
 {
+    //CONTEXT MENU
+    TrayAction(String, String, i32, String),
+    MouseButtonClicked,
+    CloseContextMenu,
+
+    MediaPlayerDataFetched(crate::modules::media_player::MediaPlayerData),
     CreateCustomModuleCommand((Option<usize>, Vec<String>, String, bool, bool)),
     MenuLoaded(String, String, Vec<MenuItem>),
+    ContinuousCommandFinished(usize, String),
     ToggleAltClockAndCycleClockTimeZones,
     IsHoveringMediaPlayerMetaData(bool),
     TrayIconClicked(usize),
     MouseWheelScrolled(ScrollDelta),
     CommandFinished(usize, String),
-    WorkspaceButtonPressed(usize),
+    WorkspaceButtonPressed(i32),
     IsHoveringVolumeOutput(bool),
     IsHoveringVolumeInput(bool),
     NetworkUpdated(NetworkData),
@@ -85,6 +91,66 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 {
     match message
     {
+        //CONTEXT MENU
+        Message::TrayAction(service, path, id, label) =>
+        {
+            println!("\n===# Menu Action Activated!!! #===");
+            println!("Label: {label}");
+            println!("Service: {service}");
+            println!("Menu Path: {path}");
+            println!("Id: {id}");
+
+            app.data.context_menu_is_open = false;
+            let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
+            for id in &window_ids_to_close { app.ids.remove(id); }
+            let close_tasks = Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            let activate_task = Task::perform
+            (
+                async move { let _ = crate::tray::activate_menu_item(&service, &path, id).await; },
+                |_| Message::Nothing,
+            );
+            return Task::batch([close_tasks, activate_task]);
+        }
+
+        Message::CursorMoved(position) =>
+        {
+            let new_pos = (position.x as i32, position.y as i32);
+            if new_pos != app.mouse_position 
+            {
+                app.mouse_position = new_pos;
+            }
+            if app.data.context_menu_is_open
+            {
+                let (width, height) = get_context_menu_size(&app.data, &app.ron_config);
+                app.data.cursor_is_inside_menu = position.x >= 0.0 && position.y >= 0.0 && position.x <= width as f32 && position.y <= height as f32;
+            }
+        }
+
+        Message::MouseButtonClicked =>
+        {
+            let has_context_menu = app.ids.values().any(|v| *v == WindowInfo::ContextMenu);
+            if !has_context_menu { return Task::none(); }  // add this guard
+            app.data.context_menu_is_open = false;
+            if !app.data.cursor_is_inside_menu
+            {
+                let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
+                for id in &window_ids_to_close { app.ids.remove(id);  }
+                return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            }
+        }
+
+        Message::CloseContextMenu =>
+        {
+            app.data.context_menu_is_open = false;
+            let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
+            for id in &window_ids_to_close { app.ids.remove(id);  }
+            return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+        }
+
+
+
+
+        // MAIN APP
         Message::IsHoveringVolumeOutput(bool) => { app.is_hovering_volume_output = bool; }
         Message::IsHoveringVolumeInput(bool) => { app.is_hovering_volume_input = bool; }
         Message::IsHoveringWorkspace(bool) => { app.is_hovering_workspace = bool; }
@@ -92,15 +158,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::MuteAudioPressedOutput => { volume::volume( volume::VolumeAction::MuteOutput); }
         Message::MuteAudioPressedInput => { volume::volume( volume::VolumeAction::MuteInput); }
         Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
-        Message::CursorMoved(point) => 
-        { 
-            let new_pos = (point.x as i32, point.y as i32);
-            if new_pos != app.mouse_position
-            {
-                app.mouse_position = new_pos;
-            }
-        }
         Message::CommandFinished(index, text) => { if app.cached_command_outputs.len() <= index { app.cached_command_outputs.resize(index + 1, String::new()); } app.cached_command_outputs[index] = text; }
+        Message::ContinuousCommandFinished(index, text) => { if app.cached_continuous_outputs.len() <= index { app.cached_continuous_outputs.resize(index + 1, String::new()); } app.cached_continuous_outputs[index] = text; }
         Message::WorkspaceButtonPressed(id) => { if is_active_module(&app.modules_data.active_modules,  Modules::HyprWorkspaces) { change_workspace_hypr(UserWorkspaceAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces) { change_workspace_sway(UserWorkspaceAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::NiriWorkspaces) { change_workspace_niri(UserWorkspaceAction::ChangeWithIndex(id)); } }
         Message::NetworkUpdated(data) => { app.modules_data.network_data = data }
         Message::MediaPlayerClickNext => media_player_action(&app.ron_config.player, MediaPlayerAction::Next),
@@ -115,10 +174,23 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::UpdateFocusedWindowHypr => { app.modules_data.focused_window_data.title = read_focused_window_hypr().unwrap_or_default(); },
         Message::UpdateHyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); },
         Message::UpdateSwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); },
-        Message::UpdateMediaPlayerMetadata => { app.modules_data.media_player_data = get_player_data_with_format(&app.ron_config); },
+        Message::MediaPlayerDataFetched(data) => { app.modules_data.media_player_data = data; }
+        Message::UpdateMediaPlayerMetadata => 
+        { 
+            let player = app.ron_config.player.clone();
+            let format = app.ron_config.media_player_metadata_format.clone();
+            return Task::perform
+            (
+                async move { get_player_data_with_format(&player, &format).await },
+                Message::MediaPlayerDataFetched,
+            );
+        },
 
         Message::VolumeUpdated(out_vol, out_muted, in_vol, in_muted) =>
         {
+            app.volume_output_raw = out_vol;
+            app.volume_input_raw = in_vol;
+
             // Format output
             let (output_str, _) = format_output_volume(out_vol, out_muted, &app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format);
             app.modules_data.volume_data.output_volume_level = output_str;
@@ -190,32 +262,27 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
         Message::ConfigChanged =>
         {
+            let Some(&id) = MAIN_ID.get() else { return Task::none(); };
             println!("\n=== CONFIG RELOAD ===");
             println!("[icebar] config.ron changed — reloading in place...");
             check_if_config_file_exists();
-            let (new_config, new_anchor, current_clock_timezone, active_modules) = read_ron_config();
-            let bar_data_validated = validade_bar_data(&new_config);
+            let (new_config, current_clock_timezone, active_modules) = read_ron_config();
+            let new_anchor = define_bar_anchor_position(&new_config.bar_position);
+            let bar_data_validated = validate_bar_data(&new_config);
             let mut bar_size = bar_data_validated.bar_size;
             let monitor_res = get_monitor_res(new_config.display.clone());
             if bar_size.0 == 0 { bar_size.0 = monitor_res.0; };
             if bar_size.1 == 0 { bar_size.1 = monitor_res.1; };
             let font_name = new_config.font_family.clone();
-            let modules_data = ModulesData 
-            {
-                focused_window_data: app.modules_data.focused_window_data.clone(),
-                cpu_data: app.modules_data.cpu_data.clone(),
-                ram_data: app.modules_data.ram_data.clone(),
-                media_player_data: app.modules_data.media_player_data.clone(),
-                workspace_data: app.modules_data.workspace_data.clone(),
-                cpu_temp_data: app.modules_data.cpu_temp_data.clone(),
-                network_data: app.modules_data.network_data.clone(),
-                volume_data: app.modules_data.volume_data.clone(),
-                tray_icons: app.modules_data.tray_icons.clone(),
-                clock_data: app.modules_data.clock_data.clone(),
-                active_modules: active_modules.clone(),
-            };
+            let mut modules_data = app.modules_data.clone();
+            modules_data.active_modules = active_modules.clone();
+
+
+
+
             *app = AppData
             {
+                ids: app.ids.clone(),
                 default_font: build_font(&font_name, &new_config.font_style),
                 monitor_size: monitor_res,
                 custom_module_last_run: vec![Instant::now(); new_config.custom_modules.len()],
@@ -225,17 +292,28 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 ron_config: new_config, 
                 mouse_position: app.mouse_position,
                 modules_data,
+                volume_output_is_muted: app.volume_output_is_muted,
+                volume_input_is_muted: app.volume_input_is_muted,
+                volume_output_raw: app.volume_output_raw,
+                volume_input_raw: app.volume_input_raw,
                 ..Default::default()
             };
+
+            let (output_str, _) = format_output_volume(app.volume_output_raw, app.volume_output_is_muted, &app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format);
+            app.modules_data.volume_data.output_volume_level = output_str;
+ 
+            let (input_str, _) = format_input_volume(app.volume_input_raw, app.volume_input_is_muted, &app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format);
+            app.modules_data.volume_data.input_volume_level = input_str;
+
 
             println!("\n=== CONFIG RELOAD ===");
             println!("Reloaded Successfully");
             return Task::batch(vec!
             [
-                Task::done(Message::SizeChange(bar_size)),
-                Task::done(Message::AnchorChange(new_anchor)),
-                Task::done(Message::MarginChange(bar_data_validated.floating_space)),
-                Task::done(Message::ExclusiveZoneChange(bar_data_validated.exclusive_zone)),
+                Task::done(Message::SizeChange{id, size: bar_size}),
+                Task::done(Message::AnchorChange{id, anchor: new_anchor}),
+                Task::done(Message::MarginChange{id, margin: bar_data_validated.floating_space}),
+                Task::done(Message::ExclusiveZoneChange{id, zone_size: bar_data_validated.exclusive_zone}),
             ]);
         }
 
@@ -243,20 +321,20 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         {
             if app.is_hovering_media_player_meta_data
             {
-                if y > 2. { media_player_action(&app.ron_config.player, MediaPlayerAction::VolumeUp); }
-                if y < 2. { media_player_action(&app.ron_config.player, MediaPlayerAction::VolumeDown); }
+                if y > 0. { media_player_action(&app.ron_config.player, MediaPlayerAction::VolumeUp); }
+                if y < 0. { media_player_action(&app.ron_config.player, MediaPlayerAction::VolumeDown); }
             }
 
             if app.is_hovering_volume_output
             {
-                if y > 2. { volume::volume(volume::VolumeAction::IncreaseOutput(app.ron_config.incremental_steps_output)); }
-                if y < 2. { volume::volume(volume::VolumeAction::DecreaseOutput(app.ron_config.incremental_steps_output)); }
+                if y > 0. { volume::volume(volume::VolumeAction::IncreaseOutput(app.ron_config.incremental_steps_output)); }
+                if y < 0. { volume::volume(volume::VolumeAction::DecreaseOutput(app.ron_config.incremental_steps_output)); }
             }
 
             if app.is_hovering_volume_input
             {
-                if y > 2. { volume::volume(volume::VolumeAction::IncreaseInput(app.ron_config.incremental_steps_input)); }
-                if y < 2. { volume::volume(volume::VolumeAction::DecreaseInput(app.ron_config.incremental_steps_input)); }
+                if y > 0. { volume::volume(volume::VolumeAction::IncreaseInput(app.ron_config.incremental_steps_input)); }
+                if y < 0. { volume::volume(volume::VolumeAction::DecreaseInput(app.ron_config.incremental_steps_input)); }
             }
 
             if app.is_hovering_workspace
@@ -266,7 +344,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 let niri_active = is_active_module(&app.modules_data.active_modules, Modules::NiriWorkspaces);
 
                 // === SCROLL UP ===
-                if y > 2. 
+                if y > 0. 
                 { 
                     if app.ron_config.reverse_scroll_on_workspace
                     {
@@ -299,7 +377,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 }
 
                 // === SCROLL DOWN ===
-                if y < 2. 
+                if y < 0. 
                 { 
                     if app.ron_config.reverse_scroll_on_workspace
                     {
@@ -345,7 +423,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 if let Modules::CustomModule(index) = module_name
                 {
                     let index  = *index;
-                    let module = &app.ron_config.custom_modules[index];
+                    let Some(module) = app.ron_config.custom_modules.get(index) else { continue; };
                     if module.continous_command.is_empty() { continue; }
                     if app.custom_module_last_run[index].elapsed() < Duration::from_millis(module.continous_command_interval) { continue; }
                     app.custom_module_last_run[index] = Instant::now();
@@ -356,15 +434,24 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                         let args        = args.to_vec();
                         let display_err = module.display_err_output_if_failed;
         
-                        tasks.push(Task::perform(
-                            async move {
+                        tasks.push(Task::perform
+                        (
+                            async move 
+                            {
                                 let out = tokio::process::Command::new(program).args(args).output().await.ok();
-                                out.map(|o| {
-                                    if o.stdout.is_empty() && display_err { String::from_utf8_lossy(&o.stderr).into() }
-                                    else { String::from_utf8_lossy(&o.stdout).into() }
+                                out.map
+                                (|o| { 
+                                    if o.stdout.is_empty() && display_err 
+                                    { 
+                                        String::from_utf8_lossy(&o.stderr).into() 
+                                    } 
+                                    else
+                                    { 
+                                        String::from_utf8_lossy(&o.stdout).into() 
+                                    }
                                 }).unwrap_or_default()
                             },
-                            move |text| Message::CommandFinished(index, text),
+                            move |text| Message::ContinuousCommandFinished(index, text),
                         ));
                     }
                 }
@@ -453,7 +540,6 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         }
 
 
-
         Message::TrayIconClicked(idx) =>
         {
             println!("TrayIcon Clicked");
@@ -463,18 +549,19 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 if parts.len() != 2 { return Task::none(); }
                 let service = parts[0].to_string();
                 let path = parts[1].to_string();
-                return Task::perform(async move 
+                return Task::perform(async move { load_tray_menu(service, path).await }, |result| match result 
                 {
-                    let conn = zbus::Connection::session().await.unwrap();
-                    let proxy: zbus::Proxy<'_> = zbus::Proxy::new(&conn, service.as_str(), path.as_str(), "org.kde.StatusNotifierItem").await.unwrap();
-                    let menu_path: zbus::zvariant::OwnedObjectPath = proxy.get_property("Menu").await.unwrap();
-                    let items = crate::tray::load_menu(&service, menu_path.as_str()).await.unwrap_or_default();
-                    (service, menu_path.to_string(), items)
-                },
-                |(s,p,i)| Message::MenuLoaded(s,p,i));
+                        Ok((s, p, i)) => Message::MenuLoaded(s, p, i),
+                        Err(e) => 
+                        {
+                            eprintln!("Failed to load tray menu: {e}");
+                            Message::Nothing 
+                        }
+                    }
+                );
             }
+            return Task::none();
         }
-
 
 
         Message::MenuLoaded(service, path, items) =>
@@ -485,8 +572,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             println!("Id: {:?}\n", items);
             let context_menu_data = crate::context_menu::ContextMenuData 
             {
+                context_menu_is_open: true,
                 mouse_position: app.mouse_position,
-                ron_config: app.ron_config.clone(),
                 default_font: app.default_font,
                 monitor_size: app.monitor_size,
                 cursor_is_inside_menu: false, 
@@ -494,12 +581,9 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 items,
                 path,
             };
+            app.data = context_menu_data;
             
-            std::thread::spawn(move || 
-            {
-                run_context_menu(context_menu_data);
-            });
-
+            return create_context_menu(app);
         }
         _=> {},
     }
@@ -520,7 +604,13 @@ mod tests
     use crate::modules::network::NetworkData;
     use crate::modules::tray::TrayEvent;
  
-    fn make_app() -> AppData { AppData::default() }
+    fn make_app() -> AppData 
+    { 
+        AppData 
+        { 
+            ..Default::default() 
+        }
+    }
  
     // ---- IsHovering* flags --------------------------------------------------
  
@@ -762,7 +852,10 @@ mod tests
     #[test]
     fn toggle_alt_clock_and_alt_network_are_independent()
     {
-        let mut app = AppData::default();
+        let mut app = AppData 
+        { 
+            ..Default::default() 
+        };
         let _ = update(&mut app, Message::ToggleAltClock);
         assert!(app.is_showing_alt_clock);
         assert!(!app.is_showing_alt_network_module); // network untouched
@@ -775,7 +868,10 @@ mod tests
     #[test]
     fn multiple_command_finished_messages_stored_independently()
     {
-        let mut app = AppData::default();
+        let mut app = AppData 
+        { 
+            ..Default::default() 
+        };
         let _ = update(&mut app, Message::CommandFinished(0, "out0".into()));
         let _ = update(&mut app, Message::CommandFinished(1, "out1".into()));
         let _ = update(&mut app, Message::CommandFinished(2, "out2".into()));
@@ -788,7 +884,7 @@ mod tests
     #[test]
     fn overwriting_command_output_replaces_not_appends()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         let _ = update(&mut app, Message::CommandFinished(0, "first".into()));
         let _ = update(&mut app, Message::CommandFinished(0, "second".into()));
         assert_eq!(app.cached_command_outputs[0], "second");
@@ -798,7 +894,7 @@ mod tests
     #[test]
     fn cursor_moved_multiple_times_keeps_last_position()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 10.0, y: 20.0 }));
         let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 300.0, y: 400.0 }));
         assert_eq!(app.mouse_position, (300, 400));
@@ -807,7 +903,7 @@ mod tests
     #[test]
     fn tray_register_then_unregister_leaves_empty_list()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemRegistered("s|/p".into())));
         assert_eq!(app.modules_data.tray_icons.len(), 1);
         let _ = update(&mut app, Message::TrayEvent(TrayEvent::ItemUnregistered("s|/p".into())));

@@ -16,7 +16,7 @@ pub struct WorkspaceData
 #[derive(Clone)]
 pub enum UserWorkspaceAction
 {
-    ChangeWithIndex(usize),
+    ChangeWithIndex(i32),
     MoveNext,
     MovePrev
 }
@@ -57,7 +57,8 @@ pub fn define_workspaces_text(app: &AppData, id: i32) -> String
     {
         if let Some(selected) = &app.ron_config.workspace_selected_text 
         {
-            selected.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
+            let safe_id = id.saturating_sub(1) as usize;
+            selected.get(safe_id).cloned().unwrap_or_else(|| id.to_string()) 
         } 
         else 
         {
@@ -102,7 +103,7 @@ mod tests
 
     fn make_app(current: i32) -> AppData
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.modules_data.workspace_data = WorkspaceData
         {
             current_workspace: current,

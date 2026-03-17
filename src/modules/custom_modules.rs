@@ -169,7 +169,7 @@ mod tests
     #[test]
     fn custom_module_text_plain_returns_text_field()
     {
-        let app = AppData::default();
+        let app = AppData { ..Default::default() };
         let m = make_module();
         assert_eq!(define_custom_module_text(0, &m, &app), "MyText");
     }
@@ -177,7 +177,7 @@ mod tests
     #[test]
     fn custom_module_text_with_command_output()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.cached_command_outputs = vec!["CmdOut".to_string()];
         let m = CustomModule
         {
@@ -191,7 +191,7 @@ mod tests
     #[test]
     fn custom_module_text_format_replaces_text_and_output()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.cached_command_outputs = vec!["99%".to_string()];
         let m = CustomModule
         {
@@ -206,7 +206,7 @@ mod tests
     #[test]
     fn custom_module_text_dont_show_if_empty()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.cached_command_outputs = vec!["".to_string()];
         let m = CustomModule
         {
@@ -221,7 +221,7 @@ mod tests
     #[test]
     fn custom_module_text_with_continuous_output()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.cached_continuous_outputs = vec!["live_data".to_string()];
         let m = CustomModule
         {
@@ -235,7 +235,7 @@ mod tests
     #[test]
     fn custom_module_text_strips_newlines_from_output()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.cached_command_outputs = vec!["line1\nline2".to_string()];
         let m = CustomModule
         {
@@ -314,7 +314,7 @@ mod tests
     fn custom_module_text_output_index_oob_falls_back_to_empty_output()
     {
         // cached_command_outputs is empty → get(5) = None → output_text = ""
-        let app = AppData::default();
+        let app = AppData { ..Default::default() };
         let m = CustomModule
         {
             use_output_as_text: true,
@@ -327,7 +327,7 @@ mod tests
     #[test]
     fn custom_module_text_output_truncated_to_limit()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.cached_command_outputs = vec!["abcdefghij".to_string()];
         app.ron_config.ellipsis_text = "~".into();
         let m = CustomModule
@@ -343,7 +343,7 @@ mod tests
     #[test]
     fn custom_module_text_continuous_dont_show_if_empty_returns_empty()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.cached_continuous_outputs = vec!["".to_string()];
         let m = CustomModule
         {
@@ -358,7 +358,7 @@ mod tests
     #[test]
     fn custom_module_text_continuous_index_beyond_vec_falls_back_to_plain_text()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.cached_continuous_outputs = vec!["only_one".to_string()];
         let m = CustomModule
         {

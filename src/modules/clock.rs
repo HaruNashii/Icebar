@@ -107,7 +107,7 @@ mod tests
  
     fn make_clock_app(is_alt: bool) -> AppData
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.is_showing_alt_clock = is_alt;
         app.ron_config.clock_button_color_rgb         = [10, 20, 30];
         app.ron_config.clock_button_hovered_color_rgb = [15, 25, 35];
@@ -208,7 +208,7 @@ mod tests
     #[test]
     fn cycle_clock_advances_to_next_timezone()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.ron_config.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into(), "Asia/Tokyo".into()]);
         app.current_clock_timezone = Some(("UTC".into(), 0));
  
@@ -221,7 +221,7 @@ mod tests
     #[test]
     fn cycle_clock_wraps_around_to_first()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.ron_config.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into()]);
         app.current_clock_timezone = Some(("America/New_York".into(), 1));
  
@@ -234,7 +234,7 @@ mod tests
     #[test]
     fn cycle_clock_no_timezones_configured_does_nothing()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.ron_config.clock_timezones = None;
         app.current_clock_timezone = Some(("UTC".into(), 0));
  
@@ -248,7 +248,7 @@ mod tests
     #[test]
     fn cycle_clock_empty_timezones_list_does_nothing()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.ron_config.clock_timezones = Some(vec![]);
         app.current_clock_timezone = Some(("UTC".into(), 0));
  
@@ -261,7 +261,7 @@ mod tests
     #[test]
     fn cycle_clock_single_timezone_wraps_to_itself()
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.ron_config.clock_timezones = Some(vec!["UTC".into()]);
         app.current_clock_timezone = Some(("UTC".into(), 0));
  

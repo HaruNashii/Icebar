@@ -161,7 +161,7 @@ mod tests
  
     fn make_app(title: &str) -> AppData
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.modules_data.focused_window_data.title        = title.into();
         app.ron_config.focused_window_format              = "{title}".into();
         app.ron_config.text_when_focused_window_is_empty  = "Desktop".into();

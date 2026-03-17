@@ -59,7 +59,7 @@ BarConfig
     bar_border_radius: (10., 10., 10., 10.),
     bar_border_size: 0.0,
     bar_border_color_rgb: (0, 0, 0),
-    bar_background_color_rgb: (17, 17, 27),      // Crust — deepest layer
+    bar_background_color_rgba: (17, 17, 27, 100),      // Crust — deepest layer
 
     font_family: "JetBrains Mono",
     font_style: "Bold",
@@ -74,7 +74,7 @@ BarConfig
     //general_button_hovered_color_rgb: Some((130, 35, 70)),
     //general_button_hovered_text_color_rgb: Some((255, 255, 255)),
     //general_button_pressed_color_rgb: Some((80, 25, 45)),
-    //general_border_color_rgba: Some((120, 80, 130, 100)),
+    //general_border_color_rgb: Some((120, 80, 130)),
     //general_border_size: Some(1.0),
     //general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),
     //general_side_separator: None,
@@ -89,7 +89,7 @@ BarConfig
     //general_alt_button_hovered_color_rgb: None,
     //general_alt_button_hovered_text_color_rgb: None,
     //general_alt_button_pressed_color_rgb: None,
-    //general_alt_border_color_rgba: None,
+    //general_alt_border_color_rgb: None,
     //general_alt_border_size: None,
     //general_alt_border_radius: None,
     //general_alt_side_separator: None,

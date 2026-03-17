@@ -6,11 +6,12 @@ use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, col
 
 
 // ============ CRATES ============
-use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized, ellipsize}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_text, cpu_temp::{define_cpu_temp_style, define_cpu_temp_text}, focused_window::{define_focused_window_style, define_focused_window_text}, ram::{define_ram_style, define_ram_text}, volume::define_volume_text}};
+use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_text, cpu_temp::{define_cpu_temp_style, define_cpu_temp_text}, focused_window::{define_focused_window_style, define_focused_window_text}, ram::{define_ram_style, define_ram_text}, volume::define_volume_text}};
 use crate::modules::{cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_padding, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
+use crate::context_menu::context_menu_view;
 use crate::update::Message;
-use crate::AppData;
+use crate::{MAIN_ID, AppData, WindowInfo, id_info};
 
 
 
@@ -29,7 +30,20 @@ pub enum Axis
 
 
 // ============ FUNCTIONS ============
-pub fn view(app: &AppData) -> Element<'_, Message>
+pub fn view(app: &AppData, id: iced::window::Id) -> Element<'_, Message>
+{
+    if let Some(WindowInfo::ContextMenu) = id_info(app, id) 
+    {
+        return context_menu_view(&app.data, &app.ron_config);
+    };
+
+    MAIN_ID.get_or_init(|| id);
+    main_bar_view(app)
+}
+
+
+
+fn main_bar_view(app: &AppData) -> Element<'_, Message>
 {
     let axis = match app.ron_config.bar_position 
     {
@@ -40,12 +54,10 @@ pub fn view(app: &AppData) -> Element<'_, Message>
     let start  = build_modules(&app.ron_config.left_modules, app, axis);
     let center = build_modules(&app.ron_config.center_modules, app, axis);
     let end    = build_modules(&app.ron_config.right_modules, app, axis);
-
     let content = axis_layout(app.ron_config.bar_side_spaces_size, axis, start, center, end);
-
-
     let fixed_bar_size_y = if app.ron_config.bar_size[1] == 0 { app.monitor_size.1 } else { app.ron_config.bar_size[1] };
     let fixed_bar_size_x = if app.ron_config.bar_size[0] == 0 { app.monitor_size.0 } else { app.ron_config.bar_size[0] };
+
     container
     (
         container(content).height(Length::Fixed(fixed_bar_size_y as f32)).width(Length::Fixed(fixed_bar_size_x as f32)).style(bar_style(app))
@@ -66,11 +78,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let children: Vec<Element<_>> = app.modules_data.tray_icons.iter().enumerate().map(|(i, (icon, _))|
                 {
                     let button_content = define_tray_icon(app, icon);
-                    button(button_content)
-                        .style(|_: &Theme, status: button::Status| define_tray_style(app, status))
-                        .padding(app.ron_config.tray_button_size)
-                        .on_press(Message::TrayIconClicked(i))
-                        .into()
+                    button(button_content).style(|_: &Theme, status: button::Status| define_tray_style(app, status)).padding(app.ron_config.tray_button_size).on_press(Message::TrayIconClicked(i)).into()
                 }).collect();
              
                 let inner: Element<_> = match axis
@@ -79,7 +87,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     Axis::Vertical   => column(children).spacing(app.ron_config.tray_spacing).align_x(Alignment::Center).into(),
                 };
              
-                apply_separator(
+                apply_separator
+                (
                     inner,
                     app.ron_config.tray_side_separator,
                     Color::from_rgb8(app.ron_config.tray_side_separator_color[0], app.ron_config.tray_side_separator_color[1], app.ron_config.tray_side_separator_color[2]),
@@ -106,18 +115,13 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         let [r, g, b] = &app.ron_config.workspace_text_color_rgb;
                         Color::from_rgb8(*r, *g, *b)
                     };
+
                     let workspace_text = convert_text_to_rich_text(&non_color_workspace_text, Some(color_to_send));
-                    button(
-                        workspace_text
-                            .wrapping(iced::widget::text::Wrapping::Word)
-                            .font(app.default_font)
-                            .size(app.ron_config.workspace_text_size)
-                            .center()
-                    )
+                    button(workspace_text.wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace_text_size).center())
                     .padding(padding_y)
                     .style(move |_: &Theme, status: button::Status| define_workspaces_style(app, status, i))
                     .padding([app.ron_config.workspace_width, padding_y * 2])
-                    .on_press(Message::WorkspaceButtonPressed(*i as usize))
+                    .on_press(Message::WorkspaceButtonPressed(*i))
                     .into()
                 });
              
@@ -210,13 +214,13 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── FocusedWindow ────────────────────────────────────────────────
             Modules::FocusedWindowHypr | Modules::FocusedWindowNiri | Modules::FocusedWindowSway =>
             {
-                let text_to_ellipsize = &define_focused_window_text(app);
-                let text_to_send = ellipsize(&app.ron_config.ellipsis_text, text_to_ellipsize, app.ron_config.focused_window_text_limit_len);
+                let text_to_send = &define_focused_window_text(app);
                 if app.ron_config.dont_show_focused_window_if_empty && text_to_send.is_empty() { continue; };
                 let text_data =
                 (
-                    convert_text_to_rich_text_ellipsized(
-                        &text_to_send,
+                    convert_text_to_rich_text_ellipsized
+                    (
+                        text_to_send,
                         Some(Color::from_rgb8(app.ron_config.focused_window_text_color_rgb[0], app.ron_config.focused_window_text_color_rgb[1], app.ron_config.focused_window_text_color_rgb[2])),
                         &app.ron_config.ellipsis_text,
                         app.ron_config.focused_window_text_limit_len,

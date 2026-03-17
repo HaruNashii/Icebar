@@ -9,7 +9,6 @@ use std::process::Command;
 // ============ CRATES ============
 use crate::helpers::{string::{convert_text_to_rich_text}, style::{UserStyle, orient_text, set_style}};
 use crate::update::Message;
-use crate::ron::BarConfig;
 use crate::AppData;
 
 
@@ -17,7 +16,7 @@ use crate::AppData;
 
 
 // ============ ENUM/STRUCT, ETC ============
-#[derive(Default, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct MediaPlayerData
 {
     pub metadata: String,
@@ -38,10 +37,10 @@ pub enum MediaPlayerAction
 
 
 // ============ FUNCTIONS ============
-pub fn get_player_data_with_format(ron_config: &BarConfig) -> MediaPlayerData
+pub async fn get_player_data_with_format(player: &str, format: &str) -> MediaPlayerData
 {
-    let result_metadata_output = Command::new("playerctl").arg(format!("--player={}", ron_config.player)).arg("metadata").arg("--format").arg(&ron_config.media_player_metadata_format).output();
-    let result_status_output = Command::new("playerctl").arg(format!("--player={}", ron_config.player)).arg("status").output();
+    let result_metadata_output = tokio::process::Command::new("playerctl").arg(format!("--player={}", player)).arg("metadata").arg("--format").arg(format).output().await;
+    let result_status_output = tokio::process::Command::new("playerctl").arg(format!("--player={}", player)).arg("status").output().await;
 
     let metadata_string = if let Ok(metadata_output) = result_metadata_output
     {
@@ -207,7 +206,7 @@ mod tests
  
     fn make_style_app() -> AppData
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         // metadata style colors
         app.ron_config.media_player_metadata_button_color_rgb         = [10, 20, 30];
         app.ron_config.media_player_metadata_button_hovered_color_rgb = [50, 60, 70];
@@ -299,7 +298,7 @@ mod tests
  
     fn make_app(metadata: &str, status: &str) -> AppData
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.modules_data.media_player_data = MediaPlayerData
         {
             metadata: metadata.into(),

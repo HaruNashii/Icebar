@@ -1,8 +1,6 @@
 // ============ IMPORTS ============
-use iced_layershell::reexport::Anchor;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
-use std::fs;
+use std::{fs, collections::HashSet};
 
 
 
@@ -453,7 +451,6 @@ pub struct BarConfig
 
 
     // ================= HYPR/SWAY WORKSPACES (STYLE) =================
-    pub workspace_height: u32,
     pub workspace_width: u16,
     pub workspace_different_selected_width: Option<u16>,
     pub workspace_text_size: u32,
@@ -502,7 +499,7 @@ pub struct BarConfig
 
 
 
-// ============ FUNCTIONS ============
+// ============ DEFAULT ============
 impl Default for BarConfig
 {
     fn default() -> Self
@@ -559,9 +556,9 @@ impl Default for BarConfig
 
 
             // ================= MODULES =================
-            left_modules: vec![Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons],
-            center_modules: vec![Modules::Clock],
-            right_modules: vec![Modules::Tray, Modules::Network, Modules::VolumeOutput, Modules::VolumeInput],
+            left_modules: Vec::new(),
+            center_modules: Vec::new(),
+            right_modules: Vec::new(),
 
 
             // ================= MODULES CONFIGS =================
@@ -958,7 +955,6 @@ impl Default for BarConfig
             
 
             // ================= HYPR WORKSPACES (STYLE) =================
-            workspace_height: 5,
             workspace_width: 5,
             workspace_different_selected_width: None,
             workspace_text_size: 15,
@@ -1032,7 +1028,10 @@ impl Default for BarConfig
 
 
 
-pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, HashSet<Modules>)
+
+
+// ============ FUNCTIONS ============
+pub fn read_ron_config() -> (BarConfig, Option<(String, u32)>, HashSet<Modules>)
 {
     println!("\n=== READING CONFIG FILE ===");
     let home_path = home::home_dir().expect("Failed To Get Home Directory");
@@ -1052,13 +1051,6 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, HashSet<M
 
     apply_general_settings(&mut bar_config);
 
-    let anchor_position = match bar_config.bar_position
-    {
-        BarPosition::Up => Anchor::Top | Anchor::Left | Anchor::Right,
-        BarPosition::Down => Anchor::Bottom | Anchor::Left | Anchor::Right,
-        BarPosition::Left => Anchor::Left | Anchor::Top | Anchor::Bottom,
-        BarPosition::Right => Anchor::Right | Anchor::Top | Anchor::Bottom,
-    };
 
     let current_time_zone = if let Some(ref time_zone) = bar_config.clock_timezones && !time_zone.is_empty()
     {
@@ -1092,7 +1084,7 @@ pub fn read_ron_config() -> (BarConfig, Anchor, Option<(String, u32)>, HashSet<M
 
     println!("Active modules: {:?}", active_modules);
 
-    (bar_config, anchor_position, current_time_zone, active_modules)
+    (bar_config, current_time_zone, active_modules)
 }
 
 
@@ -1311,21 +1303,21 @@ mod tests
     }
  
     #[test]
-    fn bar_config_default_left_modules_is_not_empty()
+    fn bar_config_default_left_modules_is_empty()
     {
-        assert!(!BarConfig::default().left_modules.is_empty());
+        assert!(BarConfig::default().left_modules.is_empty());
     }
  
     #[test]
-    fn bar_config_default_center_modules_is_not_empty()
+    fn bar_config_default_center_modules_is_empty()
     {
-        assert!(!BarConfig::default().center_modules.is_empty());
+        assert!(BarConfig::default().center_modules.is_empty());
     }
  
     #[test]
-    fn bar_config_default_right_modules_is_not_empty()
+    fn bar_config_default_right_modules_is_empty()
     {
-        assert!(!BarConfig::default().right_modules.is_empty());
+        assert!(BarConfig::default().right_modules.is_empty());
     }
  
     // ---- BarPosition equality ----------------------------------------------

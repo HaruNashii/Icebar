@@ -122,7 +122,7 @@ pub fn change_workspace_hypr(action: UserWorkspaceAction)
     {
         UserWorkspaceAction::ChangeWithIndex(id) =>
         {
-            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id as i32))); 
+            let _ = Dispatch::call(DispatchType::Workspace(WorkspaceIdentifierWithSpecial::Id(id))); 
         }
         UserWorkspaceAction::MoveNext =>
         {

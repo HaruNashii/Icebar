@@ -254,7 +254,7 @@ mod tests
  
     fn make_network_style_app(is_alt: bool) -> AppData
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.is_showing_alt_network_module = is_alt;
         app.ron_config.network_button_color_rgb         = [10, 20, 30];
         app.ron_config.network_button_hovered_color_rgb = [15, 25, 35];
@@ -312,7 +312,7 @@ mod tests
  
     fn make_app(level: u32, conn_type: u8, speed: u32, id: &str) -> AppData
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.modules_data.network_data = NetworkData { network_level: level, connection_type: conn_type, network_speed: speed, id: id.into() };
         app.network_icons = ["L4".into(), "L3".into(), "L2".into(), "L0".into()];
         app.connection_type_icons = ["ETH".into(), "WIFI".into(), "?".into()];

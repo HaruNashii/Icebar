@@ -57,7 +57,8 @@ pub fn change_workspace_niri(action: UserWorkspaceAction)
     {
         UserWorkspaceAction::ChangeWithIndex(id) =>
         {
-            let _ = socket.send(Request::Action(Action::FocusWorkspace{reference: WorkspaceReferenceArg::Index(id as u8)}));
+            let safe_id = id.clamp(1, 255) as u8;
+            let _ = socket.send(Request::Action(Action::FocusWorkspace{reference: WorkspaceReferenceArg::Index(safe_id)}));
         }
         UserWorkspaceAction::MoveNext =>
         {

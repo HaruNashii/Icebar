@@ -98,8 +98,9 @@ pub fn orient_text(input: &str, orientation: &TextOrientation) -> String
 
 
 pub fn bar_style(app: &AppData) -> impl Fn(&Theme) -> container::Style
-{
-    let color = Color::from_rgba8(app.ron_config.bar_background_color_rgba[0], app.ron_config.bar_background_color_rgba[1],app.ron_config.bar_background_color_rgba[2], app.ron_config.bar_background_color_rgba[3] as f32 / 100.);
+{ 
+    let clamped_alpha = app.ron_config.bar_background_color_rgba[3].clamp(0, 100) as f32 / 100.;
+    let color = Color::from_rgba8(app.ron_config.bar_background_color_rgba[0], app.ron_config.bar_background_color_rgba[1],app.ron_config.bar_background_color_rgba[2], clamped_alpha);
     let bar_style: container::Style = 
     {
         container::Style 

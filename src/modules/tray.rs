@@ -5,8 +5,7 @@ use std::{pin::Pin, collections::{HashMap, HashSet}, sync::Mutex};
 use tokio::sync::mpsc::{self, Sender};
 use futures_util::StreamExt;
 use zbus::zvariant::Value;
-use once_cell::sync::Lazy;
-
+use std::sync::LazyLock;
 
 
 
@@ -28,8 +27,8 @@ type DBusMenuLayout = (i32, HashMap<String, zbus::zvariant::OwnedValue>, Vec<zbu
 
 
 // ============ STATICS ============
-static TRAY_RECEIVER: Lazy<Mutex<Option<mpsc::Receiver<TrayEvent>>>> = Lazy::new(|| Mutex::new(None));
-static TRAY_STATE: Lazy<Mutex<TrayState>> = Lazy::new(|| Mutex::new(TrayState
+static TRAY_RECEIVER: LazyLock<Mutex<Option<mpsc::Receiver<TrayEvent>>>> = LazyLock::new(|| Mutex::new(None));
+static TRAY_STATE: LazyLock<Mutex<TrayState>> = LazyLock::new(|| Mutex::new(TrayState
 {
     registered: HashSet::new(),
     owner_map:  HashMap::new(),
@@ -305,12 +304,21 @@ fn extract_layout_node(id: i32, props: &HashMap<String, zbus::zvariant::OwnedVal
 
 
 
+pub async fn load_tray_menu(service: String, path: String) -> Result<(String, String, Vec<crate::tray::MenuItem>), zbus::Error>
+{
+    let conn = zbus::Connection::session().await?;
+    let proxy = zbus::Proxy::new(&conn, service.as_str(), path.as_str(), "org.kde.StatusNotifierItem").await?;
+    let menu_path: zbus::zvariant::OwnedObjectPath = proxy.get_property("Menu").await?;
+    let items = crate::tray::load_menu(&service, menu_path.as_str()).await.unwrap_or_default();
+    Ok((service, menu_path.to_string(), items))
+}
+
+
 pub async fn load_menu(service: &str, menu_path: &str) -> zbus::Result<Vec<MenuItem>>
 {
     let conn = Connection::session().await?;
     let proxy = zbus::Proxy::new(&conn, service, menu_path, "com.canonical.dbusmenu").await?;
-    let (_, (root_id, root_props, root_children)): (u32, DBusMenuLayout) =
-        proxy.call("GetLayout", &(0i32, 1i32, Vec::<String>::new())).await?;
+    let (_, (root_id, root_props, root_children)): (u32, DBusMenuLayout) = proxy.call("GetLayout", &(0i32, 1i32, Vec::<String>::new())).await?;
     let mut entries = Vec::new();
     extract_layout_node(root_id, &root_props, &root_children, &mut entries);
     Ok(entries)
@@ -467,7 +475,7 @@ mod tests
  
     fn make_tray_app() -> AppData
     {
-        let mut app = AppData::default();
+        let mut app = AppData { ..Default::default() };
         app.ron_config.tray_button_color_rgb         = [10, 20, 30];
         app.ron_config.tray_button_hovered_color_rgb = [50, 60, 70];
         app.ron_config.tray_button_pressed_color_rgb = [80, 90, 100];

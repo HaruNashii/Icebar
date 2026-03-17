@@ -64,8 +64,8 @@ pub fn apply_format(vol: f32, formats: &[String; 6]) -> String
         (0.240, &formats[1]),
         (0.490, &formats[2]),
         (0.900, &formats[3]),
-        (1.000, &formats[4]),
-        (999.9, &formats[5]),
+        (1.009, &formats[4]),
+        (9999.9, &formats[5]),
     ];
     let fmt = thresholds.iter().find(|&&(max, _)| vol <= max).map(|&(_, f)| f).unwrap_or(&formats[0]);
     let percent = ((vol * 100.0).round() as u32).to_string();

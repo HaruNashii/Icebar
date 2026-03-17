@@ -37,7 +37,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
     {
         if let Modules::CustomModule(i) = m 
         {
-            !app.ron_config.custom_modules[*i].continous_command.is_empty()
+            app.ron_config.custom_modules.get(*i).is_some_and(|m| !m.continous_command.is_empty())
         } 
         else 
         {
@@ -60,8 +60,8 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             Modules::Ram =>                 subs.push(time::every(Duration::from_millis(app.ron_config.ram_update_interval)).map(|_| Message::UpdateRam)),
             Modules::FocusedWindowNiri =>   subs.push(time::every(Duration::from_millis(app.ron_config.focused_window_update_interval)).map(|_| Message::UpdateFocusedWindowNiri)),
             Modules::Clock =>               subs.push(time::every(Duration::from_millis(app.ron_config.clock_update_interval)).map(|_| Message::UpdateClock)),
-            Modules::MediaPlayerMetaData => subs.push(time::every(Duration::from_millis(app.ron_config.media_player_metadata_update_interval)).map(|_| Message::UpdateMediaPlayerMetadata)),
             Modules::NiriWorkspaces =>      subs.push(time::every(Duration::from_millis(app.ron_config.niri_workspaces_update_interval)).map(|_| Message::UpdateNiriWorkspaces)),
+            Modules::MediaPlayerMetaData | Modules::MediaPlayerButtons => subs.push(time::every(Duration::from_millis(app.ron_config.media_player_metadata_update_interval)).map(|_| Message::UpdateMediaPlayerMetadata)),
             Modules::FocusedWindowHypr | Modules::HyprWorkspaces =>
             {
                 if !hypr_sub_added
@@ -106,6 +106,8 @@ fn event_reader_with_tray(event: iced::Event, _status: iced::event::Status, _id:
 {
     match event 
     {
+        iced::Event::Keyboard(iced::keyboard::Event::KeyPressed {key: iced::keyboard::Key::Named(iced::keyboard::key::Named::Escape), .. }) => { Some(Message::CloseContextMenu) }
+        iced::Event::Mouse(mouse::Event::ButtonPressed(_)) => { Some(Message::MouseButtonClicked) }
         iced::Event::Mouse(mouse::Event::WheelScrolled { delta, .. }) => Some(Message::MouseWheelScrolled(delta)),
         iced::Event::Mouse(mouse::Event::CursorMoved { position })    => Some(Message::CursorMoved(position)),
         _ => None

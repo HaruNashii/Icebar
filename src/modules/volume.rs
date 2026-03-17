@@ -1,10 +1,11 @@
-
 // ============ IMPORTS ============
 use libpulse_binding::{callbacks::ListResult, context::{Context, FlagSet as ContextFlagSet, introspect::Introspector, subscribe::{Facility, InterestMaskSet}}, mainloop::threaded::Mainloop, volume::Volume};
 use std::{pin::Pin, sync::{Arc, Mutex}};
 use iced::widget::button;
  
  
+
+
  
  
 // ============ CRATES ============
@@ -15,6 +16,8 @@ use crate::AppData;
  
  
  
+
+
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Clone)]
 pub struct VolumeData
@@ -42,6 +45,8 @@ pub enum VolumeAction
     MuteInput,
 }
  
+
+
  
  
 pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Send>>
@@ -61,29 +66,46 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
                 None    => return,
             };
             if mainloop.start().is_err() { return; }
- 
+
+            // SAFETY: All PA operations called from outside a PA callback
+            // must be performed while holding the threaded mainloop lock.
+            // Without it, concurrent pushes into PA's internal queue trigger
+            // the `pa_queue_push` assertion and abort the process.
+            mainloop.lock();
+
             let context = match Context::new(&mainloop, "icebar-volume")
             {
                 Some(c) => Arc::new(Mutex::new(c)),
-                None    => return,
+                None    =>
+                {
+                    mainloop.unlock();
+                    return;
+                }
             };
- 
+
             if context.lock().unwrap().connect(None, ContextFlagSet::NOFLAGS, None).is_err()
             {
+                mainloop.unlock();
                 return;
             }
- 
+
             loop
             {
-                std::thread::sleep(std::time::Duration::from_millis(10));
                 match context.lock().unwrap().get_state()
                 {
                     libpulse_binding::context::State::Ready => break,
-                    libpulse_binding::context::State::Failed | libpulse_binding::context::State::Terminated => return,
+                    libpulse_binding::context::State::Failed | libpulse_binding::context::State::Terminated =>
+                    {
+                        mainloop.unlock();
+                        return;
+                    }
                     _ => {}
                 }
+                mainloop.unlock();
+                std::thread::sleep(std::time::Duration::from_millis(10));
+                mainloop.lock();
             }
- 
+
             // ── fetch initial state ─────────────────────────────────────────
             {
                 let s = Arc::clone(&state_cb);
@@ -92,18 +114,18 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
                 fetch_sink(&introspector, Arc::clone(&s), t.clone());
                 fetch_source(&introspector, Arc::clone(&s), t.clone());
             }
- 
+
             // ── subscribe to sink + source change events ────────────────────
             {
-                let ctx     = Arc::clone(&context);
-                let s       = Arc::clone(&state_cb);
-                let t       = tx_clone.clone();
- 
+                let ctx = Arc::clone(&context);
+                let s   = Arc::clone(&state_cb);
+                let t   = tx_clone.clone();
+
                 context.lock().unwrap().subscribe(
                     InterestMaskSet::SINK | InterestMaskSet::SOURCE,
                     |_| {},
                 );
- 
+
                 context.lock().unwrap().set_subscribe_callback(Some(Box::new(
                     move |facility, _op, _index|
                     {
@@ -117,8 +139,8 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
                     }
                 )));
             }
- 
-            // Keep the thread (and mainloop) alive forever
+
+            mainloop.unlock();
             loop { std::thread::sleep(std::time::Duration::from_secs(60)); }
         });
  
@@ -167,7 +189,7 @@ fn fetch_source(introspector: &Introspector, state: Arc<Mutex<PulseState>>, tx: 
  
  
  
-pub fn volume(volume_modifier: VolumeAction) -> (String, bool)
+pub fn volume(volume_modifier: VolumeAction)
 {
     use std::process::Command;
     match volume_modifier
@@ -178,8 +200,7 @@ pub fn volume(volume_modifier: VolumeAction) -> (String, bool)
         VolumeAction::IncreaseInput(v)  => { let _ = Command::new("wpctl").args(["set-volume", "@DEFAULT_SOURCE@", &format!("{}%+", v)]).output(); }
         VolumeAction::DecreaseInput(v)  => { let _ = Command::new("wpctl").args(["set-volume", "@DEFAULT_SOURCE@", &format!("{}%-", v)]).output(); }
         VolumeAction::MuteInput         => { let _ = Command::new("wpctl").args(["set-mute",   "@DEFAULT_SOURCE@", "toggle"           ]).output(); }
-    }
-    (String::new(), false)
+    };
 }
  
 
@@ -193,21 +214,21 @@ pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced
         let pressed =           app.ron_config.muted_volume_output_button_pressed_color_rgb;
         let normal =            app.ron_config.muted_volume_output_button_color_rgb;
         let normal_text =       app.ron_config.muted_volume_output_text_color_rgb;
-        let border_size =           app.ron_config.muted_volume_output_border_size;
-        let border_color_rgb = app.ron_config.muted_volume_output_border_color_rgb;
-        let border_radius =    app.ron_config.muted_volume_output_border_radius;
+        let border_size =       app.ron_config.muted_volume_output_border_size;
+        let border_color_rgb =  app.ron_config.muted_volume_output_border_color_rgb;
+        let border_radius =     app.ron_config.muted_volume_output_border_radius;
         set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
     }
     else
     {
-        let hovered = app.ron_config.volume_output_button_hovered_color_rgb;
-        let hovered_text = app.ron_config.volume_output_button_hovered_text_color_rgb;
-        let pressed = app.ron_config.volume_output_button_pressed_color_rgb;
-        let normal = app.ron_config.volume_output_button_color_rgb;
-        let normal_text = app.ron_config.volume_output_text_color_rgb;
-        let border_size = app.ron_config.volume_output_border_size;
-        let border_color_rgb = app.ron_config.volume_output_border_color_rgb;
-        let border_radius = app.ron_config.volume_output_border_radius;
+        let hovered =           app.ron_config.volume_output_button_hovered_color_rgb;
+        let hovered_text =      app.ron_config.volume_output_button_hovered_text_color_rgb;
+        let pressed =           app.ron_config.volume_output_button_pressed_color_rgb;
+        let normal =            app.ron_config.volume_output_button_color_rgb;
+        let normal_text =       app.ron_config.volume_output_text_color_rgb;
+        let border_size =       app.ron_config.volume_output_border_size;
+        let border_color_rgb =  app.ron_config.volume_output_border_color_rgb;
+        let border_radius =     app.ron_config.volume_output_border_radius;
         set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
     }
 }
@@ -223,21 +244,21 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
         let pressed =              app.ron_config.muted_volume_input_button_pressed_color_rgb;
         let normal =               app.ron_config.muted_volume_input_button_color_rgb;
         let normal_text =          app.ron_config.muted_volume_input_text_color_rgb;
-        let border_size =              app.ron_config.muted_volume_input_border_size;
-        let border_color_rgb =    app.ron_config.muted_volume_input_border_color_rgb;
-        let border_radius =       app.ron_config.muted_volume_input_border_radius;
+        let border_size =          app.ron_config.muted_volume_input_border_size;
+        let border_color_rgb =     app.ron_config.muted_volume_input_border_color_rgb;
+        let border_radius =        app.ron_config.muted_volume_input_border_radius;
         set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
     }
     else
     {
-        let hovered = app.ron_config.volume_input_button_hovered_color_rgb;
-        let hovered_text = app.ron_config.volume_input_button_hovered_text_color_rgb;
-        let pressed = app.ron_config.volume_input_button_pressed_color_rgb;
-        let normal = app.ron_config.volume_input_button_color_rgb;
-        let normal_text = app.ron_config.volume_input_text_color_rgb;
-        let border_size = app.ron_config.volume_input_border_size;
-        let border_color_rgb = app.ron_config.volume_input_border_color_rgb;
-        let border_radius = app.ron_config.volume_input_border_radius;
+        let hovered =           app.ron_config.volume_input_button_hovered_color_rgb;
+        let hovered_text =      app.ron_config.volume_input_button_hovered_text_color_rgb;
+        let pressed =           app.ron_config.volume_input_button_pressed_color_rgb;
+        let normal =            app.ron_config.volume_input_button_color_rgb;
+        let normal_text =       app.ron_config.volume_input_text_color_rgb;
+        let border_size =       app.ron_config.volume_input_border_size;
+        let border_color_rgb =  app.ron_config.volume_input_border_color_rgb;
+        let border_radius =     app.ron_config.volume_input_border_radius;
         set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
     }
 }
