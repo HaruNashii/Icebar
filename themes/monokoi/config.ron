@@ -131,7 +131,7 @@ BarConfig
     network_disconnected_text: "󰤭",
     network_module_format: "{level}",
     alt_network_module_format: "{level}",
-    network_level_format: ("󰤨  ", "󰤥  ", "󰤢  ", "󰤭  "),
+    network_level_format: ("󰤨", "󰤥", "󰤢", "󰤭"),
     network_connection_type_icons: ("󰈀", "󰤨", "󰤭"),
 
     output_volume_format: ("󰕿", "󰕿", "󰖀", "󰖀", "󰕾", "󰕾"),
@@ -326,7 +326,7 @@ BarConfig
 
 
     // ================= CONTEXT MENU =================
-    context_menu_background_color_rgb: (39, 40, 34),
+    context_menu_background_color_rgba: (39, 40, 34, 100),
     context_menu_background_size: 6,
     context_menu_background_border_color_rgb: (0, 0, 0),
     context_menu_background_border_size: 0.0,

@@ -342,7 +342,7 @@ BarConfig
 
 
     // ================= CONTEXT MENU =================
-    context_menu_background_color_rgb: (24, 24, 37),   // Mantle
+    context_menu_background_color_rgba: (24, 24, 37, 100),   // Mantle
     context_menu_background_size: 6,
     context_menu_background_border_color_rgb: (0, 0, 0),
     context_menu_background_border_size: 0.0,

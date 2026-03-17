@@ -321,7 +321,7 @@ BarConfig
 
 
     // ================= CONTEXT MENU =================
-    context_menu_background_color_rgb: (8, 8, 8),
+    context_menu_background_color_rgba: (8, 8, 8, 100),
     context_menu_background_size: 4,
     context_menu_background_border_color_rgb: (40, 40, 40),
     context_menu_background_border_size: 1.0,

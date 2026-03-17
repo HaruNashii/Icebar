@@ -392,10 +392,10 @@ BarConfig
 
 
     // ================= CONTEXT MENU =================
-    context_menu_background_color_rgb: (10, 12, 22),
-    context_menu_background_size: 5,
-    context_menu_background_border_color_rgb: (45, 55, 100),
-    context_menu_background_border_size: 1.0,
+    context_menu_background_color_rgba: (10, 12, 22, 100),
+    context_menu_background_size: 0,
+    context_menu_background_border_color_rgb: (255, 255, 255),
+    context_menu_background_border_size: 0.0,
     context_menu_background_border_radius: (3.0, 3.0, 3.0, 3.0),
     context_menu_text_size: 11,
     context_menu_text_color_rgb: (255, 255, 255),
@@ -407,7 +407,7 @@ BarConfig
     context_menu_button_hovered_color_rgb: (45, 90, 195),
     context_menu_button_hovered_text_color_rgb: (255, 255, 255),
     context_menu_button_pressed_color_rgb: (15, 18, 30),
-    context_menu_border_color_rgb: (45, 55, 100),
+    context_menu_border_color_rgb: (255, 255, 255),
     context_menu_border_size: 1.0,
     context_menu_border_radius: (3.0, 3.0, 3.0, 3.0),
 

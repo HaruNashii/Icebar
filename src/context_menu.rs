@@ -122,10 +122,14 @@ pub fn context_menu_view<'a>(data: &'a ContextMenuData, ron_config: &'a BarConfi
 
 fn context_menu_background_button_style(ron_config: &BarConfig) -> iced::widget::container::Style
 {
+    use iced::Background;
     let mut background_style = container::Style::default();
-    let bgc = ron_config.context_menu_background_border_color_rgb;
+    let clamped_alpha = ron_config.context_menu_background_color_rgba[3].clamp(0, 100) as f32 / 100.;
+    let bgc = ron_config.context_menu_background_color_rgba;
+    let bgbc = ron_config.context_menu_background_border_color_rgb;
     let bgr = ron_config.context_menu_background_border_radius;
-    background_style.border.color = Color::from_rgb8(bgc[0], bgc[1], bgc[2]); 
+    background_style.background = Some(Background::Color(Color::from_rgba8(bgc[0], bgc[1], bgc[2], clamped_alpha)));
+    background_style.border.color = Color::from_rgb8(bgbc[0], bgbc[1], bgbc[2]); 
     background_style.border.width = ron_config.context_menu_background_border_size;
     background_style.border.radius = Radius { top_left: bgr[0], top_right: bgr[1], bottom_left: bgr[2], bottom_right: bgr[3]};
     background_style
