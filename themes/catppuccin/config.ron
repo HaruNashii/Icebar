@@ -292,7 +292,6 @@ BarConfig
 		height: 30,
 		border_size: 0.,
 		button_color_rgb: (49, 50, 68),
-	        button_text_color_rgb: (205, 214, 244),
 	        button_hovered_color_rgb: (203, 166, 247),
 	        button_hovered_text_color_rgb: (30, 30, 46),
 	        button_pressed_color_rgb: (245, 194, 231),

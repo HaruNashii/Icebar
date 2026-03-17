@@ -369,7 +369,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 26,
             button_color_rgb: (137, 221, 255),        // cyan
-            button_text_color_rgb: (15, 17, 26),
             button_hovered_color_rgb: (82, 139, 255),  // blue — deeper water
             button_hovered_text_color_rgb: (15, 17, 26),
             button_pressed_color_rgb: (21, 25, 36),
@@ -399,7 +398,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 26,
             button_color_rgb: (21, 25, 36),
-            button_text_color_rgb: (195, 232, 141),
             button_hovered_color_rgb: (27, 31, 44),
             button_hovered_text_color_rgb: (195, 232, 141),
             button_pressed_color_rgb: (15, 17, 26),

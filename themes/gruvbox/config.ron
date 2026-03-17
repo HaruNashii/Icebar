@@ -380,7 +380,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 28,
             button_color_rgb: (250, 189, 47),         // bright_yellow — warm anchor
-            button_text_color_rgb: (29, 32, 33),
             button_hovered_color_rgb: (254, 128, 25), // bright_orange on hover — the groove
             button_hovered_text_color_rgb: (29, 32, 33),
             button_pressed_color_rgb: (215, 153, 33),
@@ -410,7 +409,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 28,
             button_color_rgb: (60, 56, 54),
-            button_text_color_rgb: (184, 187, 38),
             button_hovered_color_rgb: (80, 73, 69),
             button_hovered_text_color_rgb: (184, 187, 38),
             button_pressed_color_rgb: (29, 32, 33),

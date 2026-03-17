@@ -104,19 +104,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let workspace_buttons = app.modules_data.workspace_data.visible_workspaces.iter().map(|i|
                 {
                     let non_color_workspace_text = define_workspaces_text(app, *i);
-                    let color_to_send = if *i == app.modules_data.workspace_data.current_workspace
-                    {
-                        let [r, g, b] = &app.ron_config.workspace_selected_text_color_rgb;
-                        Color::from_rgb8(*r, *g, *b)
-                    }
-                    else
-                    {
-                        let [r, g, b] = &app.ron_config.workspace_text_color_rgb;
-                        Color::from_rgb8(*r, *g, *b)
-                    };
-
                     let size = define_workspaces_size(app, *i);
-                    let workspace_text = convert_text_to_rich_text(&non_color_workspace_text, Some(color_to_send));
+                    let workspace_text = convert_text_to_rich_text(&non_color_workspace_text);
                     button(workspace_text.wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace_text_size).center())
                     .padding(app.ron_config.workspace_padding)
                     .style(move |_: &Theme, status: button::Status| define_workspaces_style(app, status, i))
@@ -160,9 +149,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let text_to_send = define_media_player_metadata_text(app);
                 let left_click_metadata_message: Message  = match &app.ron_config.action_on_left_click_media_player_metadata  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
                 let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
-                let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
-                let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let colored_formated_metadata = convert_text_to_rich_text_ellipsized::<Message>(&text_to_send, Some(color_to_send), &app.ron_config.ellipsis_text, app.ron_config.media_player_metadata_text_limit_len);
+                let colored_formated_metadata = convert_text_to_rich_text_ellipsized::<Message>(&text_to_send, &app.ron_config.ellipsis_text, app.ron_config.media_player_metadata_text_limit_len);
                 let inner = create_button_container(app, app.ron_config.media_player_metadata_padding, (colored_formated_metadata, app.ron_config.media_player_metadata_text_size), (Message::IsHoveringMediaPlayerMetaData(true), Message::IsHoveringMediaPlayerMetaData(false)), left_click_metadata_message, right_click_metadata_message, define_media_player_metadata_style);
              
                 apply_separator
@@ -190,10 +177,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
                 let (previous_text, play_pause_text, next_text) = define_media_player_buttons_text(app);
                 let button_data = define_button_data(previous_text, play_pause_text, next_text);
-                let [r, g, b] = &app.ron_config.media_player_metadata_text_color_rgb;
-                let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let padding = app.ron_config.media_player_button_padding;
-                let media_buttons: Vec<Element<Message>> = button_data.into_iter().map(|(label, message)| { create_media_button(app, padding, label, message, color_to_send) }).collect();
+                let media_buttons: Vec<Element<Message>> = button_data.into_iter().map(|(label, message)| { create_media_button(app, padding, label, message) }).collect();
              
                 let inner: Element<_> = match axis
                 {
@@ -222,7 +207,6 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     convert_text_to_rich_text_ellipsized
                     (
                         text_to_send,
-                        Some(Color::from_rgb8(app.ron_config.focused_window_text_color_rgb[0], app.ron_config.focused_window_text_color_rgb[1], app.ron_config.focused_window_text_color_rgb[2])),
                         &app.ron_config.ellipsis_text,
                         app.ron_config.focused_window_text_limit_len,
                     ),
@@ -244,7 +228,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── Ram ──────────────────────────────────────────────────────────
             Modules::Ram =>
             {
-                let text_data = (convert_text_to_rich_text::<Message>(&define_ram_text(app), Some(Color::from_rgb8(app.ron_config.ram_text_color_rgb[0], app.ron_config.ram_text_color_rgb[1], app.ron_config.ram_text_color_rgb[2]))), app.ron_config.ram_text_size);
+                let text_data = (convert_text_to_rich_text::<Message>(&define_ram_text(app)), app.ron_config.ram_text_size);
                 let inner = create_button_container_without_hover_message(app, app.ron_config.ram_padding, text_data, Message::Nothing, Message::Nothing, define_ram_style);
              
                 apply_separator
@@ -264,9 +248,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let text_to_send = define_cpu_text(app);
                 let left_click_metadata_message: Message  = match &app.ron_config.action_on_left_click_cpu  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), true, false)) };
                 let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_cpu { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), false, false)) };
-                let [r, g, b] = &app.ron_config.cpu_text_color_rgb;
-                let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let colored_formated_metadata = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let colored_formated_metadata = convert_text_to_rich_text::<Message>(&text_to_send);
                 let inner = create_button_container_without_hover_message(app, app.ron_config.cpu_padding, (colored_formated_metadata, app.ron_config.cpu_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_style);
              
                 apply_separator
@@ -290,9 +272,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let left_click_metadata_message: Message  = match &app.ron_config.action_on_left_click_cpu_temp  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), true, false)) };
                 let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_cpu_temp { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), false, false)) };
                 let text_to_send = define_cpu_temp_text(app);
-                let [r, g, b] = &app.ron_config.cpu_temp_text_color_rgb;
-                let color_to_send = Color::from_rgb8(*r, *g, *b);
-                let colored_cpu_temp = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let colored_cpu_temp = convert_text_to_rich_text::<Message>(&text_to_send);
                 let inner = create_button_container_without_hover_message(app, app.ron_config.cpu_temp_padding, (colored_cpu_temp, app.ron_config.cpu_temp_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_temp_style);
              
                 apply_separator
@@ -316,21 +296,19 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let left_click_message: Message  = match &app.ron_config.action_on_left_click_network  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::ToggleAltNetwork, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false)) };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_network { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false)) };
              
-                let (color_to_send, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.is_showing_alt_network_module
+                let (text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.is_showing_alt_network_module
                 {
                     let [sr, sg, sb] = &app.ron_config.alt_network_side_separator_color;
-                    let [r, g, b] = &app.ron_config.alt_network_text_color_rgb;
-                    (Color::from_rgb8(*r, *g, *b), app.ron_config.alt_network_text_size, app.ron_config.alt_network_padding, app.ron_config.alt_network_side_separator, Color::from_rgb8(*sr, *sg, *sb), app.ron_config.alt_network_side_separator_width, app.ron_config.alt_network_side_separator_height)
+                    (app.ron_config.alt_network_text_size, app.ron_config.alt_network_padding, app.ron_config.alt_network_side_separator, Color::from_rgb8(*sr, *sg, *sb), app.ron_config.alt_network_side_separator_width, app.ron_config.alt_network_side_separator_height)
                 }
                 else
                 {
                     let [sr, sg, sb] = &app.ron_config.network_side_separator_color;
-                    let [r, g, b] = &app.ron_config.network_text_color_rgb;
-                    (Color::from_rgb8(*r, *g, *b), app.ron_config.network_text_size, app.ron_config.network_padding, app.ron_config.network_side_separator, Color::from_rgb8(*sr, *sg, *sb), app.ron_config.network_side_separator_width, app.ron_config.network_side_separator_height)
+                    (app.ron_config.network_text_size, app.ron_config.network_padding, app.ron_config.network_side_separator, Color::from_rgb8(*sr, *sg, *sb), app.ron_config.network_side_separator_width, app.ron_config.network_side_separator_height)
                 };
              
                 let text_to_send = define_network_text(app);
-                let colored_network_string = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let colored_network_string = convert_text_to_rich_text::<Message>(&text_to_send);
                 let inner = create_button_container_without_hover_message(app, padding, (colored_network_string, text_size), left_click_message, right_click_message, define_network_style);
              
                 apply_separator
@@ -354,27 +332,25 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let left_click_message: Message  = match &app.ron_config.action_on_left_click_volume_output  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false)) };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_output { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false)) };
              
-                let (text_orientation, color_to_send, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.volume_output_is_muted
+                let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.volume_output_is_muted
                 {
                     let [sr, sg, sb] = &app.ron_config.muted_volume_output_side_separator_color;
-                    let [r, g, b] = &app.ron_config.muted_volume_output_text_color_rgb;
                     (
-                        &app.ron_config.muted_volume_output_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.muted_volume_output_text_size, app.ron_config.muted_volume_output_padding,
+                        &app.ron_config.muted_volume_output_text_orientation, &app.ron_config.muted_volume_output_text_size, app.ron_config.muted_volume_output_padding,
                         &app.ron_config.muted_volume_output_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.muted_volume_output_side_separator_width, &app.ron_config.muted_volume_output_side_separator_height
                     )
                 }
                 else
                 {
                     let [sr, sg, sb] = &app.ron_config.volume_output_side_separator_color;
-                    let [r, g, b] = &app.ron_config.volume_output_text_color_rgb;
                     (
-                        &app.ron_config.volume_output_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.volume_output_text_size, app.ron_config.volume_output_padding,
+                        &app.ron_config.volume_output_text_orientation, &app.ron_config.volume_output_text_size, app.ron_config.volume_output_padding,
                         &app.ron_config.volume_output_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.volume_output_side_separator_width, &app.ron_config.volume_output_side_separator_height
                     )
                 };
              
                 let text_to_send = define_volume_text(&app.modules_data.volume_data.output_volume_level, text_orientation);
-                let colored_volume_output_string = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let colored_volume_output_string = convert_text_to_rich_text::<Message>(&text_to_send);
                 let inner = create_button_container(app, padding, (colored_volume_output_string, *text_size), (Message::IsHoveringVolumeOutput(true), Message::IsHoveringVolumeOutput(false)), left_click_message, right_click_message, define_volume_output_style);
              
                 apply_separator
@@ -398,27 +374,25 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let left_click_message: Message  = match &app.ron_config.action_on_left_click_volume_input  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedInput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false)) };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_input { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false)) };
              
-                let (text_orientation, color_to_send, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.volume_input_is_muted
+                let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.volume_input_is_muted
                 {
                     let [sr, sg, sb] = &app.ron_config.muted_volume_input_side_separator_color;
-                    let [r, g, b] = &app.ron_config.muted_volume_input_text_color_rgb;
                     (
-                        &app.ron_config.muted_volume_input_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.muted_volume_input_text_size, app.ron_config.muted_volume_input_padding,
+                        &app.ron_config.muted_volume_input_text_orientation, &app.ron_config.muted_volume_input_text_size, app.ron_config.muted_volume_input_padding,
                         &app.ron_config.muted_volume_input_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.muted_volume_input_side_separator_width, &app.ron_config.muted_volume_input_side_separator_height
                     )
                 }
                 else
                 {
                     let [sr, sg, sb] = &app.ron_config.volume_input_side_separator_color;
-                    let [r, g, b] = &app.ron_config.volume_input_text_color_rgb;
                     (
-                        &app.ron_config.volume_input_text_orientation, Color::from_rgb8(*r, *g, *b), &app.ron_config.volume_input_text_size, app.ron_config.volume_input_padding,
+                        &app.ron_config.volume_input_text_orientation, &app.ron_config.volume_input_text_size, app.ron_config.volume_input_padding,
                         &app.ron_config.volume_input_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.volume_input_side_separator_width, &app.ron_config.volume_input_side_separator_height
                     )
                 };
              
                 let text_to_send = define_volume_text(&app.modules_data.volume_data.input_volume_level, text_orientation);
-                let colored_volume_input_string = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let colored_volume_input_string = convert_text_to_rich_text::<Message>(&text_to_send);
                 let inner = create_button_container(app, padding, (colored_volume_input_string, *text_size), (Message::IsHoveringVolumeInput(true), Message::IsHoveringVolumeInput(false)), left_click_message, right_click_message, define_volume_input_style);
              
                 apply_separator
@@ -456,13 +430,11 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
                 };
 
-                let (text_orientation, color_to_send, text_size, padding, separator_flags, separator_color, separator_width, separator_height) = if app.is_showing_alt_clock
+                let (text_orientation, text_size, padding, separator_flags, separator_color, separator_width, separator_height) = if app.is_showing_alt_clock
                 {
-                    let [r, g, b] = &app.ron_config.alt_clock_text_color_rgb;
                     let [separator_r, separator_g, separator_b] = app.ron_config.alt_clock_side_separator_color;
                     (
                         &app.ron_config.alt_clock_text_orientation, 
-                        Color::from_rgb8(*r, *g, *b), 
                         app.ron_config.alt_clock_text_size, 
                         app.ron_config.alt_clock_padding, 
 
@@ -474,11 +446,9 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 }
                 else
                 {
-                    let [r, g, b] = &app.ron_config.clock_text_color_rgb;
                     let [separator_r, separator_g,  separator_b] = app.ron_config.clock_side_separator_color;
                     (
                         &app.ron_config.clock_text_orientation, 
-                        Color::from_rgb8(*r, *g, *b), 
                         app.ron_config.clock_text_size, 
                         app.ron_config.clock_padding, 
 
@@ -489,7 +459,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     )
                 };
                 let text_string = orient_text(&app.modules_data.clock_data.current_time, text_orientation);
-                let colored_clock_string = convert_text_to_rich_text::<Message>(&text_string, Some(color_to_send));
+                let colored_clock_string = convert_text_to_rich_text::<Message>(&text_string);
                 let inner = create_button_container_without_hover_message(app, padding, (colored_clock_string, text_size), left_click_message, right_click_message, define_clock_style);
 
                 apply_separator
@@ -518,10 +488,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 {
                     continue
                 };
-                let [r, g, b] = &custom_module.text_color_rgb;
-                let color_to_send = Color::from_rgb8(*r, *g, *b);
                 let text_to_send = orient_text(&text_to_render, &custom_module.text_orientation);
-                let colored_custom_module_string = convert_text_to_rich_text::<Message>(&text_to_send, Some(color_to_send));
+                let colored_custom_module_string = convert_text_to_rich_text::<Message>(&text_to_send);
 
                 let element = container
                 (

@@ -371,7 +371,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 20,
             button_color_rgb: (42, 45, 43),           // ghost
-            button_text_color_rgb: (159, 177, 165),
             button_hovered_color_rgb: (53, 58, 54),
             button_hovered_text_color_rgb: (167, 192, 128),
             button_pressed_color_rgb: (42, 45, 43),

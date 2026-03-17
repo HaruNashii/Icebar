@@ -345,7 +345,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 26,
             button_color_rgb: (255, 0, 110),          // solid hot magenta fill — stands out as the "logo" badge
-            button_text_color_rgb: (5, 5, 8),
             button_hovered_color_rgb: (0, 255, 140),
             button_hovered_text_color_rgb: (5, 5, 8),
             button_pressed_color_rgb: (180, 0, 80),
@@ -375,7 +374,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 26,
             button_color_rgb: (12, 8, 20),
-            button_text_color_rgb: (0, 255, 140),
             button_hovered_color_rgb: (255, 0, 110),
             button_hovered_text_color_rgb: (5, 5, 8),
             button_pressed_color_rgb: (0, 180, 90),
@@ -408,7 +406,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 26,
             button_color_rgb: (8, 18, 28),
-            button_text_color_rgb: (0, 220, 255),
             button_hovered_color_rgb: (255, 0, 110),
             button_hovered_text_color_rgb: (5, 5, 8),
             button_pressed_color_rgb: (0, 140, 200),

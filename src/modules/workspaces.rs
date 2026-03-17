@@ -39,11 +39,17 @@ pub fn define_workspaces_style(app: &AppData, status: button::Status, i: &i32) -
     let hovered = app.ron_config.workspace_button_hovered_color_rgb;
     let hovered_text = app.ron_config.workspace_button_hovered_text_color_rgb;
     let pressed = app.ron_config.workspace_button_pressed_color_rgb;
+
     let normal = if app.modules_data.workspace_data.current_workspace == *i 
     { app.ron_config.workspace_button_selected_color_rgb }
     else 
     { app.ron_config.workspace_button_color_rgb };
-    let normal_text = app.ron_config.workspace_text_color_rgb;
+
+    let normal_text = if app.modules_data.workspace_data.current_workspace == *i 
+    { app.ron_config.workspace_selected_text_color_rgb }
+    else
+    { app.ron_config.workspace_text_color_rgb };
+
     let border_size = app.ron_config.workspace_border_size;
     let border_color_rgb = app.ron_config.workspace_border_color_rgb;
     let border_radius = app.ron_config.workspace_border_radius;

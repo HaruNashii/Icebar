@@ -360,7 +360,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 28,
             button_color_rgb: (203, 75, 22),          // orange — punchy
-            button_text_color_rgb: (253, 246, 227),
             button_hovered_color_rgb: (0, 43, 54),    // base03 inversion
             button_hovered_text_color_rgb: (253, 246, 227),
             button_pressed_color_rgb: (7, 54, 66),
@@ -390,7 +389,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 28,
             button_color_rgb: (238, 232, 213),
-            button_text_color_rgb: (133, 153, 0),
             button_hovered_color_rgb: (0, 43, 54),
             button_hovered_text_color_rgb: (253, 246, 227),
             button_pressed_color_rgb: (7, 54, 66),

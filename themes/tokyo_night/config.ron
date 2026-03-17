@@ -381,7 +381,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 28,
             button_color_rgb: (122, 162, 247),        // blue — the neon sign
-            button_text_color_rgb: (26, 27, 38),
             button_hovered_color_rgb: (255, 158, 99), // orange — neon flicker on hover
             button_hovered_text_color_rgb: (26, 27, 38),
             button_pressed_color_rgb: (62, 68, 99),

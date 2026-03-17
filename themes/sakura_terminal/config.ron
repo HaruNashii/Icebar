@@ -380,7 +380,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 28,
             button_color_rgb: (220, 130, 150),          // Sakura — only solid-filled badge
-            button_text_color_rgb: (252, 248, 241),
             button_hovered_color_rgb: (210, 105, 60),   // persimmon on hover
             button_hovered_text_color_rgb: (252, 248, 241),
             button_pressed_color_rgb: (170, 80, 40),
@@ -414,7 +413,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 28,
             button_color_rgb: (244, 239, 230),
-            button_text_color_rgb: (110, 145, 100),
             button_hovered_color_rgb: (210, 105, 60),
             button_hovered_text_color_rgb: (252, 248, 241),
             button_pressed_color_rgb: (80, 110, 72),

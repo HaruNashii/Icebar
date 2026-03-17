@@ -170,9 +170,9 @@ pub fn define_button_data(previous_text: String, play_pause_text: String, next_t
 
 
 
-pub fn create_media_button<'a>(app: &'a AppData, padding: u16, label: String, message: Message, color: iced::Color) -> Element<'a, Message> 
+pub fn create_media_button<'a>(app: &'a AppData, padding: u16, label: String, message: Message) -> Element<'a, Message> 
 {
-    let colored_label = convert_text_to_rich_text::<Message>(&label, Some(color));
+    let colored_label = convert_text_to_rich_text::<Message>(&label);
     container
     (
         button

@@ -74,24 +74,24 @@ pub fn apply_format(vol: f32, formats: &[String; 6]) -> String
 
 
 
-pub fn convert_text_to_rich_text<'a, Message: 'a>(text: &str, default_color: Option<Color>) -> Rich<'a, (), Message> 
+pub fn convert_text_to_rich_text<'a, Message: 'a>(text: &str) -> Rich<'a, (), Message> 
 {
-    let spans = segments_to_spans(parse_to_segments(text, default_color));
+    let spans = segments_to_spans(parse_to_segments(text));
     rich_text(spans).align_y(Alignment::Center).align_x(Alignment::Center).center()
 }
 
 
 
-pub fn convert_text_to_rich_text_ellipsized<'a, Message: 'a>(text: &str, default_color: Option<Color>, ellipsis: &str, limit: usize) -> Rich<'a, (), Message> 
+pub fn convert_text_to_rich_text_ellipsized<'a, Message: 'a>(text: &str, ellipsis: &str, limit: usize) -> Rich<'a, (), Message> 
 {
-    let segments = parse_to_segments(text, default_color);
+    let segments = parse_to_segments(text);
     let ellipsized = ellipsize_segments(segments, ellipsis, limit);
     rich_text(segments_to_spans(ellipsized))
 }
 
 
 
-fn parse_to_segments(text: &str, default_color: Option<Color>) -> Vec<Segment> 
+fn parse_to_segments(text: &str) -> Vec<Segment> 
 {
     let mut segments = Vec::new();
     match try_parse_tag(text) 
@@ -100,19 +100,19 @@ fn parse_to_segments(text: &str, default_color: Option<Color>) -> Vec<Segment>
         {
             if !before.is_empty() 
             { 
-                segments.push(Segment { text: before.to_string(), color: default_color }); 
+                segments.push(Segment { text: before.to_string(), color: None }); 
             }
             segments.push(Segment { text: colored_text.to_string(), color: Some(color) });
             if !rest.is_empty() 
             { 
-                segments.extend(parse_to_segments(rest, default_color)); 
+                segments.extend(parse_to_segments(rest)); 
             }
         }
         None => 
         {
             if !text.is_empty() 
             { 
-                segments.push(Segment { text: text.to_string(), color: default_color }); 
+                segments.push(Segment { text: text.to_string(), color: None }); 
             }
         }
     }
@@ -517,45 +517,38 @@ mod tests
     #[test]
     fn full_pipeline_plain_text_does_not_panic()
     {
-        let _ = convert_text_to_rich_text::<()>("plain text no tags", None);
+        let _ = convert_text_to_rich_text::<()>("plain text no tags");
     }
      
     #[test]
     fn full_pipeline_single_tag_does_not_panic()
     {
-        let _ = convert_text_to_rich_text::<()>("[Color=(255,0,0),String=red] rest", None);
+        let _ = convert_text_to_rich_text::<()>("[Color=(255,0,0),String=red] rest");
     }
      
     #[test]
     fn full_pipeline_multiple_tags_does_not_panic()
     {
-        let _ = convert_text_to_rich_text::<()>(
-            "[Color=(255,0,0),String=red][Color=(0,255,0),String=green] plain",
-            None,
-        );
+        let _ = convert_text_to_rich_text::<()>("[Color=(255,0,0),String=red][Color=(0,255,0),String=green] plain");
     }
      
     #[test]
     fn full_pipeline_with_default_color_does_not_panic()
     {
-        use iced::Color;
-        let _ = convert_text_to_rich_text::<()>(
-            "[Color=(255,0,0),String=hello] world",
-            Some(Color::from_rgb8(200, 200, 200)),
-        );
+        let _ = convert_text_to_rich_text::<()>("[Color=(255,0,0),String=hello] world");
     }
      
     #[test]
     fn full_pipeline_malformed_tag_falls_back_to_plain()
     {
         // Malformed tag — should not panic, should render as plain text
-        let _ = convert_text_to_rich_text::<()>("[Color=(bad),String=abc] rest", None);
+        let _ = convert_text_to_rich_text::<()>("[Color=(bad),String=abc] rest");
     }
      
     #[test]
     fn full_pipeline_empty_string_does_not_panic()
     {
-        let _ = convert_text_to_rich_text::<()>("", None);
+        let _ = convert_text_to_rich_text::<()>("");
     }
      
     #[test]
@@ -567,6 +560,6 @@ mod tests
         {
             input.push_str(&format!("[Color=({i},{i},{i}),String=tag{i}] "));
         }
-        let _ = convert_text_to_rich_text::<()>(&input, None);
+        let _ = convert_text_to_rich_text::<()>(&input);
     }
 }

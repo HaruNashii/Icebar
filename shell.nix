@@ -5,6 +5,7 @@ pkgs.mkShell {
     pkgs.nerd-fonts.jetbrains-mono
     pkgs.nerd-fonts.caskaydia-cove   
     pkgs.nerd-fonts.fira-code
+    pkgs.python3
 
     pkgs.cargo
     pkgs.clippy

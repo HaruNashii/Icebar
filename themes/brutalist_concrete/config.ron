@@ -364,7 +364,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 34,
             button_color_rgb: (195, 82, 28),              // solid rust fill — the stamp
-            button_text_color_rgb: (225, 222, 215),
             button_hovered_color_rgb: (140, 55, 15),       // oxide — darkens on hover
             button_hovered_text_color_rgb: (225, 222, 215),
             button_pressed_color_rgb: (38, 36, 34),
@@ -396,7 +395,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 34,
             button_color_rgb: (105, 102, 98),
-            button_text_color_rgb: (185, 182, 176),
             button_hovered_color_rgb: (195, 82, 28),
             button_hovered_text_color_rgb: (225, 222, 215),
             button_pressed_color_rgb: (38, 36, 34),
@@ -431,7 +429,6 @@ BarConfig
             text_orientation: Horizontal,
             height: 34,
             button_color_rgb: (88, 85, 82),
-            button_text_color_rgb: (142, 138, 132),
             button_hovered_color_rgb: (195, 82, 28),
             button_hovered_text_color_rgb: (225, 222, 215),
             button_pressed_color_rgb: (38, 36, 34),

@@ -32,7 +32,6 @@ pub struct CustomModule
     pub padding: u16,
     pub height: u32,
     pub button_color_rgb: [u8;3],
-    pub button_text_color_rgb: [u8;3],
     pub button_hovered_color_rgb: [u8;3],
     pub button_hovered_text_color_rgb: [u8;3],
     pub button_pressed_color_rgb: [u8;3],
@@ -75,7 +74,6 @@ impl Default for CustomModule
             padding: 0,
             height: 30,
             button_color_rgb: [60, 50, 70],
-            button_text_color_rgb: [220, 220, 230],
             button_hovered_color_rgb: [110, 40, 80],
             button_hovered_text_color_rgb: [255, 255, 255],
             button_pressed_color_rgb: [70, 20, 40],
@@ -104,7 +102,7 @@ pub fn define_custom_module_style(custom_module: &CustomModule, status: button::
     let hovered_text = custom_module.button_hovered_text_color_rgb; 
     let pressed = custom_module.button_pressed_color_rgb; 
     let normal = custom_module.button_color_rgb; 
-    let normal_text = custom_module.button_text_color_rgb; 
+    let normal_text = custom_module.text_color_rgb; 
     let border_size = custom_module.border_size; 
     let border_color_rgb = custom_module.border_color_rgb; 
     let border_radius = custom_module.border_radius;
@@ -250,8 +248,8 @@ mod tests
     {
         CustomModule
         {
+            text_color_rgb:          [200, 210, 220],
             button_color_rgb:               [10, 20, 30],
-            button_text_color_rgb:          [200, 210, 220],
             button_hovered_color_rgb:       [50, 60, 70],
             button_hovered_text_color_rgb:  [255, 255, 255],
             button_pressed_color_rgb:       [80, 90, 100],
