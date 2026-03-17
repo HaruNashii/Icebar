@@ -5,6 +5,7 @@ use serde::{Serialize, Deserialize};
 
 
 // ============ CRATES ============
+use crate::helpers::color::ColorType;
 use crate::AppData;
 
 
@@ -21,15 +22,15 @@ pub enum TextOrientation
 
 pub struct UserStyle
 {
-    pub status: iced::widget::button::Status, 
-    pub border_color_rgb: [u8;3], 
-    pub hovered_text: [u8;3], 
+    pub status: iced::widget::button::Status,
+    pub border_color: ColorType,
+    pub hovered_text: ColorType,
     pub border_radius: [f32;4],
-    pub normal_text: [u8;3], 
-    pub hovered: [u8; 3], 
-    pub border_size: f32, 
-    pub pressed: [u8;3], 
-    pub normal: [u8;3]
+    pub normal_text: ColorType,
+    pub hovered: ColorType,
+    pub border_size: f32,
+    pub pressed: ColorType,
+    pub normal: ColorType,
 }
 
 #[derive(Default, Copy, Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -64,22 +65,22 @@ pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
     let mut style = button::Style::default();
     match user_style.status 
     {
-        button::Status::Hovered => 
+        button::Status::Hovered =>
         {
-            style.background = Some(iced::Background::Color(Color::from_rgb8(user_style.hovered[0], user_style.hovered[1], user_style.hovered[2])));
-            style.text_color = Color::from_rgb8(user_style.hovered_text[0], user_style.hovered_text[1], user_style.hovered_text[2]);
+            style.background = Some(iced::Background::Color(user_style.hovered.to_iced_color()));
+            style.text_color = user_style.hovered_text.to_iced_color();
         }
-        button::Status::Pressed => 
+        button::Status::Pressed =>
         {
-            style.background = Some(iced::Background::Color(Color::from_rgb8(user_style.pressed[0], user_style.pressed[1], user_style.pressed[2])));
+            style.background = Some(iced::Background::Color(user_style.pressed.to_iced_color()));
         }
-        _ => 
+        _ =>
         {
-            style.background = Some(iced::Background::Color(Color::from_rgb8(user_style.normal[0], user_style.normal[1], user_style.normal[2])));
-            style.text_color = Color::from_rgb8(user_style.normal_text[0], user_style.normal_text[1], user_style.normal_text[2]);
+            style.background = Some(iced::Background::Color(user_style.normal.to_iced_color()));
+            style.text_color = user_style.normal_text.to_iced_color();
         }
     }
-    style.border.color = Color::from_rgb8(user_style.border_color_rgb[0], user_style.border_color_rgb[1],  user_style.border_color_rgb[2]);
+    style.border.color = user_style.border_color.to_iced_color();
     style.border.width = user_style.border_size;
     style.border.radius = Radius { top_left: user_style.border_radius[0], top_right: user_style.border_radius[1], bottom_left: user_style.border_radius[2], bottom_right: user_style.border_radius[3]};
     style
@@ -99,8 +100,7 @@ pub fn orient_text(input: &str, orientation: &TextOrientation) -> String
 
 pub fn bar_style(app: &AppData) -> impl Fn(&Theme) -> container::Style
 { 
-    let clamped_alpha = app.ron_config.bar_background_color_rgba[3].clamp(0, 100) as f32 / 100.;
-    let color = Color::from_rgba8(app.ron_config.bar_background_color_rgba[0], app.ron_config.bar_background_color_rgba[1],app.ron_config.bar_background_color_rgba[2], clamped_alpha);
+    let color = app.ron_config.bar_background_color.to_iced_color();
     let bar_style: container::Style = 
     {
         container::Style 
@@ -109,7 +109,7 @@ pub fn bar_style(app: &AppData) -> impl Fn(&Theme) -> container::Style
             {
                 radius: Radius { top_left: app.ron_config.bar_border_radius[0], top_right: app.ron_config.bar_border_radius[1], bottom_left: app.ron_config.bar_border_radius[2], bottom_right: app.ron_config.bar_border_radius[3]},
                 width: app.ron_config.bar_border_size, 
-                color: Color::from_rgb8(app.ron_config.bar_border_color_rgb[0], app.ron_config.bar_border_color_rgb[1], app.ron_config.bar_border_color_rgb[2])
+                color: app.ron_config.bar_border_color.to_iced_color()
             },
             background: { Some(iced::Background::Color(color)) },
             text_color: None,
@@ -202,12 +202,12 @@ mod tests
         UserStyle
         {
             status,
-            normal:            [10, 20, 30],
-            normal_text:       [200, 210, 220],
-            hovered:           [50, 60, 70],
-            hovered_text:      [255, 255, 255],
-            pressed:           [80, 90, 100],
-            border_color_rgb:  [1, 2, 3],
+            normal: ColorType::RGB([10, 20, 30]),
+            normal_text: ColorType::RGB([200, 210, 220]),
+            hovered: ColorType::RGB([50, 60, 70]),
+            hovered_text: ColorType::RGB([255, 255, 255]),
+            pressed: ColorType::RGB([80, 90, 100]),
+            border_color: ColorType::RGB([1, 2, 3]),
             border_size:       2.5,
             border_radius:     [1.0, 2.0, 3.0, 4.0],
         }
@@ -308,12 +308,12 @@ mod tests
         set_style(UserStyle
         {
             status,
-            normal:            [10, 20, 30],
-            normal_text:       [200, 210, 220],
-            hovered:           [50, 60, 70],
-            hovered_text:      [255, 255, 255],
-            pressed:           [80, 90, 100],
-            border_color_rgb:  [1, 2, 3],
+            normal: ColorType::RGB([10, 20, 30]),
+            normal_text: ColorType::RGB([200, 210, 220]),
+            hovered: ColorType::RGB([50, 60, 70]),
+            hovered_text: ColorType::RGB([255, 255, 255]),
+            pressed: ColorType::RGB([80, 90, 100]),
+            border_color: ColorType::RGB([1, 2, 3]),
             border_size:       2.0,
             border_radius:     [1.0, 2.0, 3.0, 4.0],
         })

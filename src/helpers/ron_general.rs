@@ -54,96 +54,96 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
 
     if let Some(v) = ron_config.general_text_color
     {
-        ron_config.clock_text_color_rgb                     = v;
-        ron_config.media_player_metadata_text_color_rgb     = v;
-        ron_config.focused_window_text_color_rgb            = v;
-        ron_config.cpu_text_color_rgb                       = v;
-        ron_config.cpu_temp_text_color_rgb                  = v;
-        ron_config.ram_text_color_rgb                       = v;
-        ron_config.network_text_color_rgb                   = v;
-        ron_config.volume_output_text_color_rgb             = v;
-        ron_config.volume_input_text_color_rgb              = v;
-        ron_config.workspace_text_color_rgb                 = v;
+        ron_config.clock_text_color                     = v;
+        ron_config.media_player_metadata_text_color     = v;
+        ron_config.focused_window_text_color            = v;
+        ron_config.cpu_text_color                       = v;
+        ron_config.cpu_temp_text_color                  = v;
+        ron_config.ram_text_color                       = v;
+        ron_config.network_text_color                   = v;
+        ron_config.volume_output_text_color             = v;
+        ron_config.volume_input_text_color              = v;
+        ron_config.workspace_text_color                 = v;
     }
 
     if let Some(v) = ron_config.general_button_color
     {
-        ron_config.clock_button_color_rgb                   = v;
-        ron_config.tray_button_color_rgb                    = v;
-        ron_config.media_player_metadata_button_color_rgb   = v;
-        ron_config.media_player_button_color_rgb            = v;
-        ron_config.focused_window_button_color_rgb          = v;
-        ron_config.cpu_button_color_rgb                     = v;
-        ron_config.cpu_temp_button_color_rgb                = v;
-        ron_config.ram_button_color_rgb                     = v;
-        ron_config.network_button_color_rgb                 = v;
-        ron_config.volume_output_button_color_rgb           = v;
-        ron_config.volume_input_button_color_rgb            = v;
-        ron_config.workspace_button_color_rgb               = v;
+        ron_config.clock_button_color                   = v;
+        ron_config.tray_button_color                    = v;
+        ron_config.media_player_metadata_button_color   = v;
+        ron_config.media_player_button_color            = v;
+        ron_config.focused_window_button_color          = v;
+        ron_config.cpu_button_color                     = v;
+        ron_config.cpu_temp_button_color                = v;
+        ron_config.ram_button_color                     = v;
+        ron_config.network_button_color                 = v;
+        ron_config.volume_output_button_color           = v;
+        ron_config.volume_input_button_color            = v;
+        ron_config.workspace_button_color               = v;
     }
 
-    if let Some(v) = ron_config.general_button_hovered_color_rgb
+    if let Some(v) = ron_config.general_button_hovered_color
     {
-        ron_config.clock_button_hovered_color_rgb                   = v;
-        ron_config.tray_button_hovered_color_rgb                    = v;
-        ron_config.media_player_metadata_button_hovered_color_rgb   = v;
-        ron_config.media_player_button_hovered_color_rgb            = v;
-        ron_config.focused_window_button_hovered_color_rgb          = v;
-        ron_config.cpu_button_hovered_color_rgb                     = v;
-        ron_config.cpu_temp_button_hovered_color_rgb                = v;
-        ron_config.ram_button_hovered_color_rgb                     = v;
-        ron_config.network_button_hovered_color_rgb                 = v;
-        ron_config.volume_output_button_hovered_color_rgb           = v;
-        ron_config.volume_input_button_hovered_color_rgb            = v;
-        ron_config.workspace_button_hovered_color_rgb               = v;
+        ron_config.clock_button_hovered_color                   = v;
+        ron_config.tray_button_hovered_color                    = v;
+        ron_config.media_player_metadata_button_hovered_color   = v;
+        ron_config.media_player_button_hovered_color            = v;
+        ron_config.focused_window_button_hovered_color          = v;
+        ron_config.cpu_button_hovered_color                     = v;
+        ron_config.cpu_temp_button_hovered_color                = v;
+        ron_config.ram_button_hovered_color                     = v;
+        ron_config.network_button_hovered_color                 = v;
+        ron_config.volume_output_button_hovered_color           = v;
+        ron_config.volume_input_button_hovered_color            = v;
+        ron_config.workspace_button_hovered_color               = v;
     }
 
-    if let Some(v) = ron_config.general_button_hovered_text_color_rgb
+    if let Some(v) = ron_config.general_button_hovered_text_color
     {
-        ron_config.clock_button_hovered_text_color_rgb                  = v;
-        ron_config.tray_button_hovered_text_color_rgb                   = v;
-        ron_config.media_player_metadata_button_hovered_text_color_rgb  = v;
-        ron_config.media_player_button_hovered_text_color_rgb           = v;
-        ron_config.focused_window_button_hovered_text_color_rgb         = v;
-        ron_config.cpu_button_hovered_text_color_rgb                    = v;
-        ron_config.cpu_temp_button_hovered_text_color_rgb               = v;
-        ron_config.ram_button_hovered_text_color_rgb                    = v;
-        ron_config.network_button_hovered_text_color_rgb                = v;
-        ron_config.volume_output_button_hovered_text_color_rgb          = v;
-        ron_config.volume_input_button_hovered_text_color_rgb           = v;
-        ron_config.workspace_button_hovered_text_color_rgb              = v;
+        ron_config.clock_button_hovered_text_color                  = v;
+        ron_config.tray_button_hovered_text_color                   = v;
+        ron_config.media_player_metadata_button_hovered_text_color  = v;
+        ron_config.media_player_button_hovered_text_color           = v;
+        ron_config.focused_window_button_hovered_text_color         = v;
+        ron_config.cpu_button_hovered_text_color                    = v;
+        ron_config.cpu_temp_button_hovered_text_color               = v;
+        ron_config.ram_button_hovered_text_color                    = v;
+        ron_config.network_button_hovered_text_color                = v;
+        ron_config.volume_output_button_hovered_text_color          = v;
+        ron_config.volume_input_button_hovered_text_color           = v;
+        ron_config.workspace_button_hovered_text_color              = v;
     }
 
-    if let Some(v) = ron_config.general_button_pressed_color_rgb
+    if let Some(v) = ron_config.general_button_pressed_color
     {
-        ron_config.clock_button_pressed_color_rgb                   = v;
-        ron_config.tray_button_pressed_color_rgb                    = v;
-        ron_config.media_player_metadata_button_pressed_color_rgb   = v;
-        ron_config.media_player_button_pressed_color_rgb            = v;
-        ron_config.focused_window_button_pressed_color_rgb          = v;
-        ron_config.cpu_button_pressed_color_rgb                     = v;
-        ron_config.cpu_temp_button_pressed_color_rgb                = v;
-        ron_config.ram_button_pressed_color_rgb                     = v;
-        ron_config.network_button_pressed_color_rgb                 = v;
-        ron_config.volume_output_button_pressed_color_rgb           = v;
-        ron_config.volume_input_button_pressed_color_rgb            = v;
-        ron_config.workspace_button_pressed_color_rgb               = v;
+        ron_config.clock_button_pressed_color                   = v;
+        ron_config.tray_button_pressed_color                    = v;
+        ron_config.media_player_metadata_button_pressed_color   = v;
+        ron_config.media_player_button_pressed_color            = v;
+        ron_config.focused_window_button_pressed_color          = v;
+        ron_config.cpu_button_pressed_color                     = v;
+        ron_config.cpu_temp_button_pressed_color                = v;
+        ron_config.ram_button_pressed_color                     = v;
+        ron_config.network_button_pressed_color                 = v;
+        ron_config.volume_output_button_pressed_color           = v;
+        ron_config.volume_input_button_pressed_color            = v;
+        ron_config.workspace_button_pressed_color               = v;
     }
 
-    if let Some(v) = ron_config.general_border_color_rgb
+    if let Some(v) = ron_config.general_border_color
     {
-        ron_config.clock_border_color_rgb                  = v;
-        ron_config.tray_border_color_rgb                   = v;
-        ron_config.media_player_metadata_border_color_rgb  = v;
-        ron_config.media_player_button_border_color_rgb    = v;
-        ron_config.focused_window_border_color_rgb         = v;
-        ron_config.cpu_border_color_rgb                    = v;
-        ron_config.cpu_temp_border_color_rgb               = v;
-        ron_config.ram_border_color_rgb                    = v;
-        ron_config.network_border_color_rgb                = v;
-        ron_config.volume_output_border_color_rgb          = v;
-        ron_config.volume_input_border_color_rgb           = v;
-        ron_config.workspace_border_color_rgb              = v;
+        ron_config.clock_border_color                  = v;
+        ron_config.tray_border_color                   = v;
+        ron_config.media_player_metadata_border_color  = v;
+        ron_config.media_player_button_border_color    = v;
+        ron_config.focused_window_border_color         = v;
+        ron_config.cpu_border_color                    = v;
+        ron_config.cpu_temp_border_color               = v;
+        ron_config.ram_border_color                    = v;
+        ron_config.network_border_color                = v;
+        ron_config.volume_output_border_color          = v;
+        ron_config.volume_input_border_color           = v;
+        ron_config.workspace_border_color              = v;
     }
 
     if let Some(v) = ron_config.general_border_size
@@ -271,50 +271,50 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
 
     if let Some(v) = ron_config.general_alt_text_color
     {
-        ron_config.alt_clock_text_color_rgb             = v;
-        ron_config.alt_network_text_color_rgb           = v;
-        ron_config.muted_volume_output_text_color_rgb   = v;
-        ron_config.muted_volume_input_text_color_rgb    = v;
+        ron_config.alt_clock_text_color             = v;
+        ron_config.alt_network_text_color           = v;
+        ron_config.muted_volume_output_text_color   = v;
+        ron_config.muted_volume_input_text_color    = v;
     }
 
     if let Some(v) = ron_config.general_alt_button_color
     {
-        ron_config.alt_clock_button_color_rgb               = v;
-        ron_config.alt_network_button_color_rgb             = v;
-        ron_config.muted_volume_output_button_color_rgb     = v;
-        ron_config.muted_volume_input_button_color_rgb      = v;
+        ron_config.alt_clock_button_color               = v;
+        ron_config.alt_network_button_color             = v;
+        ron_config.muted_volume_output_button_color     = v;
+        ron_config.muted_volume_input_button_color      = v;
     }
 
-    if let Some(v) = ron_config.general_alt_button_hovered_color_rgb
+    if let Some(v) = ron_config.general_alt_button_hovered_color
     {
-        ron_config.alt_clock_button_hovered_color_rgb               = v;
-        ron_config.alt_network_button_hovered_color_rgb             = v;
-        ron_config.muted_volume_output_button_hovered_color_rgb     = v;
-        ron_config.muted_volume_input_button_hovered_color_rgb      = v;
+        ron_config.alt_clock_button_hovered_color               = v;
+        ron_config.alt_network_button_hovered_color             = v;
+        ron_config.muted_volume_output_button_hovered_color     = v;
+        ron_config.muted_volume_input_button_hovered_color      = v;
     }
 
-    if let Some(v) = ron_config.general_alt_button_hovered_text_color_rgb
+    if let Some(v) = ron_config.general_alt_button_hovered_text_color
     {
-        ron_config.alt_clock_button_hovered_text_color_rgb              = v;
-        ron_config.alt_network_button_hovered_text_color_rgb            = v;
-        ron_config.muted_volume_output_button_hovered_text_color_rgb    = v;
-        ron_config.muted_volume_input_button_hovered_text_color_rgb     = v;
+        ron_config.alt_clock_button_hovered_text_color              = v;
+        ron_config.alt_network_button_hovered_text_color            = v;
+        ron_config.muted_volume_output_button_hovered_text_color    = v;
+        ron_config.muted_volume_input_button_hovered_text_color     = v;
     }
 
-    if let Some(v) = ron_config.general_alt_button_pressed_color_rgb
+    if let Some(v) = ron_config.general_alt_button_pressed_color
     {
-        ron_config.alt_clock_button_pressed_color_rgb               = v;
-        ron_config.alt_network_button_pressed_color_rgb             = v;
-        ron_config.muted_volume_output_button_pressed_color_rgb     = v;
-        ron_config.muted_volume_input_button_pressed_color_rgb      = v;
+        ron_config.alt_clock_button_pressed_color               = v;
+        ron_config.alt_network_button_pressed_color             = v;
+        ron_config.muted_volume_output_button_pressed_color     = v;
+        ron_config.muted_volume_input_button_pressed_color      = v;
     }
 
-    if let Some(v) = ron_config.general_alt_border_color_rgb
+    if let Some(v) = ron_config.general_alt_border_color
     {
-        ron_config.alt_clock_border_color_rgb              = v;
-        ron_config.alt_network_border_color_rgb            = v;
-        ron_config.muted_volume_output_border_color_rgb    = v;
-        ron_config.muted_volume_input_border_color_rgb     = v;
+        ron_config.alt_clock_border_color              = v;
+        ron_config.alt_network_border_color            = v;
+        ron_config.muted_volume_output_border_color    = v;
+        ron_config.muted_volume_input_border_color     = v;
     }
 
     if let Some(v) = ron_config.general_alt_border_size

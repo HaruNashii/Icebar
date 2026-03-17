@@ -36,24 +36,24 @@ use crate::AppData;
 // ============ FUNCTIONS ============
 pub fn define_workspaces_style(app: &AppData, status: button::Status, i: &i32) -> iced::widget::button::Style
 {
-    let hovered = app.ron_config.workspace_button_hovered_color_rgb;
-    let hovered_text = app.ron_config.workspace_button_hovered_text_color_rgb;
-    let pressed = app.ron_config.workspace_button_pressed_color_rgb;
+    let hovered = app.ron_config.workspace_button_hovered_color;
+    let hovered_text = app.ron_config.workspace_button_hovered_text_color;
+    let pressed = app.ron_config.workspace_button_pressed_color;
 
     let normal = if app.modules_data.workspace_data.current_workspace == *i 
-    { app.ron_config.workspace_button_selected_color_rgb }
+    { app.ron_config.workspace_button_selected_color }
     else 
-    { app.ron_config.workspace_button_color_rgb };
+    { app.ron_config.workspace_button_color };
 
     let normal_text = if app.modules_data.workspace_data.current_workspace == *i 
-    { app.ron_config.workspace_selected_text_color_rgb }
+    { app.ron_config.workspace_selected_text_color }
     else
-    { app.ron_config.workspace_text_color_rgb };
+    { app.ron_config.workspace_text_color };
 
     let border_size = app.ron_config.workspace_border_size;
-    let border_color_rgb = app.ron_config.workspace_border_color_rgb;
+    let border_color = app.ron_config.workspace_border_color;
     let border_radius = app.ron_config.workspace_border_radius;
-    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius})
+    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius})
 }
 
 
@@ -115,8 +115,8 @@ mod tests
     use super::*;
     use crate::AppData;
     use crate::modules::workspaces::WorkspaceData;
-    use iced::{Background, Color};
-    use iced::widget::button;
+    use crate::helpers::color::ColorType;
+    use iced::{widget::button, Background, Color};
 
     fn make_app(current: i32) -> AppData
     {
@@ -198,10 +198,10 @@ mod tests
     fn make_style_app(current: i32) -> AppData
     {
         let mut app = make_app(current);   // re-uses the existing make_app helper
-        app.ron_config.workspace_button_color_rgb           = [0, 0, 200];
-        app.ron_config.workspace_button_selected_color_rgb  = [255, 0, 0];
-        app.ron_config.workspace_button_hovered_color_rgb   = [0, 200, 0];
-        app.ron_config.workspace_button_pressed_color_rgb   = [0, 100, 0];
+        app.ron_config.workspace_button_color = ColorType::RGB([0, 0, 200]);
+        app.ron_config.workspace_button_selected_color = ColorType::RGB([255, 0, 0]);
+        app.ron_config.workspace_button_hovered_color = ColorType::RGB([0, 200, 0]);
+        app.ron_config.workspace_button_pressed_color = ColorType::RGB([0, 100, 0]);
         app
     }
  

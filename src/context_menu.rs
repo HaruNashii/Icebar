@@ -1,6 +1,6 @@
 // ============ IMPORTS ============
 use iced_layershell::reexport::{Anchor, Layer};
-use iced::{Alignment, Color, Element, Font, Length, Task, Theme, border::Radius, widget::{button, column, container, row, text}};
+use iced::{Alignment, Element, Font, Length, Task, Theme, border::Radius, widget::{button, column, container, row, text}};
 use iced_layershell::reexport::NewLayerShellSettings;
 
 
@@ -88,19 +88,19 @@ pub fn context_menu_view<'a>(data: &'a ContextMenuData, ron_config: &'a BarConfi
             }
         };
 
-        let [r, g, b] = ron_config.context_menu_text_color_rgb;
-        let color_to_send = Color::from_rgb8(r, g, b);
+        let _ctx_text_color = ron_config.context_menu_text_color.to_iced_color();
+        let color_to_send = _ctx_text_color;
         button(text(text_to_send).color(color_to_send).align_y(Alignment::Center).align_y(Alignment::Center).font(data.default_font).size(ron_config.context_menu_text_size).width(Length::Fill).height(Length::Fill).center()).width(width).height(heigth).on_press(Message::TrayAction(data.service.to_string(), data.path.to_string(), item.id, item.label.to_string())).style(|_: &Theme, status: button::Status| 
         {
-            let hovered =           ron_config.context_menu_button_hovered_color_rgb;
-            let hovered_text =      ron_config.context_menu_button_hovered_text_color_rgb;
-            let pressed =           ron_config.context_menu_button_pressed_color_rgb;
-            let normal =            ron_config.context_menu_button_color_rgb;
-            let normal_text =       ron_config.context_menu_text_color_rgb;
-            let border_color_rgb =  ron_config.context_menu_border_color_rgb;
+            let hovered =           ron_config.context_menu_button_hovered_color;
+            let hovered_text =      ron_config.context_menu_button_hovered_text_color;
+            let pressed =           ron_config.context_menu_button_pressed_color;
+            let normal =            ron_config.context_menu_button_color;
+            let normal_text =       ron_config.context_menu_text_color;
+            let border_color =  ron_config.context_menu_border_color;
             let border_size =       ron_config.context_menu_border_size;
             let border_radius =     ron_config.context_menu_border_radius;
-            set_style(crate::UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius })
+            set_style(crate::UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius })
         }).into()}
     ).collect();
     
@@ -122,14 +122,11 @@ pub fn context_menu_view<'a>(data: &'a ContextMenuData, ron_config: &'a BarConfi
 
 fn context_menu_background_button_style(ron_config: &BarConfig) -> iced::widget::container::Style
 {
-    use iced::Background;
     let mut background_style = container::Style::default();
-    let clamped_alpha = ron_config.context_menu_background_color_rgba[3].clamp(0, 100) as f32 / 100.;
-    let bgc = ron_config.context_menu_background_color_rgba;
-    let bgbc = ron_config.context_menu_background_border_color_rgb;
+    let bgc = ron_config.context_menu_background_color.to_iced_color();
     let bgr = ron_config.context_menu_background_border_radius;
-    background_style.background = Some(Background::Color(Color::from_rgba8(bgc[0], bgc[1], bgc[2], clamped_alpha)));
-    background_style.border.color = Color::from_rgb8(bgbc[0], bgbc[1], bgbc[2]); 
+    background_style.background = Some(iced::Background::Color(bgc));
+    background_style.border.color = ron_config.context_menu_background_border_color.to_iced_color();
     background_style.border.width = ron_config.context_menu_background_border_size;
     background_style.border.radius = Radius { top_left: bgr[0], top_right: bgr[1], bottom_left: bgr[2], bottom_right: bgr[3]};
     background_style

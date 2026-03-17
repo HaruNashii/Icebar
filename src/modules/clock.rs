@@ -47,27 +47,27 @@ pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget
 {
     if app.is_showing_alt_clock
     {
-        let hovered =           app.ron_config.alt_clock_button_hovered_color_rgb;
-        let hovered_text =      app.ron_config.alt_clock_button_hovered_text_color_rgb;
-        let pressed =           app.ron_config.alt_clock_button_pressed_color_rgb;
-        let normal =            app.ron_config.alt_clock_button_color_rgb;
-        let normal_text =       app.ron_config.alt_clock_text_color_rgb;
+        let hovered =           app.ron_config.alt_clock_button_hovered_color;
+        let hovered_text =      app.ron_config.alt_clock_button_hovered_text_color;
+        let pressed =           app.ron_config.alt_clock_button_pressed_color;
+        let normal =            app.ron_config.alt_clock_button_color;
+        let normal_text =       app.ron_config.alt_clock_text_color;
         let border_size =           app.ron_config.alt_clock_border_size;
-        let border_color_rgb = app.ron_config.alt_clock_border_color_rgb;
+        let border_color = app.ron_config.alt_clock_border_color;
         let border_radius =    app.ron_config.alt_clock_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
     }
     else
     {
-        let hovered = app.ron_config.clock_button_hovered_color_rgb;
-        let hovered_text = app.ron_config.clock_button_hovered_text_color_rgb;
-        let pressed = app.ron_config.clock_button_pressed_color_rgb;
-        let normal = app.ron_config.clock_button_color_rgb;
-        let normal_text = app.ron_config.clock_text_color_rgb;
+        let hovered = app.ron_config.clock_button_hovered_color;
+        let hovered_text = app.ron_config.clock_button_hovered_text_color;
+        let pressed = app.ron_config.clock_button_pressed_color;
+        let normal = app.ron_config.clock_button_color;
+        let normal_text = app.ron_config.clock_text_color;
         let border_size = app.ron_config.clock_border_size;
-        let border_color_rgb = app.ron_config.clock_border_color_rgb;
+        let border_color = app.ron_config.clock_border_color;
         let border_radius = app.ron_config.clock_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
     }
 
 }
@@ -102,19 +102,19 @@ pub fn cycle_clock_timezones(app: &mut AppData)
 mod tests
 {
     use super::*;
-    use iced::{Background, Color};
-    use iced::widget::button;
+    use iced::{widget::button, Background, Color};
+    use crate::helpers::color::ColorType;
  
     fn make_clock_app(is_alt: bool) -> AppData
     {
         let mut app = AppData { ..Default::default() };
         app.is_showing_alt_clock = is_alt;
-        app.ron_config.clock_button_color_rgb         = [10, 20, 30];
-        app.ron_config.clock_button_hovered_color_rgb = [15, 25, 35];
-        app.ron_config.clock_button_pressed_color_rgb = [5,  10, 15];
-        app.ron_config.alt_clock_button_color_rgb         = [200, 100, 50];
-        app.ron_config.alt_clock_button_hovered_color_rgb = [210, 110, 60];
-        app.ron_config.alt_clock_button_pressed_color_rgb = [190,  90, 40];
+        app.ron_config.clock_button_color = ColorType::RGB([10, 20, 30]);
+        app.ron_config.clock_button_hovered_color = ColorType::RGB([15, 25, 35]);
+        app.ron_config.clock_button_pressed_color = ColorType::RGB([5, 10, 15]);
+        app.ron_config.alt_clock_button_color = ColorType::RGB([200, 100, 50]);
+        app.ron_config.alt_clock_button_hovered_color = ColorType::RGB([210, 110, 60]);
+        app.ron_config.alt_clock_button_pressed_color = ColorType::RGB([190, 90, 40]);
         app
     }
  

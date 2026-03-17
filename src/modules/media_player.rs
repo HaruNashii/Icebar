@@ -87,30 +87,30 @@ pub fn media_player_action(player: &String, action: MediaPlayerAction)
 
 pub fn define_media_player_metadata_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered =              app.ron_config.media_player_metadata_button_hovered_color_rgb;
-    let hovered_text =         app.ron_config.media_player_metadata_button_hovered_text_color_rgb;
-    let pressed =              app.ron_config.media_player_metadata_button_pressed_color_rgb;
-    let normal =               app.ron_config.media_player_metadata_button_color_rgb;
-    let normal_text =          app.ron_config.media_player_metadata_text_color_rgb;
+    let hovered =              app.ron_config.media_player_metadata_button_hovered_color;
+    let hovered_text =         app.ron_config.media_player_metadata_button_hovered_text_color;
+    let pressed =              app.ron_config.media_player_metadata_button_pressed_color;
+    let normal =               app.ron_config.media_player_metadata_button_color;
+    let normal_text =          app.ron_config.media_player_metadata_text_color;
     let border_size =              app.ron_config.media_player_metadata_border_size;
-    let border_color_rgb =    app.ron_config.media_player_metadata_border_color_rgb;
+    let border_color =    app.ron_config.media_player_metadata_border_color;
     let border_radius =       app.ron_config.media_player_metadata_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
+    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
 }
 
 
 
 pub fn define_media_player_buttons_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered =              app.ron_config.media_player_button_hovered_color_rgb;
-    let hovered_text =         app.ron_config.media_player_button_hovered_text_color_rgb;
-    let pressed =              app.ron_config.media_player_button_pressed_color_rgb;
-    let normal =               app.ron_config.media_player_button_color_rgb;
-    let normal_text =          app.ron_config.media_player_button_text_color_rgb;
+    let hovered =              app.ron_config.media_player_button_hovered_color;
+    let hovered_text =         app.ron_config.media_player_button_hovered_text_color;
+    let pressed =              app.ron_config.media_player_button_pressed_color;
+    let normal =               app.ron_config.media_player_button_color;
+    let normal_text =          app.ron_config.media_player_button_text_color;
     let border_size =              app.ron_config.media_player_button_border_size;
-    let border_color_rgb =    app.ron_config.media_player_button_border_color_rgb;
+    let border_color =    app.ron_config.media_player_button_border_color;
     let border_radius =       app.ron_config.media_player_button_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
+    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
 }
 
 
@@ -199,26 +199,25 @@ mod tests
 {
     use super::*;
     use crate::AppData;
-    use crate::helpers::string::ellipsize;
+    use crate::helpers::{color::ColorType, string::ellipsize};
     use crate::modules::media_player::MediaPlayerData;
-    use iced::{Background, Color};
-    use iced::widget::button;
+    use iced::{widget::button, Background, Color};
  
     fn make_style_app() -> AppData
     {
         let mut app = AppData { ..Default::default() };
         // metadata style colors
-        app.ron_config.media_player_metadata_button_color_rgb         = [10, 20, 30];
-        app.ron_config.media_player_metadata_button_hovered_color_rgb = [50, 60, 70];
-        app.ron_config.media_player_metadata_button_pressed_color_rgb = [80, 90, 100];
-        app.ron_config.media_player_metadata_text_color_rgb    = [200, 210, 220];
-        app.ron_config.media_player_metadata_button_hovered_text_color_rgb = [255, 255, 255];
+        app.ron_config.media_player_metadata_button_color = ColorType::RGB([10, 20, 30]);
+        app.ron_config.media_player_metadata_button_hovered_color = ColorType::RGB([50, 60, 70]);
+        app.ron_config.media_player_metadata_button_pressed_color = ColorType::RGB([80, 90, 100]);
+        app.ron_config.media_player_metadata_text_color = ColorType::RGB([200, 210, 220]);
+        app.ron_config.media_player_metadata_button_hovered_text_color = ColorType::RGB([255, 255, 255]);
         // buttons style colors
-        app.ron_config.media_player_button_color_rgb         = [1, 2, 3];
-        app.ron_config.media_player_button_hovered_color_rgb = [4, 5, 6];
-        app.ron_config.media_player_button_pressed_color_rgb = [7, 8, 9];
-        app.ron_config.media_player_button_text_color_rgb    = [100, 100, 100];
-        app.ron_config.media_player_button_hovered_text_color_rgb = [150, 150, 150];
+        app.ron_config.media_player_button_color = ColorType::RGB([1, 2, 3]);
+        app.ron_config.media_player_button_hovered_color = ColorType::RGB([4, 5, 6]);
+        app.ron_config.media_player_button_pressed_color = ColorType::RGB([7, 8, 9]);
+        app.ron_config.media_player_button_text_color = ColorType::RGB([100, 100, 100]);
+        app.ron_config.media_player_button_hovered_text_color = ColorType::RGB([150, 150, 150]);
         app
     }
  

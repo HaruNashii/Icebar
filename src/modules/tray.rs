@@ -11,7 +11,7 @@ use std::sync::LazyLock;
 
 
 // ============ CRATES ============
-use crate::helpers::{icons::fetch_icon, style::{UserStyle, set_style}};
+use crate::helpers::{color::ColorType, icons::fetch_icon, style::{UserStyle, set_style}};
 use crate::update::Message;
 use crate::AppData;
 
@@ -338,15 +338,15 @@ pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus
 
 pub fn define_tray_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered = app.ron_config.tray_button_hovered_color_rgb;
-    let hovered_text = app.ron_config.tray_button_hovered_text_color_rgb;
-    let pressed = app.ron_config.tray_button_pressed_color_rgb;
-    let normal = app.ron_config.tray_button_color_rgb;
-    let normal_text = [255, 255, 255];
+    let hovered = app.ron_config.tray_button_hovered_color;
+    let hovered_text = app.ron_config.tray_button_hovered_text_color;
+    let pressed = app.ron_config.tray_button_pressed_color;
+    let normal = app.ron_config.tray_button_color;
+    let normal_text = ColorType::RGB([255, 255, 255]);
     let border_size = app.ron_config.tray_border_size;
-    let border_color_rgb = app.ron_config.tray_border_color_rgb;
+    let border_color = app.ron_config.tray_border_color;
     let border_radius = app.ron_config.tray_border_radius;
-    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius})
+    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius})
 }
 
 
@@ -476,10 +476,10 @@ mod tests
     fn make_tray_app() -> AppData
     {
         let mut app = AppData { ..Default::default() };
-        app.ron_config.tray_button_color_rgb         = [10, 20, 30];
-        app.ron_config.tray_button_hovered_color_rgb = [50, 60, 70];
-        app.ron_config.tray_button_pressed_color_rgb = [80, 90, 100];
-        app.ron_config.tray_button_hovered_text_color_rgb = [255, 255, 255];
+        app.ron_config.tray_button_color = ColorType::RGB([10, 20, 30]);
+        app.ron_config.tray_button_hovered_color = ColorType::RGB([50, 60, 70]);
+        app.ron_config.tray_button_pressed_color = ColorType::RGB([80, 90, 100]);
+        app.ron_config.tray_button_hovered_text_color = ColorType::RGB([255, 255, 255]);
         app
     }
  

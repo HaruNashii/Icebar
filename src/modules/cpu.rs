@@ -74,12 +74,12 @@ pub fn define_cpu_style(app: &AppData, status: button::Status) -> iced::widget::
     set_style(UserStyle
     {
         status,
-        normal:            app.ron_config.cpu_button_color_rgb,
-        normal_text:       app.ron_config.cpu_text_color_rgb,
-        hovered:           app.ron_config.cpu_button_hovered_color_rgb,
-        hovered_text:      app.ron_config.cpu_button_hovered_text_color_rgb,
-        pressed:           app.ron_config.cpu_button_pressed_color_rgb,
-        border_color_rgb: app.ron_config.cpu_border_color_rgb,
+        normal:            app.ron_config.cpu_button_color,
+        normal_text:       app.ron_config.cpu_text_color,
+        hovered:           app.ron_config.cpu_button_hovered_color,
+        hovered_text:      app.ron_config.cpu_button_hovered_text_color,
+        pressed:           app.ron_config.cpu_button_pressed_color,
+        border_color: app.ron_config.cpu_border_color,
         border_size:       app.ron_config.cpu_border_size,
         border_radius:     app.ron_config.cpu_border_radius,
     })

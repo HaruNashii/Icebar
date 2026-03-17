@@ -7,7 +7,7 @@ use iced::widget::button;
 
 
 // ============ CRATES ============
-use crate::helpers::{string::ellipsize, style::{SideOption, TextOrientation, UserStyle, set_style}};
+use crate::helpers::{color::ColorType, string::ellipsize, style::{SideOption, TextOrientation, UserStyle, set_style}};
 use crate::AppData;
 
 
@@ -20,22 +20,22 @@ use crate::AppData;
 pub struct CustomModule
 {
     pub side_separator: Option<SideOption>,
-    pub separator_color: [u8;3],
+    pub separator_color: ColorType,
     pub separator_width:  f32,
     pub separator_height: f32,  
 
     pub name: String,
     pub text: String,
     pub text_size: u32,
-    pub text_color_rgb: [u8;3],
+    pub text_color: ColorType,
     pub text_orientation: TextOrientation,
     pub padding: u16,
     pub height: u32,
-    pub button_color_rgb: [u8;3],
-    pub button_hovered_color_rgb: [u8;3],
-    pub button_hovered_text_color_rgb: [u8;3],
-    pub button_pressed_color_rgb: [u8;3],
-    pub border_color_rgb: [u8;3],
+    pub button_color: ColorType,
+    pub button_hovered_color: ColorType,
+    pub button_hovered_text_color: ColorType,
+    pub button_pressed_color: ColorType,
+    pub border_color: ColorType,
     pub border_size: f32,
     pub border_radius: [f32;4],
     pub dont_show_if_any_output_is_empty: bool,
@@ -62,22 +62,22 @@ impl Default for CustomModule
         Self 
         {
             side_separator: None,
-            separator_color: [75, 75, 75],
+            separator_color: ColorType::RGB([75, 75, 75]),
             separator_width:  1.,
             separator_height: 16.,
 
             name: "Default Custom Module".to_string(),
             text: "".to_string(),
             text_size: 10,
-            text_color_rgb: [255, 255, 255],
+            text_color: ColorType::RGB([255, 255, 255]),
             text_orientation: TextOrientation::Horizontal,
             padding: 0,
             height: 30,
-            button_color_rgb: [60, 50, 70],
-            button_hovered_color_rgb: [110, 40, 80],
-            button_hovered_text_color_rgb: [255, 255, 255],
-            button_pressed_color_rgb: [70, 20, 40],
-            border_color_rgb: [90, 70, 100],
+            button_color: ColorType::RGB([60, 50, 70]),
+            button_hovered_color: ColorType::RGB([110, 40, 80]),
+            button_hovered_text_color: ColorType::RGB([255, 255, 255]),
+            button_pressed_color: ColorType::RGB([70, 20, 40]),
+            border_color: ColorType::RGB([90, 70, 100]),
             border_size: 1.0,
             border_radius: [3., 3., 3., 3.],
             display_err_output_if_failed: true,
@@ -98,15 +98,15 @@ impl Default for CustomModule
 
 pub fn define_custom_module_style(custom_module: &CustomModule, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered = custom_module.button_hovered_color_rgb; 
-    let hovered_text = custom_module.button_hovered_text_color_rgb; 
-    let pressed = custom_module.button_pressed_color_rgb; 
-    let normal = custom_module.button_color_rgb; 
-    let normal_text = custom_module.text_color_rgb; 
+    let hovered = custom_module.button_hovered_color; 
+    let hovered_text = custom_module.button_hovered_text_color; 
+    let pressed = custom_module.button_pressed_color; 
+    let normal = custom_module.button_color; 
+    let normal_text = custom_module.text_color; 
     let border_size = custom_module.border_size; 
-    let border_color_rgb = custom_module.border_color_rgb; 
+    let border_color = custom_module.border_color; 
     let border_radius = custom_module.border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color_rgb, border_size, border_radius} )
+    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
 }
 
 
@@ -248,12 +248,12 @@ mod tests
     {
         CustomModule
         {
-            text_color_rgb:          [200, 210, 220],
-            button_color_rgb:               [10, 20, 30],
-            button_hovered_color_rgb:       [50, 60, 70],
-            button_hovered_text_color_rgb:  [255, 255, 255],
-            button_pressed_color_rgb:       [80, 90, 100],
-            border_color_rgb:               [1, 2, 3],
+            text_color: ColorType::RGB([200, 210, 220]),
+            button_color: ColorType::RGB([10, 20, 30]),
+            button_hovered_color: ColorType::RGB([50, 60, 70]),
+            button_hovered_text_color: ColorType::RGB([255, 255, 255]),
+            button_pressed_color: ColorType::RGB([80, 90, 100]),
+            border_color: ColorType::RGB([1, 2, 3]),
             border_size:                    2.0,
             border_radius:                  [1.0, 2.0, 3.0, 4.0],
             ..CustomModule::default()

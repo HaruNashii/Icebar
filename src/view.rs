@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Color, Element, Length, Theme, widget::{Space, button, column, container, mouse_area, row}};
+use iced::{Alignment, Element, Length, Theme, widget::{Space, button, column, container, mouse_area, row}};
 
 
 
@@ -91,7 +91,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 (
                     inner,
                     app.ron_config.tray_side_separator,
-                    Color::from_rgb8(app.ron_config.tray_side_separator_color[0], app.ron_config.tray_side_separator_color[1], app.ron_config.tray_side_separator_color[2]),
+                    app.ron_config.tray_side_separator_color.to_iced_color(),
                     app.ron_config.tray_side_separator_width,
                     app.ron_config.tray_side_separator_height,
                 )
@@ -131,7 +131,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 (
                     inner,
                     app.ron_config.workspace_side_separator,
-                    Color::from_rgb8(app.ron_config.workspace_side_separator_color[0], app.ron_config.workspace_side_separator_color[1], app.ron_config.workspace_side_separator_color[2]),
+                    app.ron_config.workspace_side_separator_color.to_iced_color(),
                     app.ron_config.workspace_side_separator_width,
                     app.ron_config.workspace_side_separator_height,
                 )
@@ -160,7 +160,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
                     },
                     app.ron_config.media_player_metadata_side_separator,
-                    Color::from_rgb8(app.ron_config.media_player_metadata_side_separator_color[0], app.ron_config.media_player_metadata_side_separator_color[1], app.ron_config.media_player_metadata_side_separator_color[2]),
+                    app.ron_config.media_player_metadata_side_separator_color.to_iced_color(),
                     app.ron_config.media_player_metadata_side_separator_width,
                     app.ron_config.media_player_metadata_side_separator_height,
                 )
@@ -190,7 +190,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 (
                     inner,
                     app.ron_config.media_player_buttons_side_separator,
-                    Color::from_rgb8(app.ron_config.media_player_buttons_side_separator_color[0], app.ron_config.media_player_buttons_side_separator_color[1], app.ron_config.media_player_buttons_side_separator_color[2]),
+                    app.ron_config.media_player_buttons_side_separator_color.to_iced_color(),
                     app.ron_config.media_player_buttons_side_separator_width,
                     app.ron_config.media_player_buttons_side_separator_height,
                 )
@@ -218,7 +218,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 (
                     inner,
                     app.ron_config.focused_window_side_separator,
-                    Color::from_rgb8(app.ron_config.focused_window_side_separator_color[0], app.ron_config.focused_window_side_separator_color[1], app.ron_config.focused_window_side_separator_color[2]),
+                    app.ron_config.focused_window_side_separator_color.to_iced_color(),
                     app.ron_config.focused_window_side_separator_width,
                     app.ron_config.focused_window_side_separator_height,
                 )
@@ -235,7 +235,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 (
                     inner,
                     app.ron_config.ram_side_separator,
-                    Color::from_rgb8(app.ron_config.ram_side_separator_color[0], app.ron_config.ram_side_separator_color[1], app.ron_config.ram_side_separator_color[2]),
+                    app.ron_config.ram_side_separator_color.to_iced_color(),
                     app.ron_config.ram_side_separator_width,
                     app.ron_config.ram_side_separator_height,
                 )
@@ -259,7 +259,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
                     },
                     app.ron_config.cpu_side_separator,
-                    Color::from_rgb8(app.ron_config.cpu_side_separator_color[0], app.ron_config.cpu_side_separator_color[1], app.ron_config.cpu_side_separator_color[2]),
+                    app.ron_config.cpu_side_separator_color.to_iced_color(),
                     app.ron_config.cpu_side_separator_width,
                     app.ron_config.cpu_side_separator_height,
                 )
@@ -283,7 +283,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
                     },
                     app.ron_config.cpu_temp_side_separator,
-                    Color::from_rgb8(app.ron_config.cpu_temp_side_separator_color[0], app.ron_config.cpu_temp_side_separator_color[1], app.ron_config.cpu_temp_side_separator_color[2]),
+                    app.ron_config.cpu_temp_side_separator_color.to_iced_color(),
                     app.ron_config.cpu_temp_side_separator_width,
                     app.ron_config.cpu_temp_side_separator_height,
                 )
@@ -298,13 +298,13 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
                 let (text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.is_showing_alt_network_module
                 {
-                    let [sr, sg, sb] = &app.ron_config.alt_network_side_separator_color;
-                    (app.ron_config.alt_network_text_size, app.ron_config.alt_network_padding, app.ron_config.alt_network_side_separator, Color::from_rgb8(*sr, *sg, *sb), app.ron_config.alt_network_side_separator_width, app.ron_config.alt_network_side_separator_height)
+                    let _sep_color_alt_network_side_separator_color = app.ron_config.alt_network_side_separator_color.to_iced_color();
+                    (app.ron_config.alt_network_text_size, app.ron_config.alt_network_padding, app.ron_config.alt_network_side_separator, _sep_color_alt_network_side_separator_color, app.ron_config.alt_network_side_separator_width, app.ron_config.alt_network_side_separator_height)
                 }
                 else
                 {
-                    let [sr, sg, sb] = &app.ron_config.network_side_separator_color;
-                    (app.ron_config.network_text_size, app.ron_config.network_padding, app.ron_config.network_side_separator, Color::from_rgb8(*sr, *sg, *sb), app.ron_config.network_side_separator_width, app.ron_config.network_side_separator_height)
+                    let _sep_color_network_side_separator_color = app.ron_config.network_side_separator_color.to_iced_color();
+                    (app.ron_config.network_text_size, app.ron_config.network_padding, app.ron_config.network_side_separator, _sep_color_network_side_separator_color, app.ron_config.network_side_separator_width, app.ron_config.network_side_separator_height)
                 };
              
                 let text_to_send = define_network_text(app);
@@ -334,18 +334,18 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
                 let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.volume_output_is_muted
                 {
-                    let [sr, sg, sb] = &app.ron_config.muted_volume_output_side_separator_color;
+                    let _sep_color_muted_volume_output_side_separator_color = app.ron_config.muted_volume_output_side_separator_color.to_iced_color();
                     (
                         &app.ron_config.muted_volume_output_text_orientation, &app.ron_config.muted_volume_output_text_size, app.ron_config.muted_volume_output_padding,
-                        &app.ron_config.muted_volume_output_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.muted_volume_output_side_separator_width, &app.ron_config.muted_volume_output_side_separator_height
+                        &app.ron_config.muted_volume_output_side_separator, _sep_color_muted_volume_output_side_separator_color, &app.ron_config.muted_volume_output_side_separator_width, &app.ron_config.muted_volume_output_side_separator_height
                     )
                 }
                 else
                 {
-                    let [sr, sg, sb] = &app.ron_config.volume_output_side_separator_color;
+                    let _sep_color_volume_output_side_separator_color = app.ron_config.volume_output_side_separator_color.to_iced_color();
                     (
                         &app.ron_config.volume_output_text_orientation, &app.ron_config.volume_output_text_size, app.ron_config.volume_output_padding,
-                        &app.ron_config.volume_output_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.volume_output_side_separator_width, &app.ron_config.volume_output_side_separator_height
+                        &app.ron_config.volume_output_side_separator, _sep_color_volume_output_side_separator_color, &app.ron_config.volume_output_side_separator_width, &app.ron_config.volume_output_side_separator_height
                     )
                 };
              
@@ -376,18 +376,18 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
                 let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.volume_input_is_muted
                 {
-                    let [sr, sg, sb] = &app.ron_config.muted_volume_input_side_separator_color;
+                    let _sep_color_muted_volume_input_side_separator_color = app.ron_config.muted_volume_input_side_separator_color.to_iced_color();
                     (
                         &app.ron_config.muted_volume_input_text_orientation, &app.ron_config.muted_volume_input_text_size, app.ron_config.muted_volume_input_padding,
-                        &app.ron_config.muted_volume_input_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.muted_volume_input_side_separator_width, &app.ron_config.muted_volume_input_side_separator_height
+                        &app.ron_config.muted_volume_input_side_separator, _sep_color_muted_volume_input_side_separator_color, &app.ron_config.muted_volume_input_side_separator_width, &app.ron_config.muted_volume_input_side_separator_height
                     )
                 }
                 else
                 {
-                    let [sr, sg, sb] = &app.ron_config.volume_input_side_separator_color;
+                    let _sep_color_volume_input_side_separator_color = app.ron_config.volume_input_side_separator_color.to_iced_color();
                     (
                         &app.ron_config.volume_input_text_orientation, &app.ron_config.volume_input_text_size, app.ron_config.volume_input_padding,
-                        &app.ron_config.volume_input_side_separator, Color::from_rgb8(*sr, *sg, *sb), &app.ron_config.volume_input_side_separator_width, &app.ron_config.volume_input_side_separator_height
+                        &app.ron_config.volume_input_side_separator, _sep_color_volume_input_side_separator_color, &app.ron_config.volume_input_side_separator_width, &app.ron_config.volume_input_side_separator_height
                     )
                 };
              
@@ -432,28 +432,28 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 let (text_orientation, text_size, padding, separator_flags, separator_color, separator_width, separator_height) = if app.is_showing_alt_clock
                 {
-                    let [separator_r, separator_g, separator_b] = app.ron_config.alt_clock_side_separator_color;
+                    let _sep_color_alt_clock_side_separator_color = app.ron_config.alt_clock_side_separator_color.to_iced_color();
                     (
                         &app.ron_config.alt_clock_text_orientation, 
                         app.ron_config.alt_clock_text_size, 
                         app.ron_config.alt_clock_padding, 
 
                         app.ron_config.alt_clock_side_separator,
-                        Color::from_rgb8(separator_r, separator_g, separator_b),
+                        _sep_color_alt_clock_side_separator_color,
                         app.ron_config.alt_clock_side_separator_width,
                         app.ron_config.alt_clock_side_separator_height
                     )
                 }
                 else
                 {
-                    let [separator_r, separator_g,  separator_b] = app.ron_config.clock_side_separator_color;
+                    let _sep_color_clock_side_separator_color = app.ron_config.clock_side_separator_color.to_iced_color();
                     (
                         &app.ron_config.clock_text_orientation, 
                         app.ron_config.clock_text_size, 
                         app.ron_config.clock_padding, 
 
                         app.ron_config.clock_side_separator,
-                        Color::from_rgb8(separator_r, separator_g, separator_b),
+                        _sep_color_clock_side_separator_color,
                         app.ron_config.clock_side_separator_width,
                         app.ron_config.clock_side_separator_height
                     )
@@ -518,7 +518,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Axis::Vertical => column![element].align_x(Alignment::Center).into()
                     },
                     custom_module.side_separator,
-                    Color::from_rgb8(custom_module.separator_color[0], custom_module.separator_color[1], custom_module.separator_color[2]), 
+                    custom_module.separator_color.to_iced_color(), 
                     custom_module.separator_width,
                     custom_module.separator_height,
                 )
