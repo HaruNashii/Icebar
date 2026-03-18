@@ -25,13 +25,10 @@ BarConfig
     increased_exclusive_bar_zone: 0,
     bar_side_spaces_size: 4,
     bar_size: (0, 32),
-
-    // Sharp. No radius. Ever.
     bar_border_radius: (0., 0., 0., 0.),
     bar_border_size: 1.5,
-    bar_border_color: RGB((0, 255, 140)),        // acid green border
-    bar_background_color: RGBA((5, 5, 8, 100)),         // near-void black
-
+    bar_border_color: RGB((0, 255, 140)),
+    bar_background_color: RGBA((5, 5, 8, 100)),
     font_family: "JetBrains Mono",
     font_style: "Bold",
 
@@ -70,8 +67,8 @@ BarConfig
 
 
     // ================= MODULES =================
-    left_modules:  [CustomModule(0), CustomModule(1)],
-    center_modules: [Clock],
+    left_modules:  [CustomModule(0), HyprWorkspaces, Cpu, Ram],
+    center_modules: [Clock, MediaPlayerMetaData, MediaPlayerButtons],
     right_modules: [Network, VolumeOutput, VolumeInput, Tray],
 
 
@@ -89,6 +86,8 @@ BarConfig
     incremental_steps_input: 5,
     action_on_left_click_media_player_metadata: DefaultAction,
     action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_cpu: CustomAction(["kitty", "bash", "-c", "btop"]),
+    action_on_right_click_cpu: CustomAction(["kitty", "bash", "-c", "htop"]),
     action_on_left_click_clock: DefaultAction,
     action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && echo '[ PRESS ANY KEY ]' && read -n 1"]),
     action_on_left_click_network: DefaultAction,
@@ -100,6 +99,9 @@ BarConfig
 
 
     // ================= FORMATS =================
+    cpu_format: "CPU {usage}%",
+    ram_format: "RAM {used}M/{total}M",
+
     media_player_buttons_format: ("⏮", "⏸", "⏵", "⏭"),
     media_player_metadata_format: "♪ {{artist}} ⟫ {{title}}",
 
@@ -108,10 +110,10 @@ BarConfig
     alt_network_module_format: "{level} {connection_type} ⟫ {id} ⟫ {speed}MB/s",
     network_level_format:
     (
-        "▲ NET",    // connected / good signal
-        "△ NET",    // medium
-        "▽ NET",    // low
-        "✕ NET"     // disconnected
+        "▲ NET",
+        "△ NET",
+        "▽ NET",
+        "✕ NET"
     ),
     network_connection_type_icons:
     (
@@ -120,7 +122,6 @@ BarConfig
         "UNK"
     ),
 
-    // Volume steps: mute | 0-25 | 25-50 | 50-75 | 75-100 | >100
     output_volume_format:
     (
         "▣  ---%",
@@ -144,6 +145,32 @@ BarConfig
 
     clock_format:     "⬡ %H:%M",
     clock_alt_format: "⬡ %H:%M:%S  //  %a %d %b %Y",
+
+
+    // ================= CPU (STYLE) =================
+    cpu_text_size: 12,
+    cpu_text_color: RGB((0, 255, 140)),
+    cpu_text_orientation: Horizontal,
+    cpu_button_color: RGB((12, 8, 20)),
+    cpu_button_hovered_color: RGB((255, 0, 110)),
+    cpu_button_hovered_text_color: RGB((5, 5, 8)),
+    cpu_button_pressed_color: RGB((0, 180, 90)),
+    cpu_border_color: RGB((0, 255, 140)),
+    cpu_border_size: 1.0,
+    cpu_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= RAM (STYLE) =================
+    ram_text_size: 12,
+    ram_text_color: RGB((0, 255, 140)),
+    ram_text_orientation: Horizontal,
+    ram_button_color: RGB((12, 8, 20)),
+    ram_button_hovered_color: RGB((255, 0, 110)),
+    ram_button_hovered_text_color: RGB((5, 5, 8)),
+    ram_button_pressed_color: RGB((0, 180, 90)),
+    ram_border_color: RGB((0, 255, 140)),
+    ram_border_size: 1.0,
+    ram_border_radius: (0.0, 0.0, 0.0, 0.0),
 
 
     // ================= TRAY (STYLE) =================
@@ -285,7 +312,8 @@ BarConfig
 
 
     // ================= HYPR WORKSPACES (STYLE) =================
-    workspace_width: 5,
+    workspace_height: 30,
+    workspace_width: 30,
     workspace_different_selected_width: None,
     workspace_text_size: 13,
     workspace_text_color: RGB((0, 255, 140)),
@@ -344,7 +372,7 @@ BarConfig
             text_color: RGB((5, 5, 8)),
             text_orientation: Horizontal,
             height: 26,
-            button_color: RGB((255, 0, 110)),          // solid hot magenta fill — stands out as the "logo" badge
+            button_color: RGB((255, 0, 110)),
             button_hovered_color: RGB((0, 255, 140)),
             button_hovered_text_color: RGB((5, 5, 8)),
             button_pressed_color: RGB((180, 0, 80)),
@@ -362,66 +390,6 @@ BarConfig
             continous_command_interval: 500,
             continous_command: []
         ),
-
-        // ── MODULE 1 ── LIVE CPU + RAM READOUT
-        // Continuously reads CPU% and RAM used via shell.
-        // Displayed in acid green. High-density info.
-        (
-            name: "CPU_RAM",
-            text: "",
-            text_size: 12,
-            text_color: RGB((0, 255, 140)),
-            text_orientation: Horizontal,
-            height: 26,
-            button_color: RGB((12, 8, 20)),
-            button_hovered_color: RGB((255, 0, 110)),
-            button_hovered_text_color: RGB((5, 5, 8)),
-            button_pressed_color: RGB((0, 180, 90)),
-            border_color: RGB((0, 255, 140)),
-            border_size: 1.0,
-            border_radius: (0.0, 0.0, 0.0, 0.0),
-            display_err_output_if_failed: false,
-            dont_show_if_any_output_is_empty: true,
-            use_output_as_text: false,
-            use_continous_output_as_text: true,
-            all_output_as_text_format: "{continous_output}",
-            output_text_limit_len: 28,
-            command_to_exec_on_left_click: ["kitty", "bash", "-c", "btop"],
-            command_to_exec_on_right_click: ["kitty", "bash", "-c", "htop"],
-            continous_command_interval: 1500,
-            continous_command: [
-                "bash", "-c",
-                "cpu=$(top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d. -f1); ram=$(free -m | awk '/Mem:/{printf \"%dM/%dM\", $3, $2}'); echo \"CPU ${cpu}%  RAM ${ram}\""
-            ]
-        ),
-
-        // ── MODULE 2 ── PLAYERCTL NOW PLAYING
-        // Scrolling artist + title from any player. Cyan color.
-        // Left-click = play/pause. Right-click = next track.
-        (
-            name: "NOW_PLAYING",
-            text: "",
-            text_size: 12,
-            text_color: RGB((0, 220, 255)),
-            text_orientation: Horizontal,
-            height: 26,
-            button_color: RGB((8, 18, 28)),
-            button_hovered_color: RGB((255, 0, 110)),
-            button_hovered_text_color: RGB((5, 5, 8)),
-            button_pressed_color: RGB((0, 140, 200)),
-            border_color: RGB((0, 220, 255)),
-            border_size: 1.0,
-            border_radius: (0.0, 0.0, 0.0, 0.0),
-            display_err_output_if_failed: false,
-            dont_show_if_any_output_is_empty: true,
-            use_output_as_text: false,
-            use_continous_output_as_text: true,
-            all_output_as_text_format: "♪ {continous_output}",
-            output_text_limit_len: 35,
-            command_to_exec_on_left_click: ["playerctl", "play-pause"],
-            command_to_exec_on_right_click: ["playerctl", "next"],
-            continous_command_interval: 1000,
-            continous_command: ["playerctl", "metadata", "--format", "{{ artist }} ⟫ {{ title }}"]
-        ),
     ],
 )
+
