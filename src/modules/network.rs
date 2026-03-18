@@ -1,8 +1,9 @@
 // ============ IMPORTS ============
 use zbus::{zvariant::OwnedObjectPath, Connection, Proxy};
-use futures_util::StreamExt;
-use futures::stream::BoxStream;
 use iced::{Subscription, widget::button};
+use std::{time::Instant, sync::Mutex};
+use futures::stream::BoxStream;
+use futures_util::StreamExt;
 use async_stream::stream;
 use anyhow::Result;
 
@@ -19,6 +20,13 @@ use crate::AppData;
 
 
 
+// ============ STATIC ============
+pub static PREV_NET: Mutex<Option<(u64, u64, Instant)>> = Mutex::new(None);
+
+
+
+
+
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Debug, Clone)]
 pub struct NetworkData
@@ -26,7 +34,10 @@ pub struct NetworkData
     pub connection_type: u8,
     pub network_level: u32,
     pub network_speed: u32,
-    pub id: String
+    pub id: String,
+    pub iface: String,
+    pub rx_bytes_per_sec: u64,
+    pub tx_bytes_per_sec: u64,
 }
 
 
@@ -88,10 +99,10 @@ pub fn network_stream(no_conn_string: &String) -> BoxStream<'static, Message>
                         match result_data 
                         {
                             Some(data) => yield Message::NetworkUpdated(data),
-                            None => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0 }) 
+                            None => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0, rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new()}) 
                         }
                     },
-                    Err(_) => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0 }) 
+                    Err(_) => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0, rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new()  }) 
                 }
             }
     
@@ -102,38 +113,58 @@ pub fn network_stream(no_conn_string: &String) -> BoxStream<'static, Message>
 
 
 
-async fn get_network_speed<'a>(nm: &Proxy<'a>,  connection: &Connection) -> zbus::Result<u32> 
+pub fn read_rx_tx(interface: &str) -> Option<(u64, u64)>
+{
+    let content = std::fs::read_to_string("/proc/net/dev").ok()?;
+    for line in content.lines()
+    {
+        let trimmed = line.trim();
+        if trimmed.starts_with(interface)
+        {
+            let after = trimmed.split_once(':')?.1;
+            let mut parts = after.split_whitespace();
+            let rx = parts.next()?.parse::<u64>().ok()?;
+            let tx = parts.nth(7)?.parse::<u64>().ok()?;
+            return Some((rx, tx));
+        }
+    }
+    None
+}
+
+
+
+async fn get_network_speed<'a>(nm: &Proxy<'a>, connection: &Connection) -> zbus::Result<(u32, String)>
 {
     let primary: OwnedObjectPath = nm.get_property("PrimaryConnection").await?;
-    if primary.as_str() == "/" { return Ok(0); }
+    if primary.as_str() == "/" { return Ok((0, String::new())); }
     let active = Proxy::new(connection, "org.freedesktop.NetworkManager", primary.as_str(), "org.freedesktop.NetworkManager.Connection.Active").await?;
     let devices: Vec<OwnedObjectPath> = active.get_property("Devices").await?;
-    let device_path = match devices.first() 
+    let device_path = match devices.first()
     {
         Some(path) => path,
-        None => return Ok(0),
+        None => return Ok((0, String::new())),
     };
     let device = Proxy::new(connection, "org.freedesktop.NetworkManager", device_path.as_str(), "org.freedesktop.NetworkManager.Device").await?;
+    let iface: String = device.get_property("Interface").await.unwrap_or_default();
     let device_type: u32 = device.get_property("DeviceType").await?;
 
-    match device_type 
+    let speed = match device_type
     {
-        1 => 
+        1 =>
         {
-            // Ethernet
             let wired = Proxy::new(connection, "org.freedesktop.NetworkManager", device_path.as_str(), "org.freedesktop.NetworkManager.Device.Wired").await?;
-            let speed: u32 = wired.get_property("Speed").await?;
-            Ok(speed) // Mb/s
+            wired.get_property("Speed").await?
         }
-        2 => 
-        { 
-            // Wi-Fi
+        2 =>
+        {
             let wifi = Proxy::new(connection, "org.freedesktop.NetworkManager", device_path.as_str(), "org.freedesktop.NetworkManager.Device.Wireless").await?;
             let bitrate: u32 = wifi.get_property("Bitrate").await?;
-            Ok(bitrate / 1000) // convert Kb/s → Mb/s
+            bitrate / 1000
         }
-        _ => Ok(0)
-    }
+        _ => 0
+    };
+
+    Ok((speed, iface))
 }
 
 
@@ -141,13 +172,11 @@ async fn get_network_speed<'a>(nm: &Proxy<'a>,  connection: &Connection) -> zbus
 async fn return_network_state(connection: &Connection) -> Result<Option<NetworkData>> 
 {
     let nm = Proxy::new(connection, "org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager", "org.freedesktop.NetworkManager").await?;
-    let network_speed = get_network_speed(&nm, connection).await?;
+    let (network_speed, iface) = get_network_speed(&nm, connection).await?;
     let connectivity: u32 = nm.get_property("Connectivity").await?;
     let primary: OwnedObjectPath = nm.get_property("PrimaryConnection").await?;
     if primary.as_str() == "/" { return Ok(None); }
     let active = Proxy::new(connection, "org.freedesktop.NetworkManager", primary.as_str(), "org.freedesktop.NetworkManager.Connection.Active").await?;
-
-    
 
     let id: String = active.get_property("Id").await?;
     let conn_type: String = active.get_property("Type").await?;
@@ -164,7 +193,10 @@ async fn return_network_state(connection: &Connection) -> Result<Option<NetworkD
         connection_type,
         network_level: connectivity,
         network_speed,
-        id
+        id,
+        iface,
+        rx_bytes_per_sec: 0,
+        tx_bytes_per_sec: 0
     }))
 }
 
@@ -223,17 +255,19 @@ pub fn define_network_text(app: &AppData) -> String
         _ => &app.modules_data.network_data.network_speed.to_string().replace(" ", "").replace("\n", "")
     };
 
-
+    let kb_sent = format!("{:.1}", app.modules_data.network_data.tx_bytes_per_sec as f64 / 1_024.0);
+    let kb_received = format!("{:.1}", app.modules_data.network_data.rx_bytes_per_sec as f64 / 1_024.0);
+    
     if app.is_showing_alt_network_module
     {
         let alt_orientation = &app.ron_config.alt_network_text_orientation;
-        let alt_string = app.ron_config.alt_network_module_format.replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
+        let alt_string = app.ron_config.alt_network_module_format.replace("{received}", &kb_received).replace("{sent}", &kb_sent).replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
         orient_text(&alt_string, alt_orientation)
     }
     else
     {
         let orientation = &app.ron_config.network_text_orientation;
-        let string = app.ron_config.network_module_format.replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
+        let string = app.ron_config.network_module_format.replace("{received}", &kb_received).replace("{sent}", &kb_sent).replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
         orient_text(&string, orientation)
     }
 }
@@ -313,7 +347,7 @@ mod tests
     fn make_app(level: u32, conn_type: u8, speed: u32, id: &str) -> AppData
     {
         let mut app = AppData { ..Default::default() };
-        app.modules_data.network_data = NetworkData { network_level: level, connection_type: conn_type, network_speed: speed, id: id.into() };
+        app.modules_data.network_data = NetworkData { network_level: level, connection_type: conn_type, network_speed: speed, id: id.into(), rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new() };
         app.network_icons = ["L4".into(), "L3".into(), "L2".into(), "L0".into()];
         app.connection_type_icons = ["ETH".into(), "WIFI".into(), "?".into()];
         app.ron_config.network_module_format = "{level}|{connection_type}|{speed}|{id}".into();

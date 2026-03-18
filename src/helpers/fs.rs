@@ -72,8 +72,6 @@ pub fn check_if_config_file_exists()
 // Available options for "MODULENAME_side_separator":
 //   Some(Left), Some(Right), Some(Up), Some(Down), Some(LeftAndRight), Some(UpAndDown)
 //
-// Available options for 
-//
 // Available options for "bar_position": "Up", "Down", "Left", "Right"
 //
 // Text orientation options for "text_orientation" (available on all modules except Tray):
@@ -168,7 +166,7 @@ BarConfig
 
     // ================= MODULES =================
     left_modules: [CustomModule(0), Cpu, CpuTemp, Ram],
-    center_modules: [Clock, Disk],
+    center_modules: [Clock],
     right_modules: [Tray, Network, VolumeOutput, VolumeInput],
 
 
@@ -222,7 +220,8 @@ BarConfig
     media_player_buttons_format: ("󰒮", "⏸", "▶", "󰒭"),
     media_player_metadata_format: "{{artist}} | {{album}} | {{title}}",
     network_disconnected_text: "No Connection Found.",
-    alt_network_module_format: "{level} | {connection_type} | [Color=(0, 255, 255), String={id}]  | [Color=(0, 255, 0), String={speed}MB/s]",
+    alt_network_module_format: "{level} | {connection_type} | [Color=(0, 255, 255), String={id}]  | [Color=(0, 255, 0), String={speed}MB/s] | [Color=(0, 0, 255), String={sent}KB/s] | [Color=(0, 0, 255), String={received}KB/s]",
+
     network_module_format: "{level}    ",
     network_level_format: 
     (

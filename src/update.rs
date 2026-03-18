@@ -19,7 +19,7 @@ use crate::modules::focused_window::{read_focused_window_hypr, read_focused_wind
 use crate::helpers::string::{format_input_volume, format_output_volume};
 use crate::modules::cpu_temp::read_cpu_temp;
 use crate::modules::ram::read_ram_data;
-use crate::modules::{disk::read_disk_data, clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
+use crate::modules::{network::{read_rx_tx, PREV_NET}, disk::read_disk_data, clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
 use crate::{helpers::{misc::define_bar_anchor_position, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
 use crate::helpers::{misc::{is_active_module, validate_bar_data}, workspaces::build_workspace_list };
 use crate::context_menu::{create_context_menu, get_context_menu_size};
@@ -69,6 +69,7 @@ pub enum Message
     Tick,
     VolumeUpdated(f32, bool, f32, bool),
 
+    UpdateNetworkSpeed,
     UpdateDisk,
     UpdateRam,
     UpdateCpu,
@@ -176,6 +177,29 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::UpdateHyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); },
         Message::UpdateSwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); },
         Message::MediaPlayerDataFetched(data) => { app.modules_data.media_player_data = data; }
+        Message::UpdateNetworkSpeed =>
+        {
+            let interface = &app.modules_data.network_data.iface;
+            if interface.is_empty() { return Task::none(); }
+        
+            if let Some((rx, tx)) = read_rx_tx(interface)
+            {
+                let now = Instant::now();
+                let mut prev = PREV_NET.lock().unwrap();
+        
+                if let Some((prev_rx, prev_tx, prev_time)) = *prev
+                {
+                    let elapsed = prev_time.elapsed().as_secs_f64();
+                    if elapsed > 0.0
+                    {
+                        app.modules_data.network_data.rx_bytes_per_sec = ((rx.saturating_sub(prev_rx)) as f64 / elapsed) as u64;
+                        app.modules_data.network_data.tx_bytes_per_sec = ((tx.saturating_sub(prev_tx)) as f64 / elapsed) as u64;
+                    }
+                }
+                *prev = Some((rx, tx, now));
+            }
+        }
+
         Message::UpdateDisk => 
         { 
             if let Some(data) = read_disk_data(&app.ron_config.disk_mount) 
@@ -183,6 +207,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 app.modules_data.disk_data = data; 
             } 
         }
+
         Message::UpdateMediaPlayerMetadata => 
         { 
             let player = app.ron_config.player.clone();
@@ -779,7 +804,7 @@ mod tests
     fn network_updated_stores_data()
     {
         let mut app = make_app();
-        let data = NetworkData { network_level: 4, connection_type: 2, network_speed: 100, id: "HomeWifi".into() };
+        let data = NetworkData { network_level: 4, connection_type: 2, network_speed: 100, id: "HomeWifi".into(), rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new() };
         let _ = update(&mut app, Message::NetworkUpdated(data));
         assert_eq!(app.modules_data.network_data.id, "HomeWifi");
         assert_eq!(app.modules_data.network_data.network_level, 4);

@@ -55,7 +55,6 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
         {
             Modules::Disk =>                subs.push(time::every(Duration::from_millis(app.ron_config.disk_update_interval)).map(|_| Message::UpdateDisk)),
             Modules::Tray =>                subs.push(iced::Subscription::run_with(TraySubscription, tray_stream)),
-            Modules::Network =>             subs.push(network_subscription(app.ron_config.network_disconnected_text.clone())),
             Modules::Cpu =>                 subs.push(time::every(Duration::from_millis(app.ron_config.cpu_update_interval)).map(|_| Message::UpdateCpu)),
             Modules::CpuTemp =>             subs.push(time::every(Duration::from_millis(app.ron_config.cpu_temp_update_interval)).map(|_| Message::UpdateCpuTemp)),
             Modules::Ram =>                 subs.push(time::every(Duration::from_millis(app.ron_config.ram_update_interval)).map(|_| Message::UpdateRam)),
@@ -63,6 +62,11 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             Modules::Clock =>               subs.push(time::every(Duration::from_millis(app.ron_config.clock_update_interval)).map(|_| Message::UpdateClock)),
             Modules::NiriWorkspaces =>      subs.push(time::every(Duration::from_millis(app.ron_config.niri_workspaces_update_interval)).map(|_| Message::UpdateNiriWorkspaces)),
             Modules::MediaPlayerMetaData | Modules::MediaPlayerButtons => subs.push(time::every(Duration::from_millis(app.ron_config.media_player_metadata_update_interval)).map(|_| Message::UpdateMediaPlayerMetadata)),
+            Modules::Network =>             
+            {
+                subs.push(network_subscription(app.ron_config.network_disconnected_text.clone()));
+                subs.push(time::every(Duration::from_secs(1)).map(|_| Message::UpdateNetworkSpeed));
+            },
             Modules::FocusedWindowHypr | Modules::HyprWorkspaces =>
             {
                 if !hypr_sub_added
