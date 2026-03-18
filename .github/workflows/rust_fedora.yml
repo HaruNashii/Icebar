@@ -92,6 +92,6 @@ jobs:
             cargo install cargo-audit --locked
             cargo audit
             rustup toolchain install nightly --profile minimal
+            cargo install cargo-udeps --locked
             cargo +nightly udeps
 
-# ── aur ──────────────────────────────────────────────────────────────────────

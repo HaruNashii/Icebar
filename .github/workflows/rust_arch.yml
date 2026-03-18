@@ -115,6 +115,10 @@ jobs:
         shell: arch.sh {0}
         run: rustup toolchain install nightly --profile minimal
 
+      - name: Install cargo-udeps
+        shell: arch.sh {0}
+        run: cargo install cargo-udeps --locked
+
       - name: Unused dependencies
         shell: arch.sh {0}
         run: cargo +nightly udeps

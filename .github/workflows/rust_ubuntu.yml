@@ -124,5 +124,8 @@ jobs:
       - name: Install nightly
         run: rustup toolchain install nightly --profile minimal
 
+      - name: Install cargo-udeps
+        run: cargo install cargo-udeps --locked
+
       - name: Unused dependencies
         run: cargo +nightly udeps
