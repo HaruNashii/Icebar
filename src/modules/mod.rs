@@ -6,6 +6,7 @@ pub mod cpu_temp;
 pub mod network;
 pub mod volume;
 pub mod clock;
+pub mod image;
 pub mod tray;
 pub mod niri;
 pub mod hypr;

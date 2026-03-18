@@ -9,7 +9,7 @@ use iced::Font;
 
 // ============ CRATES ============
 use crate::helpers::{font::build_font, fs::check_if_config_file_exists, misc::{define_bar_anchor_position, is_active_module, validate_bar_data}, monitor::get_monitor_res, string::{intern_string, weight_from_str}, style::{UserStyle, set_style, style} };
-use crate::modules::{data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
+use crate::modules::{image::{PreloadedImage, preload_image}, data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{read_ron_config, BarConfig};
 use crate::context_menu::ContextMenuData;
 use crate::subscription::subscription;
@@ -57,6 +57,7 @@ pub struct AppData
     volume_output_raw: f32,
     volume_input_raw: f32,
 
+    preloaded_images_handle: Vec<Option<(PreloadedImage, usize)>>,
     cpu_snapshot: Option<crate::modules::cpu::CpuSnapshot>,
     current_clock_timezone: Option<(String, u32)>,
     is_hovering_media_player_meta_data: bool,
@@ -90,6 +91,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
 {
     check_if_config_file_exists();
     let (ron_config, current_clock_timezone, active_modules) = read_ron_config();
+    let preloaded_images = preload_image(&ron_config.images);
     let validated_bar_data = validate_bar_data(&ron_config);
     let anchor_position = define_bar_anchor_position(&ron_config.bar_position);
     let monitor_res = get_monitor_res(ron_config.display.clone());
@@ -107,6 +109,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     };
     let app_data = AppData
     {
+        preloaded_images_handle: preloaded_images,
         default_font: build_font(&font_name, &ron_config.font_style),
         monitor_size: (monitor_res.0, monitor_res.1),
         custom_module_last_run: vec![Instant::now(); ron_config.custom_modules.len()],

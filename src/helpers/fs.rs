@@ -53,7 +53,7 @@ pub fn check_if_config_file_exists()
 //   "CpuTemp", "Ram", "Cpu", "Disk",
 //   "MediaPlayerMetaData", "MediaPlayerButtons",
 //   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces",
-//   "CustomModule(index)",
+//   "CustomModule(index)", "Image(index)",
 //   "VolumeOutput", "VolumeInput",
 //   "Network", "Clock", "Tray"
 //
@@ -61,12 +61,12 @@ pub fn check_if_config_file_exists()
 // For example, setting "general_border_color" will override all "[ModuleName]_border_color" values.
 //
 // Text fields support two inline formatting tags:
-//   Color tag — applies a color to a segment of text: 
-//      "[Color=(R, G, B), String=YourText]"
-//   Tuning tag — inserts N hair spaces for fine optical spacing adjustments: 
-//      "[Tuning=N]"
-//   Both tags can be freely combined, for example: 
-//      "[Color=(255, 100, 100), String=artist][Tuning=2][Color=(200, 200, 200), String=title]"
+//   Color tag — applies a color to a segment of text:
+//	"[Color=(R, G, B), String=YourText]"
+//   Tuning tag — inserts N hair spaces for fine optical spacing adjustments:
+//     "[Tuning=N]"
+//   Both tags can be freely combined, for example:
+//     "[Color=(255, 100, 100), String=artist][Tuning=2][Color=(200, 200, 200), String=title]"
 //
 // Volume format steps increment by 25%: 0%, 25%, 50%, 75%, 100%, >100%.
 //
@@ -85,8 +85,8 @@ pub fn check_if_config_file_exists()
 //
 // To find the correct "font_family" and "font_style" values, run: fc-scan $PATH_TO_FONT_FILE
 //
-// Custom modules are assigned an index based on their position (top to bottom): first = 0, second = 1, etc.
-// Reference them in the module lists as "CustomModule(index)".
+// Images and Custom modules are assigned an index based on their position (top to bottom): first = 0, second = 1, etc.
+// Reference them in the module lists as "Image(index)" or "CustomModule(index)".
 //
 // All color fields now use the ColorType system. Three formats are supported:
 //   RGB((R, G, B))         — standard RGB color. Values range from 0 to 255.
@@ -133,6 +133,7 @@ BarConfig
     bar_background_color: RGBA((18, 18, 22, 100)),
     font_family: "JetBrains Mono",
     font_style: "Bold",
+
 
     // ================= GENERAL (STYLE) =================
     general_padding: Some(0),
@@ -263,7 +264,7 @@ BarConfig
     ),
     input_volume_format: 
     (
-        "[Color=(150, 40, 80), String=]  {}%", 
+        "[Color=(150, 40, 80), String=]   {}%", 
         "[Color=(150, 40, 80), String=]  {}%", 
         "[Color=(150, 40, 80), String=]  {}%", 
         "[Color=(150, 40, 80), String=]  {}%", 
@@ -660,6 +661,56 @@ BarConfig
     context_menu_border_size: 1.0,
     context_menu_border_radius: (3.0, 3.0, 3.0, 3.0),
 
+
+    // ================= IMAGES =================
+    //images_spacing: 5,
+    //images:
+    //[
+    //	(
+    //          image_path: "/path/to/kurukuru.gif",
+    //        	content_fit: Fill,
+    //        	message_image_missing: "Warning!!!: GIF Not Found.",
+    //        	side_separator: None,
+    //        	separator_color: RGB((75, 75, 75)),
+    //        	separator_width:  1.,
+    //        	separator_height: 16.,
+    //        	padding: 1,
+    //        	height: 30,
+    //        	width: 50,
+    //        	button_color: RGB((60, 50, 70)),
+    //        	button_hovered_color: RGB((110, 40, 80)),
+    //        	button_hovered_text_color: RGB((255, 255, 255)),
+    //        	button_pressed_color: RGB((70, 20, 40)),
+    //        	border_color: RGB((45, 55, 100)),
+    //    	border_size: 1.0,
+    //    	border_radius: (3., 3., 3., 3.),
+    //        	command_to_exec_on_left_click: ["kitty", "pulsemixer"],
+    //        	command_to_exec_on_right_click: ["kitty", "pulsemixer"],
+    //  ),
+    //(
+    //		image_path: "/path/to/amogus.png",
+    //        	content_fit: Fill,
+    //        	message_image_missing: "Warning!!!: Image Not Found.",
+    //        	side_separator: None,
+    //        	separator_color: RGB((75, 75, 75)),
+    //        	separator_width:  1.,
+    //        	separator_height: 16.,
+    //        	padding: 1,
+    //        	height: 30,
+    //        	width: 50,
+    //        	button_color: RGBA((60, 50, 70, 0)),
+    //        	button_hovered_color: RGB((110, 40, 80)),
+    //        	button_hovered_text_color: RGB((255, 255, 255)),
+    //        	button_pressed_color: RGB((70, 20, 40)),
+    //        	border_color: RGB((90, 70, 100)),
+    //    	border_size: 0.0,
+    //    	border_radius: (3., 3., 3., 3.),
+    //        	command_to_exec_on_left_click: ["kitty", "pulsemixer"],
+    //        	command_to_exec_on_right_click: ["kitty", "pulsemixer"],
+    //    )
+    //],
+
+
     // ================= CUSTOM MODULES =================
     custom_modules_spacing: 10,
     custom_modules: 
@@ -701,7 +752,7 @@ BarConfig
 	//	text: "print output:",
     	//	text_size: 15,
 	//	height: 30,
-    	//	button_color: RGB((255, 40, 55)),
+        //	button_color: RGB((255, 40, 55)),
     	//	button_hovered_color: RGB((150, 40, 80)),
     	//	button_hovered_text_color: RGB((255, 255, 255)),
     	//	button_pressed_color: RGB((85, 30, 55)),

@@ -19,7 +19,7 @@ use crate::modules::focused_window::{read_focused_window_hypr, read_focused_wind
 use crate::helpers::string::{format_input_volume, format_output_volume};
 use crate::modules::cpu_temp::read_cpu_temp;
 use crate::modules::ram::read_ram_data;
-use crate::modules::{network::{read_rx_tx, PREV_NET}, disk::read_disk_data, clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
+use crate::modules::{image::preload_image, network::{read_rx_tx, PREV_NET}, disk::read_disk_data, clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
 use crate::{helpers::{misc::define_bar_anchor_position, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
 use crate::helpers::{misc::{is_active_module, validate_bar_data}, workspaces::build_workspace_list };
 use crate::context_menu::{create_context_menu, get_context_menu_size};
@@ -300,6 +300,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             println!("[icebar] config.ron changed — reloading in place...");
             check_if_config_file_exists();
             let (new_config, current_clock_timezone, active_modules) = read_ron_config();
+            let preloaded_images = preload_image(&new_config.images);
             let new_anchor = define_bar_anchor_position(&new_config.bar_position);
             let bar_data_validated = validate_bar_data(&new_config);
             let mut bar_size = bar_data_validated.bar_size;
@@ -315,6 +316,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
             *app = AppData
             {
+                preloaded_images_handle: preloaded_images,
                 ids: app.ids.clone(),
                 default_font: build_font(&font_name, &new_config.font_style),
                 monitor_size: monitor_res,

@@ -18,6 +18,7 @@ use crate::modules::{disk::DiskData, clock::ClockData, cpu::CpuData, cpu_temp::C
 #[derive(Debug, Hash, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub enum Modules 
 {
+    Image(usize),
     CustomModule(usize),
     HyprWorkspaces,
     NiriWorkspaces,

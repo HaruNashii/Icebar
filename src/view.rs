@@ -1,5 +1,6 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Element, Length, Theme, widget::{Space, button, column, container, mouse_area, row}};
+use iced::{Alignment, Element, Length, Theme, widget::{image, text, Space, button, column, container, mouse_area, row}};
+use iced_gif::gif;
 
 
 
@@ -7,7 +8,7 @@ use iced::{Alignment, Element, Length, Theme, widget::{Space, button, column, co
 
 // ============ CRATES ============
 use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_text, cpu_temp::{define_cpu_temp_style, define_cpu_temp_text}, focused_window::{define_focused_window_style, define_focused_window_text}, ram::{define_ram_style, define_ram_text}, volume::define_volume_text}};
-use crate::modules::{disk::{define_disk_style, define_disk_text},cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
+use crate::modules::{image::{PreloadedImage, define_image_style}, disk::{define_disk_style, define_disk_text},cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::context_menu::context_menu_view;
 use crate::update::Message;
@@ -490,6 +491,50 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     separator_color,
                     separator_width,
                     separator_height
+                )
+            }
+
+
+            // ── Image ──────────────────────────────────────────────────
+            Modules::Image(borrowed_index) => 
+            {
+                let index = *borrowed_index;
+                let received_image = &app.ron_config.images[index];
+                let element: Element<'_, Message> = match &app.preloaded_images_handle[index]
+                {
+                    Some((PreloadedImage::Static(handle), _)) => image(handle).content_fit(received_image.content_fit.into()).width(received_image.width).height(received_image.height).into(),
+                    Some((PreloadedImage::Gif(frames), _)) => gif(frames.as_ref()).width(received_image.width).height(received_image.height).into(),
+                    None => text("Warning!!!: Parsed Image Doesn't Exists!!!").height(Length::Fill).width(Length::Fill).size(15).center().into()
+                };
+
+                let image_container = container
+                (
+                        button
+                        (
+                            mouse_area
+                            (
+                                element
+                            )
+                            .on_right_press(Message::CreateCustomModuleCommand((Some(index), received_image.command_to_exec_on_right_click.clone(), "Image Command".to_string(), false, false)))
+                        )
+                        .width(Length::Shrink)
+                        .height(Length::Shrink)
+                        .padding(received_image.padding)
+                        .on_press(Message::CreateCustomModuleCommand((Some(index), received_image.command_to_exec_on_left_click.clone(), "Image Command".to_string(), true, false)))
+                        .style(|_, status| {define_image_style(received_image, status)})  
+                ).width(Length::Shrink).height(Length::Shrink).align_y(Alignment::Center);
+                
+                apply_separator
+                (
+                    match axis 
+                    {
+                        Axis::Horizontal => row![image_container].align_y(Alignment::Center).into(),
+                        Axis::Vertical => column![image_container].align_x(Alignment::Center).into()
+                    },
+                    received_image.side_separator,
+                    received_image.separator_color.to_iced_color(), 
+                    received_image.separator_width,
+                    received_image.separator_height,
                 )
             }
 

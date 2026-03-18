@@ -7,7 +7,7 @@ use std::{fs, collections::HashSet};
 
 
 // ============ CRATES ============
-use crate::modules::{custom_modules::CustomModule, data::Modules};
+use crate::modules::{image::Image, custom_modules::CustomModule, data::Modules};
 use crate::helpers::{color::ColorType, ron_general::apply_general_settings, style::{SideOption, TextOrientation}};
 
 
@@ -513,6 +513,10 @@ pub struct BarConfig
     pub context_menu_border_color: ColorType,
     pub context_menu_border_size: f32,
     pub context_menu_border_radius: [f32;4],
+
+    // ================= CUSTOM MODULES =================
+    pub images_spacing: u32,
+    pub images: Vec<Image>,
 
     // ================= CUSTOM MODULES =================
     pub custom_modules_spacing: u32,
@@ -1053,7 +1057,6 @@ impl Default for BarConfig
             context_menu_background_border_color: ColorType::RGB([255, 255, 255]),
             context_menu_background_border_size: 1.0,
             context_menu_background_border_radius: [3.0, 3.0, 3.0, 3.0],
-            
             context_menu_text_size: 15,
             context_menu_text_color: ColorType::RGB([255, 255, 255]),
             context_menu_orientation: TextOrientation::Vertical,
@@ -1066,6 +1069,11 @@ impl Default for BarConfig
             context_menu_border_color: ColorType::RGB([130, 90, 140]),
             context_menu_border_size: 1.0,
             context_menu_border_radius: [3.0, 3.0, 3.0, 3.0],
+
+
+            // ================= CUSTOM MODULES =================
+            images_spacing: 10,
+            images: Vec::new(),
 
 
             // ================= CUSTOM MODULES =================
@@ -1117,6 +1125,10 @@ pub fn read_ron_config() -> (BarConfig, Option<(String, u32)>, HashSet<Modules>)
     {
         for item in position
         {
+            if let Modules::Image(_) = item
+            {
+                active_modules.insert(item.to_owned());
+            }
             if let Modules::CustomModule(_) = item
             {
                 active_modules.insert(item.to_owned());
