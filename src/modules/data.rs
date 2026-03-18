@@ -8,7 +8,7 @@ use iced::widget::image;
 
 
 // ============ CRATES ============
-use crate::modules::{clock::ClockData, cpu::CpuData, cpu_temp::CpuTempData, focused_window::FocusedWindowData, media_player::MediaPlayerData, network::NetworkData, ram::RamData, volume::VolumeData, workspaces::WorkspaceData};
+use crate::modules::{disk::DiskData, clock::ClockData, cpu::CpuData, cpu_temp::CpuTempData, focused_window::FocusedWindowData, media_player::MediaPlayerData, network::NetworkData, ram::RamData, volume::VolumeData, workspaces::WorkspaceData};
 
 
 
@@ -33,6 +33,7 @@ pub enum Modules
     CpuTemp,
     Clock,
     Tray,
+    Disk,
     Cpu,
     Ram,
 }
@@ -49,6 +50,7 @@ pub struct ModulesData
     pub network_data: NetworkData,
     pub volume_data: VolumeData,
     pub clock_data: ClockData,
+    pub disk_data: DiskData,
     pub cpu_data: CpuData,
     pub ram_data: RamData
 }
@@ -68,6 +70,7 @@ mod tests
     #[test]
     fn modules_same_variants_are_equal()
     {
+        assert_eq!(Modules::Disk,                Modules::Disk);
         assert_eq!(Modules::Clock,               Modules::Clock);
         assert_eq!(Modules::Network,             Modules::Network);
         assert_eq!(Modules::Tray,                Modules::Tray);

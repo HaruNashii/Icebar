@@ -133,6 +133,7 @@ pub struct BarConfig
     pub cpu_temp_update_interval: u64,
     pub ram_update_interval: u64,
     pub focused_window_update_interval: u64,
+    pub disk_update_interval: u64,
 
 
     // ================= FORMATS =================
@@ -152,6 +153,7 @@ pub struct BarConfig
     pub clock_format: String,
     pub clock_alt_format: String,
     pub cpu_format: String,
+    pub disk_format: String,
 
 
     // ================= SIDE SEPARATOR CONFIGS =================
@@ -235,8 +237,28 @@ pub struct BarConfig
     pub muted_volume_input_side_separator_width:  f32,
     pub muted_volume_input_side_separator_height: f32,
 
+    pub disk_side_separator: Option<SideOption>,
+    pub disk_side_separator_color: ColorType,
+    pub disk_side_separator_width: f32,
+    pub disk_side_separator_height: f32,
 
-    // ================= TRAY (STYLE) =================
+
+    // ================= disk (style) =================
+    pub disk_padding: u16,
+    pub disk_mount: String,
+    pub disk_text_size: u32,
+    pub disk_text_color: ColorType,
+    pub disk_text_orientation: TextOrientation,
+    pub disk_button_color: ColorType,
+    pub disk_button_hovered_color: ColorType,
+    pub disk_button_hovered_text_color: ColorType,
+    pub disk_button_pressed_color: ColorType,
+    pub disk_border_color: ColorType,
+    pub disk_border_size: f32,
+    pub disk_border_radius: [f32;4],
+
+
+    // ================= tray (style) =================
     pub tray_icon_size: u32,
     pub tray_spacing: u32,
     pub tray_button_size: u16,
@@ -564,6 +586,7 @@ impl Default for BarConfig
 
 
             // ================= MODULES CONFIGS =================
+            disk_mount: "/".to_string(),
             clock_timezones: None,
             ellipsis_text: "...".to_string(),
             player: "spotify".to_string(),
@@ -603,6 +626,7 @@ impl Default for BarConfig
             cpu_temp_update_interval: 1050,
             ram_update_interval: 1050,
             focused_window_update_interval: 500,
+            disk_update_interval: 3000,
 
 
             // ================= FORMATS =================
@@ -662,7 +686,8 @@ impl Default for BarConfig
             cpu_format: "CPU: {usage}%".to_string(),
             focused_window_format: "{title}".to_string(),
             cpu_temp_format: " {temp}°C".to_string(),
-            ram_format: " {used}MB / {total}MB ({percent}%)".to_string(),
+            ram_format: " {used}MB / {total}MB {percent}%".to_string(),
+            disk_format: "{used}GB / {total}GB {percent}%".to_string(),
 
 
             // ================= SIDE SEPARATOR CONFIGS =================
@@ -745,6 +770,25 @@ impl Default for BarConfig
             muted_volume_input_side_separator_color: ColorType::RGB([75, 75, 75]),
             muted_volume_input_side_separator_width:  1.,
             muted_volume_input_side_separator_height: 20.,
+
+            disk_side_separator: None,
+            disk_side_separator_color: ColorType::RGB([75, 75, 75]),
+            disk_side_separator_width: 1.,
+            disk_side_separator_height: 16.,
+
+
+            // ================= DISK (STYLE) =================
+            disk_padding: 0,
+            disk_text_size: 12,
+            disk_text_color: ColorType::RGB([220, 220, 220]),
+            disk_text_orientation: TextOrientation::Horizontal,
+            disk_button_color: ColorType::RGB([40, 40, 50]),
+            disk_button_hovered_color: ColorType::RGB([60, 60, 75]),
+            disk_button_hovered_text_color: ColorType::RGB([255, 255, 255]),
+            disk_button_pressed_color: ColorType::RGB([30, 30, 40]),
+            disk_border_color: ColorType::RGB([80, 80, 100]),
+            disk_border_size: 1.0,
+            disk_border_radius: [3.0, 3.0, 3.0, 3.0],
 
 
             // ================= TRAY (STYLE) =================
@@ -1067,7 +1111,7 @@ pub fn read_ron_config() -> (BarConfig, Option<(String, u32)>, HashSet<Modules>)
     };
 
     let mut active_modules: HashSet<Modules> = HashSet::new();
-    let all_possible_default_modules = [Modules::FocusedWindowSway, Modules::FocusedWindowHypr, Modules::FocusedWindowNiri, Modules::CpuTemp, Modules::Ram, Modules::Cpu, Modules::NiriWorkspaces, Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
+    let all_possible_default_modules = [Modules::Disk, Modules::FocusedWindowSway, Modules::FocusedWindowHypr, Modules::FocusedWindowNiri, Modules::CpuTemp, Modules::Ram, Modules::Cpu, Modules::NiriWorkspaces, Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
     let all_possible_position = [&bar_config.left_modules, &bar_config.center_modules, &bar_config.right_modules];
     for position in all_possible_position
     {

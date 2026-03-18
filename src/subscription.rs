@@ -53,7 +53,8 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
     {
         match module_name
         {
-            Modules::Tray => subs.push(iced::Subscription::run_with(TraySubscription, tray_stream)),
+            Modules::Disk =>                subs.push(time::every(Duration::from_millis(app.ron_config.disk_update_interval)).map(|_| Message::UpdateDisk)),
+            Modules::Tray =>                subs.push(iced::Subscription::run_with(TraySubscription, tray_stream)),
             Modules::Network =>             subs.push(network_subscription(app.ron_config.network_disconnected_text.clone())),
             Modules::Cpu =>                 subs.push(time::every(Duration::from_millis(app.ron_config.cpu_update_interval)).map(|_| Message::UpdateCpu)),
             Modules::CpuTemp =>             subs.push(time::every(Duration::from_millis(app.ron_config.cpu_temp_update_interval)).map(|_| Message::UpdateCpuTemp)),

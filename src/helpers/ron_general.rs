@@ -20,6 +20,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.network_padding                          = v;
         ron_config.volume_output_padding                    = v;
         ron_config.volume_input_padding                     = v;
+        ron_config.disk_padding                             = v;
     }
 
     if let Some(v) = ron_config.general_text_size
@@ -35,6 +36,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_text_size                  = v;
         ron_config.volume_input_text_size                   = v;
         ron_config.workspace_text_size                      = v;
+        ron_config.disk_text_size                           = v;
     }
 
     if let Some(v) = ron_config.general_text_orientation
@@ -50,6 +52,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_text_orientation           = v;
         ron_config.volume_input_text_orientation            = v;
         ron_config.workspace_text_orientation               = v;
+        ron_config.disk_text_orientation                    = v;
     }
 
     if let Some(v) = ron_config.general_text_color
@@ -64,6 +67,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_text_color             = v;
         ron_config.volume_input_text_color              = v;
         ron_config.workspace_text_color                 = v;
+        ron_config.disk_text_color                      = v;
     }
 
     if let Some(v) = ron_config.general_button_color
@@ -80,6 +84,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_button_color           = v;
         ron_config.volume_input_button_color            = v;
         ron_config.workspace_button_color               = v;
+        ron_config.disk_button_color                    = v;
     }
 
     if let Some(v) = ron_config.general_button_hovered_color
@@ -96,6 +101,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_button_hovered_color           = v;
         ron_config.volume_input_button_hovered_color            = v;
         ron_config.workspace_button_hovered_color               = v;
+        ron_config.disk_button_hovered_color                    = v;
     }
 
     if let Some(v) = ron_config.general_button_hovered_text_color
@@ -112,6 +118,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_button_hovered_text_color          = v;
         ron_config.volume_input_button_hovered_text_color           = v;
         ron_config.workspace_button_hovered_text_color              = v;
+        ron_config.disk_button_hovered_text_color                   = v;
     }
 
     if let Some(v) = ron_config.general_button_pressed_color
@@ -128,6 +135,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_button_pressed_color           = v;
         ron_config.volume_input_button_pressed_color            = v;
         ron_config.workspace_button_pressed_color               = v;
+        ron_config.disk_button_pressed_color                    = v;
     }
 
     if let Some(v) = ron_config.general_border_color
@@ -144,6 +152,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_border_color          = v;
         ron_config.volume_input_border_color           = v;
         ron_config.workspace_border_color              = v;
+        ron_config.disk_border_color                   = v;
     }
 
     if let Some(v) = ron_config.general_border_size
@@ -160,6 +169,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_border_size            = v;
         ron_config.volume_input_border_size             = v;
         ron_config.workspace_border_size                = v;
+        ron_config.disk_border_size                     = v;
     }
 
     if let Some(v) = ron_config.general_border_radius
@@ -176,6 +186,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_border_radius          = v;
         ron_config.volume_input_border_radius           = v;
         ron_config.workspace_border_radius              = v;
+        ron_config.disk_border_radius                    = v;
     }
 
     if let Some(v) = ron_config.general_side_separator
@@ -192,6 +203,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_side_separator             = Some(v);
         ron_config.volume_input_side_separator              = Some(v);
         ron_config.workspace_side_separator                 = Some(v);
+        ron_config.disk_side_separator                       = Some(v);
     }
 
     if let Some(v) = ron_config.general_side_separator_color
@@ -208,6 +220,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_side_separator_color           = v;
         ron_config.volume_input_side_separator_color            = v;
         ron_config.workspace_side_separator_color               = v;
+        ron_config.disk_side_separator_color                     = v;
     }
 
     if let Some(v) = ron_config.general_side_separator_width
@@ -224,6 +237,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_side_separator_width           = v;
         ron_config.volume_input_side_separator_width            = v;
         ron_config.workspace_side_separator_width               = v;
+        ron_config.disk_side_separator_width                     = v;
     }
 
     if let Some(v) = ron_config.general_side_separator_height
@@ -240,6 +254,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output_side_separator_height          = v;
         ron_config.volume_input_side_separator_height           = v;
         ron_config.workspace_side_separator_height              = v;
+        ron_config.disk_side_separator_height                    = v;
     }
 
 

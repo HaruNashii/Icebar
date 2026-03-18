@@ -7,7 +7,7 @@ use iced::{Alignment, Element, Length, Theme, widget::{Space, button, column, co
 
 // ============ CRATES ============
 use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_text, cpu_temp::{define_cpu_temp_style, define_cpu_temp_text}, focused_window::{define_focused_window_style, define_focused_window_text}, ram::{define_ram_style, define_ram_text}, volume::define_volume_text}};
-use crate::modules::{cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
+use crate::modules::{disk::{define_disk_style, define_disk_text},cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::context_menu::context_menu_view;
 use crate::update::Message;
@@ -221,6 +221,23 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     app.ron_config.focused_window_side_separator_color.to_iced_color(),
                     app.ron_config.focused_window_side_separator_width,
                     app.ron_config.focused_window_side_separator_height,
+                )
+            },
+
+
+            // ── Disk ──────────────────────────────────────────────────────────
+            Modules::Disk =>
+            {
+                let text_data = (convert_text_to_rich_text::<Message>(&define_disk_text(app)), app.ron_config.disk_text_size);
+                let inner = create_button_container_without_hover_message(app, app.ron_config.disk_padding, text_data, Message::Nothing, Message::Nothing, define_disk_style);
+             
+                apply_separator
+                (
+                    inner,
+                    app.ron_config.disk_side_separator,
+                    app.ron_config.disk_side_separator_color.to_iced_color(),
+                    app.ron_config.disk_side_separator_width,
+                    app.ron_config.disk_side_separator_height,
                 )
             },
              

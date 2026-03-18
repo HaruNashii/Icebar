@@ -50,7 +50,7 @@ pub fn check_if_config_file_exists()
 // ===== TIPS =====
 // All possible modules:
 //   "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri",
-//   "CpuTemp", "Ram", "Cpu",
+//   "CpuTemp", "Ram", "Cpu", "Disk",
 //   "MediaPlayerMetaData", "MediaPlayerButtons",
 //   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces",
 //   "CustomModule(index)",
@@ -137,8 +137,8 @@ BarConfig
     general_padding: Some(0),
     general_text_size: Some(15),
     general_text_orientation: Some(Horizontal),
-    general_text_color: Some(RGB((255, 255, 255))),
-    general_button_color: Some(RGB((50, 45, 60))),
+    general_text_color: Some(HEX("FFFFFF")),
+    general_button_color: Some(HEX("322d3c")),
     general_button_hovered_color: Some(RGB((130, 35, 70))),
     general_button_hovered_text_color: Some(RGB((255, 255, 255))),
     general_button_pressed_color: Some(RGB((80, 25, 45))),
@@ -168,11 +168,12 @@ BarConfig
 
     // ================= MODULES =================
     left_modules: [CustomModule(0), Cpu, CpuTemp, Ram],
-    center_modules: [Clock],
+    center_modules: [Clock, Disk],
     right_modules: [Tray, Network, VolumeOutput, VolumeInput],
 
 
     // ================= MODULES CONFIGS =================
+    disk_mount: "/",
     clock_timezones: None,
     //clock_timezones: Some(["America/New_York", "Europe/London", "Asia/Tokyo", "America/Sao_Paulo"]),
     ellipsis_text: "...",
@@ -275,9 +276,11 @@ BarConfig
     cpu_format: "[Color=(150, 40, 80), String=CPU:] {usage}%",
     cpu_temp_format: "[Color=(150, 40, 80), String=CPU Temp:] {temp}°C",
     ram_format: "[Color=(150, 40, 80), String=Ram Used:] {used}MB / {percent}% | [Color=(150, 40, 80), String=Ram Total:] {total}MB",
+    disk_format: "[Color=(150, 40, 80), String=Disk Used:] {used}GB / {percent}% | [Color=(150, 40, 80), String=Disk Total:] {total}GB",
 
     
     // ================= PADDING CONFIGS =================
+    disk_padding: 0,
     workspace_padding: 0,
     focused_window_padding: 0,
     cpu_padding: 0,
@@ -376,6 +379,11 @@ BarConfig
     muted_volume_input_side_separator_width:  1.,
     muted_volume_input_side_separator_height: 20.,
 
+    disk_side_separator:        None,
+    disk_side_separator_color:  RGB((75, 75, 75)),
+    disk_side_separator_width:  1.,
+    disk_side_separator_height: 20.,
+
 
     // ================= TRAY (STYLE) =================
     tray_icon_size: 20,
@@ -401,6 +409,19 @@ BarConfig
     focused_window_border_color: RGB((80, 80, 100)),
     focused_window_border_size: 1.0,
     focused_window_border_radius: (3.0, 3.0, 3.0, 3.0),
+
+
+    // ================= DISK (STYLE) =================
+    disk_text_size: 12,
+    disk_text_color: RGB((220, 220, 220)),
+    disk_text_orientation: Horizontal,
+    disk_button_color: RGB((40, 40, 50)),
+    disk_button_hovered_color: RGB((60, 60, 75)),
+    disk_button_hovered_text_color: RGB((255, 255, 255)),
+    disk_button_pressed_color: RGB((30, 30, 40)),
+    disk_border_color: RGB((80, 80, 100)),
+    disk_border_size: 1.0,
+    disk_border_radius: (3.0, 3.0, 3.0, 3.0),
 
 
     // ================= CPU (STYLE) =================

@@ -19,7 +19,7 @@ use crate::modules::focused_window::{read_focused_window_hypr, read_focused_wind
 use crate::helpers::string::{format_input_volume, format_output_volume};
 use crate::modules::cpu_temp::read_cpu_temp;
 use crate::modules::ram::read_ram_data;
-use crate::modules::{clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
+use crate::modules::{disk::read_disk_data, clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
 use crate::{helpers::{misc::define_bar_anchor_position, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
 use crate::helpers::{misc::{is_active_module, validate_bar_data}, workspaces::build_workspace_list };
 use crate::context_menu::{create_context_menu, get_context_menu_size};
@@ -69,6 +69,7 @@ pub enum Message
     Tick,
     VolumeUpdated(f32, bool, f32, bool),
 
+    UpdateDisk,
     UpdateRam,
     UpdateCpu,
     UpdateCpuTemp,
@@ -175,6 +176,13 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::UpdateHyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); },
         Message::UpdateSwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); },
         Message::MediaPlayerDataFetched(data) => { app.modules_data.media_player_data = data; }
+        Message::UpdateDisk => 
+        { 
+            if let Some(data) = read_disk_data(&app.ron_config.disk_mount) 
+            {
+                app.modules_data.disk_data = data; 
+            } 
+        }
         Message::UpdateMediaPlayerMetadata => 
         { 
             let player = app.ron_config.player.clone();
