@@ -26,10 +26,13 @@
 // The "general_option_xyz" fields overwrite every respective per-module option.
 // For example, setting "general_border_color" will override all "[ModuleName]_border_color" values.
 //
-// All text fields support per-string color flags with the syntax:
-//   "[Color=(R, G, B), String=YourText]"
-// Multiple flags can be combined, for example:
-//   "[Color=(255, 0, 0), String=red], normal text [Color=(0, 0, 255), String=blue]"
+// Text fields support two inline formatting tags:
+//   Color tag — applies a color to a segment of text:
+//	"[Color=(R, G, B), String=YourText]"
+//   Tuning tag — inserts N hair spaces for fine optical spacing adjustments:
+//     "[Tuning=N]"
+//   Both tags can be freely combined, for example:
+//     "[Color=(255, 100, 100), String=artist][Tuning=2][Color=(200, 200, 200), String=title]"
 //
 // Volume format steps increment by 25%: 0%, 25%, 50%, 75%, 100%, >100%.
 //
@@ -189,7 +192,7 @@ BarConfig
     network_disconnected_text: "No Connection Found.",
     alt_network_module_format: "{level} | {connection_type} | [Color=(0, 255, 255), String={id}]  | [Color=(0, 255, 0), String={speed}MB/s] | [Color=(0, 0, 255), String={sent}KB/s] | [Color=(0, 0, 255), String={received}KB/s]",
 
-    network_module_format: "{level}    ",
+    network_module_format: "{level}[Tuning=4]",
     network_level_format: 
     (
         "[Color=(150, 40, 80), String=󰖩]",
@@ -223,7 +226,7 @@ BarConfig
         "[Color=(150, 40, 80), String=]   {}%", 
         "[Color=(150, 40, 80), String=]   {}%", 
         "[Color=(150, 40, 80), String=]   {}%", 
-        "[Color=(150, 40, 80), String=]   + {}%"
+        "[Color=(150, 40, 80), String= +] {}%"
     ),
     input_volume_format: 
     (
@@ -636,7 +639,7 @@ BarConfig
                 separator_height: 16.,
 
 		name: "Wofi Custom Module",
-                text: " [Color=(150, 40, 80), String=󰣇]    ",
+                text: " [Color=(150, 40, 80), String=󰣇][Tuning=4]",
                 text_size: 15,
                 text_color: RGB((255, 255, 255)),
 		text_orientation: Horizontal,
