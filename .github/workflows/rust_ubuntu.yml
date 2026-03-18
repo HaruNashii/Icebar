@@ -10,17 +10,119 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
 
+  check:
+    name: Check (Ubuntu)
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y --fix-missing libpulse-dev pkg-config cmake build-essential git libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libfontconfig-dev
-    - name: Build The Project
-      run: cargo build
-    - name: Run tests
-      run: cargo test
+      - uses: actions/checkout@v4
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ubuntu-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ubuntu-cargo-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --fix-missing \
+            libpulse-dev pkg-config cmake build-essential git \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libxfixes-dev libxi-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libfontconfig-dev
+
+      - name: Build (stable)
+        run: cargo build
+        env:
+          RUSTFLAGS: "-D warnings"
+
+      - name: Build (beta)
+        run: |
+          rustup toolchain install beta --profile minimal
+          cargo +beta build
+        env:
+          RUSTFLAGS: "-D warnings"
+
+  test:
+    name: Test (Ubuntu)
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ubuntu-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ubuntu-cargo-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --fix-missing \
+            libpulse-dev pkg-config cmake build-essential git \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libxfixes-dev libxi-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libfontconfig-dev
+
+      - name: Run tests (debug)
+        run: cargo test
+
+      - name: Run tests (release)
+        run: cargo test --release
+
+  lint:
+    name: Lint (Ubuntu)
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ubuntu-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ubuntu-cargo-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --fix-missing \
+            libpulse-dev pkg-config cmake build-essential git \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libxfixes-dev libxi-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libfontconfig-dev
+
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Security audit
+        run: cargo audit
+
+      - name: Install nightly
+        run: rustup toolchain install nightly --profile minimal
+
+      - name: Unused dependencies
+        run: cargo +nightly udeps

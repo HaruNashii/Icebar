@@ -1,37 +1,120 @@
 name: Rust - Arch
 
-
-
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
-
-
 env:
   CARGO_TERM_COLOR: always
 
-
-
 jobs:
-  Setup:
 
+  check:
+    name: Check (Arch)
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - uses: RangHo/setup-arch@main
-      with:
-        version: latest 
-        mirror: https://geo.mirror.pkgbuild.com 
-        packages: "pkg-config base-devel alsa-lib cmake gcc gcc-libs hidapi ibus jack libdecor libgl libpulse libusb libx11 libxcursor libxext libxinerama libxkbcommon libxrandr libxrender libxss libxtst mesa ninja pipewire sndio vulkan-driver vulkan-headers wayland wayland-protocols"
-    
-    - name: Build The Project
-      shell: arch.sh {0}
-      run: cargo build
-      
-    - name: Run tests
-      shell: arch.sh {0}
-      run: cargo test
+      - uses: actions/checkout@v4
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: arch-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: arch-cargo-
+
+      - uses: RangHo/setup-arch@main
+        with:
+          version: latest
+          mirror: https://geo.mirror.pkgbuild.com
+          packages: "pkg-config base-devel alsa-lib cmake gcc gcc-libs hidapi ibus jack libdecor libgl libpulse libusb libx11 libxcursor libxext libxinerama libxkbcommon libxrandr libxrender libxss libxtst mesa ninja pipewire sndio vulkan-driver vulkan-headers wayland wayland-protocols"
+
+      - name: Build (stable)
+        shell: arch.sh {0}
+        run: cargo build
+        env:
+          RUSTFLAGS: "-D warnings"
+
+  test:
+    name: Test (Arch)
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: arch-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: arch-cargo-
+
+      - uses: RangHo/setup-arch@main
+        with:
+          version: latest
+          mirror: https://geo.mirror.pkgbuild.com
+          packages: "pkg-config base-devel alsa-lib cmake gcc gcc-libs hidapi ibus jack libdecor libgl libpulse libusb libx11 libxcursor libxext libxinerama libxkbcommon libxrandr libxrender libxss libxtst mesa ninja pipewire sndio vulkan-driver vulkan-headers wayland wayland-protocols"
+
+      - name: Run tests (debug)
+        shell: arch.sh {0}
+        run: cargo test
+
+      - name: Run tests (release)
+        shell: arch.sh {0}
+        run: cargo test --release
+
+  lint:
+    name: Lint (Arch)
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: arch-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: arch-cargo-
+
+      - uses: RangHo/setup-arch@main
+        with:
+          version: latest
+          mirror: https://geo.mirror.pkgbuild.com
+          packages: "pkg-config base-devel alsa-lib cmake gcc gcc-libs hidapi ibus jack libdecor libgl libpulse libusb libx11 libxcursor libxext libxinerama libxkbcommon libxrandr libxrender libxss libxtst mesa ninja pipewire sndio vulkan-driver vulkan-headers wayland wayland-protocols"
+
+      - name: Clippy
+        shell: arch.sh {0}
+        run: cargo clippy -- -D warnings
+
+      - name: Install cargo-audit
+        shell: arch.sh {0}
+        run: cargo install cargo-audit --locked
+
+      - name: Security audit
+        shell: arch.sh {0}
+        run: cargo audit
+
+      - name: Install nightly
+        shell: arch.sh {0}
+        run: rustup toolchain install nightly --profile minimal
+
+      - name: Unused dependencies
+        shell: arch.sh {0}
+        run: cargo +nightly udeps
