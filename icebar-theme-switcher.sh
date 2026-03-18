@@ -13,6 +13,7 @@
 # │                                Hypr, Niri, or None.                     │
 # │     --focused      -fw <wm>    Bypass focused window picker. <wm>:      │
 # │                                Sway, Hypr, Niri, or None.               │
+# │     --select      -s  <name>   Directly install theme by name.           │
 # │     --help         -h          Show this help message and exit.          │
 # ╰─────────────────────────────────────────────────────────────────────────╯
 
@@ -22,6 +23,7 @@ FORCE=false
 CYCLE=false
 BYPASS_WM=""    # Sway | Hypr | Niri | None
 BYPASS_FW=""    # Sway | Hypr | Niri | None
+SELECT=""       # theme name to install directly
 
 # ── Help ───────────────────────────────────────────────────────────────────
 print_help()
@@ -38,6 +40,7 @@ print_help()
     echo -e "    ${CYAN}-c${RESET}, ${CYAN}--cycle${RESET}                Cycle through every theme one by one."
     echo -e "    ${CYAN}-w${RESET}, ${CYAN}--workspace${RESET}  ${DIM}<wm>${RESET}      Bypass workspace module picker."
     echo -e "    ${CYAN}-fw${RESET}, ${CYAN}--focused${RESET}   ${DIM}<wm>${RESET}      Bypass focused window module picker."
+    echo -e "    ${CYAN}-s${RESET}, ${CYAN}--select${RESET}     ${DIM}<name>${RESET}    Directly install a theme by name."
     echo -e "    ${CYAN}-h${RESET}, ${CYAN}--help${RESET}                 Show this help message and exit."
     echo
     echo -e "  ${BWHITE}<w> and ${BWHITE}<fw> values:${RESET}  ${WHITE}Sway${RESET}  ${WHITE}Hypr${RESET}  ${WHITE}Niri${RESET}  ${WHITE}None${RESET}"
@@ -80,6 +83,11 @@ while [[ $i -le $# ]]; do
             i=$(( i + 1 ))
             [[ $i -gt $# ]] && { echo -e "  ${RED}${BOLD}✗${RESET}  --workspace/-w requires a value (Sway, Hypr, Niri, None)." >&2; exit 1; }
             BYPASS_WM="$(resolve_wm_arg "${!i}" "workspace")"
+            ;;
+        --select|-s)
+            i=$(( i + 1 ))
+            [[ $i -gt $# ]] && { echo -e "  ${RED}${BOLD}✗${RESET}  --select/-s requires a theme name." >&2; exit 1; }
+            SELECT="${!i}"
             ;;
         --focused|-fw)
             i=$(( i + 1 ))
@@ -288,6 +296,29 @@ if [[ "$CYCLE" == true ]]; then
     echo
 else
 
+# ── Direct select mode: install by name ──────────────────────────────────
+if [[ -n "$SELECT" ]]; then
+    CHOSEN_CONFIG="$THEMES_DIR/$SELECT/config.ron"
+    if [[ ! -f "$CHOSEN_CONFIG" ]]; then
+        print_header
+        print_error "Theme '${BOLD}${SELECT}${RESET}' not found in ${BOLD}$THEMES_DIR${RESET}"
+        echo
+        print_info "Available themes:"
+        echo
+        for t in "${THEMES[@]}"; do
+            echo -e "    ${DIM}·${RESET}  ${WHITE}${t}${RESET}"
+        done
+        echo
+        exit 1
+    fi
+    CHOSEN_THEME="$SELECT"
+    print_header
+    divider
+    echo
+    echo -e "  ${BWHITE}Selected:${RESET}  ${CYAN}${BOLD}${CHOSEN_THEME}${RESET}"
+    echo
+else
+
 # ── Display theme list ─────────────────────────────────────────────────────
 print_header
 
@@ -324,6 +355,7 @@ while true; do
     print_warn "Invalid choice. Enter a number between 1 and ${#THEMES[@]}, or q to quit."
 done
 
+fi  # end of select mode
 fi  # end of cycle/manual selection
 
 # ── Workspace module detection ─────────────────────────────────────────────
