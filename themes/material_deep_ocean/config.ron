@@ -19,14 +19,13 @@
 //
 //    cyan          (137, 221, 255)  ← PRIMARY ACCENT — badge, active ws, clock
 //    blue          ( 82, 139, 255)  ← network
-//    green         (195, 232, 141)  ← success states
+//    green         (195, 232, 141)  ← sys stats
 //    yellow        (255, 203, 107)  ← volume
 //    orange        (240, 113,  59)  ← badge label accent
 //    red           (255,  85, 114)  ← muted audio
 //    pink          (247, 118, 142)  ← media player
 //    purple        (199, 146, 234)  ← secondary media
 //
-//  DESIGN — never done before:
 //    · TOP FLOATING WIDE ISLAND — bar_size: (1500, 36)
 //      1500px wide — the widest island in the collection by far.
 //      floating_space: 6 — small gap top. Wallpaper peeks at both sides.
@@ -38,7 +37,7 @@
 //    · Cyan is the soul of Material Deep Ocean — badge, selected ws, clock
 //    · Pink owns media — never paired with cyan in any other config
 //    · Yellow volume — warm against the deep cold background
-//    · CPU module in the LEFT zone — data lives left, media lives right
+//    · CPU and RAM in the LEFT zone — data lives left, media lives right
 //    · Hover: surface_alt lift — subtle, Material's "ink ripple" spirit
 
 BarConfig
@@ -49,7 +48,7 @@ BarConfig
     floating_space: 6,
     increased_exclusive_bar_zone: 0,
     bar_side_spaces_size: 10,
-    bar_size: (1500, 36),                             // widest island ever
+    bar_size: (1500, 36),
 
     bar_border_radius: (10., 10., 10., 10.),
     bar_border_size: 0.0,
@@ -60,41 +59,8 @@ BarConfig
     font_style: "Bold",
 
 
-    // ================= GENERAL (STYLE) =================
-    //general_padding: Some(0),
-    //general_text_size: Some(15),
-    //general_text_orientation: Some(Horizontal),
-    //general_text_color: Some(RGB((255, 255, 255))),
-    //general_button_color: Some(RGB((50, 45, 60))),
-    //general_button_hovered_color: Some(RGB((130, 35, 70))),
-    //general_button_hovered_text_color: Some(RGB((255, 255, 255))),
-    //general_button_pressed_color: Some(RGB((80, 25, 45))),
-    //general_border_color: Some(RGB((120, 80, 130))),
-    //general_border_size: Some(1.0),
-    //general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),
-    //general_side_separator: None,
-    //general_side_separator_color: Some(RGB((75, 75, 75))),
-    //general_side_separator_width: Some(1.0),
-    //general_side_separator_height: Some(16.0),
-    //general_alt_padding: None,
-    //general_alt_text_size: None,
-    //general_alt_text_orientation: None,
-    //general_alt_text_color: None,
-    //general_alt_button_color: None,
-    //general_alt_button_hovered_color: None,
-    //general_alt_button_hovered_text_color: None,
-    //general_alt_button_pressed_color: None,
-    //general_alt_border_color: None,
-    //general_alt_border_size: None,
-    //general_alt_border_radius: None,
-    //general_alt_side_separator: None,
-    //general_alt_side_separator_color: None,
-    //general_alt_side_separator_width: None,
-    //general_alt_side_separator_height: None,
-
-
     // ================= MODULES =================
-    left_modules:  [CustomModule(0), HyprWorkspaces, CustomModule(1)],
+    left_modules:  [CustomModule(0), HyprWorkspaces, Cpu, Ram],
     center_modules: [Clock],
     right_modules: [MediaPlayerMetaData, MediaPlayerButtons, VolumeOutput, Network, Tray],
 
@@ -113,6 +79,8 @@ BarConfig
     incremental_steps_input: 5,
     action_on_left_click_media_player_metadata: DefaultAction,
     action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_cpu: CustomAction(["kitty", "btop"]),
+    action_on_right_click_cpu: CustomAction(["kitty", "btop"]),
     action_on_left_click_clock: DefaultAction,
     action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
     action_on_left_click_network: DefaultAction,
@@ -124,6 +92,9 @@ BarConfig
 
 
     // ================= FORMATS =================
+    cpu_format: "󰍛 {usage}%",
+    ram_format: "󰾆 {percent}%",
+
     media_player_buttons_format: ("󰒮", "󰏤", "󰐊", "󰒭"),
     media_player_metadata_format: "󰎆  {{artist}}  ·  {{title}}",
 
@@ -164,6 +135,33 @@ BarConfig
     clock_alt_format: "%a %d %b  ·  %H:%M:%S",
 
 
+    // ================= CPU (STYLE) =================
+    // Green — data lives left, ocean floor calm
+    cpu_text_size: 13,
+    cpu_text_color: RGB((195, 232, 141)),
+    cpu_text_orientation: Horizontal,
+    cpu_button_color: RGB((21, 25, 36)),
+    cpu_button_hovered_color: RGB((27, 31, 44)),
+    cpu_button_hovered_text_color: RGB((195, 232, 141)),
+    cpu_button_pressed_color: RGB((15, 17, 26)),
+    cpu_border_color: RGB((0, 0, 0)),
+    cpu_border_size: 0.0,
+    cpu_border_radius: (6.0, 6.0, 6.0, 6.0),
+
+
+    // ================= RAM (STYLE) =================
+    ram_text_size: 13,
+    ram_text_color: RGB((195, 232, 141)),
+    ram_text_orientation: Horizontal,
+    ram_button_color: RGB((21, 25, 36)),
+    ram_button_hovered_color: RGB((27, 31, 44)),
+    ram_button_hovered_text_color: RGB((195, 232, 141)),
+    ram_button_pressed_color: RGB((15, 17, 26)),
+    ram_border_color: RGB((0, 0, 0)),
+    ram_border_size: 0.0,
+    ram_border_radius: (6.0, 6.0, 6.0, 6.0),
+
+
     // ================= TRAY =================
     tray_icon_size: 18,
     tray_spacing: 5,
@@ -195,6 +193,7 @@ BarConfig
     media_player_button_spacing: 3,
     media_player_button_text_size: 14,
     media_player_button_text_orientation: Horizontal,
+    media_player_button_text_color: RGB((247, 118, 142)),
     media_player_button_color: RGB((21, 25, 36)),
     media_player_button_hovered_color: RGB((27, 31, 44)),
     media_player_button_hovered_text_color: RGB((247, 118, 142)),
@@ -230,12 +229,12 @@ BarConfig
 
 
     // ================= CLOCK =================
-    // Cyan center — Material Deep Ocean's defining color.
-    // Ghost bg. This is the visual anchor of the wide island.
+    // Cyan center — Material Deep Ocean's defining color
+    // Ghost bg — the visual anchor of the wide island
     clock_text_size: 15,
-    clock_text_color: RGB((137, 221, 255)),            // cyan
+    clock_text_color: RGB((137, 221, 255)),
     clock_text_orientation: Horizontal,
-    clock_button_color: RGB((15, 17, 26)),             // ghost
+    clock_button_color: RGB((15, 17, 26)),
     clock_button_hovered_color: RGB((21, 25, 36)),
     clock_button_hovered_text_color: RGB((137, 221, 255)),
     clock_button_pressed_color: RGB((15, 17, 26)),
@@ -269,7 +268,7 @@ BarConfig
     volume_output_border_radius: (6.0, 6.0, 6.0, 6.0),
 
     muted_volume_output_text_size: 13,
-    muted_volume_output_text_color: RGB((255, 85, 114)),   // red
+    muted_volume_output_text_color: RGB((255, 85, 114)),
     muted_volume_output_text_orientation: Horizontal,
     muted_volume_output_button_color: RGB((21, 25, 36)),
     muted_volume_output_button_hovered_color: RGB((27, 31, 44)),
@@ -303,14 +302,15 @@ BarConfig
 
 
     // ================= WORKSPACES =================
-    // Cyan active fill — the structural accent carries through.
-    // Numbers, not icons — wide bar has the room to read.
-    // Inactive = very dim disabled grey — recedes completely.
+    // Cyan active fill — the structural accent carries through
+    // Numbers, not icons — wide bar has the room to read
+    // Inactive = disabled grey — recedes completely
     workspace_height: 25,
     workspace_width: 25,
     workspace_different_selected_width: None,
     workspace_text_size: 13,
-    workspace_text_color: RGB((66, 76, 104)),          // disabled — barely there
+    workspace_text_color: RGB((66, 76, 104)),
+    workspace_selected_text_color: RGB((15, 17, 26)),
     workspace_text_orientation: Horizontal,
     workspace_text:
     [
@@ -324,7 +324,7 @@ BarConfig
     ]),
     workspace_spacing: 5,
     workspace_button_color: RGB((21, 25, 36)),
-    workspace_button_selected_color: RGB((137, 221, 255)),   // cyan fill
+    workspace_button_selected_color: RGB((137, 221, 255)),
     workspace_button_hovered_color: RGB((27, 31, 44)),
     workspace_button_hovered_text_color: RGB((163, 174, 205)),
     workspace_button_pressed_color: RGB((15, 17, 26)),
@@ -358,9 +358,8 @@ BarConfig
     custom_modules:
     [
         // ── MODULE 0 ── LAUNCHER BADGE
-        // Cyan fill — the ocean surface breaking into light.
-        // "󰣇  deep" — thematic label, concise.
-        // Hover to blue — same ocean, different depth.
+        // Cyan fill — the ocean surface breaking into light
+        // Hover to blue — same ocean, different depth
         (
             name: "badge",
             text: "󰣇  deep",
@@ -368,8 +367,8 @@ BarConfig
             text_color: RGB((15, 17, 26)),
             text_orientation: Horizontal,
             height: 26,
-            button_color: RGB((137, 221, 255)),        // cyan
-            button_hovered_color: RGB((82, 139, 255)),  // blue — deeper water
+            button_color: RGB((137, 221, 255)),
+            button_hovered_color: RGB((82, 139, 255)),
             button_hovered_text_color: RGB((15, 17, 26)),
             button_pressed_color: RGB((21, 25, 36)),
             border_color: RGB((0, 0, 0)),
@@ -385,38 +384,6 @@ BarConfig
             command_to_exec_on_right_click: ["wofi", "--show", "run"],
             continous_command_interval: 500,
             continous_command: []
-        ),
-
-        // ── MODULE 1 ── LIVE CPU + RAM
-        // LEFT side — data lives here. Green text, ocean floor calm.
-        // The wide island gives this enough room to breathe.
-        (
-            name: "sysinfo",
-            text: "",
-            text_size: 13,
-            text_color: RGB((195, 232, 141)),          // green
-            text_orientation: Horizontal,
-            height: 26,
-            button_color: RGB((21, 25, 36)),
-            button_hovered_color: RGB((27, 31, 44)),
-            button_hovered_text_color: RGB((195, 232, 141)),
-            button_pressed_color: RGB((15, 17, 26)),
-            border_color: RGB((0, 0, 0)),
-            border_size: 0.0,
-            border_radius: (6.0, 6.0, 6.0, 6.0),
-            display_err_output_if_failed: false,
-            dont_show_if_any_output_is_empty: true,
-            use_output_as_text: false,
-            use_continous_output_as_text: true,
-            all_output_as_text_format: "{continous_output}",
-            output_text_limit_len: 22,
-            command_to_exec_on_left_click: ["kitty", "btop"],
-            command_to_exec_on_right_click: ["kitty", "btop"],
-            continous_command_interval: 2500,
-            continous_command: [
-                "bash", "-c",
-                "c=$(top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d. -f1); r=$(free -m | awk '/Mem:/{printf \"%d%%\", $3*100/$2}'); echo \"󰍛 ${c}%  󰾆 ${r}\""
-            ]
         ),
     ],
 )

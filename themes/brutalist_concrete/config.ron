@@ -33,57 +33,24 @@ BarConfig
     // ================= GENERAL =================
     display: None,
     bar_position: Down,
-    floating_space: 0,                                // bolted — no gap
+    floating_space: 0,
     increased_exclusive_bar_zone: 0,
-    bar_side_spaces_size: 0,                          // edge to edge — no breathing room
-    bar_size: (0, 42),                                // tall and heavy
+    bar_side_spaces_size: 0,
+    bar_size: (0, 42),
 
-    bar_border_radius: (0., 0., 0., 0.),              // poured concrete has no curves
-    bar_border_size: 2.0,                             // structural border
-    bar_border_color: RGB((185, 182, 176)),            // Dust
-    bar_background_color: RGBA((72, 70, 68, 100)),     // Wet Concrete — fully opaque
+    bar_border_radius: (0., 0., 0., 0.),
+    bar_border_size: 2.0,
+    bar_border_color: RGB((185, 182, 176)),
+    bar_background_color: RGBA((72, 70, 68, 100)),
 
-    font_family: "Barlow Condensed",                  // fallback: "Liberation Sans Narrow" or "Arial Narrow"
+    font_family: "Barlow Condensed",
     font_style: "Bold",
 
 
-    // ================= GENERAL (STYLE) =================
-    //general_padding: Some(0),
-    //general_text_size: Some(15),
-    //general_text_orientation: Some(Horizontal),
-    //general_text_color: Some(RGB((255, 255, 255))),
-    //general_button_color: Some(RGB((50, 45, 60))),
-    //general_button_hovered_color: Some(RGB((130, 35, 70))),
-    //general_button_hovered_text_color: Some(RGB((255, 255, 255))),
-    //general_button_pressed_color: Some(RGB((80, 25, 45))),
-    //general_border_color: Some(RGB((120, 80, 130))),
-    //general_border_size: Some(1.0),
-    //general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),
-    //general_side_separator: None,
-    //general_side_separator_color: Some(RGB((75, 75, 75))),
-    //general_side_separator_width: Some(1.0),
-    //general_side_separator_height: Some(16.0),
-    //general_alt_padding: None,
-    //general_alt_text_size: None,
-    //general_alt_text_orientation: None,
-    //general_alt_text_color: None,
-    //general_alt_button_color: None,
-    //general_alt_button_hovered_color: None,
-    //general_alt_button_hovered_text_color: None,
-    //general_alt_button_pressed_color: None,
-    //general_alt_border_color: None,
-    //general_alt_border_size: None,
-    //general_alt_border_radius: None,
-    //general_alt_side_separator: None,
-    //general_alt_side_separator_color: None,
-    //general_alt_side_separator_width: None,
-    //general_alt_side_separator_height: None,
-
-
     // ================= MODULES =================
-    left_modules:  [CustomModule(0), HyprWorkspaces, CustomModule(1)],
+    left_modules:  [CustomModule(0), HyprWorkspaces, Cpu, Ram],
     center_modules: [Clock],
-    right_modules: [CustomModule(2), Network, VolumeOutput, Tray],
+    right_modules: [MediaPlayerMetaData, MediaPlayerButtons, Network, VolumeOutput, Tray],
 
 
     // ================= MODULES CONFIGS =================
@@ -91,8 +58,8 @@ BarConfig
     player: "spotify",
     dont_show_metadata_if_empty: true,
     text_when_metadata_is_empty: "NO SIGNAL",
-    media_player_metadata_text_limit_len: 30,
-    spacing_between_all_modules: 2,                   // tight. packed. industrial.
+    media_player_metadata_text_limit_len: 36,
+    spacing_between_all_modules: 2,
     force_static_position_context_menu: None,
     reverse_scroll_on_workspace: false,
     persistent_workspaces: Some(5),
@@ -100,6 +67,8 @@ BarConfig
     incremental_steps_input: 10,
     action_on_left_click_media_player_metadata: DefaultAction,
     action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_cpu: CustomAction(["kitty", "btop"]),
+    action_on_right_click_cpu: CustomAction(["kitty", "bash", "-c", "ps aux --sort=-%cpu | head -20; read -n 1"]),
     action_on_left_click_clock: DefaultAction,
     action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
     action_on_left_click_network: DefaultAction,
@@ -111,6 +80,9 @@ BarConfig
 
 
     // ================= FORMATS =================
+    cpu_format: "CPU:{usage}%",
+    ram_format: "MEM:{used}M/{total}M",
+
     media_player_buttons_format: ("|<<", "||", "|>", ">>|"),
     media_player_metadata_format: "// {{artist}} / {{title}}",
 
@@ -156,6 +128,33 @@ BarConfig
     clock_alt_format: "%H:%M:%S   %Y-%m-%d",
 
 
+    // ================= CPU (STYLE) =================
+    // Dust text on Dry Concrete — reads like a dial on a generator panel
+    cpu_text_size: 14,
+    cpu_text_color: RGB((185, 182, 176)),
+    cpu_text_orientation: Horizontal,
+    cpu_button_color: RGB((105, 102, 98)),
+    cpu_button_hovered_color: RGB((195, 82, 28)),
+    cpu_button_hovered_text_color: RGB((225, 222, 215)),
+    cpu_button_pressed_color: RGB((38, 36, 34)),
+    cpu_border_color: RGB((185, 182, 176)),
+    cpu_border_size: 2.0,
+    cpu_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
+    // ================= RAM (STYLE) =================
+    ram_text_size: 14,
+    ram_text_color: RGB((185, 182, 176)),
+    ram_text_orientation: Horizontal,
+    ram_button_color: RGB((105, 102, 98)),
+    ram_button_hovered_color: RGB((195, 82, 28)),
+    ram_button_hovered_text_color: RGB((225, 222, 215)),
+    ram_button_pressed_color: RGB((38, 36, 34)),
+    ram_border_color: RGB((185, 182, 176)),
+    ram_border_size: 2.0,
+    ram_border_radius: (0.0, 0.0, 0.0, 0.0),
+
+
     // ================= TRAY =================
     tray_icon_size: 18,
     tray_spacing: 2,
@@ -170,10 +169,11 @@ BarConfig
 
 
     // ================= MEDIA PLAYER METADATA =================
+    // Aggregate — dim, not primary. Secondary data.
     media_player_metadata_text_size: 14,
-    media_player_metadata_text_color: RGB((142, 138, 132)),   // Aggregate — dim, not primary
+    media_player_metadata_text_color: RGB((142, 138, 132)),
     media_player_metadata_text_orientation: Horizontal,
-    media_player_metadata_button_color: RGB((105, 102, 98)),
+    media_player_metadata_button_color: RGB((88, 85, 82)),
     media_player_metadata_button_hovered_color: RGB((195, 82, 28)),
     media_player_metadata_button_hovered_text_color: RGB((225, 222, 215)),
     media_player_metadata_button_pressed_color: RGB((38, 36, 34)),
@@ -222,15 +222,15 @@ BarConfig
 
     // ================= CLOCK =================
     // Largest element. No border. Pure chalk on concrete.
-    // Reads like an industrial facility clock — time is a fact, not decoration.
+    // Reads like an industrial facility clock.
     clock_text_size: 20,
     clock_text_color: RGB((225, 222, 215)),
     clock_text_orientation: Horizontal,
-    clock_button_color: RGB((72, 70, 68)),              // matches bar — floats borderless
+    clock_button_color: RGB((72, 70, 68)),
     clock_button_hovered_color: RGB((195, 82, 28)),
     clock_button_hovered_text_color: RGB((225, 222, 215)),
     clock_button_pressed_color: RGB((38, 36, 34)),
-    clock_border_color: RGB((185, 182, 176)),       // invisible — clock needs no frame
+    clock_border_color: RGB((185, 182, 176)),
     clock_border_size: 0.0,
     clock_border_radius: (0.0, 0.0, 0.0, 0.0),
 
@@ -260,7 +260,7 @@ BarConfig
     volume_output_border_radius: (0.0, 0.0, 0.0, 0.0),
 
     // ================= MUTED VOLUME OUTPUT =================
-    // Muted gets rust — a warning, not a decoration.
+    // Rust — a warning, not a decoration
     muted_volume_output_text_size: 14,
     muted_volume_output_text_color: RGB((195, 82, 28)),
     muted_volume_output_text_orientation: Horizontal,
@@ -305,6 +305,7 @@ BarConfig
     workspace_different_selected_width: None,
     workspace_text_size: 15,
     workspace_text_color: RGB((142, 138, 132)),
+    workspace_selected_text_color: RGB((225, 222, 215)),
     workspace_text_orientation: Horizontal,
     workspace_text:
     [
@@ -318,7 +319,7 @@ BarConfig
     ]),
     workspace_spacing: 2,
     workspace_button_color: RGB((88, 85, 82)),
-    workspace_button_selected_color: RGB((195, 82, 28)),   // rust — the only warm thing
+    workspace_button_selected_color: RGB((195, 82, 28)),
     workspace_button_hovered_color: RGB((195, 82, 28)),
     workspace_button_hovered_text_color: RGB((225, 222, 215)),
     workspace_button_pressed_color: RGB((140, 55, 15)),
@@ -353,8 +354,7 @@ BarConfig
     [
         // ── MODULE 0 ── BLOC ID
         // A solid rust rectangle stamped on the far left.
-        // This is your identity tag — like a serial number plate on
-        // a piece of heavy machinery. Just a fixed label.
+        // Serial number plate on a piece of heavy machinery.
         // Left-click = wofi launcher. Right-click = wofi run.
         (
             name: "BLOC_ID",
@@ -363,8 +363,8 @@ BarConfig
             text_color: RGB((225, 222, 215)),
             text_orientation: Horizontal,
             height: 34,
-            button_color: RGB((195, 82, 28)),              // solid rust fill — the stamp
-            button_hovered_color: RGB((140, 55, 15)),       // oxide — darkens on hover
+            button_color: RGB((195, 82, 28)),
+            button_hovered_color: RGB((140, 55, 15)),
             button_hovered_text_color: RGB((225, 222, 215)),
             button_pressed_color: RGB((38, 36, 34)),
             border_color: RGB((140, 55, 15)),
@@ -380,71 +380,6 @@ BarConfig
             command_to_exec_on_right_click: ["wofi", "--show", "run"],
             continous_command_interval: 500,
             continous_command: []
-        ),
-
-        // ── MODULE 1 ── CPU / RAM GAUGE
-        // Live system load. Reads like a dial on a generator panel.
-        // Dry concrete background. Chalk text.
-        // Turns rust-bordered when CPU is presumably high (always shows).
-        // Left-click = btop. Right-click = kill tree via fzf.
-        (
-            name: "LOAD",
-            text: "",
-            text_size: 14,
-            text_color: RGB((185, 182, 176)),
-            text_orientation: Horizontal,
-            height: 34,
-            button_color: RGB((105, 102, 98)),
-            button_hovered_color: RGB((195, 82, 28)),
-            button_hovered_text_color: RGB((225, 222, 215)),
-            button_pressed_color: RGB((38, 36, 34)),
-            border_color: RGB((185, 182, 176)),
-            border_size: 2.0,
-            border_radius: (0.0, 0.0, 0.0, 0.0),
-            display_err_output_if_failed: false,
-            dont_show_if_any_output_is_empty: true,
-            use_output_as_text: false,
-            use_continous_output_as_text: true,
-            all_output_as_text_format: "{continous_output}",
-            output_text_limit_len: 26,
-            command_to_exec_on_left_click: ["kitty", "btop"],
-            command_to_exec_on_right_click: ["kitty", "bash", "-c", "ps aux --sort=-%cpu | head -20; read -n 1"],
-            continous_command_interval: 2000,
-            continous_command: [
-                "bash", "-c",
-                "cpu=$(top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d. -f1); ram=$(free -m | awk '/Mem:/{printf \"%d/%dM\", $3, $2}'); echo \"CPU:${cpu}%  MEM:${ram}\""
-            ]
-        ),
-
-        // ── MODULE 2 ── TRANSMISSION (NOW PLAYING)
-        // Media info formatted like a radio frequency bulletin.
-        // Dimmed aggregate color — it's secondary data, not primary.
-        // Left-click = play/pause. Right-click = next.
-        // Hides completely if nothing is playing (dont_show_if_any_output_is_empty).
-        (
-            name: "TRANSMISSION",
-            text: "",
-            text_size: 14,
-            text_color: RGB((142, 138, 132)),
-            text_orientation: Horizontal,
-            height: 34,
-            button_color: RGB((88, 85, 82)),
-            button_hovered_color: RGB((195, 82, 28)),
-            button_hovered_text_color: RGB((225, 222, 215)),
-            button_pressed_color: RGB((38, 36, 34)),
-            border_color: RGB((185, 182, 176)),
-            border_size: 2.0,
-            border_radius: (0.0, 0.0, 0.0, 0.0),
-            display_err_output_if_failed: false,
-            dont_show_if_any_output_is_empty: true,
-            use_output_as_text: false,
-            use_continous_output_as_text: true,
-            all_output_as_text_format: "// {continous_output}",
-            output_text_limit_len: 36,
-            command_to_exec_on_left_click: ["playerctl", "play-pause"],
-            command_to_exec_on_right_click: ["playerctl", "next"],
-            continous_command_interval: 1000,
-            continous_command: ["playerctl", "metadata", "--format", "{{ artist }} / {{ title }}"]
         ),
     ],
 )

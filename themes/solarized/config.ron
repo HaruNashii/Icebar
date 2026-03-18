@@ -1,8 +1,8 @@
 // ╭─────────────────────────────────────────────────────────────────────────╮
 // │                                                                         │
-// │   S O L A R I Z E D   L I G H T   v3   ·   ICEBAR                      │
+// │   S O L A R I Z E D   L I G H T   ·   ICEBAR                      	     │
 // │   Full width. Top. Light variant. Retro toolbar energy.                 │
-// │   v1 was dark, bottom, fixed-width island. This is none of that.       │
+// │   v1 was dark, bottom, fixed-width island. This is none of that.        │
 // │                                                                         │
 // ╰─────────────────────────────────────────────────────────────────────────╯
 //
@@ -26,7 +26,6 @@
 //    cyan       ( 42, 161, 152)  ← volume
 //    green      (133, 153,   0)  ← sys stats
 //
-//  DESIGN — completely opposite of both v1 and v2:
 //    · FULL WIDTH TOP BAR — bar_size: (0, 38), floating_space: 0
 //      Edge to edge. Flush. No island. Never done before in Solarized.
 //    · bar_border_radius: (0., 0., 0., 0.) — flat, not rounded
@@ -36,7 +35,7 @@
 //    · Hover = base03 (near-black fill) with base3 (cream) text
 //      Inverted on hover — dramatic, high contrast, intentional retro click
 //    · Font: "Source Code Pro" Bold — different from both previous versions
-//    · Layout: LEFT=Badge+Workspaces+MediaMetaData  CENTER=Clock  RIGHT=Vol+Net+Stats+Tray
+//    · Layout: LEFT=Badge+Workspaces   CENTER=Clock   RIGHT=Cpu+Ram+Vol+Net+Tray
 //    · Badge uses ORANGE fill with cream text — warm and punchy on the pale bar
 //    · Clock uses yellow — same as v1 but now on a light bg, reads totally different
 //    · Workspaces use violet fill on active — clear on cream, never tried before
@@ -54,43 +53,10 @@ BarConfig
     bar_border_radius: (0., 0., 0., 0.),
     bar_border_size: 0.0,
     bar_border_color: RGB((0, 0, 0)),
-    bar_background_color: RGBA((253, 246, 227, 100)),  // base3 cream — fully opaque
+    bar_background_color: RGBA((253, 246, 227, 100)),
 
     font_family: "Source Code Pro",
     font_style: "Bold",
-
-
-    // ================= GENERAL (STYLE) =================
-    //general_padding: Some(0),
-    //general_text_size: Some(15),
-    //general_text_orientation: Some(Horizontal),
-    //general_text_color: Some(RGB((255, 255, 255))),
-    //general_button_color: Some(RGB((50, 45, 60))),
-    //general_button_hovered_color: Some(RGB((130, 35, 70))),
-    //general_button_hovered_text_color: Some(RGB((255, 255, 255))),
-    //general_button_pressed_color: Some(RGB((80, 25, 45))),
-    //general_border_color: Some(RGB((120, 80, 130))),
-    //general_border_size: Some(1.0),
-    //general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),
-    //general_side_separator: None,
-    //general_side_separator_color: Some(RGB((75, 75, 75))),
-    //general_side_separator_width: Some(1.0),
-    //general_side_separator_height: Some(16.0),
-    //general_alt_padding: None,
-    //general_alt_text_size: None,
-    //general_alt_text_orientation: None,
-    //general_alt_text_color: None,
-    //general_alt_button_color: None,
-    //general_alt_button_hovered_color: None,
-    //general_alt_button_hovered_text_color: None,
-    //general_alt_button_pressed_color: None,
-    //general_alt_border_color: None,
-    //general_alt_border_size: None,
-    //general_alt_border_radius: None,
-    //general_alt_side_separator: None,
-    //general_alt_side_separator_color: None,
-    //general_alt_side_separator_width: None,
-    //general_alt_side_separator_height: None,
 
 
     // ================= MODULES =================
@@ -113,6 +79,8 @@ BarConfig
     incremental_steps_input: 5,
     action_on_left_click_media_player_metadata: DefaultAction,
     action_on_right_click_media_player_metadata: DefaultAction,
+    action_on_left_click_cpu: CustomAction(["kitty", "btop"]),
+    action_on_right_click_cpu: CustomAction(["kitty", "btop"]),
     action_on_left_click_clock: DefaultAction,
     action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
     action_on_left_click_network: DefaultAction,
@@ -124,6 +92,9 @@ BarConfig
 
 
     // ================= FORMATS =================
+    cpu_format: "cpu {usage}%",
+    ram_format: "mem {percent}%",
+
     media_player_buttons_format: ("󰒮", "󰏤", "󰐊", "󰒭"),
     media_player_metadata_format: "♪  {{artist}}  —  {{title}}",
 
@@ -164,12 +135,39 @@ BarConfig
     clock_alt_format: "󰃭  %a %d %b  ·  %H:%M:%S",
 
 
+    // ================= CPU (STYLE) =================
+    // Green on base2 — data as content, Source Code Pro precision
+    cpu_text_size: 13,
+    cpu_text_color: RGB((133, 153, 0)),
+    cpu_text_orientation: Horizontal,
+    cpu_button_color: RGB((238, 232, 213)),
+    cpu_button_hovered_color: RGB((0, 43, 54)),
+    cpu_button_hovered_text_color: RGB((253, 246, 227)),
+    cpu_button_pressed_color: RGB((7, 54, 66)),
+    cpu_border_color: RGB((0, 0, 0)),
+    cpu_border_size: 0.0,
+    cpu_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+
+    // ================= RAM (STYLE) =================
+    ram_text_size: 13,
+    ram_text_color: RGB((133, 153, 0)),
+    ram_text_orientation: Horizontal,
+    ram_button_color: RGB((238, 232, 213)),
+    ram_button_hovered_color: RGB((0, 43, 54)),
+    ram_button_hovered_text_color: RGB((253, 246, 227)),
+    ram_button_pressed_color: RGB((7, 54, 66)),
+    ram_border_color: RGB((0, 0, 0)),
+    ram_border_size: 0.0,
+    ram_border_radius: (4.0, 4.0, 4.0, 4.0),
+
+
     // ================= TRAY =================
     tray_icon_size: 18,
     tray_spacing: 5,
     tray_button_size: 5,
-    tray_button_color: RGB((238, 232, 213)),           // base2 — raised button
-    tray_button_hovered_color: RGB((0, 43, 54)),       // base03 inversion
+    tray_button_color: RGB((238, 232, 213)),
+    tray_button_hovered_color: RGB((0, 43, 54)),
     tray_button_hovered_text_color: RGB((253, 246, 227)),
     tray_button_pressed_color: RGB((7, 54, 66)),
     tray_border_color: RGB((0, 0, 0)),
@@ -230,13 +228,12 @@ BarConfig
 
 
     // ================= CLOCK =================
-    // Yellow on cream — darker yellow reads well on the pale background
-    // Ghost bg matches bar (base3) — time text floats without a box
+    // Yellow on cream — ghost bg, time floats without a box
     clock_text_size: 15,
     clock_text_color: RGB((181, 137, 0)),
     clock_text_orientation: Horizontal,
-    clock_button_color: RGB((253, 246, 227)),          // ghost — bar bg
-    clock_button_hovered_color: RGB((238, 232, 213)),  // base2 on hover
+    clock_button_color: RGB((253, 246, 227)),
+    clock_button_hovered_color: RGB((238, 232, 213)),
     clock_button_hovered_text_color: RGB((181, 137, 0)),
     clock_button_pressed_color: RGB((0, 43, 54)),
     clock_border_color: RGB((0, 0, 0)),
@@ -303,20 +300,21 @@ BarConfig
 
 
     // ================= WORKSPACES =================
-    // Violet active fill on cream bar — vivid and distinct
+    // Violet active fill on cream — vivid and distinct
     // Numbers only, base2 resting bg, invert on hover
     workspace_height: 30,
     workspace_width: 30,
     workspace_different_selected_width: None,
     workspace_text_size: 13,
-    workspace_text_color: RGB((147, 161, 161)),        // base1 — muted
+    workspace_text_color: RGB((147, 161, 161)),
+    workspace_selected_text_color: RGB((253, 246, 227)),
     workspace_text_orientation: Horizontal,
     workspace_text: ["1","2","3","4","5","6","7","8","9","10"],
     workspace_selected_text: Some(["1","2","3","4","5","6","7","8","9","10"]),
     workspace_spacing: 4,
-    workspace_button_color: RGB((238, 232, 213)),      // base2 — raised resting
-    workspace_button_selected_color: RGB((108, 113, 196)),  // violet — clear on cream
-    workspace_button_hovered_color: RGB((0, 43, 54)),  // base03 inversion
+    workspace_button_color: RGB((238, 232, 213)),
+    workspace_button_selected_color: RGB((108, 113, 196)),
+    workspace_button_hovered_color: RGB((0, 43, 54)),
     workspace_button_hovered_text_color: RGB((253, 246, 227)),
     workspace_button_pressed_color: RGB((7, 54, 66)),
     workspace_border_color: RGB((0, 0, 0)),
@@ -349,18 +347,18 @@ BarConfig
     custom_modules:
     [
         // ── MODULE 0 ── LAUNCHER BADGE
-        // Orange fill with cream text — warm and punchy on the pale bar.
-        // The only warm color on a cool scientific cream background.
-        // Hover inverts to base03 — maximum contrast click feedback.
+        // Orange fill with cream text — warm and punchy on the pale bar
+        // The only warm color on a cool scientific cream background
+        // Hover inverts to base03 — maximum contrast click feedback
         (
             name: "badge",
             text: "󰣇  solar",
             text_size: 13,
-            text_color: RGB((253, 246, 227)),          // cream on orange
+            text_color: RGB((253, 246, 227)),
             text_orientation: Horizontal,
             height: 28,
-            button_color: RGB((203, 75, 22)),          // orange — punchy
-            button_hovered_color: RGB((0, 43, 54)),    // base03 inversion
+            button_color: RGB((203, 75, 22)),
+            button_hovered_color: RGB((0, 43, 54)),
             button_hovered_text_color: RGB((253, 246, 227)),
             button_pressed_color: RGB((7, 54, 66)),
             border_color: RGB((0, 0, 0)),
@@ -377,37 +375,6 @@ BarConfig
             continous_command_interval: 500,
             continous_command: []
         ),
-
-        // ── MODULE 1 ── LIVE SYS STATS (right side)
-        // Green text on base2 — data treated as content.
-        // "cpu 23%  mem 61%" — plain language, Source Code Pro precision.
-        (
-            name: "stats",
-            text: "",
-            text_size: 13,
-            text_color: RGB((133, 153, 0)),            // green
-            text_orientation: Horizontal,
-            height: 28,
-            button_color: RGB((238, 232, 213)),
-            button_hovered_color: RGB((0, 43, 54)),
-            button_hovered_text_color: RGB((253, 246, 227)),
-            button_pressed_color: RGB((7, 54, 66)),
-            border_color: RGB((0, 0, 0)),
-            border_size: 0.0,
-            border_radius: (4.0, 4.0, 4.0, 4.0),
-            display_err_output_if_failed: false,
-            dont_show_if_any_output_is_empty: true,
-            use_output_as_text: false,
-            use_continous_output_as_text: true,
-            all_output_as_text_format: "{continous_output}",
-            output_text_limit_len: 22,
-            command_to_exec_on_left_click: ["kitty", "btop"],
-            command_to_exec_on_right_click: ["kitty", "btop"],
-            continous_command_interval: 2500,
-            continous_command: [
-                "bash", "-c",
-                "c=$(top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d. -f1); r=$(free -m | awk '/Mem:/{printf \"%d%%\", $3*100/$2}'); echo \"cpu ${c}%  mem ${r}\""
-            ]
-        ),
     ],
 )
+
