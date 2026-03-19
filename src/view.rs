@@ -507,7 +507,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::Image(borrowed_index) => 
             {
                 let index = *borrowed_index;
-                if index >= app.ron_config.images.len() { continue; }
+                if index > app.ron_config.images.len() { continue; }
                 let received_image = &app.ron_config.images[index];
                 let element: Element<'_, Message> = match &app.preloaded_images_handle[index]
                 {
@@ -553,7 +553,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::CustomModule(borrowed_index) => 
             {
                 let index = *borrowed_index;
-                if index >= app.ron_config.images.len() { continue; }
+                if index > app.ron_config.images.len() { continue; }
                 let custom_module = &app.ron_config.custom_modules[index];
                 let text_to_render = define_custom_module_text(index, custom_module, app);
                 if custom_module.dont_show_if_any_output_is_empty && text_to_render.is_empty()
