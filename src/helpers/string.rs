@@ -32,6 +32,25 @@ enum Tag<'a>
 
 
 // ============ FUNCTIONS ============
+pub fn find_field_colon(line: &str) -> Option<usize>
+{
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut byte_pos = 0;
+
+    for c in line.chars()
+    {
+        if escaped { escaped = false; }
+        else if c == '\\' { escaped = true; }
+        else if c == '"' { in_string = !in_string; }
+        else if !in_string && c == ':' { return Some(byte_pos); }
+        byte_pos += c.len_utf8();
+    }
+    None
+}
+
+
+
 pub fn format_output_volume(vol: f32, muted: bool, formats: &[String; 6], muted_format: &str) -> (String, bool)
 {
     if muted { return (muted_format.to_string(), true); }
@@ -46,6 +65,7 @@ pub fn format_input_volume(vol: f32, muted: bool, formats: &[String; 6], muted_f
     (apply_format(vol, formats), false)
 }
  
+
 
 pub fn intern_string(s: String) -> &'static str
 {

@@ -32,6 +32,7 @@ mod context_menu;
 mod subscription;
 mod modules;
 mod helpers;
+mod warning;
 mod update;
 mod view;
 mod ron;
@@ -45,6 +46,7 @@ mod ron;
 pub enum WindowInfo 
 {
     MainBar,
+    Warning,
     ContextMenu
 }
 
@@ -57,6 +59,8 @@ pub struct AppData
     volume_output_raw: f32,
     volume_input_raw: f32,
 
+    warning_err: String,
+    config_parsed_failed: bool,
     preloaded_images_handle: Vec<Option<(PreloadedImage, usize)>>,
     cpu_snapshot: Option<crate::modules::cpu::CpuSnapshot>,
     current_clock_timezone: Option<(String, u32)>,
@@ -90,7 +94,7 @@ pub struct AppData
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
     check_if_config_file_exists();
-    let (ron_config, current_clock_timezone, active_modules) = read_ron_config();
+    let (ron_config, current_clock_timezone, active_modules, (config_parsed_failed, warning_err)) = read_ron_config();
     let preloaded_images = preload_image(&ron_config.images);
     let validated_bar_data = validate_bar_data(&ron_config);
     let anchor_position = define_bar_anchor_position(&ron_config.bar_position);
@@ -109,6 +113,8 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     };
     let app_data = AppData
     {
+        warning_err,
+        config_parsed_failed,
         preloaded_images_handle: preloaded_images,
         default_font: build_font(&font_name, &ron_config.font_style),
         monitor_size: (monitor_res.0, monitor_res.1),
@@ -120,7 +126,6 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         modules_data,
         ..Default::default()
     };
-
 
     daemon(move || app_data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings
     {

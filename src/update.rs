@@ -24,7 +24,7 @@ use crate::{helpers::{misc::define_bar_anchor_position, font::build_font, fs::ch
 use crate::helpers::{misc::{is_active_module, validate_bar_data}, workspaces::build_workspace_list };
 use crate::context_menu::{create_context_menu, get_context_menu_size};
 use crate::ron::read_ron_config;
-use crate::{MAIN_ID, AppData, WindowInfo};
+use crate::{warning::create_warning, MAIN_ID, AppData, WindowInfo};
 
 
 
@@ -38,6 +38,7 @@ pub enum Message
     TrayAction(String, String, i32, String),
     MouseButtonClicked,
     CloseContextMenu,
+    CloseWarning,
 
     MediaPlayerDataFetched(crate::modules::media_player::MediaPlayerData),
     CreateCustomModuleCommand((Option<usize>, Vec<String>, String, bool, bool)),
@@ -91,6 +92,15 @@ pub enum Message
 // ============ FUNCTIONS ============
 pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 {
+    if app.config_parsed_failed
+    {
+        let has_warning_window = app.ids.iter().any(|(_, info)| *info == WindowInfo::Warning);
+        if !has_warning_window
+        {
+            return create_warning(app);
+        }
+    };
+
     match message
     {
         //CONTEXT MENU
@@ -153,6 +163,13 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
 
         // MAIN APP
+        Message::CloseWarning =>
+        {
+            app.config_parsed_failed = false;
+            let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::Warning).map(|(id, _)| *id).collect();
+            for id in &window_ids_to_close { app.ids.remove(id);  }
+            return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+        }
         Message::IsHoveringVolumeOutput(bool) => { app.is_hovering_volume_output = bool; }
         Message::IsHoveringVolumeInput(bool) => { app.is_hovering_volume_input = bool; }
         Message::IsHoveringWorkspace(bool) => { app.is_hovering_workspace = bool; }
@@ -299,7 +316,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             println!("\n=== CONFIG RELOAD ===");
             println!("[icebar] config.ron changed — reloading in place...");
             check_if_config_file_exists();
-            let (new_config, current_clock_timezone, active_modules) = read_ron_config();
+            let (new_config, current_clock_timezone, active_modules, (config_parsed_failed, warning_err)) = read_ron_config();
             let preloaded_images = preload_image(&new_config.images);
             let new_anchor = define_bar_anchor_position(&new_config.bar_position);
             let bar_data_validated = validate_bar_data(&new_config);
@@ -313,9 +330,13 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
 
 
+            let old_config_parse_status = app.config_parsed_failed;
+
 
             *app = AppData
             {
+                warning_err,
+                config_parsed_failed,
                 preloaded_images_handle: preloaded_images,
                 ids: app.ids.clone(),
                 default_font: build_font(&font_name, &new_config.font_style),
@@ -334,6 +355,22 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 ..Default::default()
             };
 
+
+            let mut task_vec = vec!
+            [
+                Task::done(Message::SizeChange{id, size: bar_size}),
+                Task::done(Message::AnchorChange{id, anchor: new_anchor}),
+                Task::done(Message::MarginChange{id, margin: bar_data_validated.floating_space}),
+                Task::done(Message::ExclusiveZoneChange{id, zone_size: bar_data_validated.exclusive_zone}),
+            ];
+            if !config_parsed_failed && old_config_parse_status 
+            {
+                let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::Warning).map(|(id, _)| *id).collect();
+                for id in &window_ids_to_close { app.ids.remove(id); }
+                task_vec.extend(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            };
+
+
             let (output_str, _) = format_output_volume(app.volume_output_raw, app.volume_output_is_muted, &app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format);
             app.modules_data.volume_data.output_volume_level = output_str;
  
@@ -343,13 +380,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
             println!("\n=== CONFIG RELOAD ===");
             println!("Reloaded Successfully");
-            return Task::batch(vec!
-            [
-                Task::done(Message::SizeChange{id, size: bar_size}),
-                Task::done(Message::AnchorChange{id, anchor: new_anchor}),
-                Task::done(Message::MarginChange{id, margin: bar_data_validated.floating_space}),
-                Task::done(Message::ExclusiveZoneChange{id, zone_size: bar_data_validated.exclusive_zone}),
-            ]);
+            return Task::batch(task_vec);
         }
 
         Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>

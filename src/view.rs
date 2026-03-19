@@ -12,7 +12,7 @@ use crate::modules::{image::{PreloadedImage, define_image_style}, disk::{define_
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::context_menu::context_menu_view;
 use crate::update::Message;
-use crate::{MAIN_ID, AppData, WindowInfo, id_info};
+use crate::{warning::warning_view, MAIN_ID, AppData, WindowInfo, id_info};
 
 
 
@@ -33,9 +33,17 @@ pub enum Axis
 // ============ FUNCTIONS ============
 pub fn view(app: &AppData, id: iced::window::Id) -> Element<'_, Message>
 {
-    if let Some(WindowInfo::ContextMenu) = id_info(app, id) 
+    match id_info(app, id) 
     {
-        return context_menu_view(&app.data, &app.ron_config);
+        Some(WindowInfo::ContextMenu) => return context_menu_view(&app.data, &app.ron_config),
+        Some(WindowInfo::Warning) => 
+        {
+            if app.config_parsed_failed
+            {
+                return warning_view(&app.warning_err);
+            };
+        }
+        _=> {},
     };
 
     MAIN_ID.get_or_init(|| id);
@@ -499,6 +507,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::Image(borrowed_index) => 
             {
                 let index = *borrowed_index;
+                if index >= app.ron_config.images.len() { continue; }
                 let received_image = &app.ron_config.images[index];
                 let element: Element<'_, Message> = match &app.preloaded_images_handle[index]
                 {
@@ -544,6 +553,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::CustomModule(borrowed_index) => 
             {
                 let index = *borrowed_index;
+                if index >= app.ron_config.images.len() { continue; }
                 let custom_module = &app.ron_config.custom_modules[index];
                 let text_to_render = define_custom_module_text(index, custom_module, app);
                 if custom_module.dont_show_if_any_output_is_empty && text_to_render.is_empty()
