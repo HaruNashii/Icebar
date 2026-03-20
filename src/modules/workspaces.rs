@@ -9,6 +9,7 @@ use iced::widget::button;
 #[derive(Default, Clone)]
 pub struct WorkspaceData
 {
+    pub is_hovering_workspace: bool,
     pub visible_workspaces: Vec<i32>,
     pub current_workspace: i32 
 }
@@ -127,6 +128,7 @@ mod tests
         let mut app = AppData { ..Default::default() };
         app.modules_data.workspace_data = WorkspaceData
         {
+            is_hovering_workspace: false,
             current_workspace: current,
             visible_workspaces: vec![1, 2, 3],
         };

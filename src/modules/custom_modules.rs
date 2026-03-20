@@ -1,6 +1,7 @@
 // ============ IMPORTS ============
 use serde::{Deserialize, Serialize};
 use iced::widget::button;
+use std::time::Instant;
 
 
 
@@ -15,6 +16,16 @@ use crate::AppData;
 
 
 // ============ ENUM/STRUCT, ETC ============
+#[derive(Default, Clone, Debug, PartialEq)]
+pub struct CustomModuleData
+{
+    pub cached_continuous_outputs: Vec<String>,
+    pub custom_module_last_run: Vec<Instant>,
+    pub cached_command_outputs: Vec<String>,
+}
+
+
+
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct CustomModule
@@ -122,15 +133,15 @@ pub fn define_custom_module_text(index: usize, custom_module: &CustomModule, app
     // COMMAND_OUTPUT
     if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()
     {
-        let output_text = app.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
+        let output_text = app.modules_data.custom_module_data.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
         let output_text = ellipsize(&app.ron_config.ellipsis_text, output_text, custom_module.output_text_limit_len);
         if custom_module.dont_show_if_any_output_is_empty && output_text.is_empty() { return String::new() };
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
     }
     // CONTINOUS_OUTPUT
-    else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.cached_continuous_outputs.is_empty() && (app.cached_continuous_outputs.len() - 1) >= index
+    else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.modules_data.custom_module_data.cached_continuous_outputs.is_empty() && (app.modules_data.custom_module_data.cached_continuous_outputs.len() - 1) >= index
     {
-        let output_text = ellipsize(&app.ron_config.ellipsis_text, &app.cached_continuous_outputs[index], custom_module.output_text_limit_len);
+        let output_text = ellipsize(&app.ron_config.ellipsis_text, &app.modules_data.custom_module_data.cached_continuous_outputs[index], custom_module.output_text_limit_len);
         if custom_module.dont_show_if_any_output_is_empty && output_text.is_empty() { return String::new() };
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{continous_output}", &output_text).replace('\n', "")
     }
@@ -182,7 +193,7 @@ mod tests
     fn custom_module_text_with_command_output()
     {
         let mut app = AppData { ..Default::default() };
-        app.cached_command_outputs = vec!["CmdOut".to_string()];
+        app.modules_data.custom_module_data.cached_command_outputs = vec!["CmdOut".to_string()];
         let m = CustomModule
         {
             use_output_as_text: true,
@@ -196,7 +207,7 @@ mod tests
     fn custom_module_text_format_replaces_text_and_output()
     {
         let mut app = AppData { ..Default::default() };
-        app.cached_command_outputs = vec!["99%".to_string()];
+        app.modules_data.custom_module_data.cached_command_outputs = vec!["99%".to_string()];
         let m = CustomModule
         {
             text: "CPU".into(),
@@ -211,7 +222,7 @@ mod tests
     fn custom_module_text_dont_show_if_empty()
     {
         let mut app = AppData { ..Default::default() };
-        app.cached_command_outputs = vec!["".to_string()];
+        app.modules_data.custom_module_data.cached_command_outputs = vec!["".to_string()];
         let m = CustomModule
         {
             use_output_as_text: true,
@@ -226,7 +237,7 @@ mod tests
     fn custom_module_text_with_continuous_output()
     {
         let mut app = AppData { ..Default::default() };
-        app.cached_continuous_outputs = vec!["live_data".to_string()];
+        app.modules_data.custom_module_data.cached_continuous_outputs = vec!["live_data".to_string()];
         let m = CustomModule
         {
             use_continous_output_as_text: true,
@@ -240,7 +251,7 @@ mod tests
     fn custom_module_text_strips_newlines_from_output()
     {
         let mut app = AppData { ..Default::default() };
-        app.cached_command_outputs = vec!["line1\nline2".to_string()];
+        app.modules_data.custom_module_data.cached_command_outputs = vec!["line1\nline2".to_string()];
         let m = CustomModule
         {
             use_output_as_text: true,
@@ -332,7 +343,7 @@ mod tests
     fn custom_module_text_output_truncated_to_limit()
     {
         let mut app = AppData { ..Default::default() };
-        app.cached_command_outputs = vec!["abcdefghij".to_string()];
+        app.modules_data.custom_module_data.cached_command_outputs = vec!["abcdefghij".to_string()];
         app.ron_config.ellipsis_text = "~".into();
         let m = CustomModule
         {
@@ -348,7 +359,7 @@ mod tests
     fn custom_module_text_continuous_dont_show_if_empty_returns_empty()
     {
         let mut app = AppData { ..Default::default() };
-        app.cached_continuous_outputs = vec!["".to_string()];
+        app.modules_data.custom_module_data.cached_continuous_outputs = vec!["".to_string()];
         let m = CustomModule
         {
             use_continous_output_as_text: true,
@@ -363,7 +374,7 @@ mod tests
     fn custom_module_text_continuous_index_beyond_vec_falls_back_to_plain_text()
     {
         let mut app = AppData { ..Default::default() };
-        app.cached_continuous_outputs = vec!["only_one".to_string()];
+        app.modules_data.custom_module_data.cached_continuous_outputs = vec!["only_one".to_string()];
         let m = CustomModule
         {
             text: "Fallback".into(),

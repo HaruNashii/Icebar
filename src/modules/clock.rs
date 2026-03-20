@@ -18,6 +18,8 @@ use crate::AppData;
 #[derive(Default, Clone)]
 pub struct ClockData
 {
+    pub current_clock_timezone: Option<(String, u32)>,
+    pub is_showing_alt_clock: bool,
     pub current_time: String
 }
 
@@ -45,7 +47,7 @@ pub fn get_current_time(time_format: &str, option_time_zone: &Option<(String, u3
 
 pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    if app.is_showing_alt_clock
+    if app.modules_data.clock_data.is_showing_alt_clock
     {
         let hovered =           app.ron_config.alt_clock_button_hovered_color;
         let hovered_text =      app.ron_config.alt_clock_button_hovered_text_color;
@@ -76,19 +78,19 @@ pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget
 
 pub fn cycle_clock_timezones(app: &mut AppData)
 {
-    if let Some((current_time_zone, index)) = &app.current_clock_timezone && let Some(timezones) = &app.ron_config.clock_timezones && !timezones.is_empty()
+    if let Some((current_time_zone, index)) = &app.modules_data.clock_data.current_clock_timezone && let Some(timezones) = &app.ron_config.clock_timezones && !timezones.is_empty()
     {
         if (*index as usize + 1) <= (timezones.len().saturating_sub(1))
         {
             println!("\n=== CLOCK ACTION ===");
             println!("Cycling Timezone!: {} -> {}", current_time_zone, timezones[*index as usize + 1]);
-            app.current_clock_timezone = Some((timezones[*index as usize + 1].clone(), (index + 1)));
+            app.modules_data.clock_data.current_clock_timezone = Some((timezones[*index as usize + 1].clone(), (index + 1)));
         }
         else
         {
             println!("\n=== CLOCK ACTION ===");
             println!("Cycling Timezone!: {} -> {}", current_time_zone, timezones[0]);
-            app.current_clock_timezone = Some((timezones[0].clone(), 0));
+            app.modules_data.clock_data.current_clock_timezone = Some((timezones[0].clone(), 0));
         };
     };
 }
@@ -108,7 +110,7 @@ mod tests
     fn make_clock_app(is_alt: bool) -> AppData
     {
         let mut app = AppData { ..Default::default() };
-        app.is_showing_alt_clock = is_alt;
+        app.modules_data.clock_data.is_showing_alt_clock = is_alt;
         app.ron_config.clock_button_color = ColorType::RGB([10, 20, 30]);
         app.ron_config.clock_button_hovered_color = ColorType::RGB([15, 25, 35]);
         app.ron_config.clock_button_pressed_color = ColorType::RGB([5, 10, 15]);
@@ -210,10 +212,10 @@ mod tests
     {
         let mut app = AppData { ..Default::default() };
         app.ron_config.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into(), "Asia/Tokyo".into()]);
-        app.current_clock_timezone = Some(("UTC".into(), 0));
+        app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         cycle_clock_timezones(&mut app);
-        let (tz, idx) = app.current_clock_timezone.unwrap();
+        let (tz, idx) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "America/New_York");
         assert_eq!(idx, 1);
     }
@@ -223,10 +225,10 @@ mod tests
     {
         let mut app = AppData { ..Default::default() };
         app.ron_config.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into()]);
-        app.current_clock_timezone = Some(("America/New_York".into(), 1));
+        app.modules_data.clock_data.current_clock_timezone = Some(("America/New_York".into(), 1));
  
         cycle_clock_timezones(&mut app);
-        let (tz, idx) = app.current_clock_timezone.unwrap();
+        let (tz, idx) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "UTC");
         assert_eq!(idx, 0);
     }
@@ -236,11 +238,11 @@ mod tests
     {
         let mut app = AppData { ..Default::default() };
         app.ron_config.clock_timezones = None;
-        app.current_clock_timezone = Some(("UTC".into(), 0));
+        app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         cycle_clock_timezones(&mut app);
         // Should remain unchanged
-        let (tz, idx) = app.current_clock_timezone.unwrap();
+        let (tz, idx) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "UTC");
         assert_eq!(idx, 0);
     }
@@ -250,10 +252,10 @@ mod tests
     {
         let mut app = AppData { ..Default::default() };
         app.ron_config.clock_timezones = Some(vec![]);
-        app.current_clock_timezone = Some(("UTC".into(), 0));
+        app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         cycle_clock_timezones(&mut app);
-        let (tz, idx) = app.current_clock_timezone.unwrap();
+        let (tz, idx) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "UTC");
         assert_eq!(idx, 0);
     }
@@ -263,10 +265,10 @@ mod tests
     {
         let mut app = AppData { ..Default::default() };
         app.ron_config.clock_timezones = Some(vec!["UTC".into()]);
-        app.current_clock_timezone = Some(("UTC".into(), 0));
+        app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         cycle_clock_timezones(&mut app);
-        let (tz, idx) = app.current_clock_timezone.unwrap();
+        let (tz, idx) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "UTC");
         assert_eq!(idx, 0);
     }

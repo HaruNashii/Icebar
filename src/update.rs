@@ -170,22 +170,21 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             for id in &window_ids_to_close { app.ids.remove(id);  }
             return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
         }
-        Message::IsHoveringVolumeOutput(bool) => { app.is_hovering_volume_output = bool; }
-        Message::IsHoveringVolumeInput(bool) => { app.is_hovering_volume_input = bool; }
-        Message::IsHoveringWorkspace(bool) => { app.is_hovering_workspace = bool; }
-        Message::IsHoveringMediaPlayerMetaData(bool) => { app.is_hovering_media_player_meta_data = bool; }
+        Message::IsHoveringVolumeOutput(bool) => { app.modules_data.volume_data.is_hovering_volume_output = bool; }
+        Message::IsHoveringVolumeInput(bool) => { app.modules_data.volume_data.is_hovering_volume_input = bool; }
+        Message::IsHoveringWorkspace(bool) => { app.modules_data.workspace_data.is_hovering_workspace = bool; }
+        Message::IsHoveringMediaPlayerMetaData(bool) => { app.modules_data.media_player_data.is_hovering_media_player_meta_data = bool; }
         Message::MuteAudioPressedOutput => { volume::volume( volume::VolumeAction::MuteOutput); }
         Message::MuteAudioPressedInput => { volume::volume( volume::VolumeAction::MuteInput); }
-        Message::ToggleAltClock => { app.is_showing_alt_clock = !app.is_showing_alt_clock; }
-        Message::CommandFinished(index, text) => { if app.cached_command_outputs.len() <= index { app.cached_command_outputs.resize(index + 1, String::new()); } app.cached_command_outputs[index] = text; }
-        Message::ContinuousCommandFinished(index, text) => { if app.cached_continuous_outputs.len() <= index { app.cached_continuous_outputs.resize(index + 1, String::new()); } app.cached_continuous_outputs[index] = text; }
+        Message::ToggleAltClock => { app.modules_data.clock_data.is_showing_alt_clock = !app.modules_data.clock_data.is_showing_alt_clock; }
+        Message::CommandFinished(index, text) => { if app.modules_data.custom_module_data.cached_command_outputs.len() <= index { app.modules_data.custom_module_data.cached_command_outputs.resize(index + 1, String::new()); } app.modules_data.custom_module_data.cached_command_outputs[index] = text; }
+        Message::ContinuousCommandFinished(index, text) => { if app.modules_data.custom_module_data.cached_continuous_outputs.len() <= index { app.modules_data.custom_module_data.cached_continuous_outputs.resize(index + 1, String::new()); } app.modules_data.custom_module_data.cached_continuous_outputs[index] = text; }
         Message::WorkspaceButtonPressed(id) => { if is_active_module(&app.modules_data.active_modules,  Modules::HyprWorkspaces) { change_workspace_hypr(UserWorkspaceAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces) { change_workspace_sway(UserWorkspaceAction::ChangeWithIndex(id)); } else if is_active_module(&app.modules_data.active_modules, Modules::NiriWorkspaces) { change_workspace_niri(UserWorkspaceAction::ChangeWithIndex(id)); } }
-        Message::NetworkUpdated(data) => { app.modules_data.network_data = data }
         Message::MediaPlayerClickNext => media_player_action(&app.ron_config.player, MediaPlayerAction::Next),
         Message::MediaPlayerClickPlayPause => media_player_action(&app.ron_config.player, MediaPlayerAction::PlayPause),
         Message::MediaPlayerClickPrev => media_player_action(&app.ron_config.player, MediaPlayerAction::Prev),
         Message::CycleClockTimeZones => cycle_clock_timezones(app),
-        Message::ToggleAltClockAndCycleClockTimeZones => { app.is_showing_alt_clock = !app.is_showing_alt_clock; cycle_clock_timezones(app); },
+        Message::ToggleAltClockAndCycleClockTimeZones => { app.modules_data.clock_data.is_showing_alt_clock = !app.modules_data.clock_data.is_showing_alt_clock; cycle_clock_timezones(app); },
         Message::UpdateCpuTemp => if let Some(temp) = read_cpu_temp() { app.modules_data.cpu_temp_data.temp_celsius = temp; }
         Message::UpdateRam => { if let Some(data) = read_ram_data() { app.modules_data.ram_data = data; }},
         Message::UpdateFocusedWindowNiri => { app.modules_data.focused_window_data.title = read_focused_window_niri().unwrap_or_default(); }, 
@@ -194,6 +193,18 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::UpdateHyprWorkspaces => { app.modules_data.workspace_data.current_workspace = hypr::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&hypr::workspace_count(), app.ron_config.persistent_workspaces); },
         Message::UpdateSwayWorkspaces => { app.modules_data.workspace_data.current_workspace = sway::current_workspace(); app.modules_data.workspace_data.visible_workspaces = build_workspace_list(&sway::workspace_count(), app.ron_config.persistent_workspaces); },
         Message::MediaPlayerDataFetched(data) => { app.modules_data.media_player_data = data; }
+
+        Message::NetworkUpdated(data) => 
+        { 
+            app.modules_data.network_data.connection_type = data.connection_type;
+            app.modules_data.network_data.network_level = data.network_level;
+            app.modules_data.network_data.network_speed = data.network_speed;
+            app.modules_data.network_data.id = data.id;
+            app.modules_data.network_data.iface = data.iface;
+            app.modules_data.network_data.rx_bytes_per_sec = data.rx_bytes_per_sec;
+            app.modules_data.network_data.tx_bytes_per_sec = data.tx_bytes_per_sec;
+        }
+
         Message::UpdateNetworkSpeed =>
         {
             let interface = &app.modules_data.network_data.iface;
@@ -238,18 +249,18 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
         Message::VolumeUpdated(out_vol, out_muted, in_vol, in_muted) =>
         {
-            app.volume_output_raw = out_vol;
-            app.volume_input_raw = in_vol;
+            app.modules_data.volume_data.volume_output_raw = out_vol;
+            app.modules_data.volume_data.volume_input_raw = in_vol;
 
             // Format output
             let (output_str, _) = format_output_volume(out_vol, out_muted, &app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format);
             app.modules_data.volume_data.output_volume_level = output_str;
-            app.volume_output_is_muted = out_muted;
+            app.modules_data.volume_data.volume_output_is_muted = out_muted;
  
             // Format input
             let (input_str, _) = format_input_volume(in_vol, in_muted, &app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format);
             app.modules_data.volume_data.input_volume_level = input_str;
-            app.volume_input_is_muted = in_muted;
+            app.modules_data.volume_data.volume_input_is_muted = in_muted;
         }
  
         Message::UpdateCpu =>
@@ -284,7 +295,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
         Message::UpdateClock =>
         {
-            let format_to_send = if app.is_showing_alt_clock 
+            let format_to_send = if app.modules_data.clock_data.is_showing_alt_clock 
             { 
                 &app.ron_config.clock_alt_format 
             } 
@@ -292,21 +303,21 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             {
                 &app.ron_config.clock_format 
             }; 
-            app.modules_data.clock_data.current_time = get_current_time(format_to_send, &app.current_clock_timezone)
+            app.modules_data.clock_data.current_time = get_current_time(format_to_send, &app.modules_data.clock_data.current_clock_timezone)
         },
 
         Message::ToggleAltNetwork => 
         { 
-            app.is_showing_alt_network_module = !app.is_showing_alt_network_module; 
-            if app.is_showing_alt_network_module 
+            app.modules_data.network_data.is_showing_alt_network_module = !app.modules_data.network_data.is_showing_alt_network_module; 
+            if app.modules_data.network_data.is_showing_alt_network_module 
             { 
-                app.connection_type_icons = app.ron_config.alt_network_connection_type_icons.clone();
-                app.network_icons = app.ron_config.alt_network_level_format.clone();
+                app.modules_data.network_data.connection_type_icons = app.ron_config.alt_network_connection_type_icons.clone();
+                app.modules_data.network_data.network_icons = app.ron_config.alt_network_level_format.clone();
             }
             else 
             {
-                app.connection_type_icons = app.ron_config.network_connection_type_icons.clone();
-                app.network_icons = app.ron_config.network_level_format.clone();
+                app.modules_data.network_data.connection_type_icons = app.ron_config.network_connection_type_icons.clone();
+                app.modules_data.network_data.network_icons = app.ron_config.network_level_format.clone();
             };
         }
 
@@ -316,15 +327,19 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             println!("\n=== CONFIG RELOAD ===");
             println!("[icebar] config.ron changed — reloading in place...");
             check_if_config_file_exists();
-            let (new_config, current_clock_timezone, active_modules, (config_parsed_failed, warning_err)) = read_ron_config();
-            let preloaded_images = preload_image(&new_config.images);
+            let (new_config, current_clock_timezone, active_modules, (mut config_parsed_failed, mut warning_err)) = read_ron_config();
+            let preloaded_images = preload_image(&mut warning_err, &mut config_parsed_failed, &new_config.images);
             let new_anchor = define_bar_anchor_position(&new_config.bar_position);
             let monitor_res = get_monitor_res(new_config.display.clone());
             let font_name = new_config.font_family.clone();
             let mut modules_data = app.modules_data.clone();
+
             modules_data.active_modules = active_modules.clone();
-
-
+            modules_data.clock_data.current_clock_timezone = current_clock_timezone;
+            modules_data.network_data.network_icons = new_config.network_level_format.clone();
+            modules_data.network_data.connection_type_icons = new_config.network_connection_type_icons.clone();
+            modules_data.custom_module_data.custom_module_last_run = vec![Instant::now(); new_config.custom_modules.len()];
+            modules_data.image_data.preloaded_images_handle = preloaded_images;
 
             let old_config_parse_status = app.config_parsed_failed;
 
@@ -333,21 +348,12 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             {
                 warning_err,
                 config_parsed_failed,
-                preloaded_images_handle: preloaded_images,
                 ids: app.ids.clone(),
                 default_font: build_font(&font_name, &new_config.font_style),
                 monitor_size: monitor_res,
-                custom_module_last_run: vec![Instant::now(); new_config.custom_modules.len()],
-                current_clock_timezone,
-                network_icons: new_config.network_level_format.clone(),
-                connection_type_icons: new_config.network_connection_type_icons.clone(),
                 ron_config: new_config, 
                 mouse_position: app.mouse_position,
                 modules_data,
-                volume_output_is_muted: app.volume_output_is_muted,
-                volume_input_is_muted: app.volume_input_is_muted,
-                volume_output_raw: app.volume_output_raw,
-                volume_input_raw: app.volume_input_raw,
                 ..Default::default()
             };
 
@@ -372,10 +378,10 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             };
 
 
-            let (output_str, _) = format_output_volume(app.volume_output_raw, app.volume_output_is_muted, &app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format);
+            let (output_str, _) = format_output_volume(app.modules_data.volume_data.volume_output_raw, app.modules_data.volume_data.volume_output_is_muted, &app.ron_config.output_volume_format, &app.ron_config.output_volume_muted_format);
             app.modules_data.volume_data.output_volume_level = output_str;
  
-            let (input_str, _) = format_input_volume(app.volume_input_raw, app.volume_input_is_muted, &app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format);
+            let (input_str, _) = format_input_volume(app.modules_data.volume_data.volume_input_raw, app.modules_data.volume_data.volume_input_is_muted, &app.ron_config.input_volume_format, &app.ron_config.input_volume_muted_format);
             app.modules_data.volume_data.input_volume_level = input_str;
 
 
@@ -386,25 +392,25 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
         Message::MouseWheelScrolled(ScrollDelta::Pixels { x: _, y }) =>
         {
-            if app.is_hovering_media_player_meta_data
+            if app.modules_data.media_player_data.is_hovering_media_player_meta_data
             {
                 if y > 0. { media_player_action(&app.ron_config.player, MediaPlayerAction::VolumeUp); }
                 if y < 0. { media_player_action(&app.ron_config.player, MediaPlayerAction::VolumeDown); }
             }
 
-            if app.is_hovering_volume_output
+            if app.modules_data.volume_data.is_hovering_volume_output
             {
                 if y > 0. { volume::volume(volume::VolumeAction::IncreaseOutput(app.ron_config.incremental_steps_output)); }
                 if y < 0. { volume::volume(volume::VolumeAction::DecreaseOutput(app.ron_config.incremental_steps_output)); }
             }
 
-            if app.is_hovering_volume_input
+            if app.modules_data.volume_data.is_hovering_volume_input
             {
                 if y > 0. { volume::volume(volume::VolumeAction::IncreaseInput(app.ron_config.incremental_steps_input)); }
                 if y < 0. { volume::volume(volume::VolumeAction::DecreaseInput(app.ron_config.incremental_steps_input)); }
             }
 
-            if app.is_hovering_workspace
+            if app.modules_data.workspace_data.is_hovering_workspace
             {
                 let hypr_active = is_active_module(&app.modules_data.active_modules, Modules::HyprWorkspaces);
                 let sway_active = is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces);
@@ -492,8 +498,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                     let index  = *index;
                     let Some(module) = app.ron_config.custom_modules.get(index) else { continue; };
                     if module.continous_command.is_empty() { continue; }
-                    if app.custom_module_last_run[index].elapsed() < Duration::from_millis(module.continous_command_interval) { continue; }
-                    app.custom_module_last_run[index] = Instant::now();
+                    if app.modules_data.custom_module_data.custom_module_last_run[index].elapsed() < Duration::from_millis(module.continous_command_interval) { continue; }
+                    app.modules_data.custom_module_data.custom_module_last_run[index] = Instant::now();
         
                     if let Some((program, args)) = module.continous_command.split_first()
                     {
@@ -686,16 +692,16 @@ mod tests
     {
         let mut app = make_app();
         let _ = update(&mut app, Message::IsHoveringVolumeOutput(true));
-        assert!(app.is_hovering_volume_output);
+        assert!(app.modules_data.volume_data.is_hovering_volume_output);
     }
  
     #[test]
     fn message_is_hovering_volume_output_sets_flag_false()
     {
         let mut app = make_app();
-        app.is_hovering_volume_output = true;
+        app.modules_data.volume_data.is_hovering_volume_output = true;
         let _ = update(&mut app, Message::IsHoveringVolumeOutput(false));
-        assert!(!app.is_hovering_volume_output);
+        assert!(!app.modules_data.volume_data.is_hovering_volume_output);
     }
  
     #[test]
@@ -703,7 +709,7 @@ mod tests
     {
         let mut app = make_app();
         let _ = update(&mut app, Message::IsHoveringVolumeInput(true));
-        assert!(app.is_hovering_volume_input);
+        assert!(app.modules_data.volume_data.is_hovering_volume_input);
     }
  
     #[test]
@@ -711,7 +717,7 @@ mod tests
     {
         let mut app = make_app();
         let _ = update(&mut app, Message::IsHoveringWorkspace(true));
-        assert!(app.is_hovering_workspace);
+        assert!(app.modules_data.workspace_data.is_hovering_workspace);
     }
  
     #[test]
@@ -719,7 +725,7 @@ mod tests
     {
         let mut app = make_app();
         let _ = update(&mut app, Message::IsHoveringMediaPlayerMetaData(true));
-        assert!(app.is_hovering_media_player_meta_data);
+        assert!(app.modules_data.media_player_data.is_hovering_media_player_meta_data);
     }
  
     // ---- ToggleAltClock -----------------------------------------------------
@@ -728,9 +734,9 @@ mod tests
     fn toggle_alt_clock_flips_from_false_to_true()
     {
         let mut app = make_app();
-        assert!(!app.is_showing_alt_clock);
+        assert!(!app.modules_data.clock_data.is_showing_alt_clock);
         let _ = update(&mut app, Message::ToggleAltClock);
-        assert!(app.is_showing_alt_clock);
+        assert!(app.modules_data.clock_data.is_showing_alt_clock);
     }
  
     #[test]
@@ -739,7 +745,7 @@ mod tests
         let mut app = make_app();
         let _ = update(&mut app, Message::ToggleAltClock);
         let _ = update(&mut app, Message::ToggleAltClock);
-        assert!(!app.is_showing_alt_clock);
+        assert!(!app.modules_data.clock_data.is_showing_alt_clock);
     }
  
     // ---- ToggleAltNetwork ---------------------------------------------------
@@ -748,9 +754,9 @@ mod tests
     fn toggle_alt_network_flips_flag()
     {
         let mut app = make_app();
-        assert!(!app.is_showing_alt_network_module);
+        assert!(!app.modules_data.network_data.is_showing_alt_network_module);
         let _ = update(&mut app, Message::ToggleAltNetwork);
-        assert!(app.is_showing_alt_network_module);
+        assert!(app.modules_data.network_data.is_showing_alt_network_module);
     }
  
     #[test]
@@ -762,8 +768,8 @@ mod tests
  
         let _ = update(&mut app, Message::ToggleAltNetwork);
  
-        assert_eq!(app.network_icons, ["A", "B", "C", "D"]);
-        assert_eq!(app.connection_type_icons, ["X", "Y", "Z"]);
+        assert_eq!(app.modules_data.network_data.network_icons, ["A", "B", "C", "D"]);
+        assert_eq!(app.modules_data.network_data.connection_type_icons, ["X", "Y", "Z"]);
     }
  
     #[test]
@@ -778,8 +784,8 @@ mod tests
         let _ = update(&mut app, Message::ToggleAltNetwork); // → alt
         let _ = update(&mut app, Message::ToggleAltNetwork); // → normal
  
-        assert_eq!(app.network_icons, ["N1", "N2", "N3", "N4"]);
-        assert_eq!(app.connection_type_icons, ["E", "W", "?"]);
+        assert_eq!(app.modules_data.network_data.network_icons, ["N1", "N2", "N3", "N4"]);
+        assert_eq!(app.modules_data.network_data.connection_type_icons, ["E", "W", "?"]);
     }
  
     // ---- CursorMoved --------------------------------------------------------
@@ -806,9 +812,9 @@ mod tests
     fn command_finished_stores_output_at_index()
     {
         let mut app = make_app();
-        app.cached_command_outputs = vec!["old".into(), "old".into()];
+        app.modules_data.custom_module_data.cached_command_outputs = vec!["old".into(), "old".into()];
         let _ = update(&mut app, Message::CommandFinished(1, "new_output".into()));
-        assert_eq!(app.cached_command_outputs[1], "new_output");
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs[1], "new_output");
     }
  
     #[test]
@@ -817,11 +823,11 @@ mod tests
         let mut app = make_app();
         // vec is empty, index 3 requires resize to length 4
         let _ = update(&mut app, Message::CommandFinished(3, "hello".into()));
-        assert_eq!(app.cached_command_outputs.len(), 4);
-        assert_eq!(app.cached_command_outputs[3], "hello");
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs.len(), 4);
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs[3], "hello");
         // Slots 0..2 should be empty strings
-        assert_eq!(app.cached_command_outputs[0], "");
-        assert_eq!(app.cached_command_outputs[2], "");
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs[0], "");
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs[2], "");
     }
  
     #[test]
@@ -829,7 +835,7 @@ mod tests
     {
         let mut app = make_app();
         let _ = update(&mut app, Message::CommandFinished(0, "result".into()));
-        assert_eq!(app.cached_command_outputs[0], "result");
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs[0], "result");
     }
  
     // ---- NetworkUpdated -----------------------------------------------------
@@ -838,7 +844,7 @@ mod tests
     fn network_updated_stores_data()
     {
         let mut app = make_app();
-        let data = NetworkData { network_level: 4, connection_type: 2, network_speed: 100, id: "HomeWifi".into(), rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new() };
+        let data = NetworkData { network_level: 4, connection_type: 2, network_speed: 100, id: "HomeWifi".into(), rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new(), ..Default::default() };
         let _ = update(&mut app, Message::NetworkUpdated(data));
         assert_eq!(app.modules_data.network_data.id, "HomeWifi");
         assert_eq!(app.modules_data.network_data.network_level, 4);
@@ -911,9 +917,9 @@ mod tests
     fn message_nothing_does_not_change_state()
     {
         let mut app = make_app();
-        let before = app.is_showing_alt_clock;
+        let before = app.modules_data.clock_data.is_showing_alt_clock;
         let _ = update(&mut app, Message::Nothing);
-        assert_eq!(app.is_showing_alt_clock, before);
+        assert_eq!(app.modules_data.clock_data.is_showing_alt_clock, before);
     }
 
     #[test]
@@ -924,12 +930,12 @@ mod tests
             ..Default::default() 
         };
         let _ = update(&mut app, Message::ToggleAltClock);
-        assert!(app.is_showing_alt_clock);
-        assert!(!app.is_showing_alt_network_module); // network untouched
+        assert!(app.modules_data.clock_data.is_showing_alt_clock);
+        assert!(!app.modules_data.network_data.is_showing_alt_network_module); // network untouched
      
         let _ = update(&mut app, Message::ToggleAltNetwork);
-        assert!(app.is_showing_alt_clock);            // clock untouched
-        assert!(app.is_showing_alt_network_module);
+        assert!(app.modules_data.clock_data.is_showing_alt_clock);            // clock untouched
+        assert!(app.modules_data.network_data.is_showing_alt_network_module);
     }
      
     #[test]
@@ -943,9 +949,9 @@ mod tests
         let _ = update(&mut app, Message::CommandFinished(1, "out1".into()));
         let _ = update(&mut app, Message::CommandFinished(2, "out2".into()));
      
-        assert_eq!(app.cached_command_outputs[0], "out0");
-        assert_eq!(app.cached_command_outputs[1], "out1");
-        assert_eq!(app.cached_command_outputs[2], "out2");
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs[0], "out0");
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs[1], "out1");
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs[2], "out2");
     }
      
     #[test]
@@ -954,8 +960,8 @@ mod tests
         let mut app = AppData { ..Default::default() };
         let _ = update(&mut app, Message::CommandFinished(0, "first".into()));
         let _ = update(&mut app, Message::CommandFinished(0, "second".into()));
-        assert_eq!(app.cached_command_outputs[0], "second");
-        assert_eq!(app.cached_command_outputs.len(), 1);
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs[0], "second");
+        assert_eq!(app.modules_data.custom_module_data.cached_command_outputs.len(), 1);
     }
      
     #[test]
@@ -982,11 +988,11 @@ mod tests
     {
         let mut app = make_app();
         app.ron_config.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into()]);
-        app.current_clock_timezone = Some(("UTC".into(), 0));
+        app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         let _ = update(&mut app, Message::CycleClockTimeZones);
  
-        let (tz, idx) = app.current_clock_timezone.unwrap();
+        let (tz, idx) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "America/New_York");
         assert_eq!(idx, 1);
     }
@@ -996,11 +1002,11 @@ mod tests
     {
         let mut app = make_app();
         app.ron_config.clock_timezones = Some(vec!["UTC".into(), "Europe/London".into()]);
-        app.current_clock_timezone = Some(("Europe/London".into(), 1));
+        app.modules_data.clock_data.current_clock_timezone = Some(("Europe/London".into(), 1));
  
         let _ = update(&mut app, Message::CycleClockTimeZones);
  
-        let (tz, idx) = app.current_clock_timezone.unwrap();
+        let (tz, idx) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "UTC");
         assert_eq!(idx, 0);
     }
@@ -1010,12 +1016,12 @@ mod tests
     {
         let mut app = make_app();
         app.ron_config.clock_timezones = None;
-        app.current_clock_timezone = Some(("UTC".into(), 0));
+        app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         let _ = update(&mut app, Message::CycleClockTimeZones);
  
         // State must be unchanged
-        let (tz, idx) = app.current_clock_timezone.unwrap();
+        let (tz, idx) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "UTC");
         assert_eq!(idx, 0);
     }
@@ -1026,11 +1032,11 @@ mod tests
     fn toggle_alt_clock_and_cycle_flips_alt_clock_flag()
     {
         let mut app = make_app();
-        assert!(!app.is_showing_alt_clock);
+        assert!(!app.modules_data.clock_data.is_showing_alt_clock);
  
         let _ = update(&mut app, Message::ToggleAltClockAndCycleClockTimeZones);
  
-        assert!(app.is_showing_alt_clock);
+        assert!(app.modules_data.clock_data.is_showing_alt_clock);
     }
  
     #[test]
@@ -1038,13 +1044,13 @@ mod tests
     {
         let mut app = make_app();
         app.ron_config.clock_timezones = Some(vec!["UTC".into(), "Asia/Tokyo".into()]);
-        app.current_clock_timezone = Some(("UTC".into(), 0));
+        app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         let _ = update(&mut app, Message::ToggleAltClockAndCycleClockTimeZones);
  
         // Both effects must have applied
-        assert!(app.is_showing_alt_clock);
-        let (tz, _) = app.current_clock_timezone.unwrap();
+        assert!(app.modules_data.clock_data.is_showing_alt_clock);
+        let (tz, _) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "Asia/Tokyo");
     }
  
@@ -1053,13 +1059,13 @@ mod tests
     {
         let mut app = make_app();
         app.ron_config.clock_timezones = Some(vec!["UTC".into(), "Asia/Tokyo".into()]);
-        app.current_clock_timezone = Some(("UTC".into(), 0));
+        app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         let _ = update(&mut app, Message::ToggleAltClockAndCycleClockTimeZones); // on + advance
         let _ = update(&mut app, Message::ToggleAltClockAndCycleClockTimeZones); // off + wrap
  
-        assert!(!app.is_showing_alt_clock);
-        let (tz, idx) = app.current_clock_timezone.unwrap();
+        assert!(!app.modules_data.clock_data.is_showing_alt_clock);
+        let (tz, idx) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "UTC"); // wrapped back
         assert_eq!(idx, 0);
     }
@@ -1069,12 +1075,12 @@ mod tests
     {
         let mut app = make_app();
         app.ron_config.clock_timezones = None;
-        app.current_clock_timezone = None;
+        app.modules_data.clock_data.current_clock_timezone = None;
  
         let _ = update(&mut app, Message::ToggleAltClockAndCycleClockTimeZones);
  
         // Flag must flip even when timezone cycling is a no-op
-        assert!(app.is_showing_alt_clock);
+        assert!(app.modules_data.clock_data.is_showing_alt_clock);
     }
 
     #[test]

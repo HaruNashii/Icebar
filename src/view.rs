@@ -322,7 +322,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let left_click_message: Message  = match &app.ron_config.action_on_left_click_network  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::ToggleAltNetwork, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false)) };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_network { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false)) };
              
-                let (text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.is_showing_alt_network_module
+                let (text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.modules_data.network_data.is_showing_alt_network_module
                 {
                     let _sep_color_alt_network_side_separator_color = app.ron_config.alt_network_side_separator_color.to_iced_color();
                     (app.ron_config.alt_network_text_size, app.ron_config.alt_network_padding, app.ron_config.alt_network_side_separator, _sep_color_alt_network_side_separator_color, app.ron_config.alt_network_side_separator_width, app.ron_config.alt_network_side_separator_height)
@@ -358,7 +358,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let left_click_message: Message  = match &app.ron_config.action_on_left_click_volume_output  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false)) };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_output { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false)) };
              
-                let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.volume_output_is_muted
+                let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.modules_data.volume_data.volume_output_is_muted
                 {
                     let _sep_color_muted_volume_output_side_separator_color = app.ron_config.muted_volume_output_side_separator_color.to_iced_color();
                     (
@@ -400,7 +400,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let left_click_message: Message  = match &app.ron_config.action_on_left_click_volume_input  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedInput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false)) };
                 let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_input { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false)) };
              
-                let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.volume_input_is_muted
+                let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.modules_data.volume_data.volume_input_is_muted
                 {
                     let _sep_color_muted_volume_input_side_separator_color = app.ron_config.muted_volume_input_side_separator_color.to_iced_color();
                     (
@@ -456,7 +456,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
                 };
 
-                let (text_orientation, text_size, padding, separator_flags, separator_color, separator_width, separator_height) = if app.is_showing_alt_clock
+                let (text_orientation, text_size, padding, separator_flags, separator_color, separator_width, separator_height) = if app.modules_data.clock_data.is_showing_alt_clock
                 {
                     let _sep_color_alt_clock_side_separator_color = app.ron_config.alt_clock_side_separator_color.to_iced_color();
                     (
@@ -507,9 +507,9 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::Image(borrowed_index) => 
             {
                 let index = *borrowed_index;
-                if index > app.ron_config.images.len() { continue; }
+                if index >= app.ron_config.images.len() { continue; }
                 let received_image = &app.ron_config.images[index];
-                let element: Element<'_, Message> = match &app.preloaded_images_handle[index]
+                let element: Element<'_, Message> = match &app.modules_data.image_data.preloaded_images_handle[index]
                 {
                     Some((PreloadedImage::Static(handle), _)) => image(handle).content_fit(received_image.content_fit.into()).width(received_image.width).height(received_image.height).into(),
                     Some((PreloadedImage::Gif(frames), _)) => gif(frames.as_ref()).width(received_image.width).height(received_image.height).into(),
@@ -553,7 +553,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::CustomModule(borrowed_index) => 
             {
                 let index = *borrowed_index;
-                if index > app.ron_config.images.len() { continue; }
+                if index >= app.ron_config.custom_modules.len() { continue; }
                 let custom_module = &app.ron_config.custom_modules[index];
                 let text_to_render = define_custom_module_text(index, custom_module, app);
                 if custom_module.dont_show_if_any_output_is_empty && text_to_render.is_empty()

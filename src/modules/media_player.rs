@@ -19,6 +19,7 @@ use crate::AppData;
 #[derive(Default, Debug, Clone)]
 pub struct MediaPlayerData
 {
+    pub is_hovering_media_player_meta_data: bool,
     pub metadata: String,
     pub status: String 
 }
@@ -62,6 +63,7 @@ pub async fn get_player_data_with_format(player: &str, format: &str) -> MediaPla
 
     MediaPlayerData 
     {
+        is_hovering_media_player_meta_data: false,
         metadata: metadata_string, 
         status: status_string
     }
@@ -300,6 +302,7 @@ mod tests
         let mut app = AppData { ..Default::default() };
         app.modules_data.media_player_data = MediaPlayerData
         {
+            is_hovering_media_player_meta_data: false,
             metadata: metadata.into(),
             status: status.into(),
         };

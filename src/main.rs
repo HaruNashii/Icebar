@@ -9,7 +9,7 @@ use iced::Font;
 
 // ============ CRATES ============
 use crate::helpers::{font::build_font, fs::check_if_config_file_exists, misc::{define_bar_anchor_position, is_active_module, validate_bar_data}, monitor::get_monitor_res, string::{intern_string, weight_from_str}, style::{UserStyle, set_style, style} };
-use crate::modules::{image::{PreloadedImage, preload_image}, data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
+use crate::modules::{custom_modules::CustomModuleData, network::NetworkData, clock::ClockData, image::{ImageData, preload_image}, data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{read_ron_config, BarConfig};
 use crate::context_menu::ContextMenuData;
 use crate::subscription::subscription;
@@ -56,31 +56,18 @@ pub struct AppData
     ids: HashMap<iced::window::Id, WindowInfo>,
     data: ContextMenuData,
 
-    volume_output_raw: f32,
-    volume_input_raw: f32,
+
+    cpu_snapshot: Option<crate::modules::cpu::CpuSnapshot>,
+
+    modules_data: ModulesData,
 
     warning_err: String,
     config_parsed_failed: bool,
-    preloaded_images_handle: Vec<Option<(PreloadedImage, usize)>>,
-    cpu_snapshot: Option<crate::modules::cpu::CpuSnapshot>,
-    current_clock_timezone: Option<(String, u32)>,
-    is_hovering_media_player_meta_data: bool,
-    cached_continuous_outputs: Vec<String>,
-    custom_module_last_run: Vec<Instant>,
-    cached_command_outputs: Vec<String>,
-    is_showing_alt_network_module: bool,
-    is_hovering_volume_output: bool,
-    is_hovering_volume_input: bool,
-    is_hovering_workspace: bool,
-    is_showing_alt_clock: bool,
-    connection_type_icons: [String;3],
-    network_icons: [String;4],
-    volume_output_is_muted: bool,
-    volume_input_is_muted: bool,
-    mouse_position: (i32, i32),
-    modules_data: ModulesData,
-    monitor_size: (u32, u32),
     ron_config: BarConfig,
+
+    mouse_position: (i32, i32),
+    monitor_size: (u32, u32),
+
     default_font: Font,
 }
 
@@ -94,8 +81,8 @@ pub struct AppData
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
     check_if_config_file_exists();
-    let (ron_config, current_clock_timezone, active_modules, (config_parsed_failed, warning_err)) = read_ron_config();
-    let preloaded_images = preload_image(&ron_config.images);
+    let (ron_config, current_clock_timezone, active_modules, (mut config_parsed_failed, mut warning_err)) = read_ron_config();
+    let preloaded_images = preload_image(&mut warning_err, &mut config_parsed_failed, &ron_config.images);
     let anchor_position = define_bar_anchor_position(&ron_config.bar_position);
     let monitor_res = get_monitor_res(ron_config.display.clone());
     if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
@@ -105,23 +92,36 @@ pub async fn main() -> Result<(), iced_layershell::Error>
 
 
 
+
     let modules_data = ModulesData
     {
         active_modules: active_modules.clone(),
+        clock_data: ClockData { current_clock_timezone, ..Default::default() },
+        network_data: NetworkData 
+        {
+            connection_type_icons: ron_config.network_connection_type_icons,
+            network_icons: ron_config.network_level_format,
+            ..Default::default()
+        },
+        custom_module_data: CustomModuleData
+        {
+            custom_module_last_run: vec![Instant::now(); ron_config.custom_modules.len()],
+            ..Default::default()
+        },
+        image_data: ImageData
+        {
+            preloaded_images_handle: preloaded_images
+        },
         ..Default::default()
     };
+
     let mut app_data = AppData
     {
         warning_err,
         config_parsed_failed,
-        preloaded_images_handle: preloaded_images,
         default_font: build_font(&font_name, &ron_config.font_style),
         monitor_size: (monitor_res.0, monitor_res.1),
-        custom_module_last_run: vec![Instant::now(); ron_config.custom_modules.len()],
-        network_icons: ron_config.network_level_format,
-        connection_type_icons: ron_config.network_connection_type_icons,
         ron_config: ron_config_clone, 
-        current_clock_timezone,
         modules_data,
         ..Default::default()
     };

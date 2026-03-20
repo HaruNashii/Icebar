@@ -23,7 +23,13 @@ use crate::AppData;
 pub struct VolumeData
 {
     pub output_volume_level: String,
-    pub input_volume_level:  String,
+    pub input_volume_level: String,
+    pub volume_output_is_muted: bool,
+    pub volume_input_is_muted: bool,
+    pub is_hovering_volume_output: bool,
+    pub is_hovering_volume_input: bool,
+    pub volume_output_raw: f32,
+    pub volume_input_raw: f32,
 }
  
 #[derive(Default, Clone)]
@@ -207,7 +213,7 @@ pub fn volume(volume_modifier: VolumeAction)
 
 pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    if app.volume_output_is_muted
+    if app.modules_data.volume_data.volume_output_is_muted
     {
         let hovered =           app.ron_config.muted_volume_output_button_hovered_color;
         let hovered_text =      app.ron_config.muted_volume_output_button_hovered_text_color;
@@ -237,7 +243,7 @@ pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced
 
 pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    if app.volume_input_is_muted
+    if app.modules_data.volume_data.volume_input_is_muted
     {
         let hovered =              app.ron_config.muted_volume_input_button_hovered_color;
         let hovered_text =         app.ron_config.muted_volume_input_button_hovered_text_color;
@@ -307,7 +313,7 @@ mod tests
     fn make_output_app(muted: bool) -> AppData
     {
         let mut app = AppData::default();
-        app.volume_output_is_muted = muted;
+        app.modules_data.volume_data.volume_output_is_muted = muted;
         app.ron_config.volume_output_button_color = ColorType::RGB([0, 200, 0]);
         app.ron_config.muted_volume_output_button_color = ColorType::RGB([200, 0, 0]);
         app.ron_config.volume_output_button_hovered_color = ColorType::RGB([0, 100, 0]);
@@ -370,7 +376,7 @@ mod tests
     fn make_input_app(muted: bool) -> AppData
     {
         let mut app = AppData::default();
-        app.volume_input_is_muted = muted;
+        app.modules_data.volume_data.volume_input_is_muted = muted;
         app.ron_config.volume_input_button_color = ColorType::RGB([0, 0, 200]);
         app.ron_config.muted_volume_input_button_color = ColorType::RGB([200, 0, 200]);
         app.ron_config.volume_input_button_hovered_color = ColorType::RGB([0, 0, 100]);

@@ -32,62 +32,49 @@ pub fn check_if_config_file_exists()
     else
     {
         println!("Ron config file doesn't exist, Creating...");
-        let ron_default_data = r#"// This file is auto-generated when icebar detects that the config file or config directory doesn't exist.
- 
-// ===== WARNINGS =====
+        let ron_default_data = r#"//==============================================================================================================================================
+// This file is auto-generated when icebar detects that the config file or config directory doesn't exist.
+//
+//===============================================================[  WARNINGS  ]=================================================================
 // - The alpha channel of RGBA values has a range of 0 to 100. Parsing a value greater than 100 will crash.
 // - Setting the first value of "bar_size" to 0 will make the bar fill the entire screen on the X axis.
-// - If the number of workspaces exceeds the number of entries in "workspace_text" or "workspace_selected_text",
-//   the extra workspaces will display their number as text instead.
 // - It is very important to set the "display" variable. Not setting it may cause undefined behaviour.
 // - Missing options are fine and will fall back to their default values, but invalid syntax will crash.
 // - The "continous_command" field may generate high CPU usage depending on how heavy the command is.
 // - The "continous_command" field must not run a loop of any kind — the process will hang forever if it does.
 // - "bar_size" has the format (width, height). For side bars, a width of 0 is not valid and will crash.
 // - "NiriWorkspaces" does not support "persistent_workspaces". If set, it will be ignored.
- 
- 
-// ===== TIPS =====
+// - If the number of workspaces exceeds the number of entries in "workspace_text" or "workspace_selected_text",
+//   the extra workspaces will display their number as text instead.
+//
+//==============================================================================================================================================
+// 
+// 
+//=================================================================[  TIPS  ]===================================================================
 // All possible modules:
 //   "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri",
-//   "CpuTemp", "Ram", "Cpu", "Disk",
-//   "MediaPlayerMetaData", "MediaPlayerButtons",
 //   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces",
+//   "MediaPlayerMetaData", "MediaPlayerButtons",
 //   "CustomModule(index)", "Image(index)",
+//   "CpuTemp", "Ram", "Cpu", "Disk",
 //   "VolumeOutput", "VolumeInput",
 //   "Network", "Clock", "Tray"
 //
-// The "general_option_xyz" fields overwrite every respective per-module option.
-// For example, setting "general_border_color" will override all "[ModuleName]_border_color" values.
-//
+// =============================================================================================================================================
 // Text fields support two inline formatting tags:
-//   Color tag — applies a color to a segment of text:
-//	"[Color=(R, G, B), String=YourText]"
-//   Tuning tag — inserts N hair spaces for fine optical spacing adjustments:
-//     "[Tuning=N]"
-//   Both tags can be freely combined, for example:
-//     "[Color=(255, 100, 100), String=artist][Tuning=2][Color=(200, 200, 200), String=title]"
+//   - Color tag — applies a color to a segment of text: "[Color=(R, G, B), String=YourText]"
+//   - Tuning tag — inserts N hair spaces for fine optical spacing adjustments: "[Tuning=N]"
+//   - Both tags can be freely combined, for example: "[Color=(255, 100, 100), String=artist][Tuning=2][Color=(200, 200, 200), String=title]"
 //
-// Volume format steps increment by 25%: 0%, 25%, 50%, 75%, 100%, >100%.
-//
-// If "clock_timezones" is not set or is explicitly set to "None", your local timezone will be used.
-//
-// Available options for "MODULENAME_side_separator":
-//   Some(Left), Some(Right), Some(Up), Some(Down), Some(LeftAndRight), Some(UpAndDown)
-//
-// Available options for "bar_position": "Up", "Down", "Left", "Right"
-//
+// =============================================================================================================================================
 // Text orientation options for "text_orientation" (available on all modules except Tray):
 //   Horizontal:  |A|B|C|
-//   Vertical:    |A|
-//                |B|
-//                |C|
 //
-// To find the correct "font_family" and "font_style" values, run: fc-scan $PATH_TO_FONT_FILE
+//   	            |A|
+//   Vertical:      |B|
+//                  |C|
 //
-// Images and Custom modules are assigned an index based on their position (top to bottom): first = 0, second = 1, etc.
-// Reference them in the module lists as "Image(index)" or "CustomModule(index)".
-//
+// =============================================================================================================================================
 // All color fields now use the ColorType system. Three formats are supported:
 //   RGB((R, G, B))         — standard RGB color. Values range from 0 to 255.
 //   RGBA((R, G, B, A))     — RGB with alpha. Alpha ranges from 0 (transparent) to 100 (opaque).
@@ -100,20 +87,67 @@ pub fn check_if_config_file_exists()
 //
 // Note: the double parentheses in RGB((...)) and RGBA((...)) are required — it is RON tuple syntax.
 //
-// Setting "bar_check_reload_interval_ms" to "None" disables hot-reload.
-// This can make the bar lighter if you don't need live config reloading.
+// =============================================================================================================================================
+// Gradient fields accept either "None" (no gradient) or a Gradient value with this syntax: Gradient((angle, [(offset, color), ...]))
+// 	- angle: rotation in degrees (0.0 = top to bottom, 90.0 = left to right, 180.0 = bottom to top)
+// 	- offset: position along the gradient, from 0.0 (start) to 1.0 (end)
+// 	- color: any valid ColorType — RGB((R, G, B)), RGBA((R, G, B, A)), or HEX("RRGGBB")
+// 	- you can define as many color stops as you want
 //
+// Example — a vertical purple-to-black gradient on the clock button:
+//   clock_button_gradient_color: Some
+//   (
+//       Gradient
+//       ((
+//           180.0,
+//           [
+//               (0.0, RGB((120, 80, 160))),
+//               (1.0, RGB((0, 0, 0))),
+//           ]
+//       ))
+//   )
+//
+// Example — a horizontal three-stop red/green/blue gradient:
+//   clock_button_gradient_color: Some
+//   (
+//       Gradient
+//       ((
+//           90.0,
+//           [
+//               (0.0, RGB((255, 0, 0))),
+//               (0.5, RGB((0, 255, 0))),
+//               (1.0, RGB((0, 0, 255))),
+//           ]
+//       ))
+//   )
+//
+// Note: when a gradient is set, it takes priority over the flat button color for that state.
+// The double parentheses in Gradient((...)) are required — it is RON tuple syntax.
+//
+// =============================================================================================================================================
 // Fields with unique syntax:
 //   display                          = Some("HDMI-A-1")
 //   force_static_position_context_menu = Some((x, y))
 //   persistent_workspaces            = Some(number)
 //
-// This file lists all currently available options.
-// If an option is missing, it may not be implemented yet.
+// =============================================================================================================================================
+// - The "general_option_xyz" fields overwrite every respective per-module option.
+// - For example, setting "general_border_color" will override all "[ModuleName]_border_color" values.
+// - Volume format steps increment by 25%: 0%, 25%, 50%, 75%, 100%, >100%.
+// - If "clock_timezones" is not set or is explicitly set to "None", your local timezone will be used.
+// - Available options for "MODULENAME_side_separator": Some(Left), Some(Right), Some(Up), Some(Down), Some(LeftAndRight), Some(UpAndDown).
+// - Available options for "bar_position": "Up", "Down", "Left", "Right".
+// - To find the correct "font_family" and "font_style" values, run: fc-scan $PATH_TO_FONT_FILE
+// - Setting "bar_check_reload_interval_ms" to "None" disables hot-reload This can make the bar lighter if you don't need live config reloading.
+// - This file lists all currently available options if an option is missing, it may not be implemented yet.
+// - Images and Custom modules are assigned an index based on their position (top to bottom): first = 0, second = 1, etc...,
+// Reference them in the module lists as "Image(index)" or "CustomModule(index)".
 //
-// Report bugs or request features at: https://github.com/HaruNashii/Icebar
-// Contact directly on Discord: harunashiii
-// Join the contact server: https://discord.gg/CRsz24Ts3a
+// - Report bugs or request features at: https://github.com/HaruNashii/Icebar
+// - Contact directly on Discord: harunashiii
+// - Join the contact server: https://discord.gg/CRsz24Ts3a
+//
+// =============================================================================================================================================
 
 
 
@@ -144,6 +178,9 @@ BarConfig
     general_button_hovered_color: Some(RGB((130, 35, 70))),
     general_button_hovered_text_color: Some(RGB((255, 255, 255))),
     general_button_pressed_color: Some(RGB((80, 25, 45))),
+    general_button_gradient_color: None,
+    general_button_pressed_gradient_color: None,
+    general_button_hovered_gradient_color: None,
     general_border_color: Some(RGB((120, 80, 130))),
     general_border_size: Some(1.0),
     general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),
@@ -166,6 +203,19 @@ BarConfig
     general_alt_side_separator_color: None,
     general_alt_side_separator_width: None,
     general_alt_side_separator_height: None,
+    general_alt_button_gradient_color: Some
+    (
+    	Gradient
+        ((
+        	180.0,
+        	[
+        		(0.0, RGB((175, 75, 75))),
+        		(1.0, RGB((0, 0, 0))),
+        	]
+        ))
+    ),
+    general_alt_button_pressed_gradient_color: None,
+    general_alt_button_hovered_gradient_color: None,
 
 
     // ================= MODULES =================
@@ -215,6 +265,7 @@ BarConfig
     niri_workspaces_update_interval: 225,
     clock_update_interval: 400,
     cpu_update_interval: 1050,
+    disk_update_interval: 10000,
     cpu_temp_update_interval: 1050,
     ram_update_interval: 1050,
     focused_window_update_interval: 500,
@@ -306,86 +357,135 @@ BarConfig
     clock_side_separator_color: RGB((75, 75, 75)),
     clock_side_separator_width: 1.,
     clock_side_separator_height: 16.,
-
     alt_clock_side_separator: None,
     alt_clock_side_separator_color: RGB((75, 75, 75)),
     alt_clock_side_separator_width: 1.,
     alt_clock_side_separator_height: 16.,
-
     tray_side_separator:        None,
     tray_side_separator_color:  RGB((75, 75, 75)),
     tray_side_separator_width:  1.,
     tray_side_separator_height: 16.,
- 
     workspace_side_separator:        None,
     workspace_side_separator_color:  RGB((75, 75, 75)),
     workspace_side_separator_width:  1.,
     workspace_side_separator_height: 16.,
- 
     media_player_metadata_side_separator:        None,
     media_player_metadata_side_separator_color:  RGB((75, 75, 75)),
     media_player_metadata_side_separator_width:  1.,
     media_player_metadata_side_separator_height: 16.,
- 
     media_player_buttons_side_separator:        None,
     media_player_buttons_side_separator_color:  RGB((75, 75, 75)),
     media_player_buttons_side_separator_width:  1.,
     media_player_buttons_side_separator_height: 16.,
- 
     focused_window_side_separator:        None,
     focused_window_side_separator_color:  RGB((75, 75, 75)),
     focused_window_side_separator_width:  1.,
     focused_window_side_separator_height: 16.,
- 
     cpu_side_separator:        None,
     cpu_side_separator_color:  RGB((75, 75, 75)),
     cpu_side_separator_width:  1.,
     cpu_side_separator_height: 16.,
- 
     cpu_temp_side_separator:        None,
     cpu_temp_side_separator_color:  RGB((75, 75, 75)),
     cpu_temp_side_separator_width:  1.,
     cpu_temp_side_separator_height: 16.,
- 
     ram_side_separator:        None,
     ram_side_separator_color:  RGB((75, 75, 75)),
     ram_side_separator_width:  1.,
     ram_side_separator_height: 16.,
- 
     network_side_separator:        None,
     network_side_separator_color:  RGB((75, 75, 75)),
     network_side_separator_width:  1.,
     network_side_separator_height: 16.,
-
     alt_network_side_separator:        None,
     alt_network_side_separator_color:  RGB((75, 75, 75)),
     alt_network_side_separator_width:  1.,
     alt_network_side_separator_height: 16.,
-
     volume_output_side_separator:        None,
     volume_output_side_separator_color:  RGB((75, 75, 75)),
     volume_output_side_separator_width:  1.,
     volume_output_side_separator_height: 20.,
- 
     muted_volume_output_side_separator:        None,
     muted_volume_output_side_separator_color:  RGB((75, 75, 75)),
     muted_volume_output_side_separator_width:  1.,
     muted_volume_output_side_separator_height: 20.,
- 
     volume_input_side_separator:        None,
     volume_input_side_separator_color:  RGB((75, 75, 75)),
     volume_input_side_separator_width:  1.,
     volume_input_side_separator_height: 20.,
-
     muted_volume_input_side_separator:        None,
     muted_volume_input_side_separator_color:  RGB((75, 75, 75)),
     muted_volume_input_side_separator_width:  1.,
     muted_volume_input_side_separator_height: 20.,
-
     disk_side_separator:        None,
     disk_side_separator_color:  RGB((75, 75, 75)),
     disk_side_separator_width:  1.,
     disk_side_separator_height: 20.,
+
+
+    // ================= GRADIENT =================
+    //clock_button_gradient_color: Some
+    //(
+    //	Gradient
+    //    ((
+    //    	180.0,
+    //    	[
+    //    		(0.0, RGB((255, 255, 255))),
+    //    		(1.0, RGB((0, 0, 0))),
+    //    	]
+    //    ))
+    //),
+    clock_button_hovered_gradient_color: None,
+    clock_button_pressed_gradient_color: None,
+    disk_button_gradient_color: None,
+    disk_button_hovered_gradient_color: None,
+    disk_button_pressed_gradient_color: None,
+    tray_button_gradient_color: None,
+    tray_button_hovered_gradient_color: None,
+    tray_button_pressed_gradient_color: None,
+    focused_window_button_gradient_color: None,
+    focused_window_button_hovered_gradient_color: None,
+    focused_window_button_pressed_gradient_color: None,
+    cpu_button_gradient_color: None,
+    cpu_button_hovered_gradient_color: None,
+    cpu_button_pressed_gradient_color: None,
+    cpu_temp_button_gradient_color: None,
+    cpu_temp_button_hovered_gradient_color: None,
+    cpu_temp_button_pressed_gradient_color: None,
+    ram_button_gradient_color: None,
+    ram_button_hovered_gradient_color: None,
+    ram_button_pressed_gradient_color: None,
+    media_player_metadata_button_gradient_color: None,
+    media_player_metadata_button_hovered_gradient_color: None,
+    media_player_metadata_button_pressed_gradient_color: None,
+    media_player_button_gradient_color: None,
+    media_player_button_hovered_gradient_color: None,
+    media_player_button_pressed_gradient_color: None,
+    network_button_gradient_color: None,
+    network_button_hovered_gradient_color: None,
+    network_button_pressed_gradient_color: None,
+    volume_output_button_gradient_color: None,
+    volume_output_button_hovered_gradient_color: None,
+    volume_output_button_pressed_gradient_color: None,
+    volume_input_button_gradient_color: None,
+    volume_input_button_hovered_gradient_color: None,
+    volume_input_button_pressed_gradient_color: None,
+    workspace_button_gradient_color: None,
+    workspace_button_selected_gradient_color: None,
+    workspace_button_hovered_gradient_color: None,
+    workspace_button_pressed_gradient_color: None,
+    muted_volume_output_button_gradient_color: None,
+    muted_volume_output_button_hovered_gradient_color: None,
+    muted_volume_output_button_pressed_gradient_color: None,
+    muted_volume_input_button_gradient_color: None,
+    muted_volume_input_button_hovered_gradient_color: None,
+    muted_volume_input_button_pressed_gradient_color: None,
+    alt_clock_button_gradient_color: None,
+    alt_clock_button_hovered_gradient_color: None,
+    alt_clock_button_pressed_gradient_color: None,
+    alt_network_button_gradient_color: None,
+    alt_network_button_hovered_gradient_color: None,
+    alt_network_button_pressed_gradient_color: None,
 
 
     // ================= TRAY (STYLE) =================
@@ -663,52 +763,52 @@ BarConfig
 
 
     // ================= IMAGES =================
-    //images_spacing: 5,
-    //images:
-    //[
-    //	(
-    //          image_path: "/path/to/kurukuru.gif",
-    //        	content_fit: Fill,
-    //        	message_image_missing: "Warning!!!: GIF Not Found.",
-    //        	side_separator: None,
-    //        	separator_color: RGB((75, 75, 75)),
-    //        	separator_width:  1.,
-    //        	separator_height: 16.,
-    //        	padding: 1,
-    //        	height: 30,
-    //        	width: 50,
-    //        	button_color: RGB((60, 50, 70)),
-    //        	button_hovered_color: RGB((110, 40, 80)),
-    //        	button_hovered_text_color: RGB((255, 255, 255)),
-    //        	button_pressed_color: RGB((70, 20, 40)),
-    //        	border_color: RGB((45, 55, 100)),
-    //    	border_size: 1.0,
-    //    	border_radius: (3., 3., 3., 3.),
-    //        	command_to_exec_on_left_click: ["kitty", "pulsemixer"],
-    //        	command_to_exec_on_right_click: ["kitty", "pulsemixer"],
-    //  ),
-    //(
-    //		image_path: "/path/to/amogus.png",
-    //        	content_fit: Fill,
-    //        	message_image_missing: "Warning!!!: Image Not Found.",
-    //        	side_separator: None,
-    //        	separator_color: RGB((75, 75, 75)),
-    //        	separator_width:  1.,
-    //        	separator_height: 16.,
-    //        	padding: 1,
-    //        	height: 30,
-    //        	width: 50,
-    //        	button_color: RGBA((60, 50, 70, 0)),
-    //        	button_hovered_color: RGB((110, 40, 80)),
-    //        	button_hovered_text_color: RGB((255, 255, 255)),
-    //        	button_pressed_color: RGB((70, 20, 40)),
-    //        	border_color: RGB((90, 70, 100)),
-    //    	border_size: 0.0,
-    //    	border_radius: (3., 3., 3., 3.),
-    //        	command_to_exec_on_left_click: ["kitty", "pulsemixer"],
-    //        	command_to_exec_on_right_click: ["kitty", "pulsemixer"],
-    //    )
-    //],
+    images_spacing: 5,
+    images:
+    [
+    	(
+        	image_path: "/home/beth/GIFS/madeline-celeste.gif",
+            	content_fit: Fill,
+            	message_image_missing: "Warning!!!: GIF Not Found.",
+            	side_separator: None,
+            	separator_color: RGB((75, 75, 75)),
+            	separator_width:  1.,
+            	separator_height: 16.,
+            	padding: 1,
+            	height: 30,
+            	width: 50,
+            	button_color: RGB((60, 50, 70)),
+            	button_hovered_color: RGB((110, 40, 80)),
+            	button_hovered_text_color: RGB((255, 255, 255)),
+            	button_pressed_color: RGB((70, 20, 40)),
+            	border_color: RGB((45, 55, 100)),
+        	border_size: 1.0,
+        	border_radius: (3., 3., 3., 3.),
+            	command_to_exec_on_left_click: ["kitty", "pulsemixer"],
+            	command_to_exec_on_right_click: ["kitty", "pulsemixer"],
+      ),
+      (
+    		image_path: "/home/beth/Pictures/misc/Blake.png",
+            	content_fit: Fill,
+            	message_image_missing: "Warning!!!: Image Not Found.",
+            	side_separator: None,
+            	separator_color: RGB((75, 75, 75)),
+            	separator_width:  1.,
+            	separator_height: 16.,
+            	padding: 1,
+            	height: 30,
+            	width: 50,
+            	button_color: RGBA((60, 50, 70, 0)),
+            	button_hovered_color: RGB((110, 40, 80)),
+            	button_hovered_text_color: RGB((255, 255, 255)),
+            	button_pressed_color: RGB((70, 20, 40)),
+            	border_color: RGB((90, 70, 100)),
+        	border_size: 0.0,
+        	border_radius: (3., 3., 3., 3.),
+            	command_to_exec_on_left_click: ["kitty", "pulsemixer"],
+            	command_to_exec_on_right_click: ["kitty", "pulsemixer"],
+        )
+    ],
 
 
     // ================= CUSTOM MODULES =================
@@ -752,7 +852,7 @@ BarConfig
 	//	text: "print output:",
     	//	text_size: 15,
 	//	height: 30,
-        //	button_color: RGB((255, 40, 55)),
+    	//	button_color: RGB((255, 40, 55)),
     	//	button_hovered_color: RGB((150, 40, 80)),
     	//	button_hovered_text_color: RGB((255, 255, 255)),
     	//	button_pressed_color: RGB((85, 30, 55)),
@@ -777,8 +877,8 @@ BarConfig
     	//	border_color: RGBA((130, 90, 140, 100)),
     	//	border_size: 1.0,
     	//	border_radius: (3.0, 3.0, 3.0, 3.0),
-        //	display_err_output_if_failed: false,
-	//      dont_show_if_any_output_is_empty: true,
+        //	display_err_output_if_failed: true,
+	//      dont_show_if_any_output_is_empty: false,
 	//	use_output_as_text: false,
 	//	use_continous_output_as_text: true,
 	//	all_output_as_text_format: "    {continous_output}",

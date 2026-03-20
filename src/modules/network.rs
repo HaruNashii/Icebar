@@ -31,6 +31,9 @@ pub static PREV_NET: Mutex<Option<(u64, u64, Instant)>> = Mutex::new(None);
 #[derive(Default, Debug, Clone)]
 pub struct NetworkData
 {
+    pub connection_type_icons: [String;3],
+    pub network_icons: [String;4],
+    pub is_showing_alt_network_module: bool,
     pub connection_type: u8,
     pub network_level: u32,
     pub network_speed: u32,
@@ -99,10 +102,11 @@ pub fn network_stream(no_conn_string: &String) -> BoxStream<'static, Message>
                         match result_data 
                         {
                             Some(data) => yield Message::NetworkUpdated(data),
-                            None => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0, rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new()}) 
+                            None => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0, rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new(), ..Default::default()}) 
+        
                         }
                     },
-                    Err(_) => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0, rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new()  }) 
+                    Err(_) => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0, rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new(), ..Default::default()  }) 
                 }
             }
     
@@ -196,7 +200,8 @@ async fn return_network_state(connection: &Connection) -> Result<Option<NetworkD
         id,
         iface,
         rx_bytes_per_sec: 0,
-        tx_bytes_per_sec: 0
+        tx_bytes_per_sec: 0,
+        ..Default::default()
     }))
 }
 
@@ -204,7 +209,7 @@ async fn return_network_state(connection: &Connection) -> Result<Option<NetworkD
 
 pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {   
-    if app.is_showing_alt_network_module
+    if app.modules_data.network_data.is_showing_alt_network_module
     {
         let hovered =           app.ron_config.alt_network_button_hovered_color;
         let hovered_text =      app.ron_config.alt_network_button_hovered_text_color;
@@ -236,17 +241,17 @@ pub fn define_network_text(app: &AppData) -> String
 {
     let network_level = match &app.modules_data.network_data.network_level
     {
-        4 => &app.network_icons[0],
-        3 => &app.network_icons[1],
-        2 => &app.network_icons[2],
-        _ => &app.network_icons[3],
+        4 => &app.modules_data.network_data.network_icons[0],
+        3 => &app.modules_data.network_data.network_icons[1],
+        2 => &app.modules_data.network_data.network_icons[2],
+        _ => &app.modules_data.network_data.network_icons[3],
     };
 
     let connection_type = match &app.modules_data.network_data.connection_type
     {
-        1 => &app.connection_type_icons[0],
-        2 => &app.connection_type_icons[1],
-        _ => &app.connection_type_icons[2],
+        1 => &app.modules_data.network_data.connection_type_icons[0],
+        2 => &app.modules_data.network_data.connection_type_icons[1],
+        _ => &app.modules_data.network_data.connection_type_icons[2],
     };
     
     let network_speed = match &app.modules_data.network_data.network_speed
@@ -258,7 +263,7 @@ pub fn define_network_text(app: &AppData) -> String
     let kb_sent = format!("{:.1}", app.modules_data.network_data.tx_bytes_per_sec as f64 / 1_024.0);
     let kb_received = format!("{:.1}", app.modules_data.network_data.rx_bytes_per_sec as f64 / 1_024.0);
     
-    if app.is_showing_alt_network_module
+    if app.modules_data.network_data.is_showing_alt_network_module
     {
         let alt_orientation = &app.ron_config.alt_network_text_orientation;
         let alt_string = app.ron_config.alt_network_module_format.replace("{received}", &kb_received).replace("{sent}", &kb_sent).replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
@@ -289,7 +294,7 @@ mod tests
     fn make_network_style_app(is_alt: bool) -> AppData
     {
         let mut app = AppData { ..Default::default() };
-        app.is_showing_alt_network_module = is_alt;
+        app.modules_data.network_data.is_showing_alt_network_module = is_alt;
         app.ron_config.network_button_color = ColorType::RGB([10, 20, 30]);
         app.ron_config.network_button_hovered_color = ColorType::RGB([15, 25, 35]);
         app.ron_config.network_button_pressed_color = ColorType::RGB([5, 10, 15]);
@@ -347,9 +352,9 @@ mod tests
     fn make_app(level: u32, conn_type: u8, speed: u32, id: &str) -> AppData
     {
         let mut app = AppData { ..Default::default() };
-        app.modules_data.network_data = NetworkData { network_level: level, connection_type: conn_type, network_speed: speed, id: id.into(), rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new() };
-        app.network_icons = ["L4".into(), "L3".into(), "L2".into(), "L0".into()];
-        app.connection_type_icons = ["ETH".into(), "WIFI".into(), "?".into()];
+        app.modules_data.network_data = NetworkData { network_level: level, connection_type: conn_type, network_speed: speed, id: id.into(), rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new(), ..Default::default() };
+        app.modules_data.network_data.network_icons = ["L4".into(), "L3".into(), "L2".into(), "L0".into()];
+        app.modules_data.network_data.connection_type_icons = ["ETH".into(), "WIFI".into(), "?".into()];
         app.ron_config.network_module_format = "{level}|{connection_type}|{speed}|{id}".into();
         app.ron_config.alt_network_module_format = "ALT:{level}".into();
         app
@@ -423,7 +428,7 @@ mod tests
     fn network_text_alt_module_uses_alt_format()
     {
         let mut app = make_app(4, 1, 50, "home");
-        app.is_showing_alt_network_module = true;
+        app.modules_data.network_data.is_showing_alt_network_module = true;
         let text = define_network_text(&app);
         assert!(text.starts_with("ALT:"));
     }
