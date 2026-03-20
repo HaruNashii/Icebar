@@ -21,7 +21,6 @@ pub struct ContextMenuData
     pub context_menu_is_open: bool,
     pub cursor_is_inside_menu: bool,
     pub mouse_position: (i32, i32),
-    pub monitor_size: (u32, u32),
     pub items: Vec<MenuItem>,
     pub default_font: Font,
     pub service: String,
@@ -41,7 +40,7 @@ pub fn create_context_menu(app: &mut AppData) -> Task<Message>
         BarPosition::Right => Anchor::Right | Anchor::Top, 
     };
 
-    let context_menu_size = get_context_menu_size(&app.data, &app.ron_config);
+    let context_menu_size = get_context_menu_size(&app.context_menu_data, &app.ron_config);
 
     let (context_menu_pos_x, context_menu_pos_y) = if let Some(forced_values) = app.ron_config.force_static_position_context_menu
     {
@@ -49,7 +48,7 @@ pub fn create_context_menu(app: &mut AppData) -> Task<Message>
     }
     else 
     {
-        smart_popup_position(app.data.mouse_position.0, app.data.mouse_position.1, app.data.monitor_size.0 as i32, app.data.monitor_size.1 as i32, context_menu_size.0 as i32, context_menu_size.1 as i32)
+        smart_popup_position(app.context_menu_data.mouse_position.0, app.context_menu_data.mouse_position.1, app.monitor_size.0 as i32, app.monitor_size.1 as i32, context_menu_size.0 as i32, context_menu_size.1 as i32)
     };
 
 

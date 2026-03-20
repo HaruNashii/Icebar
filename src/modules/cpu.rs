@@ -14,14 +14,14 @@ use crate::AppData;
 
 
 // ============ STRUCTS ============
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Copy, Clone, Debug)]
 pub struct CpuData
 {
+    pub cpu_snapshot: Option<crate::modules::cpu::CpuSnapshot>,
     pub usage_percent: f32,
 }
 
-/// Raw values read from /proc/stat — stored between ticks to compute a delta.
-#[derive(Default, Clone)]
+#[derive(Default, Copy, Clone, Debug)]
 pub struct CpuSnapshot
 {
     pub total: u64,

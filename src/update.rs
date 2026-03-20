@@ -29,6 +29,7 @@ use crate::{warning::create_warning, MAIN_ID, AppData, WindowInfo};
 
 
 
+
 // ============ ENUM/STRUCT, ETC ============
 #[to_layer_message(multi)]
 #[derive(Debug, Clone)]
@@ -112,7 +113,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             println!("Menu Path: {path}");
             println!("Id: {id}");
 
-            app.data.context_menu_is_open = false;
+            app.context_menu_data.context_menu_is_open = false;
             let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
             for id in &window_ids_to_close { app.ids.remove(id); }
             let close_tasks = Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
@@ -127,14 +128,14 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::CursorMoved(position) =>
         {
             let new_pos = (position.x as i32, position.y as i32);
-            if new_pos != app.mouse_position 
+            if new_pos != app.context_menu_data.mouse_position 
             {
-                app.mouse_position = new_pos;
+                app.context_menu_data.mouse_position = new_pos;
             }
-            if app.data.context_menu_is_open
+            if app.context_menu_data.context_menu_is_open
             {
-                let (width, height) = get_context_menu_size(&app.data, &app.ron_config);
-                app.data.cursor_is_inside_menu = position.x >= 0.0 && position.y >= 0.0 && position.x <= width as f32 && position.y <= height as f32;
+                let (width, height) = get_context_menu_size(&app.context_menu_data, &app.ron_config);
+                app.context_menu_data.cursor_is_inside_menu = position.x >= 0.0 && position.y >= 0.0 && position.x <= width as f32 && position.y <= height as f32;
             }
         }
 
@@ -142,8 +143,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         {
             let has_context_menu = app.ids.values().any(|v| *v == WindowInfo::ContextMenu);
             if !has_context_menu { return Task::none(); }  // add this guard
-            app.data.context_menu_is_open = false;
-            if !app.data.cursor_is_inside_menu
+            app.context_menu_data.context_menu_is_open = false;
+            if !app.context_menu_data.cursor_is_inside_menu
             {
                 let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
                 for id in &window_ids_to_close { app.ids.remove(id);  }
@@ -153,7 +154,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
         Message::CloseContextMenu =>
         {
-            app.data.context_menu_is_open = false;
+            app.context_menu_data.context_menu_is_open = false;
             let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
             for id in &window_ids_to_close { app.ids.remove(id);  }
             return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
@@ -267,11 +268,11 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         {
             if let Some(curr) = read_cpu_snapshot()
             {
-                if let Some(prev) = &app.cpu_snapshot
+                if let Some(prev) = &app.modules_data.cpu_data.cpu_snapshot
                 {
                     app.modules_data.cpu_data.usage_percent = compute_cpu_usage(prev, &curr);
                 }
-                app.cpu_snapshot = Some(curr);
+                app.modules_data.cpu_data.cpu_snapshot = Some(curr);
             }
         }
 
@@ -352,7 +353,6 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 default_font: build_font(&font_name, &new_config.font_style),
                 monitor_size: monitor_res,
                 ron_config: new_config, 
-                mouse_position: app.mouse_position,
                 modules_data,
                 ..Default::default()
             };
@@ -645,16 +645,15 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             println!("Id: {:?}\n", items);
             let context_menu_data = crate::context_menu::ContextMenuData 
             {
-                context_menu_is_open: true,
-                mouse_position: app.mouse_position,
+                mouse_position: app.context_menu_data.mouse_position,
                 default_font: app.default_font,
-                monitor_size: app.monitor_size,
                 cursor_is_inside_menu: false, 
+                context_menu_is_open: true,
                 service,
                 items,
                 path,
             };
-            app.data = context_menu_data;
+            app.context_menu_data = context_menu_data;
             
             return create_context_menu(app);
         }
@@ -795,7 +794,7 @@ mod tests
     {
         let mut app = make_app();
         let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 123.7, y: 456.2 }));
-        assert_eq!(app.mouse_position, (123, 456));
+        assert_eq!(app.context_menu_data.mouse_position, (123, 456));
     }
 
     #[test]
@@ -803,7 +802,7 @@ mod tests
     {
         let mut app = make_app();
         let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 99.9, y: 99.9 }));
-        assert_eq!(app.mouse_position, (99, 99));
+        assert_eq!(app.context_menu_data.mouse_position, (99, 99));
     }
  
     // ---- CommandFinished ----------------------------------------------------
@@ -970,7 +969,7 @@ mod tests
         let mut app = AppData { ..Default::default() };
         let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 10.0, y: 20.0 }));
         let _ = update(&mut app, Message::CursorMoved(iced::Point { x: 300.0, y: 400.0 }));
-        assert_eq!(app.mouse_position, (300, 400));
+        assert_eq!(app.context_menu_data.mouse_position, (300, 400));
     }
      
     #[test]

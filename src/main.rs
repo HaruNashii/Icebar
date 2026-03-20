@@ -54,20 +54,12 @@ pub enum WindowInfo
 pub struct AppData
 { 
     ids: HashMap<iced::window::Id, WindowInfo>,
-    data: ContextMenuData,
-
-
-    cpu_snapshot: Option<crate::modules::cpu::CpuSnapshot>,
-
+    monitor_size: (u32, u32),
+    context_menu_data: ContextMenuData,
     modules_data: ModulesData,
-
     warning_err: String,
     config_parsed_failed: bool,
     ron_config: BarConfig,
-
-    mouse_position: (i32, i32),
-    monitor_size: (u32, u32),
-
     default_font: Font,
 }
 

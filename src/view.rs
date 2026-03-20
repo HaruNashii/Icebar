@@ -35,7 +35,7 @@ pub fn view(app: &AppData, id: iced::window::Id) -> Element<'_, Message>
 {
     match id_info(app, id) 
     {
-        Some(WindowInfo::ContextMenu) => return context_menu_view(&app.data, &app.ron_config),
+        Some(WindowInfo::ContextMenu) => return context_menu_view(&app.context_menu_data, &app.ron_config),
         Some(WindowInfo::Warning) => 
         {
             if app.config_parsed_failed
