@@ -66,7 +66,7 @@ pub fn warning_view<'a>(err: &'a String) -> Element<'a, Message>
             let border_color =      ColorType::RGB([225, 255, 5]);
             let border_size =       1.0;
             let border_radius =     [0., 0., 0., 0.];
-            set_style(crate::UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius })
+            set_style(crate::UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, hovered_gradient: None, normal_gradient: None, pressed_gradient: None })
         })
     ).into();
     

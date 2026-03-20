@@ -92,6 +92,9 @@ pub fn define_ram_style(app: &AppData, status: button::Status) -> iced::widget::
         border_color: app.ron_config.ram_border_color,
         border_size:       app.ron_config.ram_border_size,
         border_radius:     app.ron_config.ram_border_radius,
+        hovered_gradient: app.ron_config.ram_button_hovered_gradient_color.clone(),
+        normal_gradient: app.ron_config.ram_button_gradient_color.clone(),
+        pressed_gradient: app.ron_config.ram_button_pressed_gradient_color.clone()
     })
 }
 

@@ -1,11 +1,12 @@
 // ============ IMPORTS ============
 use iced::{Alignment, Border, Color, Element, Theme, border::Radius, theme::Style, widget::{Space, button, column, container, row}};
+use iced_layershell::reexport::core::{Degrees, gradient::Linear};
 use serde::{Serialize, Deserialize};
 
 
 
 // ============ CRATES ============
-use crate::helpers::color::ColorType;
+use crate::helpers::color::{ColorType, Gradient};
 use crate::AppData;
 
 
@@ -22,6 +23,9 @@ pub enum TextOrientation
 
 pub struct UserStyle
 {
+    pub normal_gradient: Option<Gradient>,
+    pub hovered_gradient: Option<Gradient>,
+    pub pressed_gradient: Option<Gradient>,
     pub status: iced::widget::button::Status,
     pub border_color: ColorType,
     pub hovered_text: ColorType,
@@ -59,6 +63,23 @@ pub fn style(_: &AppData, _: &iced::Theme) -> Style
 }
 
 
+pub fn match_color_or_gradient(gradient: Option<Gradient>, color: ColorType) -> Option<iced::Background>
+{
+    match gradient
+    {
+        Some(Gradient::Gradient(received_gradient)) =>
+        {
+            let mut gradient = Linear::new(Degrees(received_gradient.0));
+            for entry in received_gradient.1
+            {
+                gradient = gradient.add_stop(entry.0, entry.1.to_iced_color());
+            }
+            Some(iced::Background::Gradient(gradient.into()))
+        },
+        None => Some(iced::Background::Color(color.to_iced_color()))
+    }
+}
+
 
 pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
 {
@@ -67,16 +88,16 @@ pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
     {
         button::Status::Hovered =>
         {
-            style.background = Some(iced::Background::Color(user_style.hovered.to_iced_color()));
+            style.background = match_color_or_gradient(user_style.hovered_gradient, user_style.hovered);
             style.text_color = user_style.hovered_text.to_iced_color();
         }
         button::Status::Pressed =>
         {
-            style.background = Some(iced::Background::Color(user_style.pressed.to_iced_color()));
+            style.background = match_color_or_gradient(user_style.pressed_gradient, user_style.pressed);
         }
         _ =>
         {
-            style.background = Some(iced::Background::Color(user_style.normal.to_iced_color()));
+            style.background = match_color_or_gradient(user_style.normal_gradient, user_style.normal);
             style.text_color = user_style.normal_text.to_iced_color();
         }
     }
@@ -210,6 +231,9 @@ mod tests
             border_color: ColorType::RGB([1, 2, 3]),
             border_size:       2.5,
             border_radius:     [1.0, 2.0, 3.0, 4.0],
+            hovered_gradient: None, 
+            normal_gradient: None, 
+            pressed_gradient: None
         }
     }
  
@@ -316,6 +340,9 @@ mod tests
             border_color: ColorType::RGB([1, 2, 3]),
             border_size:       2.0,
             border_radius:     [1.0, 2.0, 3.0, 4.0],
+            hovered_gradient: None, 
+            normal_gradient: None, 
+            pressed_gradient: None
         })
     }
  

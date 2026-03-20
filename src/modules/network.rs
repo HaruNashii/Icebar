@@ -211,10 +211,10 @@ pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widg
         let pressed =           app.ron_config.alt_network_button_pressed_color;
         let normal =            app.ron_config.alt_network_button_color;
         let normal_text =       app.ron_config.alt_network_text_color;
-        let border_size =           app.ron_config.alt_network_border_size;
-        let border_color = app.ron_config.alt_network_border_color;
-        let border_radius =    app.ron_config.alt_network_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
+        let border_size =       app.ron_config.alt_network_border_size;
+        let border_color =      app.ron_config.alt_network_border_color;
+        let border_radius =     app.ron_config.alt_network_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.alt_network_button_gradient_color.clone(), hovered_gradient: app.ron_config.alt_network_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.alt_network_button_pressed_gradient_color.clone() })
     }
     else
     {
@@ -223,10 +223,10 @@ pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widg
         let pressed =           app.ron_config.network_button_pressed_color;
         let normal =            app.ron_config.network_button_color;
         let normal_text =       app.ron_config.network_text_color;
-        let border_size =           app.ron_config.network_border_size;
-        let border_color = app.ron_config.network_border_color;
-        let border_radius =    app.ron_config.network_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
+        let border_size =       app.ron_config.network_border_size;
+        let border_color =      app.ron_config.network_border_color;
+        let border_radius =     app.ron_config.network_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.network_button_gradient_color.clone(), hovered_gradient: app.ron_config.network_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.network_button_pressed_gradient_color.clone() })
     }
 }
 

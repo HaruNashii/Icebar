@@ -84,6 +84,9 @@ pub fn define_disk_style(app: &AppData, status: button::Status) -> iced::widget:
         border_color:      app.ron_config.disk_border_color,
         border_size:       app.ron_config.disk_border_size,
         border_radius:     app.ron_config.disk_border_radius,
+        hovered_gradient: None,
+        normal_gradient: None,
+        pressed_gradient: None
     })
 }
 

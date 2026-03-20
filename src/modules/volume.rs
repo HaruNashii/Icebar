@@ -217,7 +217,7 @@ pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced
         let border_size =       app.ron_config.muted_volume_output_border_size;
         let border_color =  app.ron_config.muted_volume_output_border_color;
         let border_radius =     app.ron_config.muted_volume_output_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.muted_volume_output_button_gradient_color.clone(), hovered_gradient: app.ron_config.muted_volume_output_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.muted_volume_output_button_pressed_gradient_color.clone() })
     }
     else
     {
@@ -229,7 +229,7 @@ pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced
         let border_size =       app.ron_config.volume_output_border_size;
         let border_color =  app.ron_config.volume_output_border_color;
         let border_radius =     app.ron_config.volume_output_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.volume_output_button_gradient_color.clone(), hovered_gradient: app.ron_config.volume_output_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.volume_output_button_pressed_gradient_color.clone() })
     }
 }
 
@@ -247,7 +247,7 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
         let border_size =          app.ron_config.muted_volume_input_border_size;
         let border_color =     app.ron_config.muted_volume_input_border_color;
         let border_radius =        app.ron_config.muted_volume_input_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.muted_volume_input_button_gradient_color.clone(), hovered_gradient: app.ron_config.muted_volume_input_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.muted_volume_input_button_pressed_gradient_color.clone() })
     }
     else
     {
@@ -259,7 +259,7 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
         let border_size =       app.ron_config.volume_input_border_size;
         let border_color =  app.ron_config.volume_input_border_color;
         let border_radius =     app.ron_config.volume_input_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
+        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.volume_input_button_gradient_color.clone(), hovered_gradient: app.ron_config.volume_input_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.volume_input_button_pressed_gradient_color.clone() })
     }
 }
 

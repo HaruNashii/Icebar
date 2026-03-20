@@ -6,6 +6,12 @@ use serde::{Deserialize, Serialize};
 
 
 // ============ STRUCTS/ENUM'S ============
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub enum Gradient 
+{
+    Gradient((f32, Vec<(f32, ColorType)>))
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Serialize)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum ColorType

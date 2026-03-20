@@ -108,6 +108,9 @@ pub fn define_focused_window_style(app: &AppData, status: button::Status) -> ice
         border_color: app.ron_config.focused_window_border_color,
         border_size:       app.ron_config.focused_window_border_size,
         border_radius:     app.ron_config.focused_window_border_radius,
+        normal_gradient:   app.ron_config.focused_window_button_gradient_color.clone(),
+        hovered_gradient:  app.ron_config.focused_window_button_hovered_gradient_color.clone(),
+        pressed_gradient:  app.ron_config.focused_window_button_pressed_gradient_color.clone(),
     })
 }
 

@@ -53,7 +53,11 @@ pub fn define_workspaces_style(app: &AppData, status: button::Status, i: &i32) -
     let border_size = app.ron_config.workspace_border_size;
     let border_color = app.ron_config.workspace_border_color;
     let border_radius = app.ron_config.workspace_border_radius;
-    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius})
+    let normal_gradient = if app.modules_data.workspace_data.current_workspace == *i
+    { app.ron_config.workspace_button_selected_gradient_color.clone() }
+    else
+    { app.ron_config.workspace_button_gradient_color.clone() };
+    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient, hovered_gradient: app.ron_config.workspace_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.workspace_button_pressed_gradient_color.clone()})
 }
 
 

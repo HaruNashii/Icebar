@@ -95,7 +95,7 @@ pub fn define_media_player_metadata_style(app: &AppData, status: button::Status)
     let border_size =              app.ron_config.media_player_metadata_border_size;
     let border_color =    app.ron_config.media_player_metadata_border_color;
     let border_radius =       app.ron_config.media_player_metadata_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
+    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_metadata_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_metadata_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_metadata_button_pressed_gradient_color.clone() })
 }
 
 
@@ -110,7 +110,7 @@ pub fn define_media_player_buttons_style(app: &AppData, status: button::Status) 
     let border_size =              app.ron_config.media_player_button_border_size;
     let border_color =    app.ron_config.media_player_button_border_color;
     let border_radius =       app.ron_config.media_player_button_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
+    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_button_pressed_gradient_color.clone() })
 }
 
 

@@ -100,7 +100,7 @@ pub fn context_menu_view<'a>(data: &'a ContextMenuData, ron_config: &'a BarConfi
             let border_color =  ron_config.context_menu_border_color;
             let border_size =       ron_config.context_menu_border_size;
             let border_radius =     ron_config.context_menu_border_radius;
-            set_style(crate::UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius })
+            set_style(crate::UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: None, hovered_gradient: None, pressed_gradient: None })
         }).into()}
     ).collect();
     

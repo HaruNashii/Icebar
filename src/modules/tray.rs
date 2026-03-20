@@ -346,7 +346,7 @@ pub fn define_tray_style(app: &AppData, status: button::Status) -> iced::widget:
     let border_size = app.ron_config.tray_border_size;
     let border_color = app.ron_config.tray_border_color;
     let border_radius = app.ron_config.tray_border_radius;
-    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius})
+    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, hovered_gradient: app.ron_config.tray_button_hovered_gradient_color.clone(), normal_gradient: app.ron_config.tray_button_gradient_color.clone(), pressed_gradient: app.ron_config.tray_button_pressed_gradient_color.clone() })
 }
 
 

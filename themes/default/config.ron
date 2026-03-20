@@ -110,6 +110,11 @@ BarConfig
     general_button_hovered_color: Some(RGB((130, 35, 70))),
     general_button_hovered_text_color: Some(RGB((255, 255, 255))),
     general_button_pressed_color: Some(RGB((80, 25, 45))),
+
+    general_button_gradient_color: None,
+    general_button_pressed_gradient_color: None,
+    general_button_hovered_gradient_color: None,
+
     general_border_color: Some(RGB((120, 80, 130))),
     general_border_size: Some(1.0),
     general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),

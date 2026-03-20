@@ -7,7 +7,7 @@ use iced::widget::button;
 
 
 // ============ CRATES ============
-use crate::helpers::{color::ColorType, string::ellipsize, style::{SideOption, TextOrientation, UserStyle, set_style}};
+use crate::helpers::{color::{Gradient, ColorType}, string::ellipsize, style::{SideOption, TextOrientation, UserStyle, set_style}};
 use crate::AppData;
 
 
@@ -36,6 +36,9 @@ pub struct CustomModule
     pub button_hovered_text_color: ColorType,
     pub button_pressed_color: ColorType,
     pub border_color: ColorType,
+    pub button_gradient_color: Option<Gradient>,
+    pub button_hovered_gradient_color: Option<Gradient>,
+    pub button_pressed_gradient_color: Option<Gradient>,
     pub border_size: f32,
     pub border_radius: [f32;4],
     pub dont_show_if_any_output_is_empty: bool,
@@ -78,6 +81,9 @@ impl Default for CustomModule
             button_hovered_text_color: ColorType::RGB([255, 255, 255]),
             button_pressed_color: ColorType::RGB([70, 20, 40]),
             border_color: ColorType::RGB([90, 70, 100]),
+            button_gradient_color: None,
+            button_hovered_gradient_color: None,
+            button_pressed_gradient_color: None,
             border_size: 1.0,
             border_radius: [3., 3., 3., 3.],
             display_err_output_if_failed: true,
@@ -106,7 +112,7 @@ pub fn define_custom_module_style(custom_module: &CustomModule, status: button::
     let border_size = custom_module.border_size; 
     let border_color = custom_module.border_color; 
     let border_radius = custom_module.border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius} )
+    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: custom_module.button_gradient_color.clone(), hovered_gradient: custom_module.button_hovered_gradient_color.clone(), pressed_gradient: custom_module.button_pressed_gradient_color.clone() })
 }
 
 

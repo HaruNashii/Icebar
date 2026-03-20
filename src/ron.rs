@@ -8,7 +8,7 @@ use std::{fs, collections::HashSet};
 
 // ============ CRATES ============
 use crate::modules::{image::Image, custom_modules::CustomModule, data::Modules};
-use crate::helpers::{string::find_field_colon, color::ColorType, ron_general::apply_general_settings, style::{SideOption, TextOrientation}};
+use crate::helpers::{string::find_field_colon, color::{ColorType, Gradient}, ron_general::apply_general_settings, style::{SideOption, TextOrientation}};
 
 
 
@@ -70,6 +70,9 @@ pub struct BarConfig
     pub general_button_hovered_color: Option<ColorType>,
     pub general_button_hovered_text_color: Option<ColorType>,
     pub general_button_pressed_color: Option<ColorType>,
+    pub general_button_gradient_color: Option<Gradient>,
+    pub general_button_pressed_gradient_color: Option<Gradient>,
+    pub general_button_hovered_gradient_color: Option<Gradient>,
     pub general_border_color: Option<ColorType>,
     pub general_border_size: Option<f32>,
     pub general_border_radius: Option<[f32;4]>,
@@ -92,6 +95,9 @@ pub struct BarConfig
     pub general_alt_border_color: Option<ColorType>,
     pub general_alt_border_size: Option<f32>,
     pub general_alt_border_radius: Option<[f32;4]>,
+    pub general_alt_button_gradient_color: Option<Gradient>,
+    pub general_alt_button_pressed_gradient_color: Option<Gradient>,
+    pub general_alt_button_hovered_gradient_color: Option<Gradient>,
 
 
     // ================= MODULES =================
@@ -248,6 +254,61 @@ pub struct BarConfig
     pub disk_side_separator_color: ColorType,
     pub disk_side_separator_width: f32,
     pub disk_side_separator_height: f32,
+
+
+    // ================= GRADIENTS =================
+    pub disk_button_gradient_color: Option<Gradient>,
+    pub disk_button_hovered_gradient_color: Option<Gradient>,
+    pub disk_button_pressed_gradient_color: Option<Gradient>,
+    pub tray_button_gradient_color: Option<Gradient>,
+    pub tray_button_hovered_gradient_color: Option<Gradient>,
+    pub tray_button_pressed_gradient_color: Option<Gradient>,
+    pub focused_window_button_gradient_color: Option<Gradient>,
+    pub focused_window_button_hovered_gradient_color: Option<Gradient>,
+    pub focused_window_button_pressed_gradient_color: Option<Gradient>,
+    pub cpu_button_gradient_color: Option<Gradient>,
+    pub cpu_button_hovered_gradient_color: Option<Gradient>,
+    pub cpu_button_pressed_gradient_color: Option<Gradient>,
+    pub cpu_temp_button_gradient_color: Option<Gradient>,
+    pub cpu_temp_button_hovered_gradient_color: Option<Gradient>,
+    pub cpu_temp_button_pressed_gradient_color: Option<Gradient>,
+    pub ram_button_gradient_color: Option<Gradient>,
+    pub ram_button_hovered_gradient_color: Option<Gradient>,
+    pub ram_button_pressed_gradient_color: Option<Gradient>,
+    pub media_player_metadata_button_gradient_color: Option<Gradient>,
+    pub media_player_metadata_button_hovered_gradient_color: Option<Gradient>,
+    pub media_player_metadata_button_pressed_gradient_color: Option<Gradient>,
+    pub media_player_button_gradient_color: Option<Gradient>,
+    pub media_player_button_hovered_gradient_color: Option<Gradient>,
+    pub media_player_button_pressed_gradient_color: Option<Gradient>,
+    pub network_button_gradient_color: Option<Gradient>,
+    pub network_button_hovered_gradient_color: Option<Gradient>,
+    pub network_button_pressed_gradient_color: Option<Gradient>,
+    pub alt_network_button_gradient_color: Option<Gradient>,
+    pub alt_network_button_hovered_gradient_color: Option<Gradient>,
+    pub alt_network_button_pressed_gradient_color: Option<Gradient>,
+    pub clock_button_gradient_color: Option<Gradient>,
+    pub clock_button_hovered_gradient_color: Option<Gradient>,
+    pub clock_button_pressed_gradient_color: Option<Gradient>,
+    pub alt_clock_button_gradient_color: Option<Gradient>,
+    pub alt_clock_button_hovered_gradient_color: Option<Gradient>,
+    pub alt_clock_button_pressed_gradient_color: Option<Gradient>,
+    pub volume_output_button_gradient_color: Option<Gradient>,
+    pub volume_output_button_hovered_gradient_color: Option<Gradient>,
+    pub volume_output_button_pressed_gradient_color: Option<Gradient>,
+    pub muted_volume_output_button_gradient_color: Option<Gradient>,
+    pub muted_volume_output_button_hovered_gradient_color: Option<Gradient>,
+    pub muted_volume_output_button_pressed_gradient_color: Option<Gradient>,
+    pub volume_input_button_gradient_color: Option<Gradient>,
+    pub volume_input_button_hovered_gradient_color: Option<Gradient>,
+    pub volume_input_button_pressed_gradient_color: Option<Gradient>,
+    pub muted_volume_input_button_gradient_color: Option<Gradient>,
+    pub muted_volume_input_button_hovered_gradient_color: Option<Gradient>,
+    pub muted_volume_input_button_pressed_gradient_color: Option<Gradient>,
+    pub workspace_button_gradient_color: Option<Gradient>,
+    pub workspace_button_selected_gradient_color: Option<Gradient>,
+    pub workspace_button_hovered_gradient_color: Option<Gradient>,
+    pub workspace_button_pressed_gradient_color: Option<Gradient>,
 
 
     // ================= disk (style) =================
@@ -566,6 +627,9 @@ impl Default for BarConfig
             general_button_hovered_color: None,
             general_button_hovered_text_color: None,
             general_button_pressed_color: None,
+            general_button_gradient_color: None,
+            general_button_pressed_gradient_color: None,
+            general_button_hovered_gradient_color: None,
             general_border_color: None,
             general_border_size: None,
             general_border_radius: None,
@@ -588,6 +652,9 @@ impl Default for BarConfig
             general_alt_border_color: None,
             general_alt_border_size: None,
             general_alt_border_radius: None,
+            general_alt_button_gradient_color: None,
+            general_alt_button_pressed_gradient_color: None,
+            general_alt_button_hovered_gradient_color: None,
 
 
             // ================= MODULES =================
@@ -786,6 +853,61 @@ impl Default for BarConfig
             disk_side_separator_color: ColorType::RGB([75, 75, 75]),
             disk_side_separator_width: 1.,
             disk_side_separator_height: 16.,
+
+
+            // ================= GRADIENT =================
+            disk_button_gradient_color: None,
+            disk_button_hovered_gradient_color: None,
+            disk_button_pressed_gradient_color: None,
+            tray_button_gradient_color: None,
+            tray_button_hovered_gradient_color: None,
+            tray_button_pressed_gradient_color: None,
+            focused_window_button_gradient_color: None,
+            focused_window_button_hovered_gradient_color: None,
+            focused_window_button_pressed_gradient_color: None,
+            cpu_button_gradient_color: None,
+            cpu_button_hovered_gradient_color: None,
+            cpu_button_pressed_gradient_color: None,
+            cpu_temp_button_gradient_color: None,
+            cpu_temp_button_hovered_gradient_color: None,
+            cpu_temp_button_pressed_gradient_color: None,
+            ram_button_gradient_color: None,
+            ram_button_hovered_gradient_color: None,
+            ram_button_pressed_gradient_color: None,
+            media_player_metadata_button_gradient_color: None,
+            media_player_metadata_button_hovered_gradient_color: None,
+            media_player_metadata_button_pressed_gradient_color: None,
+            media_player_button_gradient_color: None,
+            media_player_button_hovered_gradient_color: None,
+            media_player_button_pressed_gradient_color: None,
+            network_button_gradient_color: None,
+            network_button_hovered_gradient_color: None,
+            network_button_pressed_gradient_color: None,
+            clock_button_gradient_color: None,
+            clock_button_hovered_gradient_color: None,
+            clock_button_pressed_gradient_color: None,
+            volume_output_button_gradient_color: None,
+            volume_output_button_hovered_gradient_color: None,
+            volume_output_button_pressed_gradient_color: None,
+            volume_input_button_gradient_color: None,
+            volume_input_button_hovered_gradient_color: None,
+            volume_input_button_pressed_gradient_color: None,
+            workspace_button_gradient_color: None,
+            workspace_button_selected_gradient_color: None,
+            workspace_button_hovered_gradient_color: None,
+            workspace_button_pressed_gradient_color: None,
+            muted_volume_output_button_gradient_color: None,
+            muted_volume_output_button_hovered_gradient_color: None,
+            muted_volume_output_button_pressed_gradient_color: None,
+            muted_volume_input_button_gradient_color: None,
+            muted_volume_input_button_hovered_gradient_color: None,
+            muted_volume_input_button_pressed_gradient_color: None,
+            alt_clock_button_gradient_color: None,
+            alt_clock_button_hovered_gradient_color: None,
+            alt_clock_button_pressed_gradient_color: None,
+            alt_network_button_gradient_color: None,
+            alt_network_button_hovered_gradient_color: None,
+            alt_network_button_pressed_gradient_color: None,
 
 
             // ================= DISK (STYLE) =================
@@ -1518,3 +1640,5 @@ mod tests
         assert_ne!(BarPosition::Up,   BarPosition::Left);
     }
 }
+
+

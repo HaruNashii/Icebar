@@ -98,6 +98,9 @@ pub fn define_cpu_temp_style(app: &AppData, status: button::Status) -> iced::wid
         border_color:  app.ron_config.cpu_temp_border_color,
         border_size:       app.ron_config.cpu_temp_border_size,
         border_radius:     app.ron_config.cpu_temp_border_radius,
+        normal_gradient:   app.ron_config.cpu_temp_button_gradient_color.clone(),
+        hovered_gradient:  app.ron_config.cpu_temp_button_hovered_gradient_color.clone(),
+        pressed_gradient:  app.ron_config.cpu_temp_button_pressed_gradient_color.clone(),
     })
 }
 
