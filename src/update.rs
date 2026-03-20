@@ -319,11 +319,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             let (new_config, current_clock_timezone, active_modules, (config_parsed_failed, warning_err)) = read_ron_config();
             let preloaded_images = preload_image(&new_config.images);
             let new_anchor = define_bar_anchor_position(&new_config.bar_position);
-            let bar_data_validated = validate_bar_data(&new_config);
-            let mut bar_size = bar_data_validated.bar_size;
             let monitor_res = get_monitor_res(new_config.display.clone());
-            if bar_size.0 == 0 { bar_size.0 = monitor_res.0; };
-            if bar_size.1 == 0 { bar_size.1 = monitor_res.1; };
             let font_name = new_config.font_family.clone();
             let mut modules_data = app.modules_data.clone();
             modules_data.active_modules = active_modules.clone();
@@ -355,6 +351,11 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 ..Default::default()
             };
 
+            let bar_data_validated = validate_bar_data(app);
+
+            let mut bar_size = bar_data_validated.bar_size;
+            if bar_size.0 == 0 { bar_size.0 = monitor_res.0; };
+            if bar_size.1 == 0 { bar_size.1 = monitor_res.1; };
 
             let mut task_vec = vec!
             [
