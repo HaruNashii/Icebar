@@ -404,7 +404,7 @@ BarConfig
         media_player_button_spacing: 5,
         media_player_button_padding: 0,
         media_player_button_text_size: 15,
-        media_player_button_text_color: RGB((50, 45, 60)),
+        media_player_button_text_color: RGB((205, 214, 244)),
         media_player_button_text_orientation: Horizontal,
         media_player_button_color: RGB((49, 50, 68)),
         media_player_button_hovered_color: RGB((203, 166, 247)),

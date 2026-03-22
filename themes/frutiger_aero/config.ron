@@ -1,0 +1,764 @@
+//==============================================================================================================================================
+// Icebar config — FRUTIGER AERO  •  "Floating Glass Pill"
+//
+// Layout intent:
+//   • Floating bar with generous side gaps — never touches screen edges
+//   • Pill-shaped ends (high border-radius)
+//   • Tall enough (48 px) to breathe
+//   • Every button: 3-stop glassy gradient (white highlight → aqua → deep ocean)
+//   • Translucent ocean-blue bar background
+//   • Modules: Workspaces | MediaPlayer+Buttons | [Clock] | Volume | Network
+//
+// Palette:
+//   Sky Blue   (91, 200, 245)   — primary accent
+//   Aqua Teal  (41, 168, 171)   — gradient depth
+//   Deep Ocean (11, 110, 140)   — pressed / darkest stop
+//   Mint       (168, 230, 207)  — secondary / alt accent
+//   Leaf Green (93, 184, 122)   — muted states
+//   Ice White  RGBA(255,255,255,~50) — glassy top highlight
+//   Ice Text   (232, 248, 255)  — all text
+//==============================================================================================================================================
+
+BarConfig
+(
+
+    // ================= GENERAL =================
+    general:
+    (
+        display: None,
+        bar_position: Up,
+        floating_space: 8,              
+        increased_exclusive_bar_zone: 0,
+        bar_side_spaces_size: 7,      
+        bar_size: (0, 48),        
+        bar_border_radius: (24., 24., 24., 24.),
+        bar_border_size: 1.5,
+        bar_border_color: RGBA((255, 255, 255, 48)),
+        bar_background_color: RGBA((14, 55, 85, 82)),
+        bar_check_reload_interval_ms: Some(500),
+        font_family: "Noto Sans",
+        font_style: "Bold",
+        spacing_between_all_modules: 0,
+        force_static_position_context_menu: None,
+
+        left_modules:   [HyprWorkspaces, MediaPlayerMetaData, MediaPlayerButtons],
+        center_modules: [Clock],
+        right_modules:  [Network, VolumeOutput, VolumeInput, Tray],
+    ),
+
+
+    // ================= GENERAL STYLE =================
+    general_style:
+    (
+        general_padding: None,
+        general_text_size: Some(14),
+        general_text_orientation: Some(Horizontal),
+        general_text_color: Some(RGB((232, 248, 255))),
+        general_button_color: Some(RGBA((255, 255, 255, 12))),
+        general_button_hovered_color: Some(RGBA((91, 200, 245, 50))),
+        general_button_hovered_text_color: Some(RGB((255, 255, 255))),
+        general_button_pressed_text_color: Some(RGB((212, 241, 255))),
+        general_button_pressed_color: Some(RGBA((11, 110, 140, 80))),
+
+        general_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 52))),
+            (0.42, RGBA((91,  200, 245, 38))),
+            (1.0,  RGBA((11,  110, 140, 65))),
+        ]))),
+        general_button_hovered_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 72))),
+            (0.42, RGBA((91,  200, 245, 60))),
+            (1.0,  RGBA((11,  110, 140, 82))),
+        ]))),
+        general_button_pressed_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((11,  110, 140, 82))),
+            (1.0,  RGBA((41,  168, 171, 65))),
+        ]))),
+
+        general_border_color: Some(RGBA((168, 230, 207, 60))),
+        general_border_size: Some(1.0),
+        general_border_radius: Some((12.0, 12.0, 12.0, 12.0)),
+
+        general_side_separator: None,
+        general_side_separator_color: Some(RGBA((91, 200, 245, 50))),
+        general_side_separator_width: Some(1.0),
+        general_side_separator_height: Some(22.0),
+
+        general_alt_padding: None,
+        general_alt_text_size: None,
+        general_alt_text_orientation: None,
+        general_alt_text_color: None,
+        general_alt_button_color: None,
+        general_alt_button_hovered_color: None,
+        general_alt_button_hovered_text_color: None,
+        general_alt_button_pressed_text_color: None,
+        general_alt_button_pressed_color: None,
+        general_alt_border_color: None,
+        general_alt_border_size: None,
+        general_alt_border_radius: None,
+        general_alt_side_separator: None,
+        general_alt_side_separator_color: None,
+        general_alt_side_separator_width: None,
+        general_alt_side_separator_height: None,
+
+        general_alt_button_pressed_gradient_color: None,
+        general_alt_button_hovered_gradient_color: None,
+        general_alt_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0, RGBA((168, 230, 207, 55))),
+            (0.5, RGBA((41,  168, 171, 42))),
+            (1.0, RGBA((11,  110, 140, 62))),
+        ]))),
+    ),
+
+
+    // ================= CLOCK — BIG CENTER PIECE =================
+    clock:
+    (
+        clock_timezones: None,
+        clock_update_interval: 400,
+        clock_format: "[Color=(91, 200, 245), String=󰥔]  %H:%M",
+        clock_alt_format: "[Color=(168, 230, 207), String=󰃭]  %A, %d %b  |  [Color=(91, 200, 245), String=󰥔]  %H:%M:%S",
+        action_on_left_click_clock: DefaultAction,
+        action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && read -n1"]),
+
+        clock_padding: 10,
+        clock_text_size: 20,
+        clock_text_color: RGB((232, 248, 255)),
+        clock_text_orientation: Horizontal,
+        clock_button_color: RGBA((255, 255, 255, 12)),
+        clock_button_hovered_color: RGBA((91, 200, 245, 50)),
+        clock_button_hovered_text_color: RGB((255, 255, 255)),
+        clock_button_pressed_text_color: RGB((212, 241, 255)),
+        clock_button_pressed_color: RGBA((11, 110, 140, 80)),
+        clock_border_color: RGBA((91, 200, 245, 65)),
+        clock_border_size: 1.5,
+        clock_border_radius: (16.0, 16.0, 16.0, 16.0),
+
+        clock_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 58))),
+            (0.38, RGBA((91,  200, 245, 44))),
+            (1.0,  RGBA((11,  110, 140, 70))),
+        ]))),
+        clock_button_hovered_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 78))),
+            (0.38, RGBA((91,  200, 245, 64))),
+            (1.0,  RGBA((11,  110, 140, 86))),
+        ]))),
+        clock_button_pressed_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((11,  110, 140, 86))),
+            (1.0,  RGBA((41,  168, 171, 68))),
+        ]))),
+
+        clock_side_separator: None,
+        clock_side_separator_color: RGBA((91, 200, 245, 50)),
+        clock_side_separator_width: 1.,
+        clock_side_separator_height: 22.,
+
+        alt_clock_padding: 10,
+        alt_clock_text_size: 14,
+        alt_clock_text_color: RGB((212, 241, 255)),
+        alt_clock_text_orientation: Horizontal,
+        alt_clock_button_color: RGBA((41, 168, 171, 35)),
+        alt_clock_button_hovered_color: RGBA((91, 200, 245, 55)),
+        alt_clock_button_hovered_text_color: RGB((255, 255, 255)),
+        alt_clock_button_pressed_text_color: RGB((212, 241, 255)),
+        alt_clock_button_pressed_color: RGBA((11, 110, 140, 80)),
+        alt_clock_border_color: RGBA((168, 230, 207, 60)),
+        alt_clock_border_size: 1.0,
+        alt_clock_border_radius: (16.0, 16.0, 16.0, 16.0),
+        alt_clock_side_separator: None,
+        alt_clock_side_separator_color: RGBA((91, 200, 245, 50)),
+        alt_clock_side_separator_width: 1.,
+        alt_clock_side_separator_height: 22.,
+        alt_clock_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0, RGBA((168, 230, 207, 52))),
+            (0.5, RGBA((41,  168, 171, 40))),
+            (1.0, RGBA((11,  110, 140, 60))),
+        ]))),
+        alt_clock_button_hovered_gradient_color: None,
+        alt_clock_button_pressed_gradient_color: None,
+    ),
+
+
+    // ================= VOLUME OUTPUT =================
+    volume_output:
+    (
+        output_volume_format:
+        (
+            "[Color=(91, 200, 245), String= ]  {}%",
+            "[Color=(91, 200, 245), String=󰖀 ]  {}%",
+            "[Color=(91, 200, 245), String= ]  {}%",
+            "[Color=(91, 200, 245), String= ]  {}%",
+            "[Color=(91, 200, 245), String= ]  {}%",
+            "[Color=(168, 230, 207), String=+ ] {}%"
+        ),
+        output_volume_muted_format: "[Color=(93, 184, 122), String=]󰝟  Muted",
+        incremental_steps_output: 5,
+        action_on_left_click_volume_output: DefaultAction,
+        action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]),
+        volume_output_padding: 2,
+        volume_output_text_size: 13,
+        volume_output_text_color: RGB((232, 248, 255)),
+        volume_output_text_orientation: Horizontal,
+        volume_output_button_color: RGBA((255, 255, 255, 12)),
+        volume_output_button_hovered_color: RGBA((91, 200, 245, 50)),
+        volume_output_button_hovered_text_color: RGB((255, 255, 255)),
+        volume_output_button_pressed_text_color: RGB((212, 241, 255)),
+        volume_output_button_pressed_color: RGBA((11, 110, 140, 80)),
+        volume_output_border_color: RGBA((91, 200, 245, 58)),
+        volume_output_border_size: 1.0,
+        volume_output_border_radius: (12.0, 12.0, 12.0, 12.0),
+        volume_output_side_separator: None,
+        volume_output_side_separator_color: RGBA((91, 200, 245, 50)),
+        volume_output_side_separator_width: 1.,
+        volume_output_side_separator_height: 22.,
+        volume_output_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 52))),
+            (0.42, RGBA((91,  200, 245, 38))),
+            (1.0,  RGBA((11,  110, 140, 65))),
+        ]))),
+        volume_output_button_hovered_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 72))),
+            (0.42, RGBA((91,  200, 245, 60))),
+            (1.0,  RGBA((11,  110, 140, 82))),
+        ]))),
+        volume_output_button_pressed_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((11,  110, 140, 82))),
+            (1.0,  RGBA((41,  168, 171, 65))),
+        ]))),
+    ),
+
+
+    // ================= MUTED VOLUME OUTPUT =================
+    muted_volume_output:
+    (
+        muted_volume_output_padding: 2,
+        muted_volume_output_text_size: 13,
+        muted_volume_output_text_color: RGB((168, 230, 207)),
+        muted_volume_output_text_orientation: Horizontal,
+        muted_volume_output_button_color: RGBA((93, 184, 122, 35)),
+        muted_volume_output_button_hovered_color: RGBA((93, 184, 122, 58)),
+        muted_volume_output_button_hovered_text_color: RGB((255, 255, 255)),
+        muted_volume_output_button_pressed_text_color: RGB((212, 241, 255)),
+        muted_volume_output_button_pressed_color: RGBA((30, 90, 60, 80)),
+        muted_volume_output_border_color: RGBA((93, 184, 122, 62)),
+        muted_volume_output_border_size: 1.0,
+        muted_volume_output_border_radius: (12.0, 12.0, 12.0, 12.0),
+        muted_volume_output_side_separator: None,
+        muted_volume_output_side_separator_color: RGBA((93, 184, 122, 50)),
+        muted_volume_output_side_separator_width: 1.,
+        muted_volume_output_side_separator_height: 22.,
+        muted_volume_output_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0, RGBA((168, 230, 207, 50))),
+            (1.0, RGBA((41,  168, 171, 62))),
+        ]))),
+        muted_volume_output_button_hovered_gradient_color: None,
+        muted_volume_output_button_pressed_gradient_color: None,
+    ),
+
+
+    // ================= VOLUME INPUT =================
+    volume_input:
+    (
+        input_volume_format:
+        (
+            "[Color=(91, 200, 245), String=]  {}%",
+            "[Color=(91, 200, 245), String=]  {}%",
+            "[Color=(91, 200, 245), String=]  {}%",
+            "[Color=(91, 200, 245), String=]  {}%",
+            "[Color=(91, 200, 245), String=]  {}%",
+            "[Color=(168, 230, 207), String󰢴=󰢴]  {}%"
+        ),
+        input_volume_muted_format: "[Color=(93, 184, 122), String=]󰍭  Muted",
+        incremental_steps_input: 5,
+        action_on_left_click_volume_input: DefaultAction,
+        action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]),
+        volume_input_padding: 2,
+        volume_input_text_size: 13,
+        volume_input_text_color: RGB((232, 248, 255)),
+        volume_input_text_orientation: Horizontal,
+        volume_input_button_color: RGBA((255, 255, 255, 12)),
+        volume_input_button_hovered_color: RGBA((91, 200, 245, 50)),
+        volume_input_button_hovered_text_color: RGB((255, 255, 255)),
+        volume_input_button_pressed_text_color: RGB((212, 241, 255)),
+        volume_input_button_pressed_color: RGBA((11, 110, 140, 80)),
+        volume_input_border_color: RGBA((91, 200, 245, 58)),
+        volume_input_border_size: 1.0,
+        volume_input_border_radius: (12.0, 12.0, 12.0, 12.0),
+        volume_input_side_separator: None,
+        volume_input_side_separator_color: RGBA((91, 200, 245, 50)),
+        volume_input_side_separator_width: 1.,
+        volume_input_side_separator_height: 22.,
+        volume_input_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 52))),
+            (0.42, RGBA((91,  200, 245, 38))),
+            (1.0,  RGBA((11,  110, 140, 65))),
+        ]))),
+        volume_input_button_hovered_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 72))),
+            (0.42, RGBA((91,  200, 245, 60))),
+            (1.0,  RGBA((11,  110, 140, 82))),
+        ]))),
+        volume_input_button_pressed_gradient_color: Some(Gradient((180.0,
+	[
+            (0.0,  RGBA((11,  110, 140, 82))),
+            (1.0,  RGBA((41,  168, 171, 65))),
+        ]))),
+    ),
+
+
+    // ================= MUTED VOLUME INPUT =================
+    muted_volume_input:
+    (
+        muted_volume_input_padding: 2,
+        muted_volume_input_text_size: 13,
+        muted_volume_input_text_color: RGB((168, 230, 207)),
+        muted_volume_input_text_orientation: Horizontal,
+        muted_volume_input_button_color: RGBA((93, 184, 122, 35)),
+        muted_volume_input_button_hovered_color: RGBA((93, 184, 122, 58)),
+        muted_volume_input_button_hovered_text_color: RGB((255, 255, 255)),
+        muted_volume_input_button_pressed_text_color: RGB((212, 241, 255)),
+        muted_volume_input_button_pressed_color: RGBA((30, 90, 60, 80)),
+        muted_volume_input_border_color: RGBA((93, 184, 122, 62)),
+        muted_volume_input_border_size: 1.0,
+        muted_volume_input_border_radius: (12.0, 12.0, 12.0, 12.0),
+        muted_volume_input_side_separator: None,
+        muted_volume_input_side_separator_color: RGBA((93, 184, 122, 50)),
+        muted_volume_input_side_separator_width: 1.,
+        muted_volume_input_side_separator_height: 22.,
+        muted_volume_input_button_hovered_gradient_color: None,
+        muted_volume_input_button_pressed_gradient_color: None,
+        muted_volume_input_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0, RGBA((168, 230, 207, 50))),
+            (1.0, RGBA((41,  168, 171, 62))),
+        ]))),
+    ),
+
+
+    // ================= NETWORK =================
+    alt_network: 
+    (
+        alt_network_button_color: RGBA((41, 168, 171, 35)),
+        alt_network_button_hovered_color: RGBA((91, 200, 245, 55)),
+        alt_network_button_hovered_text_color: RGB((255, 255, 255)),
+        alt_network_button_pressed_text_color: RGB((212, 241, 255)),
+        alt_network_button_pressed_color: RGBA((11, 110, 140, 80)),
+        alt_network_border_color: RGBA((168, 230, 207, 60)),
+        alt_network_border_radius: (16.0, 16.0, 16.0, 16.0),
+    ),
+
+    network:
+    (
+        network_module_format: "{level}",
+        network_disconnected_text: "No Signal",
+        network_level_format:
+        (
+            "[Color=(91, 200, 245), String=󰖩]",
+            "[Color=(91, 200, 245), String=󱚵]",
+            "[Color=(91, 200, 245), String=󱚼]",
+            "[Color=(168, 230, 207), String=󰖪]"
+        ),
+        network_connection_type_icons:
+        (
+            "[Color=(91, 200, 245), String=󰈀]",
+            "[Color=(91, 200, 245), String=]",
+            "[Color=(168, 230, 207), String=?]"
+        ),
+        action_on_left_click_network: DefaultAction,
+        action_on_right_click_network: DefaultAction,
+        network_padding: 2,
+        network_text_size: 13,
+        network_text_color: RGB((232, 248, 255)),
+        network_text_orientation: Horizontal,
+
+	network_button_color: RGBA((93, 184, 122, 35)),
+        network_button_hovered_color: RGBA((93, 184, 122, 58)),
+        network_button_hovered_text_color: RGB((255, 255, 255)),
+        network_button_pressed_text_color: RGB((212, 241, 255)),
+        network_button_pressed_color: RGBA((30, 90, 60, 80)),
+
+        network_border_color: RGBA((91, 200, 245, 58)),
+        network_border_size: 1.0,
+        network_border_radius: (12.0, 12.0, 12.0, 12.0),
+        network_side_separator: None,
+        network_side_separator_color: RGBA((91, 200, 245, 50)),
+        network_side_separator_width: 1.,
+        network_side_separator_height: 22.,
+        network_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 52))),
+            (0.42, RGBA((91,  200, 245, 38))),
+            (1.0,  RGBA((11,  110, 140, 65))),
+        ]))),
+        network_button_hovered_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 72))),
+            (0.42, RGBA((91,  200, 245, 60))),
+            (1.0,  RGBA((11,  110, 140, 82))),
+        ]))),
+        network_button_pressed_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((11,  110, 140, 82))),
+            (1.0,  RGBA((41,  168, 171, 65))),
+        ]))),
+    ),
+
+
+    // ================= MEDIA PLAYER METADATA =================
+    media_player_metadata:
+    (
+        media_player_metadata_format: "[Color=(91, 200, 245), String=]  {{artist}} — {{title}}",
+        media_player_metadata_alt_format: "[Color=(168, 230, 207), String=󰝚]  {title}",
+        media_player_metadata_update_interval: 500,
+        media_player_metadata_text_limit_len: 38,
+        dont_show_metadata_if_empty: true,
+        text_when_metadata_is_empty: "  Nothing Playing",
+        action_on_left_click_metadata: DefaultAction,
+        action_on_right_click_metadata: DefaultAction,
+        media_player_metadata_padding: 2,
+        media_player_metadata_text_size: 13,
+        media_player_metadata_text_color: RGB((232, 248, 255)),
+        media_player_metadata_text_orientation: Horizontal,
+        media_player_metadata_button_color: RGBA((255, 255, 255, 12)),
+        media_player_metadata_button_hovered_color: RGBA((91, 200, 245, 50)),
+        media_player_metadata_button_hovered_text_color: RGB((255, 255, 255)),
+        media_player_metadata_button_pressed_text_color: RGB((212, 241, 255)),
+        media_player_metadata_button_pressed_color: RGBA((11, 110, 140, 80)),
+        media_player_metadata_border_color: RGBA((91, 200, 245, 58)),
+        media_player_metadata_border_size: 1.0,
+        media_player_metadata_border_radius: (12.0, 12.0, 12.0, 12.0),
+        media_player_metadata_side_separator: None,
+        media_player_metadata_side_separator_color: RGBA((91, 200, 245, 50)),
+        media_player_metadata_side_separator_width: 1.,
+        media_player_metadata_side_separator_height: 22.,
+        media_player_metadata_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 52))),
+            (0.42, RGBA((91,  200, 245, 38))),
+            (1.0,  RGBA((11,  110, 140, 65))),
+        ]))),
+        media_player_metadata_button_hovered_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 72))),
+            (0.42, RGBA((91,  200, 245, 60))),
+            (1.0,  RGBA((11,  110, 140, 82))),
+        ]))),
+        media_player_metadata_button_pressed_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((11,  110, 140, 82))),
+            (1.0,  RGBA((41,  168, 171, 65))),
+        ]))),
+    ),
+
+
+    // ================= MEDIA PLAYER BUTTONS =================
+    media_player_button:
+    (
+        media_player_buttons_format: ("󰒮", "⏸", "▶", "󰒭"),
+        media_player_button_spacing: 0,
+        media_player_button_padding: 2,
+        media_player_button_text_size: 15,
+        media_player_button_text_color: RGB((232, 248, 255)),
+        media_player_button_text_orientation: Horizontal,
+        media_player_button_color: RGBA((255, 255, 255, 12)),
+        media_player_button_hovered_color: RGBA((91, 200, 245, 50)),
+        media_player_button_hovered_text_color: RGB((255, 255, 255)),
+        media_player_button_pressed_text_color: RGB((212, 241, 255)),
+        media_player_button_pressed_color: RGBA((11, 110, 140, 80)),
+        media_player_button_border_color: RGBA((91, 200, 245, 58)),
+        media_player_button_border_size: 1.0,
+        media_player_button_border_radius: (12.0, 12.0, 12.0, 12.0),
+        media_player_buttons_side_separator: None,
+        media_player_buttons_side_separator_color: RGBA((91, 200, 245, 50)),
+        media_player_buttons_side_separator_width: 1.,
+        media_player_buttons_side_separator_height: 22.,
+        media_player_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 52))),
+            (0.42, RGBA((91,  200, 245, 38))),
+            (1.0,  RGBA((11,  110, 140, 65))),
+        ]))),
+        media_player_button_hovered_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 72))),
+            (0.42, RGBA((91,  200, 245, 60))),
+            (1.0,  RGBA((11,  110, 140, 82))),
+        ]))),
+        media_player_button_pressed_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((11,  110, 140, 82))),
+            (1.0,  RGBA((41,  168, 171, 65))),
+        ]))),
+    ),
+
+
+    // ================= HYPR WORKSPACES =================
+    workspace:
+    (
+        workspace_text: ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨"],
+        workspace_selected_text: Some(["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨"]),
+        persistent_workspaces: Some(5),
+        workspace_padding: 2,
+        workspace_spacing: 0,
+        workspace_text_size: 14,
+        workspace_text_color: RGB((168, 230, 207)),
+        workspace_text_orientation: Horizontal,
+
+        workspace_button_color: RGBA((255, 255, 255, 10)),
+        workspace_button_hovered_color: RGBA((91, 200, 245, 45)),
+        workspace_button_hovered_text_color: RGB((255, 255, 255)),
+        workspace_button_pressed_text_color: RGB((212, 241, 255)),
+        workspace_button_pressed_color: RGBA((11, 110, 140, 78)),
+        workspace_border_color: RGBA((91, 200, 245, 45)),
+        workspace_border_size: 1.0,
+        workspace_border_radius: (12.0, 12.0, 12.0, 12.0),
+        workspace_selected_text_color: RGB((255, 255, 255)),
+        workspace_selected_button_color: RGBA((91, 200, 245, 55)),
+        workspace_selected_button_hovered_color: RGBA((91, 200, 245, 70)),
+        workspace_selected_button_hovered_text_color: RGB((255, 255, 255)),
+        workspace_selected_button_pressed_text_color: RGB((212, 241, 255)),
+        workspace_selected_button_pressed_color: RGBA((11, 110, 140, 85)),
+        workspace_selected_border_color: RGBA((168, 230, 207, 80)),
+        workspace_selected_border_size: 1.5,
+        workspace_selected_border_radius: (12.0, 12.0, 12.0, 12.0),
+
+        workspace_side_separator: None,
+        workspace_side_separator_color: RGBA((91, 200, 245, 50)),
+        workspace_side_separator_width: 1.,
+        workspace_side_separator_height: 22.,
+
+        workspace_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 40))),
+            (0.45, RGBA((91,  200, 245, 28))),
+            (1.0,  RGBA((11,  110, 140, 50))),
+        ]))),
+        workspace_button_hovered_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 62))),
+            (0.45, RGBA((91,  200, 245, 52))),
+            (1.0,  RGBA((11,  110, 140, 72))),
+        ]))),
+        workspace_button_pressed_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((11,  110, 140, 80))),
+            (1.0,  RGBA((41,  168, 171, 62))),
+        ]))),
+
+        workspace_button_selected_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 75))),
+            (0.38, RGBA((91,  200, 245, 65))),
+            (1.0,  RGBA((11,  110, 140, 85))),
+        ]))),
+    ),
+
+
+    // ================= CONTEXT MENU =================
+    context_menu:
+    (
+        context_menu_background_color: RGBA((14, 55, 85, 90)),
+        context_menu_background_size: 8,
+        context_menu_background_border_color: RGBA((255, 255, 255, 45)),
+        context_menu_background_border_size: 1.5,
+        context_menu_background_border_radius: (16.0, 16.0, 16.0, 16.0),
+        context_menu_text_size: 13,
+        context_menu_text_color: RGB((232, 248, 255)),
+        context_menu_orientation: Vertical,
+        context_menu_size: 280,
+        context_menu_item_size: 36,
+        context_menu_button_color: RGBA((255, 255, 255, 12)),
+        context_menu_button_hovered_color: RGBA((91, 200, 245, 50)),
+        context_menu_button_hovered_text_color: RGB((255, 255, 255)),
+        context_menu_button_pressed_text_color: RGB((212, 241, 255)),
+        context_menu_button_pressed_color: RGBA((11, 110, 140, 80)),
+        context_menu_border_color: RGBA((91, 200, 245, 55)),
+        context_menu_border_size: 1.0,
+        context_menu_border_radius: (12.0, 12.0, 12.0, 12.0),
+    ),
+
+
+    // ================= FOCUSED WINDOW (not on bar, kept valid) =================
+    focused_window:
+    (
+        focused_window_format: "{title}",
+        focused_window_update_interval: 500,
+        dont_show_focused_window_if_empty: true,
+        text_when_focused_window_is_empty: "Desktop",
+        focused_window_text_limit_len: 30,
+        focused_window_padding: 2,
+        focused_window_text_size: 13,
+        focused_window_text_color: RGB((212, 241, 255)),
+        focused_window_text_orientation: Horizontal,
+        focused_window_button_color: RGBA((255, 255, 255, 12)),
+        focused_window_button_hovered_color: RGBA((91, 200, 245, 50)),
+        focused_window_button_hovered_text_color: RGB((255, 255, 255)),
+        focused_window_button_pressed_text_color: RGB((212, 241, 255)),
+        focused_window_button_pressed_color: RGBA((11, 110, 140, 80)),
+        focused_window_border_color: RGBA((91, 200, 245, 55)),
+        focused_window_border_size: 1.0,
+        focused_window_border_radius: (12.0, 12.0, 12.0, 12.0),
+        focused_window_side_separator: None,
+        focused_window_side_separator_color: RGBA((91, 200, 245, 50)),
+        focused_window_side_separator_width: 1.,
+        focused_window_side_separator_height: 22.,
+        focused_window_button_hovered_gradient_color: None,
+        focused_window_button_pressed_gradient_color: None,
+        focused_window_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 52))),
+            (0.42, RGBA((91,  200, 245, 38))),
+            (1.0,  RGBA((11,  110, 140, 65))),
+        ]))),
+    ),
+
+
+    // ================= CPU / TEMP / RAM / DISK (not on bar, kept valid) =================
+    cpu:
+    (
+        cpu_format: "[Color=(91, 200, 245), String=CPU:] {usage}%",
+        cpu_update_interval: 1050,
+        action_on_left_click_cpu: DefaultAction,
+        action_on_right_click_cpu: DefaultAction,
+        cpu_padding: 2,
+        cpu_text_size: 12,
+        cpu_text_color: RGB((212, 241, 255)),
+        cpu_text_orientation: Horizontal,
+        cpu_button_color: RGBA((255, 255, 255, 12)),
+        cpu_button_hovered_color: RGBA((91, 200, 245, 45)),
+        cpu_button_hovered_text_color: RGB((255, 255, 255)),
+        cpu_button_pressed_text_color: RGB((212, 241, 255)),
+        cpu_button_pressed_color: RGBA((11, 110, 140, 78)),
+        cpu_border_color: RGBA((91, 200, 245, 52)),
+        cpu_border_size: 1.0,
+        cpu_border_radius: (12.0, 12.0, 12.0, 12.0),
+        cpu_side_separator: None,
+        cpu_side_separator_color: RGBA((91, 200, 245, 50)),
+        cpu_side_separator_width: 1.,
+        cpu_side_separator_height: 22.,
+        cpu_button_hovered_gradient_color: None,
+        cpu_button_pressed_gradient_color: None,
+        cpu_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 50))),
+            (0.42, RGBA((91,  200, 245, 36))),
+            (1.0,  RGBA((11,  110, 140, 62))),
+        ]))),
+    ),
+
+    cpu_temp:
+    (
+        cpu_temp_format: "[Color=(168, 230, 207), String=TEMP:] {temp}°C",
+        cpu_temp_update_interval: 1050,
+        action_on_left_click_cpu_temp: DefaultAction,
+        action_on_right_click_cpu_temp: DefaultAction,
+        cpu_temp_padding: 2,
+        cpu_temp_text_size: 12,
+        cpu_temp_text_color: RGB((212, 241, 255)),
+        cpu_temp_text_orientation: Horizontal,
+        cpu_temp_button_color: RGBA((255, 255, 255, 12)),
+        cpu_temp_button_hovered_color: RGBA((91, 200, 245, 45)),
+        cpu_temp_button_hovered_text_color: RGB((255, 255, 255)),
+        cpu_temp_button_pressed_text_color: RGB((212, 241, 255)),
+        cpu_temp_button_pressed_color: RGBA((11, 110, 140, 78)),
+        cpu_temp_border_color: RGBA((91, 200, 245, 52)),
+        cpu_temp_border_size: 1.0,
+        cpu_temp_border_radius: (12.0, 12.0, 12.0, 12.0),
+        cpu_temp_side_separator: None,
+        cpu_temp_side_separator_color: RGBA((91, 200, 245, 50)),
+        cpu_temp_side_separator_width: 1.,
+        cpu_temp_side_separator_height: 22.,
+        cpu_temp_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 50))),
+            (0.42, RGBA((168, 230, 207, 36))),
+            (1.0,  RGBA((41,  168, 171, 62))),
+        ]))),
+        cpu_temp_button_hovered_gradient_color: None,
+        cpu_temp_button_pressed_gradient_color: None,
+    ),
+
+    ram:
+    (
+        ram_format: "[Color=(91, 200, 245), String=RAM:] {used}MB / {percent}%",
+        ram_update_interval: 1050,
+        ram_padding: 2,
+        ram_text_size: 12,
+        ram_text_color: RGB((212, 241, 255)),
+        ram_text_orientation: Horizontal,
+        ram_button_color: RGBA((255, 255, 255, 12)),
+        ram_button_hovered_color: RGBA((91, 200, 245, 45)),
+        ram_button_hovered_text_color: RGB((255, 255, 255)),
+        ram_button_pressed_text_color: RGB((212, 241, 255)),
+        ram_button_pressed_color: RGBA((11, 110, 140, 78)),
+        ram_border_color: RGBA((91, 200, 245, 52)),
+        ram_border_size: 1.0,
+        ram_border_radius: (12.0, 12.0, 12.0, 12.0),
+        ram_side_separator: None,
+        ram_side_separator_color: RGBA((91, 200, 245, 50)),
+        ram_side_separator_width: 1.,
+        ram_side_separator_height: 22.,
+        ram_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 50))),
+            (0.42, RGBA((91,  200, 245, 36))),
+            (1.0,  RGBA((11,  110, 140, 62))),
+        ]))),
+        ram_button_hovered_gradient_color: None,
+        ram_button_pressed_gradient_color: None,
+    ),
+
+    disk:
+    (
+        disk_format: "[Color=(168, 230, 207), String=DISK:] {used}GB / {percent}%",
+        disk_mount: "/",
+        disk_update_interval: 10000,
+        disk_padding: 2,
+        disk_text_size: 12,
+        disk_text_color: RGB((212, 241, 255)),
+        disk_text_orientation: Horizontal,
+        disk_button_color: RGBA((255, 255, 255, 12)),
+        disk_button_hovered_color: RGBA((91, 200, 245, 45)),
+        disk_button_hovered_text_color: RGB((255, 255, 255)),
+        disk_button_pressed_text_color: RGB((212, 241, 255)),
+        disk_button_pressed_color: RGBA((11, 110, 140, 78)),
+        disk_border_color: RGBA((91, 200, 245, 52)),
+        disk_border_size: 1.0,
+        disk_border_radius: (12.0, 12.0, 12.0, 12.0),
+        disk_side_separator: None,
+        disk_side_separator_color: RGBA((91, 200, 245, 50)),
+        disk_side_separator_width: 1.,
+        disk_side_separator_height: 22.,
+        disk_button_gradient_color: Some(Gradient((180.0, 
+	[
+            (0.0,  RGBA((255, 255, 255, 50))),
+            (0.42, RGBA((168, 230, 207, 36))),
+            (1.0,  RGBA((41,  168, 171, 62))),
+        ]))),
+        disk_button_hovered_gradient_color: None,
+        disk_button_pressed_gradient_color: None,
+    ),
+
+
+    // ================= CUSTOM MODULE (empty — not needed) =================
+    custom_module:
+    (
+        custom_modules_spacing: 6,
+        custom_modules: [],
+    ),
+)
