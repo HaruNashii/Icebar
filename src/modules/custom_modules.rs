@@ -26,6 +26,16 @@ pub struct CustomModuleData
 
 
 
+#[derive(Default, Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct CustomModuleConfig
+{
+    pub custom_modules_spacing: u32,
+    pub custom_modules:         Vec<CustomModule>,
+}
+
+
+
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct CustomModule
@@ -45,6 +55,7 @@ pub struct CustomModule
     pub button_color: ColorType,
     pub button_hovered_color: ColorType,
     pub button_hovered_text_color: ColorType,
+    pub button_pressed_text_color: ColorType,
     pub button_pressed_color: ColorType,
     pub border_color: ColorType,
     pub button_gradient_color: Option<Gradient>,
@@ -90,6 +101,7 @@ impl Default for CustomModule
             button_color: ColorType::RGB([60, 50, 70]),
             button_hovered_color: ColorType::RGB([110, 40, 80]),
             button_hovered_text_color: ColorType::RGB([255, 255, 255]),
+            button_pressed_text_color: ColorType::RGB([255, 255, 255]),
             button_pressed_color: ColorType::RGB([70, 20, 40]),
             border_color: ColorType::RGB([90, 70, 100]),
             button_gradient_color: None,
@@ -117,13 +129,14 @@ pub fn define_custom_module_style(custom_module: &CustomModule, status: button::
 {
     let hovered = custom_module.button_hovered_color; 
     let hovered_text = custom_module.button_hovered_text_color; 
+    let pressed_text = custom_module.button_pressed_text_color; 
     let pressed = custom_module.button_pressed_color; 
     let normal = custom_module.button_color; 
     let normal_text = custom_module.text_color; 
     let border_size = custom_module.border_size; 
     let border_color = custom_module.border_color; 
     let border_radius = custom_module.border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: custom_module.button_gradient_color.clone(), hovered_gradient: custom_module.button_hovered_gradient_color.clone(), pressed_gradient: custom_module.button_pressed_gradient_color.clone() })
+    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: custom_module.button_gradient_color.clone(), hovered_gradient: custom_module.button_hovered_gradient_color.clone(), pressed_gradient: custom_module.button_pressed_gradient_color.clone() })
 }
 
 
@@ -134,14 +147,14 @@ pub fn define_custom_module_text(index: usize, custom_module: &CustomModule, app
     if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()
     {
         let output_text = app.modules_data.custom_module_data.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
-        let output_text = ellipsize(&app.ron_config.ellipsis_text, output_text, custom_module.output_text_limit_len);
+        let output_text = ellipsize(&app.ron_config.general.ellipsis_text, output_text, custom_module.output_text_limit_len);
         if custom_module.dont_show_if_any_output_is_empty && output_text.is_empty() { return String::new() };
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
     }
     // CONTINOUS_OUTPUT
     else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.modules_data.custom_module_data.cached_continuous_outputs.is_empty() && (app.modules_data.custom_module_data.cached_continuous_outputs.len() - 1) >= index
     {
-        let output_text = ellipsize(&app.ron_config.ellipsis_text, &app.modules_data.custom_module_data.cached_continuous_outputs[index], custom_module.output_text_limit_len);
+        let output_text = ellipsize(&app.ron_config.general.ellipsis_text, &app.modules_data.custom_module_data.cached_continuous_outputs[index], custom_module.output_text_limit_len);
         if custom_module.dont_show_if_any_output_is_empty && output_text.is_empty() { return String::new() };
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{continous_output}", &output_text).replace('\n', "")
     }
@@ -269,6 +282,7 @@ mod tests
             button_color: ColorType::RGB([10, 20, 30]),
             button_hovered_color: ColorType::RGB([50, 60, 70]),
             button_hovered_text_color: ColorType::RGB([255, 255, 255]),
+            button_pressed_text_color: ColorType::RGB([255, 255, 255]),
             button_pressed_color: ColorType::RGB([80, 90, 100]),
             border_color: ColorType::RGB([1, 2, 3]),
             border_size:                    2.0,
@@ -344,7 +358,7 @@ mod tests
     {
         let mut app = AppData { ..Default::default() };
         app.modules_data.custom_module_data.cached_command_outputs = vec!["abcdefghij".to_string()];
-        app.ron_config.ellipsis_text = "~".into();
+        app.ron_config.general.ellipsis_text = "~".into();
         let m = CustomModule
         {
             use_output_as_text: true,

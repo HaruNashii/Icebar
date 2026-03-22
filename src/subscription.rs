@@ -37,7 +37,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
     {
         if let Modules::CustomModule(i) = m 
         {
-            app.ron_config.custom_modules.get(*i).is_some_and(|m| !m.continous_command.is_empty())
+            app.ron_config.custom_module.custom_modules.get(*i).is_some_and(|m| !m.continous_command.is_empty())
         } 
         else 
         {
@@ -49,22 +49,30 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
     let mut volume_sub_added = false;
     let mut hypr_sub_added = false;
     let mut sway_sub_added = false;
+    let mut media_player_sub_added = false;
     for module_name in &app.modules_data.active_modules
     {
         match module_name
         {
-            Modules::Disk =>                subs.push(time::every(Duration::from_millis(app.ron_config.disk_update_interval)).map(|_| Message::UpdateDisk)),
+            Modules::Disk =>                subs.push(time::every(Duration::from_millis(app.ron_config.disk.disk_update_interval)).map(|_| Message::UpdateDisk)),
             Modules::Tray =>                subs.push(iced::Subscription::run_with(TraySubscription, tray_stream)),
-            Modules::Cpu =>                 subs.push(time::every(Duration::from_millis(app.ron_config.cpu_update_interval)).map(|_| Message::UpdateCpu)),
-            Modules::CpuTemp =>             subs.push(time::every(Duration::from_millis(app.ron_config.cpu_temp_update_interval)).map(|_| Message::UpdateCpuTemp)),
-            Modules::Ram =>                 subs.push(time::every(Duration::from_millis(app.ron_config.ram_update_interval)).map(|_| Message::UpdateRam)),
-            Modules::FocusedWindowNiri =>   subs.push(time::every(Duration::from_millis(app.ron_config.focused_window_update_interval)).map(|_| Message::UpdateFocusedWindowNiri)),
-            Modules::Clock =>               subs.push(time::every(Duration::from_millis(app.ron_config.clock_update_interval)).map(|_| Message::UpdateClock)),
-            Modules::NiriWorkspaces =>      subs.push(time::every(Duration::from_millis(app.ron_config.niri_workspaces_update_interval)).map(|_| Message::UpdateNiriWorkspaces)),
-            Modules::MediaPlayerMetaData | Modules::MediaPlayerButtons => subs.push(time::every(Duration::from_millis(app.ron_config.media_player_metadata_update_interval)).map(|_| Message::UpdateMediaPlayerMetadata)),
+            Modules::Cpu =>                 subs.push(time::every(Duration::from_millis(app.ron_config.cpu.cpu_update_interval)).map(|_| Message::UpdateCpu)),
+            Modules::CpuTemp =>             subs.push(time::every(Duration::from_millis(app.ron_config.cpu_temp.cpu_temp_update_interval)).map(|_| Message::UpdateCpuTemp)),
+            Modules::Ram =>                 subs.push(time::every(Duration::from_millis(app.ron_config.ram.ram_update_interval)).map(|_| Message::UpdateRam)),
+            Modules::FocusedWindowNiri =>   subs.push(time::every(Duration::from_millis(app.ron_config.focused_window.focused_window_update_interval)).map(|_| Message::UpdateFocusedWindowNiri)),
+            Modules::Clock =>               subs.push(time::every(Duration::from_millis(app.ron_config.clock.clock_update_interval)).map(|_| Message::UpdateClock)),
+            Modules::NiriWorkspaces =>      subs.push(time::every(Duration::from_millis(app.ron_config.workspace.niri_workspaces_update_interval)).map(|_| Message::UpdateNiriWorkspaces)),
+            Modules::MediaPlayerMetaData | Modules::MediaPlayerButtons => 
+            {
+                if !media_player_sub_added 
+                {
+                    subs.push(time::every(Duration::from_millis(app.ron_config.media_player_metadata.media_player_metadata_update_interval)).map(|_| Message::UpdateMediaPlayerMetadata));
+                    media_player_sub_added = true;
+                };
+            },
             Modules::Network =>             
             {
-                subs.push(network_subscription(app.ron_config.network_disconnected_text.clone()));
+                subs.push(network_subscription(app.ron_config.network.network_disconnected_text.clone()));
                 subs.push(time::every(Duration::from_secs(1)).map(|_| Message::UpdateNetworkSpeed));
             },
             Modules::FocusedWindowHypr | Modules::HyprWorkspaces =>
@@ -97,7 +105,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
         }
     }
 
-    if let Some(reload_interval) = app.ron_config.bar_check_reload_interval_ms 
+    if let Some(reload_interval) = app.ron_config.general.bar_check_reload_interval_ms 
     {
         subs.push(config_file_watcher(reload_interval));
     };
@@ -129,4 +137,3 @@ fn event_reader_without_tray(event: iced::Event, _status: iced::event::Status, _
         _ => None
     }
 }
-

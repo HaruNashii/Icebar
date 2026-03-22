@@ -3,6 +3,7 @@ use zbus::{Connection, fdo::DBusProxy, interface, message::Header, object_server
 use iced::{Element, widget::{button, image, text}, futures::Stream};
 use std::{pin::Pin, collections::{HashMap, HashSet}, sync::Mutex};
 use tokio::sync::mpsc::{self, Sender};
+use serde::{Deserialize, Serialize};
 use futures_util::StreamExt;
 use zbus::zvariant::Value;
 use std::sync::LazyLock;
@@ -11,7 +12,7 @@ use std::sync::LazyLock;
 
 
 // ============ CRATES ============
-use crate::helpers::{color::ColorType, icons::fetch_icon, style::{UserStyle, set_style}};
+use crate::helpers::{color::{ColorType, Gradient}, icons::fetch_icon, style::{UserStyle, set_style, SideOption}};
 use crate::update::Message;
 use crate::AppData;
 
@@ -79,6 +80,61 @@ pub struct MenuItem
 
 
 
+
+
+
+// ============ CONFIG ============
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct TrayConfig
+{
+    pub tray_icon_size:                    u32,
+    pub tray_spacing:                      u32,
+    pub tray_button_size:                  u16,
+    pub tray_button_color:                 ColorType,
+    pub tray_button_hovered_color:         ColorType,
+    pub tray_button_hovered_text_color:    ColorType,
+    pub tray_button_pressed_text_color:    ColorType,
+    pub tray_button_pressed_color:         ColorType,
+    pub tray_border_color:                 ColorType,
+    pub tray_border_size:                  f32,
+    pub tray_border_radius:                [f32; 4],
+    pub tray_side_separator:               Option<SideOption>,
+    pub tray_side_separator_color:         ColorType,
+    pub tray_side_separator_width:         f32,
+    pub tray_side_separator_height:        f32,
+    pub tray_button_gradient_color:        Option<Gradient>,
+    pub tray_button_hovered_gradient_color: Option<Gradient>,
+    pub tray_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for TrayConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            tray_icon_size:                    18,
+            tray_spacing:                      5,
+            tray_button_size:                  5,
+            tray_button_color:                 ColorType::RGB([60, 50, 70]),
+            tray_button_hovered_color:         ColorType::RGB([110, 40, 80]),
+            tray_button_hovered_text_color:    ColorType::RGB([255, 255, 255]),
+            tray_button_pressed_text_color:    ColorType::RGB([255, 255, 255]),
+            tray_button_pressed_color:         ColorType::RGB([70, 20, 40]),
+            tray_border_color:                 ColorType::RGB([90, 70, 100]),
+            tray_border_size:                  1.0,
+            tray_border_radius:                [3.0, 3.0, 3.0, 3.0],
+            tray_side_separator:               None,
+            tray_side_separator_color:         ColorType::RGB([75, 75, 75]),
+            tray_side_separator_width:         1.,
+            tray_side_separator_height:        16.,
+            tray_button_gradient_color:        None,
+            tray_button_hovered_gradient_color: None,
+            tray_button_pressed_gradient_color: None,
+        }
+    }
+}
 
 // ============ FUNCTIONS ============
 pub fn tray_stream(_: &TraySubscription) -> Pin<Box<dyn Stream<Item = Message> + Send>>
@@ -338,15 +394,16 @@ pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus
 
 pub fn define_tray_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered = app.ron_config.tray_button_hovered_color;
-    let hovered_text = app.ron_config.tray_button_hovered_text_color;
-    let pressed = app.ron_config.tray_button_pressed_color;
-    let normal = app.ron_config.tray_button_color;
+    let hovered = app.ron_config.tray.tray_button_hovered_color;
+    let hovered_text = app.ron_config.tray.tray_button_hovered_text_color;
+    let pressed_text = app.ron_config.tray.tray_button_pressed_text_color;
+    let pressed = app.ron_config.tray.tray_button_pressed_color;
+    let normal = app.ron_config.tray.tray_button_color;
     let normal_text = ColorType::RGB([255, 255, 255]);
-    let border_size = app.ron_config.tray_border_size;
-    let border_color = app.ron_config.tray_border_color;
-    let border_radius = app.ron_config.tray_border_radius;
-    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, hovered_gradient: app.ron_config.tray_button_hovered_gradient_color.clone(), normal_gradient: app.ron_config.tray_button_gradient_color.clone(), pressed_gradient: app.ron_config.tray_button_pressed_gradient_color.clone() })
+    let border_size = app.ron_config.tray.tray_border_size;
+    let border_color = app.ron_config.tray.tray_border_color;
+    let border_radius = app.ron_config.tray.tray_border_radius;
+    set_style(UserStyle {status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, hovered_gradient: app.ron_config.tray.tray_button_hovered_gradient_color.clone(), normal_gradient: app.ron_config.tray.tray_button_gradient_color.clone(), pressed_gradient: app.ron_config.tray.tray_button_pressed_gradient_color.clone() })
 }
 
 
@@ -355,7 +412,7 @@ pub fn define_tray_icon<'a>(app: &'a AppData, icon: &'a Option<iced::widget::ima
 {
     let element_to_send: Element<_> = if let Some(icon) = icon 
     {
-        image(icon.clone()).width(app.ron_config.tray_icon_size).height(app.ron_config.tray_icon_size).into() 
+        image(icon.clone()).width(app.ron_config.tray.tray_icon_size).height(app.ron_config.tray.tray_icon_size).into() 
     } 
     else
     { 
@@ -476,10 +533,10 @@ mod tests
     fn make_tray_app() -> AppData
     {
         let mut app = AppData { ..Default::default() };
-        app.ron_config.tray_button_color = ColorType::RGB([10, 20, 30]);
-        app.ron_config.tray_button_hovered_color = ColorType::RGB([50, 60, 70]);
-        app.ron_config.tray_button_pressed_color = ColorType::RGB([80, 90, 100]);
-        app.ron_config.tray_button_hovered_text_color = ColorType::RGB([255, 255, 255]);
+        app.ron_config.tray.tray_button_color = ColorType::RGB([10, 20, 30]);
+        app.ron_config.tray.tray_button_hovered_color = ColorType::RGB([50, 60, 70]);
+        app.ron_config.tray.tray_button_pressed_color = ColorType::RGB([80, 90, 100]);
+        app.ron_config.tray.tray_button_hovered_text_color = ColorType::RGB([255, 255, 255]);
         app
     }
  

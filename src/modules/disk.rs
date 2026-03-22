@@ -14,6 +14,73 @@ use crate::AppData;
 
 
 
+
+
+// ============ CONFIG ============
+use serde::{Deserialize, Serialize};
+use crate::helpers::style::{TextOrientation, SideOption};
+use crate::helpers::color::{ColorType, Gradient};
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct DiskConfig
+{
+    pub disk_format:                        String,
+    pub disk_mount:                         String,
+    pub disk_update_interval:               u64,
+    pub disk_padding:                       u16,
+    pub disk_text_size:                     u32,
+    pub disk_text_color:                    ColorType,
+    pub disk_text_orientation:              TextOrientation,
+    pub disk_button_color:                  ColorType,
+    pub disk_button_hovered_color:          ColorType,
+    pub disk_button_hovered_text_color:     ColorType,
+    pub disk_button_pressed_text_color:     ColorType,
+    pub disk_button_pressed_color:          ColorType,
+    pub disk_border_color:                  ColorType,
+    pub disk_border_size:                   f32,
+    pub disk_border_radius:                 [f32; 4],
+    pub disk_side_separator:                Option<SideOption>,
+    pub disk_side_separator_color:          ColorType,
+    pub disk_side_separator_width:          f32,
+    pub disk_side_separator_height:         f32,
+    pub disk_button_gradient_color:         Option<Gradient>,
+    pub disk_button_hovered_gradient_color: Option<Gradient>,
+    pub disk_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for DiskConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            disk_format:                        "{used}GB / {total}GB {percent}%".into(),
+            disk_mount:                         "/".into(),
+            disk_update_interval:               3000,
+            disk_padding:                       0,
+            disk_text_size:                     12,
+            disk_text_color:                    ColorType::RGB([220, 220, 220]),
+            disk_text_orientation:              TextOrientation::Horizontal,
+            disk_button_color:                  ColorType::RGB([40, 40, 50]),
+            disk_button_hovered_color:          ColorType::RGB([60, 60, 75]),
+            disk_button_hovered_text_color:     ColorType::RGB([255, 255, 255]),
+            disk_button_pressed_text_color:     ColorType::RGB([255, 255, 255]),
+            disk_button_pressed_color:          ColorType::RGB([30, 30, 40]),
+            disk_border_color:                  ColorType::RGB([80, 80, 100]),
+            disk_border_size:                   1.0,
+            disk_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            disk_side_separator:                None,
+            disk_side_separator_color:          ColorType::RGB([75, 75, 75]),
+            disk_side_separator_width:          1.,
+            disk_side_separator_height:         16.,
+            disk_button_gradient_color:         None,
+            disk_button_hovered_gradient_color: None,
+            disk_button_pressed_gradient_color: None,
+        }
+    }
+}
+
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Clone)]
 pub struct DiskData
@@ -60,13 +127,13 @@ pub fn define_disk_text(app: &AppData) -> String
 {
     let data = &app.modules_data.disk_data;
 
-    let text = app.ron_config.disk_format
+    let text = app.ron_config.disk.disk_format
         .replace("{total}",   &(data.total   / 1_073_741_824).to_string())
         .replace("{free}",    &(data.free    / 1_073_741_824).to_string())
         .replace("{used}",    &(data.used    / 1_073_741_824).to_string()) 
         .replace("{percent}", &data.percent.to_string());
 
-    orient_text(&text, &app.ron_config.disk_text_orientation)
+    orient_text(&text, &app.ron_config.disk.disk_text_orientation)
 }
 
 
@@ -76,17 +143,18 @@ pub fn define_disk_style(app: &AppData, status: button::Status) -> iced::widget:
     set_style(UserStyle
     {
         status,
-        normal:            app.ron_config.disk_button_color,
-        normal_text:       app.ron_config.disk_text_color,
-        hovered:           app.ron_config.disk_button_hovered_color,
-        hovered_text:      app.ron_config.disk_button_hovered_text_color,
-        pressed:           app.ron_config.disk_button_pressed_color,
-        border_color:      app.ron_config.disk_border_color,
-        border_size:       app.ron_config.disk_border_size,
-        border_radius:     app.ron_config.disk_border_radius,
-        hovered_gradient: None,
-        normal_gradient: None,
-        pressed_gradient: None
+        normal:            app.ron_config.disk.disk_button_color,
+        normal_text:       app.ron_config.disk.disk_text_color,
+        hovered:           app.ron_config.disk.disk_button_hovered_color,
+        hovered_text:      app.ron_config.disk.disk_button_hovered_text_color,
+        pressed_text:      app.ron_config.disk.disk_button_pressed_text_color,
+        pressed:           app.ron_config.disk.disk_button_pressed_color,
+        border_color:      app.ron_config.disk.disk_border_color,
+        border_size:       app.ron_config.disk.disk_border_size,
+        border_radius:     app.ron_config.disk.disk_border_radius,
+        normal_gradient:   app.ron_config.disk.disk_button_gradient_color.clone(),
+        hovered_gradient:  app.ron_config.disk.disk_button_hovered_gradient_color.clone(),
+        pressed_gradient:  app.ron_config.disk.disk_button_pressed_gradient_color.clone(),
     })
 }
 
@@ -163,7 +231,7 @@ mod tests
     fn disk_text_total_placeholder_replaced()
     {
         let mut app = make_app_with_disk(10 * 1_073_741_824, 0, 0, 0);
-        app.ron_config.disk_format = "{total}GB".into();
+        app.ron_config.disk.disk_format = "{total}GB".into();
         assert_eq!(define_disk_text(&app), "10GB");
     }
 
@@ -171,7 +239,7 @@ mod tests
     fn disk_text_used_placeholder_replaced()
     {
         let mut app = make_app_with_disk(0, 0, 3 * 1_073_741_824, 0);
-        app.ron_config.disk_format = "{used}GB".into();
+        app.ron_config.disk.disk_format = "{used}GB".into();
         assert_eq!(define_disk_text(&app), "3GB");
     }
 
@@ -179,7 +247,7 @@ mod tests
     fn disk_text_free_placeholder_replaced()
     {
         let mut app = make_app_with_disk(0, 7 * 1_073_741_824, 0, 0);
-        app.ron_config.disk_format = "{free}GB".into();
+        app.ron_config.disk.disk_format = "{free}GB".into();
         assert_eq!(define_disk_text(&app), "7GB");
     }
 
@@ -187,7 +255,7 @@ mod tests
     fn disk_text_percent_placeholder_replaced()
     {
         let mut app = make_app_with_disk(0, 0, 0, 42);
-        app.ron_config.disk_format = "{percent}%".into();
+        app.ron_config.disk.disk_format = "{percent}%".into();
         assert_eq!(define_disk_text(&app), "42%");
     }
 
@@ -200,7 +268,7 @@ mod tests
             3  * 1_073_741_824,
             30,
         );
-        app.ron_config.disk_format = "{used}GB / {total}GB ({percent}%)".into();
+        app.ron_config.disk.disk_format = "{used}GB / {total}GB ({percent}%)".into();
         assert_eq!(define_disk_text(&app), "3GB / 10GB (30%)");
     }
 
@@ -208,7 +276,7 @@ mod tests
     fn disk_text_no_placeholders_returns_literal()
     {
         let mut app = make_app_with_disk(0, 0, 0, 0);
-        app.ron_config.disk_format = "Disk".into();
+        app.ron_config.disk.disk_format = "Disk".into();
         assert_eq!(define_disk_text(&app), "Disk");
     }
 
@@ -216,7 +284,7 @@ mod tests
     fn disk_text_bytes_less_than_one_gb_rounds_to_zero()
     {
         let mut app = make_app_with_disk(500_000_000, 0, 0, 0);
-        app.ron_config.disk_format = "{total}GB".into();
+        app.ron_config.disk.disk_format = "{total}GB".into();
         assert_eq!(define_disk_text(&app), "0GB");
     }
 
@@ -225,14 +293,14 @@ mod tests
     fn make_style_app() -> AppData
     {
         let mut app = AppData::default();
-        app.ron_config.disk_button_color              = ColorType::RGB([10, 20, 30]);
-        app.ron_config.disk_button_hovered_color      = ColorType::RGB([50, 60, 70]);
-        app.ron_config.disk_button_pressed_color      = ColorType::RGB([80, 90, 100]);
-        app.ron_config.disk_text_color                = ColorType::RGB([200, 210, 220]);
-        app.ron_config.disk_button_hovered_text_color = ColorType::RGB([255, 255, 255]);
-        app.ron_config.disk_border_color              = ColorType::RGB([1, 2, 3]);
-        app.ron_config.disk_border_size               = 1.5;
-        app.ron_config.disk_border_radius             = [2.0, 2.0, 2.0, 2.0];
+        app.ron_config.disk.disk_button_color              = ColorType::RGB([10, 20, 30]);
+        app.ron_config.disk.disk_button_hovered_color      = ColorType::RGB([50, 60, 70]);
+        app.ron_config.disk.disk_button_pressed_color      = ColorType::RGB([80, 90, 100]);
+        app.ron_config.disk.disk_text_color                = ColorType::RGB([200, 210, 220]);
+        app.ron_config.disk.disk_button_hovered_text_color = ColorType::RGB([255, 255, 255]);
+        app.ron_config.disk.disk_border_color              = ColorType::RGB([1, 2, 3]);
+        app.ron_config.disk.disk_border_size               = 1.5;
+        app.ron_config.disk.disk_border_radius             = [2.0, 2.0, 2.0, 2.0];
         app
     }
 

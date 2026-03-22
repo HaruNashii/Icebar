@@ -1,7 +1,8 @@
 // ============ IMPORTS ============
 use libpulse_binding::{callbacks::ListResult, context::{Context, FlagSet as ContextFlagSet, introspect::Introspector, subscribe::{Facility, InterestMaskSet}}, mainloop::threaded::Mainloop, volume::Volume};
 use std::{pin::Pin, sync::{Arc, Mutex}};
-use iced::widget::button;
+use serde::{Deserialize, Serialize};
+use iced::{Task, widget::button};
  
  
 
@@ -9,14 +10,253 @@ use iced::widget::button;
  
  
 // ============ CRATES ============
-use crate::helpers::{style::{TextOrientation, UserStyle, orient_text, set_style}};
+use crate::helpers::{color::{ColorType, Gradient}, style::{TextOrientation, UserStyle, orient_text, set_style, SideOption}};
+use crate::ron::ActionOnClick;
 use crate::update::Message;
 use crate::AppData;
- 
- 
+
  
  
 
+
+
+
+// ============ CONFIG ============
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct VolumeOutputConfig
+{
+    pub output_volume_format:                        [String; 6],
+    pub output_volume_muted_format:                  String,
+    pub incremental_steps_output:                    u8,
+    pub action_on_left_click_volume_output:          ActionOnClick,
+    pub action_on_right_click_volume_output:         ActionOnClick,
+    pub volume_output_padding:                       u16,
+    pub volume_output_text_size:                     u32,
+    pub volume_output_text_color:                    ColorType,
+    pub volume_output_text_orientation:              TextOrientation,
+    pub volume_output_button_color:                  ColorType,
+    pub volume_output_button_hovered_color:          ColorType,
+    pub volume_output_button_hovered_text_color:     ColorType,
+    pub volume_output_button_pressed_text_color:     ColorType,
+    pub volume_output_button_pressed_color:          ColorType,
+    pub volume_output_border_color:                  ColorType,
+    pub volume_output_border_size:                   f32,
+    pub volume_output_border_radius:                 [f32; 4],
+    pub volume_output_side_separator:                Option<SideOption>,
+    pub volume_output_side_separator_color:          ColorType,
+    pub volume_output_side_separator_width:          f32,
+    pub volume_output_side_separator_height:         f32,
+    pub volume_output_button_gradient_color:         Option<Gradient>,
+    pub volume_output_button_hovered_gradient_color: Option<Gradient>,
+    pub volume_output_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for VolumeOutputConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            output_volume_format:                        ["   {}%".into(),"󰖀   {}%".into(),"   {}%".into(),"   {}%".into(),"   {}%".into(),"   + {}%".into()],
+            output_volume_muted_format:                  "   Muted".into(),
+            incremental_steps_output:                    10,
+            action_on_left_click_volume_output:          ActionOnClick::DefaultAction,
+            action_on_right_click_volume_output:         ActionOnClick::DefaultAction,
+            volume_output_padding:                       0,
+            volume_output_text_size:                     15,
+            volume_output_text_color:                    ColorType::RGB([255, 255, 255]),
+            volume_output_text_orientation:              TextOrientation::Horizontal,
+            volume_output_button_color:                  ColorType::RGB([55, 45, 65]),
+            volume_output_button_hovered_color:          ColorType::RGB([150, 45, 85]),
+            volume_output_button_hovered_text_color:     ColorType::RGB([255, 255, 255]),
+            volume_output_button_pressed_text_color:     ColorType::RGB([255, 255, 255]),
+            volume_output_button_pressed_color:          ColorType::RGB([85, 30, 50]),
+            volume_output_border_color:                  ColorType::RGB([110, 80, 120]),
+            volume_output_border_size:                   1.0,
+            volume_output_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            volume_output_side_separator:                None,
+            volume_output_side_separator_color:          ColorType::RGB([75, 75, 75]),
+            volume_output_side_separator_width:          1.,
+            volume_output_side_separator_height:         20.,
+            volume_output_button_gradient_color:         None,
+            volume_output_button_hovered_gradient_color: None,
+            volume_output_button_pressed_gradient_color: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct MutedVolumeOutputConfig
+{
+    pub muted_volume_output_padding:                       u16,
+    pub muted_volume_output_text_size:                     u32,
+    pub muted_volume_output_text_color:                    ColorType,
+    pub muted_volume_output_text_orientation:              TextOrientation,
+    pub muted_volume_output_button_color:                  ColorType,
+    pub muted_volume_output_button_hovered_color:          ColorType,
+    pub muted_volume_output_button_hovered_text_color:     ColorType,
+    pub muted_volume_output_button_pressed_text_color:     ColorType,
+    pub muted_volume_output_button_pressed_color:          ColorType,
+    pub muted_volume_output_border_color:                  ColorType,
+    pub muted_volume_output_border_size:                   f32,
+    pub muted_volume_output_border_radius:                 [f32; 4],
+    pub muted_volume_output_side_separator:                Option<SideOption>,
+    pub muted_volume_output_side_separator_color:          ColorType,
+    pub muted_volume_output_side_separator_width:          f32,
+    pub muted_volume_output_side_separator_height:         f32,
+    pub muted_volume_output_button_gradient_color:         Option<Gradient>,
+    pub muted_volume_output_button_hovered_gradient_color: Option<Gradient>,
+    pub muted_volume_output_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for MutedVolumeOutputConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            muted_volume_output_padding:                       0,
+            muted_volume_output_text_size:                     15,
+            muted_volume_output_text_color:                    ColorType::RGB([255, 255, 255]),
+            muted_volume_output_text_orientation:              TextOrientation::Horizontal,
+            muted_volume_output_button_color:                  ColorType::RGB([150, 40, 80]),
+            muted_volume_output_button_hovered_color:          ColorType::RGB([150, 45, 85]),
+            muted_volume_output_button_hovered_text_color:     ColorType::RGB([255, 255, 255]),
+            muted_volume_output_button_pressed_text_color:     ColorType::RGB([255, 255, 255]),
+            muted_volume_output_button_pressed_color:          ColorType::RGB([85, 30, 50]),
+            muted_volume_output_border_color:                  ColorType::RGB([110, 80, 120]),
+            muted_volume_output_border_size:                   1.0,
+            muted_volume_output_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            muted_volume_output_side_separator:                None,
+            muted_volume_output_side_separator_color:          ColorType::RGB([75, 75, 75]),
+            muted_volume_output_side_separator_width:          1.,
+            muted_volume_output_side_separator_height:         20.,
+            muted_volume_output_button_gradient_color:         None,
+            muted_volume_output_button_hovered_gradient_color: None,
+            muted_volume_output_button_pressed_gradient_color: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct VolumeInputConfig
+{
+    pub input_volume_format:                        [String; 6],
+    pub input_volume_muted_format:                  String,
+    pub incremental_steps_input:                    u8,
+    pub action_on_left_click_volume_input:          ActionOnClick,
+    pub action_on_right_click_volume_input:         ActionOnClick,
+    pub volume_input_padding:                       u16,
+    pub volume_input_text_size:                     u32,
+    pub volume_input_text_color:                    ColorType,
+    pub volume_input_text_orientation:              TextOrientation,
+    pub volume_input_button_color:                  ColorType,
+    pub volume_input_button_hovered_color:          ColorType,
+    pub volume_input_button_hovered_text_color:     ColorType,
+    pub volume_input_button_pressed_text_color:     ColorType,
+    pub volume_input_button_pressed_color:          ColorType,
+    pub volume_input_border_color:                  ColorType,
+    pub volume_input_border_size:                   f32,
+    pub volume_input_border_radius:                 [f32; 4],
+    pub volume_input_side_separator:                Option<SideOption>,
+    pub volume_input_side_separator_color:          ColorType,
+    pub volume_input_side_separator_width:          f32,
+    pub volume_input_side_separator_height:         f32,
+    pub volume_input_button_gradient_color:         Option<Gradient>,
+    pub volume_input_button_hovered_gradient_color: Option<Gradient>,
+    pub volume_input_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for VolumeInputConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            input_volume_format:                        ["   {}%".into(),"  {}%".into(),"  {}%".into(),"  {}%".into(),"  {}%".into(),"󰢴  {}%".into()],
+            input_volume_muted_format:                  "   Muted".into(),
+            incremental_steps_input:                    10,
+            action_on_left_click_volume_input:          ActionOnClick::DefaultAction,
+            action_on_right_click_volume_input:         ActionOnClick::DefaultAction,
+            volume_input_padding:                       0,
+            volume_input_text_size:                     15,
+            volume_input_text_color:                    ColorType::RGB([255, 255, 255]),
+            volume_input_text_orientation:              TextOrientation::Horizontal,
+            volume_input_button_color:                  ColorType::RGB([55, 45, 65]),
+            volume_input_button_hovered_color:          ColorType::RGB([150, 45, 85]),
+            volume_input_button_hovered_text_color:     ColorType::RGB([255, 255, 255]),
+            volume_input_button_pressed_text_color:     ColorType::RGB([255, 255, 255]),
+            volume_input_button_pressed_color:          ColorType::RGB([85, 30, 50]),
+            volume_input_border_color:                  ColorType::RGB([110, 80, 120]),
+            volume_input_border_size:                   1.0,
+            volume_input_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            volume_input_side_separator:                None,
+            volume_input_side_separator_color:          ColorType::RGB([75, 75, 75]),
+            volume_input_side_separator_width:          1.,
+            volume_input_side_separator_height:         20.,
+            volume_input_button_gradient_color:         None,
+            volume_input_button_hovered_gradient_color: None,
+            volume_input_button_pressed_gradient_color: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct MutedVolumeInputConfig
+{
+    pub muted_volume_input_padding:                       u16,
+    pub muted_volume_input_text_size:                     u32,
+    pub muted_volume_input_text_color:                    ColorType,
+    pub muted_volume_input_text_orientation:              TextOrientation,
+    pub muted_volume_input_button_color:                  ColorType,
+    pub muted_volume_input_button_hovered_color:          ColorType,
+    pub muted_volume_input_button_hovered_text_color:     ColorType,
+    pub muted_volume_input_button_pressed_text_color:     ColorType,
+    pub muted_volume_input_button_pressed_color:          ColorType,
+    pub muted_volume_input_border_color:                  ColorType,
+    pub muted_volume_input_border_size:                   f32,
+    pub muted_volume_input_border_radius:                 [f32; 4],
+    pub muted_volume_input_side_separator:                Option<SideOption>,
+    pub muted_volume_input_side_separator_color:          ColorType,
+    pub muted_volume_input_side_separator_width:          f32,
+    pub muted_volume_input_side_separator_height:         f32,
+    pub muted_volume_input_button_gradient_color:         Option<Gradient>,
+    pub muted_volume_input_button_hovered_gradient_color: Option<Gradient>,
+    pub muted_volume_input_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for MutedVolumeInputConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            muted_volume_input_padding:                       0,
+            muted_volume_input_text_size:                     15,
+            muted_volume_input_text_color:                    ColorType::RGB([255, 255, 255]),
+            muted_volume_input_text_orientation:              TextOrientation::Horizontal,
+            muted_volume_input_button_color:                  ColorType::RGB([150, 40, 80]),
+            muted_volume_input_button_hovered_color:          ColorType::RGB([150, 45, 85]),
+            muted_volume_input_button_hovered_text_color:     ColorType::RGB([255, 255, 255]),
+            muted_volume_input_button_pressed_text_color:     ColorType::RGB([255, 255, 255]),
+            muted_volume_input_button_pressed_color:          ColorType::RGB([85, 30, 50]),
+            muted_volume_input_border_color:                  ColorType::RGB([110, 80, 120]),
+            muted_volume_input_border_size:                   1.0,
+            muted_volume_input_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            muted_volume_input_side_separator:                None,
+            muted_volume_input_side_separator_color:          ColorType::RGB([75, 75, 75]),
+            muted_volume_input_side_separator_width:          1.,
+            muted_volume_input_side_separator_height:         20.,
+            muted_volume_input_button_gradient_color:         None,
+            muted_volume_input_button_hovered_gradient_color: None,
+            muted_volume_input_button_pressed_gradient_color: None,
+        }
+    }
+}
 
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Clone)]
@@ -194,19 +434,22 @@ fn fetch_source(introspector: &Introspector, state: Arc<Mutex<PulseState>>, tx: 
 }
  
  
- 
-pub fn volume(volume_modifier: VolumeAction)
+
+pub fn volume(volume_modifier: VolumeAction) -> Task<crate::update::Message>
 {
-    use std::process::Command;
-    match volume_modifier
+    let args: (&'static str, &'static str, String) = match volume_modifier
     {
-        VolumeAction::IncreaseOutput(v) => { let _ = Command::new("wpctl").args(["set-volume", "@DEFAULT_SINK@",   &format!("{}%+", v)]).output(); }
-        VolumeAction::DecreaseOutput(v) => { let _ = Command::new("wpctl").args(["set-volume", "@DEFAULT_SINK@",   &format!("{}%-", v)]).output(); }
-        VolumeAction::MuteOutput        => { let _ = Command::new("wpctl").args(["set-mute",   "@DEFAULT_SINK@",   "toggle"           ]).output(); }
-        VolumeAction::IncreaseInput(v)  => { let _ = Command::new("wpctl").args(["set-volume", "@DEFAULT_SOURCE@", &format!("{}%+", v)]).output(); }
-        VolumeAction::DecreaseInput(v)  => { let _ = Command::new("wpctl").args(["set-volume", "@DEFAULT_SOURCE@", &format!("{}%-", v)]).output(); }
-        VolumeAction::MuteInput         => { let _ = Command::new("wpctl").args(["set-mute",   "@DEFAULT_SOURCE@", "toggle"           ]).output(); }
+        VolumeAction::IncreaseOutput(v) => ("set-volume", "@DEFAULT_SINK@",   format!("{}%+", v)),
+        VolumeAction::DecreaseOutput(v) => ("set-volume", "@DEFAULT_SINK@",   format!("{}%-", v)),
+        VolumeAction::MuteOutput        => ("set-mute",   "@DEFAULT_SINK@",   "toggle".into()),
+        VolumeAction::IncreaseInput(v)  => ("set-volume", "@DEFAULT_SOURCE@", format!("{}%+", v)),
+        VolumeAction::DecreaseInput(v)  => ("set-volume", "@DEFAULT_SOURCE@", format!("{}%-", v)),
+        VolumeAction::MuteInput         => ("set-mute",   "@DEFAULT_SOURCE@", "toggle".into()),
     };
+    Task::perform(async move 
+    {
+        let _ = tokio::process::Command::new("wpctl").args([args.0, args.1, &args.2]).output().await;
+    },|_| Message::Nothing,)
 }
  
 
@@ -215,27 +458,29 @@ pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced
 {
     if app.modules_data.volume_data.volume_output_is_muted
     {
-        let hovered =           app.ron_config.muted_volume_output_button_hovered_color;
-        let hovered_text =      app.ron_config.muted_volume_output_button_hovered_text_color;
-        let pressed =           app.ron_config.muted_volume_output_button_pressed_color;
-        let normal =            app.ron_config.muted_volume_output_button_color;
-        let normal_text =       app.ron_config.muted_volume_output_text_color;
-        let border_size =       app.ron_config.muted_volume_output_border_size;
-        let border_color =  app.ron_config.muted_volume_output_border_color;
-        let border_radius =     app.ron_config.muted_volume_output_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.muted_volume_output_button_gradient_color.clone(), hovered_gradient: app.ron_config.muted_volume_output_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.muted_volume_output_button_pressed_gradient_color.clone() })
+        let hovered =           app.ron_config.muted_volume_output.muted_volume_output_button_hovered_color;
+        let hovered_text =      app.ron_config.muted_volume_output.muted_volume_output_button_hovered_text_color;
+        let pressed_text =      app.ron_config.muted_volume_output.muted_volume_output_button_pressed_text_color;
+        let pressed =           app.ron_config.muted_volume_output.muted_volume_output_button_pressed_color;
+        let normal =            app.ron_config.muted_volume_output.muted_volume_output_button_color;
+        let normal_text =       app.ron_config.muted_volume_output.muted_volume_output_text_color;
+        let border_size =       app.ron_config.muted_volume_output.muted_volume_output_border_size;
+        let border_color =  app.ron_config.muted_volume_output.muted_volume_output_border_color;
+        let border_radius =     app.ron_config.muted_volume_output.muted_volume_output_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.muted_volume_output.muted_volume_output_button_gradient_color.clone(), hovered_gradient: app.ron_config.muted_volume_output.muted_volume_output_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.muted_volume_output.muted_volume_output_button_pressed_gradient_color.clone() })
     }
     else
     {
-        let hovered =           app.ron_config.volume_output_button_hovered_color;
-        let hovered_text =      app.ron_config.volume_output_button_hovered_text_color;
-        let pressed =           app.ron_config.volume_output_button_pressed_color;
-        let normal =            app.ron_config.volume_output_button_color;
-        let normal_text =       app.ron_config.volume_output_text_color;
-        let border_size =       app.ron_config.volume_output_border_size;
-        let border_color =  app.ron_config.volume_output_border_color;
-        let border_radius =     app.ron_config.volume_output_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.volume_output_button_gradient_color.clone(), hovered_gradient: app.ron_config.volume_output_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.volume_output_button_pressed_gradient_color.clone() })
+        let hovered =           app.ron_config.volume_output.volume_output_button_hovered_color;
+        let hovered_text =      app.ron_config.volume_output.volume_output_button_hovered_text_color;
+        let pressed_text =      app.ron_config.volume_output.volume_output_button_pressed_text_color;
+        let pressed =           app.ron_config.volume_output.volume_output_button_pressed_color;
+        let normal =            app.ron_config.volume_output.volume_output_button_color;
+        let normal_text =       app.ron_config.volume_output.volume_output_text_color;
+        let border_size =       app.ron_config.volume_output.volume_output_border_size;
+        let border_color =  app.ron_config.volume_output.volume_output_border_color;
+        let border_radius =     app.ron_config.volume_output.volume_output_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.volume_output.volume_output_button_gradient_color.clone(), hovered_gradient: app.ron_config.volume_output.volume_output_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.volume_output.volume_output_button_pressed_gradient_color.clone() })
     }
 }
 
@@ -245,27 +490,29 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
 {
     if app.modules_data.volume_data.volume_input_is_muted
     {
-        let hovered =              app.ron_config.muted_volume_input_button_hovered_color;
-        let hovered_text =         app.ron_config.muted_volume_input_button_hovered_text_color;
-        let pressed =              app.ron_config.muted_volume_input_button_pressed_color;
-        let normal =               app.ron_config.muted_volume_input_button_color;
-        let normal_text =          app.ron_config.muted_volume_input_text_color;
-        let border_size =          app.ron_config.muted_volume_input_border_size;
-        let border_color =     app.ron_config.muted_volume_input_border_color;
-        let border_radius =        app.ron_config.muted_volume_input_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.muted_volume_input_button_gradient_color.clone(), hovered_gradient: app.ron_config.muted_volume_input_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.muted_volume_input_button_pressed_gradient_color.clone() })
+        let hovered =              app.ron_config.muted_volume_input.muted_volume_input_button_hovered_color;
+        let hovered_text =         app.ron_config.muted_volume_input.muted_volume_input_button_hovered_text_color;
+        let pressed_text =         app.ron_config.muted_volume_input.muted_volume_input_button_pressed_text_color;
+        let pressed =              app.ron_config.muted_volume_input.muted_volume_input_button_pressed_color;
+        let normal =               app.ron_config.muted_volume_input.muted_volume_input_button_color;
+        let normal_text =          app.ron_config.muted_volume_input.muted_volume_input_text_color;
+        let border_size =          app.ron_config.muted_volume_input.muted_volume_input_border_size;
+        let border_color =     app.ron_config.muted_volume_input.muted_volume_input_border_color;
+        let border_radius =        app.ron_config.muted_volume_input.muted_volume_input_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.muted_volume_input.muted_volume_input_button_gradient_color.clone(), hovered_gradient: app.ron_config.muted_volume_input.muted_volume_input_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.muted_volume_input.muted_volume_input_button_pressed_gradient_color.clone() })
     }
     else
     {
-        let hovered =           app.ron_config.volume_input_button_hovered_color;
-        let hovered_text =      app.ron_config.volume_input_button_hovered_text_color;
-        let pressed =           app.ron_config.volume_input_button_pressed_color;
-        let normal =            app.ron_config.volume_input_button_color;
-        let normal_text =       app.ron_config.volume_input_text_color;
-        let border_size =       app.ron_config.volume_input_border_size;
-        let border_color =  app.ron_config.volume_input_border_color;
-        let border_radius =     app.ron_config.volume_input_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.volume_input_button_gradient_color.clone(), hovered_gradient: app.ron_config.volume_input_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.volume_input_button_pressed_gradient_color.clone() })
+        let hovered =           app.ron_config.volume_input.volume_input_button_hovered_color;
+        let hovered_text =      app.ron_config.volume_input.volume_input_button_hovered_text_color;
+        let pressed_text =      app.ron_config.volume_input.volume_input_button_pressed_text_color;
+        let pressed =           app.ron_config.volume_input.volume_input_button_pressed_color;
+        let normal =            app.ron_config.volume_input.volume_input_button_color;
+        let normal_text =       app.ron_config.volume_input.volume_input_text_color;
+        let border_size =       app.ron_config.volume_input.volume_input_border_size;
+        let border_color =  app.ron_config.volume_input.volume_input_border_color;
+        let border_radius =     app.ron_config.volume_input.volume_input_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.volume_input.volume_input_button_gradient_color.clone(), hovered_gradient: app.ron_config.volume_input.volume_input_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.volume_input.volume_input_button_pressed_gradient_color.clone() })
     }
 }
 
@@ -314,12 +561,12 @@ mod tests
     {
         let mut app = AppData::default();
         app.modules_data.volume_data.volume_output_is_muted = muted;
-        app.ron_config.volume_output_button_color = ColorType::RGB([0, 200, 0]);
-        app.ron_config.muted_volume_output_button_color = ColorType::RGB([200, 0, 0]);
-        app.ron_config.volume_output_button_hovered_color = ColorType::RGB([0, 100, 0]);
-        app.ron_config.muted_volume_output_button_hovered_color = ColorType::RGB([100, 0, 0]);
-        app.ron_config.volume_output_button_pressed_color = ColorType::RGB([0, 50, 0]);
-        app.ron_config.muted_volume_output_button_pressed_color = ColorType::RGB([50, 0, 0]);
+        app.ron_config.volume_output.volume_output_button_color = ColorType::RGB([0, 200, 0]);
+        app.ron_config.muted_volume_output.muted_volume_output_button_color = ColorType::RGB([200, 0, 0]);
+        app.ron_config.volume_output.volume_output_button_hovered_color = ColorType::RGB([0, 100, 0]);
+        app.ron_config.muted_volume_output.muted_volume_output_button_hovered_color = ColorType::RGB([100, 0, 0]);
+        app.ron_config.volume_output.volume_output_button_pressed_color = ColorType::RGB([0, 50, 0]);
+        app.ron_config.muted_volume_output.muted_volume_output_button_pressed_color = ColorType::RGB([50, 0, 0]);
         app
     }
  
@@ -377,12 +624,12 @@ mod tests
     {
         let mut app = AppData::default();
         app.modules_data.volume_data.volume_input_is_muted = muted;
-        app.ron_config.volume_input_button_color = ColorType::RGB([0, 0, 200]);
-        app.ron_config.muted_volume_input_button_color = ColorType::RGB([200, 0, 200]);
-        app.ron_config.volume_input_button_hovered_color = ColorType::RGB([0, 0, 100]);
-        app.ron_config.muted_volume_input_button_hovered_color = ColorType::RGB([100, 0, 100]);
-        app.ron_config.volume_input_button_pressed_color = ColorType::RGB([0, 0, 50]);
-        app.ron_config.muted_volume_input_button_pressed_color = ColorType::RGB([50, 0, 50]);
+        app.ron_config.volume_input.volume_input_button_color = ColorType::RGB([0, 0, 200]);
+        app.ron_config.muted_volume_input.muted_volume_input_button_color = ColorType::RGB([200, 0, 200]);
+        app.ron_config.volume_input.volume_input_button_hovered_color = ColorType::RGB([0, 0, 100]);
+        app.ron_config.muted_volume_input.muted_volume_input_button_hovered_color = ColorType::RGB([100, 0, 100]);
+        app.ron_config.volume_input.volume_input_button_pressed_color = ColorType::RGB([0, 0, 50]);
+        app.ron_config.muted_volume_input.muted_volume_input_button_pressed_color = ColorType::RGB([50, 0, 50]);
         app
     }
  

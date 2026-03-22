@@ -14,6 +14,77 @@ use crate::AppData;
 
 
 
+
+
+// ============ CONFIG ============
+use serde::{Deserialize, Serialize};
+use crate::helpers::style::{TextOrientation, SideOption};
+use crate::helpers::color::{ColorType, Gradient};
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct FocusedWindowConfig
+{
+    pub focused_window_format:                        String,
+    pub focused_window_update_interval:               u64,
+    pub dont_show_focused_window_if_empty:            bool,
+    pub text_when_focused_window_is_empty:            String,
+    pub focused_window_text_limit_len:                usize,
+    pub focused_window_padding:                       u16,
+    pub focused_window_text_size:                     u32,
+    pub focused_window_text_color:                    ColorType,
+    pub focused_window_text_orientation:              TextOrientation,
+    pub focused_window_button_color:                  ColorType,
+    pub focused_window_button_hovered_color:          ColorType,
+    pub focused_window_button_hovered_text_color:     ColorType,
+    pub focused_window_button_pressed_text_color:     ColorType,
+    pub focused_window_button_pressed_color:          ColorType,
+    pub focused_window_border_color:                  ColorType,
+    pub focused_window_border_size:                   f32,
+    pub focused_window_border_radius:                 [f32; 4],
+    pub focused_window_side_separator:                Option<SideOption>,
+    pub focused_window_side_separator_color:          ColorType,
+    pub focused_window_side_separator_width:          f32,
+    pub focused_window_side_separator_height:         f32,
+    pub focused_window_button_gradient_color:         Option<Gradient>,
+    pub focused_window_button_hovered_gradient_color: Option<Gradient>,
+    pub focused_window_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for FocusedWindowConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            focused_window_format:                        "{title}".into(),
+            focused_window_update_interval:               500,
+            dont_show_focused_window_if_empty:            false,
+            text_when_focused_window_is_empty:            "No Window Focused".into(),
+            focused_window_text_limit_len:                25,
+            focused_window_padding:                       0,
+            focused_window_text_size:                     12,
+            focused_window_text_color:                    ColorType::RGB([220, 220, 220]),
+            focused_window_text_orientation:              TextOrientation::Horizontal,
+            focused_window_button_color:                  ColorType::RGB([40, 40, 50]),
+            focused_window_button_hovered_color:          ColorType::RGB([60, 60, 75]),
+            focused_window_button_hovered_text_color:     ColorType::RGB([255, 255, 255]),
+            focused_window_button_pressed_text_color:     ColorType::RGB([255, 255, 255]),
+            focused_window_button_pressed_color:          ColorType::RGB([30, 30, 40]),
+            focused_window_border_color:                  ColorType::RGB([80, 80, 100]),
+            focused_window_border_size:                   1.0,
+            focused_window_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            focused_window_side_separator:                None,
+            focused_window_side_separator_color:          ColorType::RGB([75, 75, 75]),
+            focused_window_side_separator_width:          1.,
+            focused_window_side_separator_height:         16.,
+            focused_window_button_gradient_color:         None,
+            focused_window_button_hovered_gradient_color: None,
+            focused_window_button_pressed_gradient_color: None,
+        }
+    }
+}
+
 // ============ STRUCTS ============
 #[derive(Default, Clone)]
 pub struct FocusedWindowData
@@ -86,11 +157,11 @@ pub fn define_focused_window_text(app: &AppData) -> String
     let title = &app.modules_data.focused_window_data.title;
     if title.is_empty()
     {
-        if app.ron_config.dont_show_focused_window_if_empty { return String::new(); };
-        return orient_text(&app.ron_config.text_when_focused_window_is_empty, &app.ron_config.focused_window_text_orientation);
+        if app.ron_config.focused_window.dont_show_focused_window_if_empty { return String::new(); };
+        return orient_text(&app.ron_config.focused_window.text_when_focused_window_is_empty, &app.ron_config.focused_window.focused_window_text_orientation);
     };
-    let text  = app.ron_config.focused_window_format.replace("{title}", title);
-    orient_text(&text, &app.ron_config.focused_window_text_orientation)
+    let text  = app.ron_config.focused_window.focused_window_format.replace("{title}", title);
+    orient_text(&text, &app.ron_config.focused_window.focused_window_text_orientation)
 }
 
 
@@ -100,17 +171,18 @@ pub fn define_focused_window_style(app: &AppData, status: button::Status) -> ice
     set_style(UserStyle
     {
         status,
-        normal:            app.ron_config.focused_window_button_color,
-        normal_text:       app.ron_config.focused_window_text_color,
-        hovered:           app.ron_config.focused_window_button_hovered_color,
-        hovered_text:      app.ron_config.focused_window_button_hovered_text_color,
-        pressed:           app.ron_config.focused_window_button_pressed_color,
-        border_color: app.ron_config.focused_window_border_color,
-        border_size:       app.ron_config.focused_window_border_size,
-        border_radius:     app.ron_config.focused_window_border_radius,
-        normal_gradient:   app.ron_config.focused_window_button_gradient_color.clone(),
-        hovered_gradient:  app.ron_config.focused_window_button_hovered_gradient_color.clone(),
-        pressed_gradient:  app.ron_config.focused_window_button_pressed_gradient_color.clone(),
+        normal:            app.ron_config.focused_window.focused_window_button_color,
+        normal_text:       app.ron_config.focused_window.focused_window_text_color,
+        hovered:           app.ron_config.focused_window.focused_window_button_hovered_color,
+        hovered_text:      app.ron_config.focused_window.focused_window_button_hovered_text_color,
+        pressed_text:      app.ron_config.focused_window.focused_window_button_pressed_text_color,
+        pressed:           app.ron_config.focused_window.focused_window_button_pressed_color,
+        border_color: app.ron_config.focused_window.focused_window_border_color,
+        border_size:       app.ron_config.focused_window.focused_window_border_size,
+        border_radius:     app.ron_config.focused_window.focused_window_border_radius,
+        normal_gradient:   app.ron_config.focused_window.focused_window_button_gradient_color.clone(),
+        hovered_gradient:  app.ron_config.focused_window.focused_window_button_hovered_gradient_color.clone(),
+        pressed_gradient:  app.ron_config.focused_window.focused_window_button_pressed_gradient_color.clone(),
     })
 }
 
@@ -166,9 +238,9 @@ mod tests
     {
         let mut app = AppData { ..Default::default() };
         app.modules_data.focused_window_data.title        = title.into();
-        app.ron_config.focused_window_format              = "{title}".into();
-        app.ron_config.text_when_focused_window_is_empty  = "Desktop".into();
-        app.ron_config.dont_show_focused_window_if_empty  = false;
+        app.ron_config.focused_window.focused_window_format              = "{title}".into();
+        app.ron_config.focused_window.text_when_focused_window_is_empty  = "Desktop".into();
+        app.ron_config.focused_window.dont_show_focused_window_if_empty  = false;
         app
     }
  
@@ -277,7 +349,7 @@ mod tests
     fn focused_window_text_custom_format()
     {
         let mut app = make_app("Alacritty");
-        app.ron_config.focused_window_format = "[ {title} ]".into();
+        app.ron_config.focused_window.focused_window_format = "[ {title} ]".into();
         assert_eq!(define_focused_window_text(&app), "[ Alacritty ]");
     }
  
@@ -292,7 +364,7 @@ mod tests
     fn focused_window_text_empty_title_dont_show_flag_returns_empty()
     {
         let mut app = make_app("");
-        app.ron_config.dont_show_focused_window_if_empty = true;
+        app.ron_config.focused_window.dont_show_focused_window_if_empty = true;
         assert_eq!(define_focused_window_text(&app), "");
     }
  
@@ -300,7 +372,7 @@ mod tests
     fn focused_window_text_dont_show_flag_ignored_when_title_not_empty()
     {
         let mut app = make_app("Vim");
-        app.ron_config.dont_show_focused_window_if_empty = true;
+        app.ron_config.focused_window.dont_show_focused_window_if_empty = true;
         assert_eq!(define_focused_window_text(&app), "Vim");
     }
  
@@ -309,8 +381,8 @@ mod tests
     {
         use crate::helpers::style::TextOrientation;
         let mut app = make_app("");
-        app.ron_config.text_when_focused_window_is_empty  = "Hi".into();
-        app.ron_config.focused_window_text_orientation    = TextOrientation::Vertical;
+        app.ron_config.focused_window.text_when_focused_window_is_empty  = "Hi".into();
+        app.ron_config.focused_window.focused_window_text_orientation    = TextOrientation::Vertical;
         let result = define_focused_window_text(&app);
         assert!(result.contains('\n'));
     }
@@ -320,7 +392,7 @@ mod tests
     {
         use crate::helpers::style::TextOrientation;
         let mut app = make_app("abc");
-        app.ron_config.focused_window_text_orientation = TextOrientation::Vertical;
+        app.ron_config.focused_window.focused_window_text_orientation = TextOrientation::Vertical;
         let result = define_focused_window_text(&app);
         assert!(result.contains('\n'));
     }
@@ -329,7 +401,7 @@ mod tests
     fn focused_window_text_format_with_no_placeholder_returns_format_string()
     {
         let mut app = make_app("Anything");
-        app.ron_config.focused_window_format = "static".into();
+        app.ron_config.focused_window.focused_window_format = "static".into();
         assert_eq!(define_focused_window_text(&app), "static");
     }
  
@@ -337,7 +409,7 @@ mod tests
     fn focused_window_text_multiple_title_placeholders_all_replaced()
     {
         let mut app = make_app("Vim");
-        app.ron_config.focused_window_format = "{title} | {title}".into();
+        app.ron_config.focused_window.focused_window_format = "{title} | {title}".into();
         assert_eq!(define_focused_window_text(&app), "Vim | Vim");
     }
  
@@ -447,7 +519,7 @@ mod tests
     fn focused_window_text_title_with_brackets_in_format()
     {
         let mut app = make_app("Vim");
-        app.ron_config.focused_window_format = "[{title}]".into();
+        app.ron_config.focused_window.focused_window_format = "[{title}]".into();
         assert_eq!(define_focused_window_text(&app), "[Vim]");
     }
 
@@ -455,7 +527,7 @@ mod tests
     fn focused_window_text_empty_format_string_returns_empty()
     {
         let mut app = make_app("Firefox");
-        app.ron_config.focused_window_format = "".into();
+        app.ron_config.focused_window.focused_window_format = "".into();
         assert_eq!(define_focused_window_text(&app), "");
     }
 
@@ -464,8 +536,8 @@ mod tests
     {
         // text_when_focused_window_is_empty itself is empty
         let mut app = make_app("");
-        app.ron_config.text_when_focused_window_is_empty = "".into();
-        app.ron_config.dont_show_focused_window_if_empty = false;
+        app.ron_config.focused_window.text_when_focused_window_is_empty = "".into();
+        app.ron_config.focused_window.dont_show_focused_window_if_empty = false;
         assert_eq!(define_focused_window_text(&app), "");
     }
 
@@ -483,7 +555,7 @@ mod tests
     {
         // If the title itself contains "{title}", it must not be replaced again
         let mut app = make_app("{title}");
-        app.ron_config.focused_window_format = "{title}".into();
+        app.ron_config.focused_window.focused_window_format = "{title}".into();
         // str::replace replaces the first occurrence — result is "{title}" expanded once
         // i.e. the title value "{title}" is placed where {title} was
         assert_eq!(define_focused_window_text(&app), "{title}");
@@ -493,8 +565,8 @@ mod tests
     fn focused_window_text_custom_fallback_text()
     {
         let mut app = make_app("");
-        app.ron_config.text_when_focused_window_is_empty  = "~ desktop ~".into();
-        app.ron_config.dont_show_focused_window_if_empty  = false;
+        app.ron_config.focused_window.text_when_focused_window_is_empty  = "~ desktop ~".into();
+        app.ron_config.focused_window.dont_show_focused_window_if_empty  = false;
         assert_eq!(define_focused_window_text(&app), "~ desktop ~");
     }
 
@@ -542,7 +614,7 @@ mod tests
     fn text_custom_format_with_prefix()
     {
         let mut app = make_app("Vim");
-        app.ron_config.focused_window_format = " {title}".into();
+        app.ron_config.focused_window.focused_window_format = " {title}".into();
         assert_eq!(define_focused_window_text(&app), " Vim");
     }
 
@@ -550,7 +622,7 @@ mod tests
     fn text_custom_format_with_suffix()
     {
         let mut app = make_app("Vim");
-        app.ron_config.focused_window_format = "{title} — icebar".into();
+        app.ron_config.focused_window.focused_window_format = "{title} — icebar".into();
         assert_eq!(define_focused_window_text(&app), "Vim — icebar");
     }
 
@@ -558,7 +630,7 @@ mod tests
     fn text_custom_format_wrapping_brackets()
     {
         let mut app = make_app("Alacritty");
-        app.ron_config.focused_window_format = "[ {title} ]".into();
+        app.ron_config.focused_window.focused_window_format = "[ {title} ]".into();
         assert_eq!(define_focused_window_text(&app), "[ Alacritty ]");
     }
 
@@ -566,7 +638,7 @@ mod tests
     fn text_multiple_placeholders_all_replaced()
     {
         let mut app = make_app("Vim");
-        app.ron_config.focused_window_format = "{title} | {title}".into();
+        app.ron_config.focused_window.focused_window_format = "{title} | {title}".into();
         assert_eq!(define_focused_window_text(&app), "Vim | Vim");
     }
 
@@ -574,7 +646,7 @@ mod tests
     fn text_empty_format_string_returns_empty()
     {
         let mut app = make_app("Firefox");
-        app.ron_config.focused_window_format = "".into();
+        app.ron_config.focused_window.focused_window_format = "".into();
         assert_eq!(define_focused_window_text(&app), "");
     }
 
@@ -582,7 +654,7 @@ mod tests
     fn text_format_with_no_placeholder_returns_literal()
     {
         let mut app = make_app("Anything");
-        app.ron_config.focused_window_format = "static label".into();
+        app.ron_config.focused_window.focused_window_format = "static label".into();
         assert_eq!(define_focused_window_text(&app), "static label");
     }
 
@@ -605,7 +677,7 @@ mod tests
     fn text_dont_show_flag_ignored_when_title_present()
     {
         let mut app = make_app("Vim");
-        app.ron_config.dont_show_focused_window_if_empty = true;
+        app.ron_config.focused_window.dont_show_focused_window_if_empty = true;
         assert_eq!(define_focused_window_text(&app), "Vim");
     }
 
@@ -622,7 +694,7 @@ mod tests
     fn text_empty_title_dont_show_flag_returns_empty_string()
     {
         let mut app = make_app("");
-        app.ron_config.dont_show_focused_window_if_empty = true;
+        app.ron_config.focused_window.dont_show_focused_window_if_empty = true;
         assert_eq!(define_focused_window_text(&app), "");
     }
 
@@ -630,7 +702,7 @@ mod tests
     fn text_empty_title_custom_fallback()
     {
         let mut app = make_app("");
-        app.ron_config.text_when_focused_window_is_empty = "~ desktop ~".into();
+        app.ron_config.focused_window.text_when_focused_window_is_empty = "~ desktop ~".into();
         assert_eq!(define_focused_window_text(&app), "~ desktop ~");
     }
 
@@ -638,8 +710,8 @@ mod tests
     fn text_empty_title_fallback_itself_empty()
     {
         let mut app = make_app("");
-        app.ron_config.text_when_focused_window_is_empty = "".into();
-        app.ron_config.dont_show_focused_window_if_empty = false;
+        app.ron_config.focused_window.text_when_focused_window_is_empty = "".into();
+        app.ron_config.focused_window.dont_show_focused_window_if_empty = false;
         assert_eq!(define_focused_window_text(&app), "");
     }
 
@@ -647,7 +719,7 @@ mod tests
     fn text_empty_title_unicode_fallback()
     {
         let mut app = make_app("");
-        app.ron_config.text_when_focused_window_is_empty = "デスクトップ".into();
+        app.ron_config.focused_window.text_when_focused_window_is_empty = "デスクトップ".into();
         assert_eq!(define_focused_window_text(&app), "デスクトップ");
     }
 
@@ -666,7 +738,7 @@ mod tests
     {
         use crate::helpers::style::TextOrientation;
         let mut app = make_app("abc");
-        app.ron_config.focused_window_text_orientation = TextOrientation::Vertical;
+        app.ron_config.focused_window.focused_window_text_orientation = TextOrientation::Vertical;
         assert!(define_focused_window_text(&app).contains('\n'));
     }
 
@@ -675,8 +747,8 @@ mod tests
     {
         use crate::helpers::style::TextOrientation;
         let mut app = make_app("");
-        app.ron_config.text_when_focused_window_is_empty  = "Hi".into();
-        app.ron_config.focused_window_text_orientation    = TextOrientation::Vertical;
+        app.ron_config.focused_window.text_when_focused_window_is_empty  = "Hi".into();
+        app.ron_config.focused_window.focused_window_text_orientation    = TextOrientation::Vertical;
         assert!(define_focused_window_text(&app).contains('\n'));
     }
 
@@ -685,7 +757,7 @@ mod tests
     {
         use crate::helpers::style::TextOrientation;
         let mut app = make_app("Firefox");
-        app.ron_config.focused_window_text_orientation = TextOrientation::Horizontal;
+        app.ron_config.focused_window.focused_window_text_orientation = TextOrientation::Horizontal;
         assert!(!define_focused_window_text(&app).contains('\n'));
     }
 
@@ -694,8 +766,8 @@ mod tests
     {
         use crate::helpers::style::TextOrientation;
         let mut app = make_app("");
-        app.ron_config.text_when_focused_window_is_empty  = "Desktop".into();
-        app.ron_config.focused_window_text_orientation    = TextOrientation::Horizontal;
+        app.ron_config.focused_window.text_when_focused_window_is_empty  = "Desktop".into();
+        app.ron_config.focused_window.focused_window_text_orientation    = TextOrientation::Horizontal;
         assert!(!define_focused_window_text(&app).contains('\n'));
     }
 }

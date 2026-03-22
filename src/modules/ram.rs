@@ -13,6 +13,71 @@ use crate::AppData;
 
 
 
+
+
+// ============ CONFIG ============
+use serde::{Deserialize, Serialize};
+use crate::helpers::style::{TextOrientation, SideOption};
+use crate::helpers::color::{ColorType, Gradient};
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct RamConfig
+{
+    pub ram_format:                        String,
+    pub ram_update_interval:               u64,
+    pub ram_padding:                       u16,
+    pub ram_text_size:                     u32,
+    pub ram_text_color:                    ColorType,
+    pub ram_text_orientation:              TextOrientation,
+    pub ram_button_color:                  ColorType,
+    pub ram_button_hovered_color:          ColorType,
+    pub ram_button_hovered_text_color:     ColorType,
+    pub ram_button_pressed_text_color:     ColorType,
+    pub ram_button_pressed_color:          ColorType,
+    pub ram_border_color:                  ColorType,
+    pub ram_border_size:                   f32,
+    pub ram_border_radius:                 [f32; 4],
+    pub ram_side_separator:                Option<SideOption>,
+    pub ram_side_separator_color:          ColorType,
+    pub ram_side_separator_width:          f32,
+    pub ram_side_separator_height:         f32,
+    pub ram_button_gradient_color:         Option<Gradient>,
+    pub ram_button_hovered_gradient_color: Option<Gradient>,
+    pub ram_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for RamConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            ram_format:                        " {used}MB / {total}MB {percent}%".into(),
+            ram_update_interval:               1050,
+            ram_padding:                       0,
+            ram_text_size:                     12,
+            ram_text_color:                    ColorType::RGB([220, 220, 220]),
+            ram_text_orientation:              TextOrientation::Horizontal,
+            ram_button_color:                  ColorType::RGB([40, 40, 50]),
+            ram_button_hovered_color:          ColorType::RGB([60, 60, 75]),
+            ram_button_hovered_text_color:     ColorType::RGB([255, 255, 255]),
+            ram_button_pressed_text_color:     ColorType::RGB([255, 255, 255]),
+            ram_button_pressed_color:          ColorType::RGB([30, 30, 40]),
+            ram_border_color:                  ColorType::RGB([80, 80, 100]),
+            ram_border_size:                   1.0,
+            ram_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            ram_side_separator:                None,
+            ram_side_separator_color:          ColorType::RGB([75, 75, 75]),
+            ram_side_separator_width:          1.,
+            ram_side_separator_height:         16.,
+            ram_button_gradient_color:         None,
+            ram_button_hovered_gradient_color: None,
+            ram_button_pressed_gradient_color: None,
+        }
+    }
+}
+
 // ============ STRUCTS ============
 #[derive(Default, Clone)]
 pub struct RamData
@@ -70,11 +135,11 @@ fn parse_kb(line: &str) -> Option<u64>
 pub fn define_ram_text(app: &AppData) -> String
 {
     let d    = &app.modules_data.ram_data;
-    let text = app.ron_config.ram_format
+    let text = app.ron_config.ram.ram_format
         .replace("{used}",    &d.used_mb.to_string())
         .replace("{total}",   &d.total_mb.to_string())
         .replace("{percent}", &format!("{:.0}", d.percent));
-    orient_text(&text, &app.ron_config.ram_text_orientation)
+    orient_text(&text, &app.ron_config.ram.ram_text_orientation)
 }
 
 
@@ -84,17 +149,18 @@ pub fn define_ram_style(app: &AppData, status: button::Status) -> iced::widget::
     set_style(UserStyle
     {
         status,
-        normal:            app.ron_config.ram_button_color,
-        normal_text:       app.ron_config.ram_text_color,
-        hovered:           app.ron_config.ram_button_hovered_color,
-        hovered_text:      app.ron_config.ram_button_hovered_text_color,
-        pressed:           app.ron_config.ram_button_pressed_color,
-        border_color: app.ron_config.ram_border_color,
-        border_size:       app.ron_config.ram_border_size,
-        border_radius:     app.ron_config.ram_border_radius,
-        hovered_gradient: app.ron_config.ram_button_hovered_gradient_color.clone(),
-        normal_gradient: app.ron_config.ram_button_gradient_color.clone(),
-        pressed_gradient: app.ron_config.ram_button_pressed_gradient_color.clone()
+        normal:            app.ron_config.ram.ram_button_color,
+        normal_text:       app.ron_config.ram.ram_text_color,
+        hovered:           app.ron_config.ram.ram_button_hovered_color,
+        hovered_text:      app.ron_config.ram.ram_button_hovered_text_color,
+        pressed_text:      app.ron_config.ram.ram_button_pressed_text_color,
+        pressed:           app.ron_config.ram.ram_button_pressed_color,
+        border_color: app.ron_config.ram.ram_border_color,
+        border_size:       app.ron_config.ram.ram_border_size,
+        border_radius:     app.ron_config.ram.ram_border_radius,
+        hovered_gradient: app.ron_config.ram.ram_button_hovered_gradient_color.clone(),
+        normal_gradient: app.ron_config.ram.ram_button_gradient_color.clone(),
+        pressed_gradient: app.ron_config.ram.ram_button_pressed_gradient_color.clone()
     })
 }
 

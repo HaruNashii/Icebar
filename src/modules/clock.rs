@@ -1,4 +1,5 @@
 // ============ IMPORTS ============
+use serde::{Serialize, Deserialize};
 use iced::widget::button;
 use chrono::{Local, Utc};
 use chrono_tz::Tz;
@@ -7,7 +8,8 @@ use chrono_tz::Tz;
 
 
 // ============ CRATES ============
-use crate::helpers::style::{UserStyle, set_style};
+use crate::helpers::{color::{ColorType, Gradient}, style::{TextOrientation, UserStyle, set_style, SideOption}};
+use crate::ron::ActionOnClick;
 use crate::AppData;
 
 
@@ -21,6 +23,124 @@ pub struct ClockData
     pub current_clock_timezone: Option<(String, u32)>,
     pub is_showing_alt_clock: bool,
     pub current_time: String
+}
+
+
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct ClockConfig
+{
+    // ================= (CONFIG) =================
+    pub clock_timezones: Option<Vec<String>>,
+    pub clock_update_interval: u64,
+    pub clock_format: String,
+    pub clock_alt_format: String,
+    pub action_on_left_click_clock: ActionOnClick, 
+    pub action_on_right_click_clock: ActionOnClick, 
+
+    // ================= (SIDE SEPARATOR) =================
+    pub clock_side_separator: Option<SideOption>,
+    pub clock_side_separator_color: ColorType,
+    pub clock_side_separator_width: f32,
+    pub clock_side_separator_height: f32,
+    pub alt_clock_side_separator: Option<SideOption>,
+    pub alt_clock_side_separator_color: ColorType,
+    pub alt_clock_side_separator_width: f32,
+    pub alt_clock_side_separator_height: f32,
+
+    // ================= (GRADIENT) =================
+    pub clock_button_gradient_color: Option<Gradient>,
+    pub clock_button_hovered_gradient_color: Option<Gradient>,
+    pub clock_button_pressed_gradient_color: Option<Gradient>,
+    pub alt_clock_button_gradient_color: Option<Gradient>,
+    pub alt_clock_button_hovered_gradient_color: Option<Gradient>,
+    pub alt_clock_button_pressed_gradient_color: Option<Gradient>,
+
+    // ================= (STYLE) =================
+    pub clock_padding: u16,
+    pub clock_text_size: u32,
+    pub clock_text_color: ColorType,
+    pub clock_text_orientation: TextOrientation,
+    pub clock_button_color: ColorType,
+    pub clock_button_hovered_color: ColorType,
+    pub clock_button_hovered_text_color: ColorType,
+    pub clock_button_pressed_text_color: ColorType,
+    pub clock_button_pressed_color: ColorType,
+    pub clock_border_color: ColorType,
+    pub clock_border_size: f32,
+    pub clock_border_radius: [f32;4],
+    pub alt_clock_padding: u16,
+    pub alt_clock_text_size: u32,
+    pub alt_clock_text_color: ColorType,
+    pub alt_clock_text_orientation: TextOrientation,
+    pub alt_clock_button_color: ColorType,
+    pub alt_clock_button_hovered_color: ColorType,
+    pub alt_clock_button_hovered_text_color: ColorType,
+    pub alt_clock_button_pressed_text_color: ColorType,
+    pub alt_clock_button_pressed_color: ColorType,
+    pub alt_clock_border_color: ColorType,
+    pub alt_clock_border_size: f32,
+    pub alt_clock_border_radius: [f32;4],
+}
+
+
+
+impl Default for ClockConfig 
+{
+    fn default() -> Self
+    {
+        Self 
+        {
+            clock_timezones: None,
+            alt_clock_padding: 0,
+            alt_clock_text_size: 15,
+            alt_clock_text_color: ColorType::RGB([255, 255, 255]),
+            alt_clock_text_orientation: TextOrientation::Horizontal,
+            alt_clock_button_color: ColorType::RGB([150, 40, 80]),
+            alt_clock_button_hovered_color: ColorType::RGB([130, 35, 70]),
+            alt_clock_button_hovered_text_color: ColorType::RGB([255, 255, 255]),
+            alt_clock_button_pressed_text_color: ColorType::RGB([255, 255, 255]),
+            alt_clock_button_pressed_color: ColorType::RGB([80, 25, 45]),
+            alt_clock_border_color: ColorType::RGB([120, 80, 130]),
+            alt_clock_border_size: 1.0,
+            alt_clock_border_radius: [3.0, 3.0, 3.0, 3.0],
+            
+            action_on_left_click_clock: ActionOnClick::DefaultAction, 
+            action_on_right_click_clock: ActionOnClick::DefaultAction, 
+            clock_update_interval: 400,
+            clock_format: "󰥔  %H:%M".into(),
+            clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S".into(),
+            clock_side_separator: None,
+            clock_side_separator_color: ColorType::RGB([75, 75, 75]),
+            clock_side_separator_width: 1.,
+            clock_side_separator_height: 16.,
+
+            alt_clock_side_separator: None,
+            alt_clock_side_separator_color: ColorType::RGB([75, 75, 75]),
+            alt_clock_side_separator_width: 1.,
+            alt_clock_side_separator_height: 16.,
+
+            clock_button_gradient_color: None,
+            clock_button_hovered_gradient_color: None,
+            clock_button_pressed_gradient_color: None,
+            alt_clock_button_gradient_color: None,
+            alt_clock_button_hovered_gradient_color: None,
+            alt_clock_button_pressed_gradient_color: None,
+            clock_padding: 0,
+            clock_text_size: 15,
+            clock_text_color: ColorType::RGB([255, 255, 255]),
+            clock_text_orientation: TextOrientation::Horizontal,
+            clock_button_color: ColorType::RGB([50, 45, 60]),
+            clock_button_hovered_color: ColorType::RGB([130, 35, 70]),
+            clock_button_hovered_text_color: ColorType::RGB([255, 255, 255]),
+            clock_button_pressed_text_color: ColorType::RGB([255, 255, 255]),
+            clock_button_pressed_color: ColorType::RGB([80, 25, 45]),
+            clock_border_color: ColorType::RGB([120, 80, 130]),
+            clock_border_size: 1.0,
+            clock_border_radius: [3.0, 3.0, 3.0, 3.0],
+        }
+    }
 }
 
 
@@ -49,27 +169,29 @@ pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget
 {
     if app.modules_data.clock_data.is_showing_alt_clock
     {
-        let hovered =           app.ron_config.alt_clock_button_hovered_color;
-        let hovered_text =      app.ron_config.alt_clock_button_hovered_text_color;
-        let pressed =           app.ron_config.alt_clock_button_pressed_color;
-        let normal =            app.ron_config.alt_clock_button_color;
-        let normal_text =       app.ron_config.alt_clock_text_color;
-        let border_size =       app.ron_config.alt_clock_border_size;
-        let border_color =      app.ron_config.alt_clock_border_color;
-        let border_radius =     app.ron_config.alt_clock_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.alt_clock_button_gradient_color.clone(), hovered_gradient: app.ron_config.alt_clock_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.alt_clock_button_pressed_gradient_color.clone() })
+        let hovered =           app.ron_config.clock.alt_clock_button_hovered_color;
+        let hovered_text =      app.ron_config.clock.alt_clock_button_hovered_text_color;
+        let pressed_text =      app.ron_config.clock.alt_clock_button_pressed_text_color;
+        let pressed =           app.ron_config.clock.alt_clock_button_pressed_color;
+        let normal =            app.ron_config.clock.alt_clock_button_color;
+        let normal_text =       app.ron_config.clock.alt_clock_text_color;
+        let border_size =       app.ron_config.clock.alt_clock_border_size;
+        let border_color =      app.ron_config.clock.alt_clock_border_color;
+        let border_radius =     app.ron_config.clock.alt_clock_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.clock.alt_clock_button_gradient_color.clone(), hovered_gradient: app.ron_config.clock.alt_clock_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.clock.alt_clock_button_pressed_gradient_color.clone() })
     }
     else
     {
-        let hovered =           app.ron_config.clock_button_hovered_color;
-        let hovered_text =      app.ron_config.clock_button_hovered_text_color;
-        let pressed =           app.ron_config.clock_button_pressed_color;
-        let normal =            app.ron_config.clock_button_color;
-        let normal_text =       app.ron_config.clock_text_color;
-        let border_size =       app.ron_config.clock_border_size;
-        let border_color =      app.ron_config.clock_border_color;
-        let border_radius =     app.ron_config.clock_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.clock_button_gradient_color.clone(), hovered_gradient: app.ron_config.clock_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.clock_button_pressed_gradient_color.clone() })
+        let hovered =           app.ron_config.clock.clock_button_hovered_color;
+        let hovered_text =      app.ron_config.clock.clock_button_hovered_text_color;
+        let pressed_text =      app.ron_config.clock.clock_button_pressed_text_color;
+        let pressed =           app.ron_config.clock.clock_button_pressed_color;
+        let normal =            app.ron_config.clock.clock_button_color;
+        let normal_text =       app.ron_config.clock.clock_text_color;
+        let border_size =       app.ron_config.clock.clock_border_size;
+        let border_color =      app.ron_config.clock.clock_border_color;
+        let border_radius =     app.ron_config.clock.clock_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.clock.clock_button_gradient_color.clone(), hovered_gradient: app.ron_config.clock.clock_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.clock.clock_button_pressed_gradient_color.clone() })
     }
 
 }
@@ -78,7 +200,7 @@ pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget
 
 pub fn cycle_clock_timezones(app: &mut AppData)
 {
-    if let Some((current_time_zone, index)) = &app.modules_data.clock_data.current_clock_timezone && let Some(timezones) = &app.ron_config.clock_timezones && !timezones.is_empty()
+    if let Some((current_time_zone, index)) = &app.modules_data.clock_data.current_clock_timezone && let Some(timezones) = &app.ron_config.clock.clock_timezones && !timezones.is_empty()
     {
         if (*index as usize + 1) <= (timezones.len().saturating_sub(1))
         {
@@ -111,12 +233,12 @@ mod tests
     {
         let mut app = AppData { ..Default::default() };
         app.modules_data.clock_data.is_showing_alt_clock = is_alt;
-        app.ron_config.clock_button_color = ColorType::RGB([10, 20, 30]);
-        app.ron_config.clock_button_hovered_color = ColorType::RGB([15, 25, 35]);
-        app.ron_config.clock_button_pressed_color = ColorType::RGB([5, 10, 15]);
-        app.ron_config.alt_clock_button_color = ColorType::RGB([200, 100, 50]);
-        app.ron_config.alt_clock_button_hovered_color = ColorType::RGB([210, 110, 60]);
-        app.ron_config.alt_clock_button_pressed_color = ColorType::RGB([190, 90, 40]);
+        app.ron_config.clock.clock_button_color = ColorType::RGB([10, 20, 30]);
+        app.ron_config.clock.clock_button_hovered_color = ColorType::RGB([15, 25, 35]);
+        app.ron_config.clock.clock_button_pressed_color = ColorType::RGB([5, 10, 15]);
+        app.ron_config.clock.alt_clock_button_color = ColorType::RGB([200, 100, 50]);
+        app.ron_config.clock.alt_clock_button_hovered_color = ColorType::RGB([210, 110, 60]);
+        app.ron_config.clock.alt_clock_button_pressed_color = ColorType::RGB([190, 90, 40]);
         app
     }
  
@@ -211,7 +333,7 @@ mod tests
     fn cycle_clock_advances_to_next_timezone()
     {
         let mut app = AppData { ..Default::default() };
-        app.ron_config.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into(), "Asia/Tokyo".into()]);
+        app.ron_config.clock.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into(), "Asia/Tokyo".into()]);
         app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         cycle_clock_timezones(&mut app);
@@ -224,7 +346,7 @@ mod tests
     fn cycle_clock_wraps_around_to_first()
     {
         let mut app = AppData { ..Default::default() };
-        app.ron_config.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into()]);
+        app.ron_config.clock.clock_timezones = Some(vec!["UTC".into(), "America/New_York".into()]);
         app.modules_data.clock_data.current_clock_timezone = Some(("America/New_York".into(), 1));
  
         cycle_clock_timezones(&mut app);
@@ -237,7 +359,7 @@ mod tests
     fn cycle_clock_no_timezones_configured_does_nothing()
     {
         let mut app = AppData { ..Default::default() };
-        app.ron_config.clock_timezones = None;
+        app.ron_config.clock.clock_timezones = None;
         app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         cycle_clock_timezones(&mut app);
@@ -251,7 +373,7 @@ mod tests
     fn cycle_clock_empty_timezones_list_does_nothing()
     {
         let mut app = AppData { ..Default::default() };
-        app.ron_config.clock_timezones = Some(vec![]);
+        app.ron_config.clock.clock_timezones = Some(vec![]);
         app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         cycle_clock_timezones(&mut app);
@@ -264,7 +386,7 @@ mod tests
     fn cycle_clock_single_timezone_wraps_to_itself()
     {
         let mut app = AppData { ..Default::default() };
-        app.ron_config.clock_timezones = Some(vec!["UTC".into()]);
+        app.ron_config.clock.clock_timezones = Some(vec!["UTC".into()]);
         app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         cycle_clock_timezones(&mut app);

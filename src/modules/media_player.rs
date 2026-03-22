@@ -1,19 +1,151 @@
 // ============ IMPORTS ============
-use iced::{Element, widget::container, Alignment, Theme, widget::button};
-use std::process::Command;
+use iced::{Task, Element, widget::container, Alignment, Theme, widget::button};
+use serde::{Deserialize, Serialize};
 
 
 
 
 
 // ============ CRATES ============
-use crate::helpers::{string::{convert_text_to_rich_text}, style::{UserStyle, orient_text, set_style}};
+use crate::helpers::{color::{ColorType, Gradient}, string::{convert_text_to_rich_text}, style::{UserStyle, orient_text, set_style, TextOrientation, SideOption}};
+use crate::ron::ActionOnClick;
 use crate::update::Message;
 use crate::AppData;
 
 
 
 
+
+
+
+// ============ CONFIG ============
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct MediaPlayerMetadataConfig
+{
+    pub player:                                              String,
+    pub media_player_metadata_format:                        String,
+    pub media_player_metadata_update_interval:               u64,
+    pub dont_show_metadata_if_empty:                         bool,
+    pub text_when_metadata_is_empty:                         String,
+    pub media_player_metadata_text_limit_len:                usize,
+    pub action_on_left_click_media_player_metadata:          ActionOnClick,
+    pub action_on_right_click_media_player_metadata:         ActionOnClick,
+    pub media_player_metadata_padding:                       u16,
+    pub media_player_metadata_text_size:                     u32,
+    pub media_player_metadata_text_color:                    ColorType,
+    pub media_player_metadata_text_orientation:              TextOrientation,
+    pub media_player_metadata_button_color:                  ColorType,
+    pub media_player_metadata_button_hovered_color:          ColorType,
+    pub media_player_metadata_button_hovered_text_color:     ColorType,
+    pub media_player_metadata_button_pressed_text_color:     ColorType,
+    pub media_player_metadata_button_pressed_color:          ColorType,
+    pub media_player_metadata_border_color:                  ColorType,
+    pub media_player_metadata_border_size:                   f32,
+    pub media_player_metadata_border_radius:                 [f32; 4],
+    pub media_player_metadata_side_separator:                Option<SideOption>,
+    pub media_player_metadata_side_separator_color:          ColorType,
+    pub media_player_metadata_side_separator_width:          f32,
+    pub media_player_metadata_side_separator_height:         f32,
+    pub media_player_metadata_button_gradient_color:         Option<Gradient>,
+    pub media_player_metadata_button_hovered_gradient_color: Option<Gradient>,
+    pub media_player_metadata_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for MediaPlayerMetadataConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            player:                                              "spotify".into(),
+            media_player_metadata_format:                        "{{artist}} | {{album}} | {{title}}".into(),
+            media_player_metadata_update_interval:               750,
+            dont_show_metadata_if_empty:                         false,
+            text_when_metadata_is_empty:                         "No Media Found.".into(),
+            media_player_metadata_text_limit_len:                25,
+            action_on_left_click_media_player_metadata:          ActionOnClick::DefaultAction,
+            action_on_right_click_media_player_metadata:         ActionOnClick::DefaultAction,
+            media_player_metadata_padding:                       0,
+            media_player_metadata_text_size:                     15,
+            media_player_metadata_text_color:                    ColorType::RGB([255, 255, 255]),
+            media_player_metadata_text_orientation:              TextOrientation::Horizontal,
+            media_player_metadata_button_color:                  ColorType::RGB([50, 45, 60]),
+            media_player_metadata_button_hovered_color:          ColorType::RGB([130, 35, 70]),
+            media_player_metadata_button_hovered_text_color:     ColorType::RGB([255, 255, 255]),
+            media_player_metadata_button_pressed_text_color:     ColorType::RGB([255, 255, 255]),
+            media_player_metadata_button_pressed_color:          ColorType::RGB([80, 25, 45]),
+            media_player_metadata_border_color:                  ColorType::RGB([120, 80, 130]),
+            media_player_metadata_border_size:                   1.0,
+            media_player_metadata_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            media_player_metadata_side_separator:                None,
+            media_player_metadata_side_separator_color:          ColorType::RGB([75, 75, 75]),
+            media_player_metadata_side_separator_width:          1.,
+            media_player_metadata_side_separator_height:         16.,
+            media_player_metadata_button_gradient_color:         None,
+            media_player_metadata_button_hovered_gradient_color: None,
+            media_player_metadata_button_pressed_gradient_color: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct MediaPlayerButtonConfig
+{
+    pub media_player_buttons_format:                       [String; 4],
+    pub media_player_button_spacing:                       u32,
+    pub media_player_button_padding:                       u16,
+    pub media_player_button_text_size:                     u32,
+    pub media_player_button_text_color:                    ColorType,
+    pub media_player_button_text_orientation:              TextOrientation,
+    pub media_player_button_color:                         ColorType,
+    pub media_player_button_hovered_color:                 ColorType,
+    pub media_player_button_hovered_text_color:            ColorType,
+    pub media_player_button_pressed_text_color:            ColorType,
+    pub media_player_button_pressed_color:                 ColorType,
+    pub media_player_button_border_color:                  ColorType,
+    pub media_player_button_border_size:                   f32,
+    pub media_player_button_border_radius:                 [f32; 4],
+    pub media_player_buttons_side_separator:               Option<SideOption>,
+    pub media_player_buttons_side_separator_color:         ColorType,
+    pub media_player_buttons_side_separator_width:         f32,
+    pub media_player_buttons_side_separator_height:        f32,
+    pub media_player_button_gradient_color:                Option<Gradient>,
+    pub media_player_button_hovered_gradient_color:        Option<Gradient>,
+    pub media_player_button_pressed_gradient_color:        Option<Gradient>,
+}
+
+impl Default for MediaPlayerButtonConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            media_player_buttons_format:                       ["󰒮".into(),"⏸".into(),"▶".into(),"󰒭".into()],
+            media_player_button_spacing:                       5,
+            media_player_button_padding:                       0,
+            media_player_button_text_size:                     15,
+            media_player_button_text_color:                    ColorType::RGB([255, 255, 255]),
+            media_player_button_text_orientation:              TextOrientation::Horizontal,
+            media_player_button_color:                         ColorType::RGB([50, 45, 60]),
+            media_player_button_hovered_color:                 ColorType::RGB([130, 35, 70]),
+            media_player_button_hovered_text_color:            ColorType::RGB([255, 255, 255]),
+            media_player_button_pressed_text_color:            ColorType::RGB([255, 255, 255]),
+            media_player_button_pressed_color:                 ColorType::RGB([80, 25, 45]),
+            media_player_button_border_color:                  ColorType::RGB([120, 80, 130]),
+            media_player_button_border_size:                   1.0,
+            media_player_button_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            media_player_buttons_side_separator:               None,
+            media_player_buttons_side_separator_color:         ColorType::RGB([75, 75, 75]),
+            media_player_buttons_side_separator_width:         1.,
+            media_player_buttons_side_separator_height:        16.,
+            media_player_button_gradient_color:                None,
+            media_player_button_hovered_gradient_color:        None,
+            media_player_button_pressed_gradient_color:        None,
+        }
+    }
+}
 
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Debug, Clone)]
@@ -71,48 +203,62 @@ pub async fn get_player_data_with_format(player: &str, format: &str) -> MediaPla
 
 
 
-pub fn media_player_action(player: &String, action: MediaPlayerAction)
+pub fn media_player_action(player: &str, action: MediaPlayerAction) -> Task<crate::update::Message>
 {
-    let mut binding = Command::new("playerctl");
-    let base_command = binding.arg(format!("--player={}", player));
-    match action
+    let player = player.to_string();
+    let arg = match action
     {
-        MediaPlayerAction::PlayPause => {let _ = base_command.arg("play-pause").output();}
-        MediaPlayerAction::Next => {let _ = base_command.arg("next").output();}
-        MediaPlayerAction::Prev => {let _ = base_command.arg("previous").output();}
-        MediaPlayerAction::VolumeUp => {let _ = base_command.arg("volume").arg("0.1+").output();}
-        MediaPlayerAction::VolumeDown => {let _ = base_command.arg("volume").arg("0.1-").output();}
-    }
+        MediaPlayerAction::PlayPause => "play-pause",
+        MediaPlayerAction::Next      => "next",
+        MediaPlayerAction::Prev      => "previous",
+        MediaPlayerAction::VolumeUp  => "volume",
+        MediaPlayerAction::VolumeDown => "volume",
+    };
+    let extra_arg = match action
+    {
+        MediaPlayerAction::VolumeUp   => Some("0.1+"),
+        MediaPlayerAction::VolumeDown => Some("0.1-"),
+        _                             => None,
+    };
+    Task::perform(async move 
+    {
+        let mut cmd = tokio::process::Command::new("playerctl");
+        cmd.arg(format!("--player={}", player)).arg(arg);
+        if let Some(extra) = extra_arg { cmd.arg(extra); }
+        let _ = cmd.output().await;
+    },|_| Message::Nothing)
 }
 
 
 
 pub fn define_media_player_metadata_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered =              app.ron_config.media_player_metadata_button_hovered_color;
-    let hovered_text =         app.ron_config.media_player_metadata_button_hovered_text_color;
-    let pressed =              app.ron_config.media_player_metadata_button_pressed_color;
-    let normal =               app.ron_config.media_player_metadata_button_color;
-    let normal_text =          app.ron_config.media_player_metadata_text_color;
-    let border_size =              app.ron_config.media_player_metadata_border_size;
-    let border_color =    app.ron_config.media_player_metadata_border_color;
-    let border_radius =       app.ron_config.media_player_metadata_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_metadata_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_metadata_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_metadata_button_pressed_gradient_color.clone() })
+    let hovered =              app.ron_config.media_player_metadata.media_player_metadata_button_hovered_color;
+    let hovered_text =         app.ron_config.media_player_metadata.media_player_metadata_button_hovered_text_color;
+    let pressed_text =         app.ron_config.media_player_metadata.media_player_metadata_button_pressed_text_color;
+    let pressed =              app.ron_config.media_player_metadata.media_player_metadata_button_pressed_color;
+    let normal =               app.ron_config.media_player_metadata.media_player_metadata_button_color;
+    let normal_text =          app.ron_config.media_player_metadata.media_player_metadata_text_color;
+    let border_size =              app.ron_config.media_player_metadata.media_player_metadata_border_size;
+    let border_color =    app.ron_config.media_player_metadata.media_player_metadata_border_color;
+    let border_radius =       app.ron_config.media_player_metadata.media_player_metadata_border_radius;
+    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_pressed_gradient_color.clone() })
 }
 
 
 
 pub fn define_media_player_buttons_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered =              app.ron_config.media_player_button_hovered_color;
-    let hovered_text =         app.ron_config.media_player_button_hovered_text_color;
-    let pressed =              app.ron_config.media_player_button_pressed_color;
-    let normal =               app.ron_config.media_player_button_color;
-    let normal_text =          app.ron_config.media_player_button_text_color;
-    let border_size =              app.ron_config.media_player_button_border_size;
-    let border_color =    app.ron_config.media_player_button_border_color;
-    let border_radius =       app.ron_config.media_player_button_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_button_pressed_gradient_color.clone() })
+    let hovered =              app.ron_config.media_player_button.media_player_button_hovered_color;
+    let hovered_text =         app.ron_config.media_player_button.media_player_button_hovered_text_color;
+    let pressed_text =         app.ron_config.media_player_button.media_player_button_pressed_text_color;
+    let pressed =              app.ron_config.media_player_button.media_player_button_pressed_color;
+    let normal =               app.ron_config.media_player_button.media_player_button_color;
+    let normal_text =          app.ron_config.media_player_button.media_player_button_text_color;
+    let border_size =              app.ron_config.media_player_button.media_player_button_border_size;
+    let border_color =    app.ron_config.media_player_button.media_player_button_border_color;
+    let border_radius =       app.ron_config.media_player_button.media_player_button_border_radius;
+    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_button.media_player_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_button.media_player_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_button.media_player_button_pressed_gradient_color.clone() })
 }
 
 
@@ -120,32 +266,32 @@ pub fn define_media_player_buttons_style(app: &AppData, status: button::Status) 
 pub fn define_media_player_metadata_text(app: &AppData) -> String
 {
     let mut metadata = &app.modules_data.media_player_data.metadata;
-    if !app.ron_config.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
+    if !app.ron_config.media_player_metadata.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
     {
-        metadata = &app.ron_config.text_when_metadata_is_empty;
+        metadata = &app.ron_config.media_player_metadata.text_when_metadata_is_empty;
     }
-    orient_text(metadata, &app.ron_config.media_player_metadata_text_orientation)
+    orient_text(metadata, &app.ron_config.media_player_metadata.media_player_metadata_text_orientation)
 }
 
 
 
 pub fn define_media_player_buttons_text(app: &AppData) -> (String, String, String)
 {
-    let previous_text = &app.ron_config.media_player_buttons_format[0];
+    let previous_text = &app.ron_config.media_player_button.media_player_buttons_format[0];
     let play_pause_text = if app.modules_data.media_player_data.status.contains("Playing")
     {
-        &app.ron_config.media_player_buttons_format[1]
+        &app.ron_config.media_player_button.media_player_buttons_format[1]
     }
     else
     {
-        &app.ron_config.media_player_buttons_format[2]
+        &app.ron_config.media_player_button.media_player_buttons_format[2]
     };
-    let next_text = &app.ron_config.media_player_buttons_format[3];
+    let next_text = &app.ron_config.media_player_button.media_player_buttons_format[3];
 
     (
-        orient_text(previous_text,     &app.ron_config.media_player_button_text_orientation),
-        orient_text(play_pause_text,   &app.ron_config.media_player_button_text_orientation),
-        orient_text(next_text,         &app.ron_config.media_player_button_text_orientation)
+        orient_text(previous_text,     &app.ron_config.media_player_button.media_player_button_text_orientation),
+        orient_text(play_pause_text,   &app.ron_config.media_player_button.media_player_button_text_orientation),
+        orient_text(next_text,         &app.ron_config.media_player_button.media_player_button_text_orientation)
     ) 
 }
 
@@ -182,7 +328,7 @@ pub fn create_media_button<'a>(app: &'a AppData, padding: u16, label: String, me
             colored_label
             .wrapping(iced::widget::text::Wrapping::Word)
             .font(app.default_font)
-            .size(app.ron_config.media_player_button_text_size)
+            .size(app.ron_config.media_player_button.media_player_button_text_size)
             .center()
         )
         .style(|_: &Theme, status: button::Status| 
@@ -209,17 +355,17 @@ mod tests
     {
         let mut app = AppData { ..Default::default() };
         // metadata style colors
-        app.ron_config.media_player_metadata_button_color = ColorType::RGB([10, 20, 30]);
-        app.ron_config.media_player_metadata_button_hovered_color = ColorType::RGB([50, 60, 70]);
-        app.ron_config.media_player_metadata_button_pressed_color = ColorType::RGB([80, 90, 100]);
-        app.ron_config.media_player_metadata_text_color = ColorType::RGB([200, 210, 220]);
-        app.ron_config.media_player_metadata_button_hovered_text_color = ColorType::RGB([255, 255, 255]);
+        app.ron_config.media_player_metadata.media_player_metadata_button_color = ColorType::RGB([10, 20, 30]);
+        app.ron_config.media_player_metadata.media_player_metadata_button_hovered_color = ColorType::RGB([50, 60, 70]);
+        app.ron_config.media_player_metadata.media_player_metadata_button_pressed_color = ColorType::RGB([80, 90, 100]);
+        app.ron_config.media_player_metadata.media_player_metadata_text_color = ColorType::RGB([200, 210, 220]);
+        app.ron_config.media_player_metadata.media_player_metadata_button_hovered_text_color = ColorType::RGB([255, 255, 255]);
         // buttons style colors
-        app.ron_config.media_player_button_color = ColorType::RGB([1, 2, 3]);
-        app.ron_config.media_player_button_hovered_color = ColorType::RGB([4, 5, 6]);
-        app.ron_config.media_player_button_pressed_color = ColorType::RGB([7, 8, 9]);
-        app.ron_config.media_player_button_text_color = ColorType::RGB([100, 100, 100]);
-        app.ron_config.media_player_button_hovered_text_color = ColorType::RGB([150, 150, 150]);
+        app.ron_config.media_player_button.media_player_button_color = ColorType::RGB([1, 2, 3]);
+        app.ron_config.media_player_button.media_player_button_hovered_color = ColorType::RGB([4, 5, 6]);
+        app.ron_config.media_player_button.media_player_button_pressed_color = ColorType::RGB([7, 8, 9]);
+        app.ron_config.media_player_button.media_player_button_text_color = ColorType::RGB([100, 100, 100]);
+        app.ron_config.media_player_button.media_player_button_hovered_text_color = ColorType::RGB([150, 150, 150]);
         app
     }
  
@@ -306,11 +452,11 @@ mod tests
             metadata: metadata.into(),
             status: status.into(),
         };
-        app.ron_config.media_player_metadata_text_limit_len = 20;
-        app.ron_config.ellipsis_text = "...".into();
-        app.ron_config.dont_show_metadata_if_empty = false;
-        app.ron_config.text_when_metadata_is_empty = "No Media".into();
-        app.ron_config.media_player_buttons_format = ["<<".into(), "||".into(), ">".into(), ">>".into()];
+        app.ron_config.media_player_metadata.media_player_metadata_text_limit_len = 20;
+        app.ron_config.general.ellipsis_text = "...".into();
+        app.ron_config.media_player_metadata.dont_show_metadata_if_empty = false;
+        app.ron_config.media_player_metadata.text_when_metadata_is_empty = "No Media".into();
+        app.ron_config.media_player_button.media_player_buttons_format = ["<<".into(), "||".into(), ">".into(), ">>".into()];
         app
     }
  
@@ -404,7 +550,7 @@ mod tests
     {
         use crate::helpers::style::TextOrientation;
         let mut app = make_app("abc", "Playing");
-        app.ron_config.media_player_metadata_text_orientation = TextOrientation::Vertical;
+        app.ron_config.media_player_metadata.media_player_metadata_text_orientation = TextOrientation::Vertical;
         let result = define_media_player_metadata_text(&app);
         assert!(result.contains('\n'));
     }
@@ -413,7 +559,7 @@ mod tests
     fn metadata_text_dont_show_if_empty_flag_hides_fallback()
     {
         let mut app = make_app("", "Stopped");
-        app.ron_config.dont_show_metadata_if_empty = true;
+        app.ron_config.media_player_metadata.dont_show_metadata_if_empty = true;
         // When dont_show is true and metadata is empty, it should still use
         // the empty string (not the fallback), then ellipsize — result is empty.
         let result = define_media_player_metadata_text(&app);

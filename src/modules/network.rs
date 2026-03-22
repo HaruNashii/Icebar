@@ -27,6 +27,139 @@ pub static PREV_NET: Mutex<Option<(u64, u64, Instant)>> = Mutex::new(None);
 
 
 
+
+
+// ============ CONFIG ============
+use serde::{Deserialize, Serialize};
+use crate::helpers::style::{TextOrientation, SideOption};
+use crate::helpers::color::{ColorType, Gradient};
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct NetworkConfig
+{
+    pub network_module_format:               String,
+    pub network_disconnected_text:           String,
+    pub network_level_format:                [String; 4],
+    pub network_connection_type_icons:       [String; 3],
+    pub action_on_left_click_network:        crate::ron::ActionOnClick,
+    pub action_on_right_click_network:       crate::ron::ActionOnClick,
+    pub network_padding:                     u16,
+    pub network_text_size:                   u32,
+    pub network_text_color:                  ColorType,
+    pub network_text_orientation:            TextOrientation,
+    pub network_button_color:                ColorType,
+    pub network_button_hovered_color:        ColorType,
+    pub network_button_hovered_text_color:   ColorType,
+    pub network_button_pressed_text_color:   ColorType,
+    pub network_button_pressed_color:        ColorType,
+    pub network_border_color:                ColorType,
+    pub network_border_size:                 f32,
+    pub network_border_radius:               [f32; 4],
+    pub network_side_separator:              Option<SideOption>,
+    pub network_side_separator_color:        ColorType,
+    pub network_side_separator_width:        f32,
+    pub network_side_separator_height:       f32,
+    pub network_button_gradient_color:       Option<Gradient>,
+    pub network_button_hovered_gradient_color: Option<Gradient>,
+    pub network_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for NetworkConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            network_module_format:               "{level} ".into(),
+            network_disconnected_text:           "No Connection Found.".into(),
+            network_level_format:                ["󰖩".into(),"󱚵".into(),"󱚼".into(),"󰖪".into()],
+            network_connection_type_icons:       ["󰈀".into(),"".into(),"?".into()],
+            action_on_left_click_network:        crate::ron::ActionOnClick::DefaultAction,
+            action_on_right_click_network:       crate::ron::ActionOnClick::DefaultAction,
+            network_padding:                     0,
+            network_text_size:                   15,
+            network_text_color:                  ColorType::RGB([255, 255, 255]),
+            network_text_orientation:            TextOrientation::Horizontal,
+            network_button_color:                ColorType::RGB([50, 45, 60]),
+            network_button_hovered_color:        ColorType::RGB([130, 35, 70]),
+            network_button_hovered_text_color:   ColorType::RGB([255, 255, 255]),
+            network_button_pressed_text_color:   ColorType::RGB([255, 255, 255]),
+            network_button_pressed_color:        ColorType::RGB([80, 25, 45]),
+            network_border_color:                ColorType::RGB([120, 80, 130]),
+            network_border_size:                 1.0,
+            network_border_radius:               [3.0, 3.0, 3.0, 3.0],
+            network_side_separator:              None,
+            network_side_separator_color:        ColorType::RGB([75, 75, 75]),
+            network_side_separator_width:        1.,
+            network_side_separator_height:       16.,
+            network_button_gradient_color:       None,
+            network_button_hovered_gradient_color: None,
+            network_button_pressed_gradient_color: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct AltNetworkConfig
+{
+    pub alt_network_module_format:               String,
+    pub alt_network_level_format:                [String; 4],
+    pub alt_network_connection_type_icons:       [String; 3],
+    pub alt_network_padding:                     u16,
+    pub alt_network_text_size:                   u32,
+    pub alt_network_text_color:                  ColorType,
+    pub alt_network_text_orientation:            TextOrientation,
+    pub alt_network_button_color:                ColorType,
+    pub alt_network_button_hovered_color:        ColorType,
+    pub alt_network_button_hovered_text_color:   ColorType,
+    pub alt_network_button_pressed_text_color:   ColorType,
+    pub alt_network_button_pressed_color:        ColorType,
+    pub alt_network_border_color:                ColorType,
+    pub alt_network_border_size:                 f32,
+    pub alt_network_border_radius:               [f32; 4],
+    pub alt_network_side_separator:              Option<SideOption>,
+    pub alt_network_side_separator_color:        ColorType,
+    pub alt_network_side_separator_width:        f32,
+    pub alt_network_side_separator_height:       f32,
+    pub alt_network_button_gradient_color:       Option<Gradient>,
+    pub alt_network_button_hovered_gradient_color: Option<Gradient>,
+    pub alt_network_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for AltNetworkConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            alt_network_module_format:               "{level} | {connection_type} | {id}".into(),
+            alt_network_level_format:                ["󰖩".into(),"󱚵".into(),"󱚼".into(),"󰖪".into()],
+            alt_network_connection_type_icons:       ["󰈀".into(),"".into(),"?".into()],
+            alt_network_padding:                     0,
+            alt_network_text_size:                   15,
+            alt_network_text_color:                  ColorType::RGB([255, 255, 255]),
+            alt_network_text_orientation:            TextOrientation::Horizontal,
+            alt_network_button_color:                ColorType::RGB([150, 50, 80]),
+            alt_network_button_hovered_color:        ColorType::RGB([130, 35, 70]),
+            alt_network_button_hovered_text_color:   ColorType::RGB([255, 255, 255]),
+            alt_network_button_pressed_text_color:   ColorType::RGB([255, 255, 255]),
+            alt_network_button_pressed_color:        ColorType::RGB([80, 25, 45]),
+            alt_network_border_color:                ColorType::RGB([120, 80, 130]),
+            alt_network_border_size:                 1.0,
+            alt_network_border_radius:               [3.0, 3.0, 3.0, 3.0],
+            alt_network_side_separator:              None,
+            alt_network_side_separator_color:        ColorType::RGB([75, 75, 75]),
+            alt_network_side_separator_width:        1.,
+            alt_network_side_separator_height:       16.,
+            alt_network_button_gradient_color:       None,
+            alt_network_button_hovered_gradient_color: None,
+            alt_network_button_pressed_gradient_color: None,
+        }
+    }
+}
+
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Debug, Clone)]
 pub struct NetworkData
@@ -211,27 +344,29 @@ pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widg
 {   
     if app.modules_data.network_data.is_showing_alt_network_module
     {
-        let hovered =           app.ron_config.alt_network_button_hovered_color;
-        let hovered_text =      app.ron_config.alt_network_button_hovered_text_color;
-        let pressed =           app.ron_config.alt_network_button_pressed_color;
-        let normal =            app.ron_config.alt_network_button_color;
-        let normal_text =       app.ron_config.alt_network_text_color;
-        let border_size =       app.ron_config.alt_network_border_size;
-        let border_color =      app.ron_config.alt_network_border_color;
-        let border_radius =     app.ron_config.alt_network_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.alt_network_button_gradient_color.clone(), hovered_gradient: app.ron_config.alt_network_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.alt_network_button_pressed_gradient_color.clone() })
+        let hovered =           app.ron_config.alt_network.alt_network_button_hovered_color;
+        let hovered_text =      app.ron_config.alt_network.alt_network_button_hovered_text_color;
+        let pressed_text =      app.ron_config.alt_network.alt_network_button_pressed_text_color;
+        let pressed =           app.ron_config.alt_network.alt_network_button_pressed_color;
+        let normal =            app.ron_config.alt_network.alt_network_button_color;
+        let normal_text =       app.ron_config.alt_network.alt_network_text_color;
+        let border_size =       app.ron_config.alt_network.alt_network_border_size;
+        let border_color =      app.ron_config.alt_network.alt_network_border_color;
+        let border_radius =     app.ron_config.alt_network.alt_network_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.alt_network.alt_network_button_gradient_color.clone(), hovered_gradient: app.ron_config.alt_network.alt_network_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.alt_network.alt_network_button_pressed_gradient_color.clone() })
     }
     else
     {
-        let hovered =           app.ron_config.network_button_hovered_color;
-        let hovered_text =      app.ron_config.network_button_hovered_text_color;
-        let pressed =           app.ron_config.network_button_pressed_color;
-        let normal =            app.ron_config.network_button_color;
-        let normal_text =       app.ron_config.network_text_color;
-        let border_size =       app.ron_config.network_border_size;
-        let border_color =      app.ron_config.network_border_color;
-        let border_radius =     app.ron_config.network_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.network_button_gradient_color.clone(), hovered_gradient: app.ron_config.network_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.network_button_pressed_gradient_color.clone() })
+        let hovered =           app.ron_config.network.network_button_hovered_color;
+        let hovered_text =      app.ron_config.network.network_button_hovered_text_color;
+        let pressed_text =      app.ron_config.network.network_button_pressed_text_color;
+        let pressed =           app.ron_config.network.network_button_pressed_color;
+        let normal =            app.ron_config.network.network_button_color;
+        let normal_text =       app.ron_config.network.network_text_color;
+        let border_size =       app.ron_config.network.network_border_size;
+        let border_color =      app.ron_config.network.network_border_color;
+        let border_radius =     app.ron_config.network.network_border_radius;
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.network.network_button_gradient_color.clone(), hovered_gradient: app.ron_config.network.network_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.network.network_button_pressed_gradient_color.clone() })
     }
 }
 
@@ -265,14 +400,14 @@ pub fn define_network_text(app: &AppData) -> String
     
     if app.modules_data.network_data.is_showing_alt_network_module
     {
-        let alt_orientation = &app.ron_config.alt_network_text_orientation;
-        let alt_string = app.ron_config.alt_network_module_format.replace("{received}", &kb_received).replace("{sent}", &kb_sent).replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
+        let alt_orientation = &app.ron_config.alt_network.alt_network_text_orientation;
+        let alt_string = app.ron_config.alt_network.alt_network_module_format.replace("{received}", &kb_received).replace("{sent}", &kb_sent).replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
         orient_text(&alt_string, alt_orientation)
     }
     else
     {
-        let orientation = &app.ron_config.network_text_orientation;
-        let string = app.ron_config.network_module_format.replace("{received}", &kb_received).replace("{sent}", &kb_sent).replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
+        let orientation = &app.ron_config.network.network_text_orientation;
+        let string = app.ron_config.network.network_module_format.replace("{received}", &kb_received).replace("{sent}", &kb_sent).replace("{speed}", network_speed).replace("{level}", network_level).replace("{connection_type}", connection_type).replace("{id}", &app.modules_data.network_data.id);
         orient_text(&string, orientation)
     }
 }
@@ -295,12 +430,12 @@ mod tests
     {
         let mut app = AppData { ..Default::default() };
         app.modules_data.network_data.is_showing_alt_network_module = is_alt;
-        app.ron_config.network_button_color = ColorType::RGB([10, 20, 30]);
-        app.ron_config.network_button_hovered_color = ColorType::RGB([15, 25, 35]);
-        app.ron_config.network_button_pressed_color = ColorType::RGB([5, 10, 15]);
-        app.ron_config.alt_network_button_color = ColorType::RGB([200, 100, 50]);
-        app.ron_config.alt_network_button_hovered_color = ColorType::RGB([210, 110, 60]);
-        app.ron_config.alt_network_button_pressed_color = ColorType::RGB([190, 90, 40]);
+        app.ron_config.network.network_button_color = ColorType::RGB([10, 20, 30]);
+        app.ron_config.network.network_button_hovered_color = ColorType::RGB([15, 25, 35]);
+        app.ron_config.network.network_button_pressed_color = ColorType::RGB([5, 10, 15]);
+        app.ron_config.alt_network.alt_network_button_color = ColorType::RGB([200, 100, 50]);
+        app.ron_config.alt_network.alt_network_button_hovered_color = ColorType::RGB([210, 110, 60]);
+        app.ron_config.alt_network.alt_network_button_pressed_color = ColorType::RGB([190, 90, 40]);
         app
     }
  
@@ -355,8 +490,8 @@ mod tests
         app.modules_data.network_data = NetworkData { network_level: level, connection_type: conn_type, network_speed: speed, id: id.into(), rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new(), ..Default::default() };
         app.modules_data.network_data.network_icons = ["L4".into(), "L3".into(), "L2".into(), "L0".into()];
         app.modules_data.network_data.connection_type_icons = ["ETH".into(), "WIFI".into(), "?".into()];
-        app.ron_config.network_module_format = "{level}|{connection_type}|{speed}|{id}".into();
-        app.ron_config.alt_network_module_format = "ALT:{level}".into();
+        app.ron_config.network.network_module_format = "{level}|{connection_type}|{speed}|{id}".into();
+        app.ron_config.alt_network.alt_network_module_format = "ALT:{level}".into();
         app
     }
  

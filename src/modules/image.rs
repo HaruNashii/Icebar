@@ -24,6 +24,16 @@ pub struct ImageData
 
 
 
+#[derive(Default, Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct ImageConfig
+{
+    pub images_spacing: u32,
+    pub images:         Vec<Image>,
+}
+
+
+
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct Image 
@@ -42,7 +52,6 @@ pub struct Image
     pub width: u32,
     pub button_color: ColorType,
     pub button_hovered_color: ColorType,
-    pub button_hovered_text_color: ColorType,
     pub button_pressed_color: ColorType,
     pub border_color: ColorType,
     pub border_size: f32,
@@ -132,7 +141,6 @@ impl Default for Image
             width: 30,
             button_color: ColorType::RGB([60, 50, 70]),
             button_hovered_color: ColorType::RGB([110, 40, 80]),
-            button_hovered_text_color: ColorType::RGB([255, 255, 255]),
             button_pressed_color: ColorType::RGB([70, 20, 40]),
             border_color: ColorType::RGB([90, 70, 100]),
             border_size: 1.0,
@@ -172,6 +180,7 @@ pub fn preload_image(warning_err: &mut String, config_parsed_failed: &mut bool, 
                             },
                             Err(err) => 
                             {
+                                vec_to_send.push(None);
                                 let warning_msg = format!("Warning!!!: Failed to collect GIF frames, ERR: {err}");
                                 eprintln!("{warning_msg}");
                                 *warning_err = warning_msg;
@@ -181,6 +190,7 @@ pub fn preload_image(warning_err: &mut String, config_parsed_failed: &mut bool, 
                     },
                     Err(err) => 
                     {
+                        vec_to_send.push(None);
                         let warning_msg = format!("Warning!!!: Failed to preload GIF, ERR: {err}");
                         eprintln!("{warning_msg}");
                         *warning_err = warning_msg;
@@ -197,6 +207,7 @@ pub fn preload_image(warning_err: &mut String, config_parsed_failed: &mut bool, 
         }
         else 
         { 
+            vec_to_send.push(None);
             let warning_msg = format!("WARNING!!!: Wallpaper path does not exist: '{}'. Error Coming from: Image({index})", image_module.image_path);
             eprintln!("{warning_msg}");
             *warning_err = warning_msg;
@@ -218,7 +229,7 @@ pub fn define_image_style(image: &Image, status: button::Status) -> iced::widget
     let border_size =   image.border_size; 
     let border_color =  image.border_color; 
     let border_radius = image.border_radius;
-    set_style(UserStyle { status, hovered, hovered_text: text_holder, pressed, normal, normal_text: text_holder, border_color, border_size, border_radius, normal_gradient: None, hovered_gradient: None, pressed_gradient: None })
+    set_style(UserStyle { status, hovered, hovered_text: text_holder, pressed_text: text_holder, pressed, normal, normal_text: text_holder, border_color, border_size, border_radius, normal_gradient: None, hovered_gradient: None, pressed_gradient: None })
 }
 
 
@@ -409,34 +420,22 @@ mod tests
     #[test]
     fn preload_image_nonexistent_path_pushes_nothing()
     {
-        // A path that cannot exist
         let img = Image { image_path: "/nonexistent/path/to/image.png".to_string(), ..Default::default() };
         let result = preload_image(&mut String::new(), &mut false, &[img]);
-        // No entry pushed for a missing file
-        assert!(result.is_empty());
+        assert_eq!(result.len(), 1);
+        assert!(result[0].is_none());
     }
-
-    #[test]
-    fn preload_image_multiple_nonexistent_paths_all_skipped()
-    {
-        let images = vec![
-            Image { image_path: "/no/such/a.png".to_string(), ..Default::default() },
-            Image { image_path: "/no/such/b.gif".to_string(), ..Default::default() },
-            Image { image_path: "/no/such/c.jpg".to_string(), ..Default::default() },
-        ];
-        let result = preload_image(&mut String::new(), &mut false, &images);
-        assert!(result.is_empty());
-    }
-
+    
     #[test]
     fn preload_image_result_length_never_exceeds_input_length()
     {
-        let images = vec![
+        let images = vec!
+        [
             Image { image_path: "/no/a.png".to_string(), ..Default::default() },
             Image { image_path: "/no/b.png".to_string(), ..Default::default() },
         ];
         let result = preload_image(&mut String::new(), &mut false, &images);
-        assert!(result.len() <= images.len());
+        assert_eq!(result.len(), images.len());
     }
 
     #[test]
@@ -476,11 +475,11 @@ mod tests
         let mut tmp = tempfile::NamedTempFile::with_suffix(".gif").unwrap();
         tmp.write_all(b"this is not a gif").unwrap();
         let path = tmp.path().to_str().unwrap().to_string();
-
+    
         let images = vec![Image { image_path: path, ..Default::default() }];
         let result = preload_image(&mut String::new(), &mut false, &images);
-        // Invalid GIF should not push anything
-        assert!(result.is_empty());
+        assert_eq!(result.len(), 1);
+        assert!(result[0].is_none());
     }
 
     // ── define_image_style ───────────────────────────────────────────────────

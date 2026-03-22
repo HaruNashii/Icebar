@@ -5,6 +5,93 @@ use iced::widget::button;
 
 
 
+
+
+// ============ CONFIG ============
+use serde::{Deserialize, Serialize};
+use crate::helpers::style::{TextOrientation, SideOption};
+use crate::helpers::color::{ColorType, Gradient};
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct WorkspaceConfig
+{
+    pub niri_workspaces_update_interval:          u64,
+    pub reverse_scroll_on_workspace:              bool,
+    pub persistent_workspaces:                    Option<u8>,
+    pub workspace_height:                         u32,
+    pub workspace_width:                          u32,
+    pub workspace_different_selected_width:       Option<u32>,
+    pub workspace_different_selected_height:      Option<u32>,
+    pub workspace_text_size:                      u32,
+    pub workspace_text:                           Vec<String>,
+    pub workspace_text_color:                     ColorType,
+    pub workspace_selected_text_color:            ColorType,
+    pub workspace_text_orientation:               TextOrientation,
+    pub workspace_selected_text:                  Option<Vec<String>>,
+    pub workspace_spacing:                        u32,
+    pub workspace_padding:                        u16,
+    pub workspace_button_color:                   ColorType,
+    pub workspace_button_selected_color:          ColorType,
+    pub workspace_button_hovered_color:           ColorType,
+    pub workspace_button_hovered_text_color:      ColorType,
+    pub workspace_button_pressed_text_color:      ColorType,
+    pub workspace_button_pressed_color:           ColorType,
+    pub workspace_border_color:                   ColorType,
+    pub workspace_border_size:                    f32,
+    pub workspace_border_radius:                  [f32; 4],
+    pub workspace_side_separator:                 Option<SideOption>,
+    pub workspace_side_separator_color:           ColorType,
+    pub workspace_side_separator_width:           f32,
+    pub workspace_side_separator_height:          f32,
+    pub workspace_button_gradient_color:          Option<Gradient>,
+    pub workspace_button_selected_gradient_color: Option<Gradient>,
+    pub workspace_button_hovered_gradient_color:  Option<Gradient>,
+    pub workspace_button_pressed_gradient_color:  Option<Gradient>,
+}
+
+impl Default for WorkspaceConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            niri_workspaces_update_interval:          225,
+            reverse_scroll_on_workspace:              false,
+            persistent_workspaces:                    None,
+            workspace_height:                         30,
+            workspace_width:                          30,
+            workspace_different_selected_width:       None,
+            workspace_different_selected_height:      None,
+            workspace_text_size:                      15,
+            workspace_text:                           vec!["1".into(),"2".into(),"3".into(),"4".into(),"5".into(),"6".into(),"7".into(),"8".into(),"9".into(),"10".into()],
+            workspace_text_color:                     ColorType::RGB([255, 255, 255]),
+            workspace_selected_text_color:            ColorType::RGB([255, 255, 255]),
+            workspace_text_orientation:               TextOrientation::Horizontal,
+            workspace_selected_text:                  Some(vec!["●".into(),"●".into(),"●".into(),"●".into(),"●".into(),"●".into(),"●".into(),"●".into(),"●".into(),"●".into()]),
+            workspace_spacing:                        3,
+            workspace_padding:                        0,
+            workspace_button_color:                   ColorType::RGB([45, 40, 55]),
+            workspace_button_selected_color:          ColorType::RGB([150, 40, 80]),
+            workspace_button_hovered_color:           ColorType::RGB([140, 35, 75]),
+            workspace_button_hovered_text_color:      ColorType::RGB([255, 255, 255]),
+            workspace_button_pressed_text_color:      ColorType::RGB([255, 255, 255]),
+            workspace_button_pressed_color:           ColorType::RGB([90, 25, 50]),
+            workspace_border_color:                   ColorType::RGB([120, 90, 135]),
+            workspace_border_size:                    1.0,
+            workspace_border_radius:                  [3.0, 3.0, 3.0, 3.0],
+            workspace_side_separator:                 None,
+            workspace_side_separator_color:           ColorType::RGB([75, 75, 75]),
+            workspace_side_separator_width:           1.,
+            workspace_side_separator_height:          16.,
+            workspace_button_gradient_color:          None,
+            workspace_button_selected_gradient_color: None,
+            workspace_button_hovered_gradient_color:  None,
+            workspace_button_pressed_gradient_color:  None,
+        }
+    }
+}
+
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Clone)]
 pub struct WorkspaceData
@@ -37,28 +124,29 @@ use crate::AppData;
 // ============ FUNCTIONS ============
 pub fn define_workspaces_style(app: &AppData, status: button::Status, i: &i32) -> iced::widget::button::Style
 {
-    let hovered = app.ron_config.workspace_button_hovered_color;
-    let hovered_text = app.ron_config.workspace_button_hovered_text_color;
-    let pressed = app.ron_config.workspace_button_pressed_color;
+    let hovered = app.ron_config.workspace.workspace_button_hovered_color;
+    let hovered_text = app.ron_config.workspace.workspace_button_hovered_text_color;
+    let pressed_text = app.ron_config.workspace.workspace_button_pressed_text_color;
+    let pressed = app.ron_config.workspace.workspace_button_pressed_color;
 
     let normal = if app.modules_data.workspace_data.current_workspace == *i 
-    { app.ron_config.workspace_button_selected_color }
+    { app.ron_config.workspace.workspace_button_selected_color }
     else 
-    { app.ron_config.workspace_button_color };
+    { app.ron_config.workspace.workspace_button_color };
 
     let normal_text = if app.modules_data.workspace_data.current_workspace == *i 
-    { app.ron_config.workspace_selected_text_color }
+    { app.ron_config.workspace.workspace_selected_text_color }
     else
-    { app.ron_config.workspace_text_color };
+    { app.ron_config.workspace.workspace_text_color };
 
-    let border_size = app.ron_config.workspace_border_size;
-    let border_color = app.ron_config.workspace_border_color;
-    let border_radius = app.ron_config.workspace_border_radius;
+    let border_size = app.ron_config.workspace.workspace_border_size;
+    let border_color = app.ron_config.workspace.workspace_border_color;
+    let border_radius = app.ron_config.workspace.workspace_border_radius;
     let normal_gradient = if app.modules_data.workspace_data.current_workspace == *i
-    { app.ron_config.workspace_button_selected_gradient_color.clone() }
+    { app.ron_config.workspace.workspace_button_selected_gradient_color.clone() }
     else
-    { app.ron_config.workspace_button_gradient_color.clone() };
-    set_style(UserStyle {status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient, hovered_gradient: app.ron_config.workspace_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.workspace_button_pressed_gradient_color.clone()})
+    { app.ron_config.workspace.workspace_button_gradient_color.clone() };
+    set_style(UserStyle {status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient, hovered_gradient: app.ron_config.workspace.workspace_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.workspace.workspace_button_pressed_gradient_color.clone()})
 }
 
 
@@ -66,7 +154,7 @@ pub fn define_workspaces_text(app: &AppData, id: i32) -> String
 {
     let string_not_oriented = if id == app.modules_data.workspace_data.current_workspace 
     {
-        if let Some(selected) = &app.ron_config.workspace_selected_text 
+        if let Some(selected) = &app.ron_config.workspace.workspace_selected_text 
         {
             let safe_id = id.saturating_sub(1) as usize;
             selected.get(safe_id).cloned().unwrap_or_else(|| id.to_string()) 
@@ -78,32 +166,32 @@ pub fn define_workspaces_text(app: &AppData, id: i32) -> String
     } 
     else 
     { 
-        app.ron_config.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
+        app.ron_config.workspace.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
     };
 
-    orient_text(&string_not_oriented, &app.ron_config.workspace_text_orientation)
+    orient_text(&string_not_oriented, &app.ron_config.workspace.workspace_text_orientation)
 }
 
 
 
 pub fn define_workspaces_size(app: &AppData, id: i32) -> (u32, u32)
 {
-    let width = if let Some(value) = app.ron_config.workspace_different_selected_width && id == app.modules_data.workspace_data.current_workspace
+    let width = if let Some(value) = app.ron_config.workspace.workspace_different_selected_width && id == app.modules_data.workspace_data.current_workspace
     {
         value
     } 
     else 
     {
-        app.ron_config.workspace_width
+        app.ron_config.workspace.workspace_width
     };
 
-    let height = if let Some(value) = app.ron_config.workspace_different_selected_height && id == app.modules_data.workspace_data.current_workspace
+    let height = if let Some(value) = app.ron_config.workspace.workspace_different_selected_height && id == app.modules_data.workspace_data.current_workspace
     {
         value
     } 
     else 
     {
-        app.ron_config.workspace_height
+        app.ron_config.workspace.workspace_height
     };
 
     (width, height)
@@ -132,10 +220,10 @@ mod tests
             current_workspace: current,
             visible_workspaces: vec![1, 2, 3],
         };
-        app.ron_config.workspace_text = vec!["ws1".into(), "ws2".into(), "ws3".into()];
-        app.ron_config.workspace_selected_text = Some(vec!["[1]".into(), "[2]".into(), "[3]".into()]);
-        app.ron_config.workspace_width = 10;
-        app.ron_config.workspace_different_selected_width = Some(20);
+        app.ron_config.workspace.workspace_text = vec!["ws1".into(), "ws2".into(), "ws3".into()];
+        app.ron_config.workspace.workspace_selected_text = Some(vec!["[1]".into(), "[2]".into(), "[3]".into()]);
+        app.ron_config.workspace.workspace_width = 10;
+        app.ron_config.workspace.workspace_different_selected_width = Some(20);
         app
     }
  
@@ -170,7 +258,7 @@ mod tests
     fn workspace_text_no_selected_vec_falls_back_to_id()
     {
         let mut app = make_app(2);
-        app.ron_config.workspace_selected_text = None;
+        app.ron_config.workspace.workspace_selected_text = None;
         let text = define_workspaces_text(&app, 2);
         assert_eq!(text, "2");
     }
@@ -196,7 +284,7 @@ mod tests
     fn workspace_text_selected_text_none_falls_back_for_current()
     {
         let mut app = make_app(2);
-        app.ron_config.workspace_selected_text = None;
+        app.ron_config.workspace.workspace_selected_text = None;
         // Should fall back to id.to_string() when no selected_text provided
         assert_eq!(define_workspaces_text(&app, 2), "2");
     }
@@ -204,10 +292,10 @@ mod tests
     fn make_style_app(current: i32) -> AppData
     {
         let mut app = make_app(current);   // re-uses the existing make_app helper
-        app.ron_config.workspace_button_color = ColorType::RGB([0, 0, 200]);
-        app.ron_config.workspace_button_selected_color = ColorType::RGB([255, 0, 0]);
-        app.ron_config.workspace_button_hovered_color = ColorType::RGB([0, 200, 0]);
-        app.ron_config.workspace_button_pressed_color = ColorType::RGB([0, 100, 0]);
+        app.ron_config.workspace.workspace_button_color = ColorType::RGB([0, 0, 200]);
+        app.ron_config.workspace.workspace_button_selected_color = ColorType::RGB([255, 0, 0]);
+        app.ron_config.workspace.workspace_button_hovered_color = ColorType::RGB([0, 200, 0]);
+        app.ron_config.workspace.workspace_button_pressed_color = ColorType::RGB([0, 100, 0]);
         app
     }
  

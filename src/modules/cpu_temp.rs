@@ -1,11 +1,79 @@
 // ============ IMPORTS ============
 use iced::widget::button;
+use serde::{Deserialize, Serialize};
 
 
 
 // ============ CRATES ============
-use crate::helpers::style::{UserStyle, orient_text, set_style};
+use crate::helpers::style::{UserStyle, orient_text, set_style, TextOrientation, SideOption};
+use crate::helpers::color::{ColorType, Gradient};
+use crate::ron::ActionOnClick;
 use crate::AppData;
+
+
+
+// ============ CONFIG ============
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct CpuTempConfig
+{
+    pub cpu_temp_format:                        String,
+    pub cpu_temp_update_interval:               u64,
+    pub action_on_left_click_cpu_temp:          ActionOnClick,
+    pub action_on_right_click_cpu_temp:         ActionOnClick,
+    pub cpu_temp_padding:                       u16,
+    pub cpu_temp_text_size:                     u32,
+    pub cpu_temp_text_color:                    ColorType,
+    pub cpu_temp_text_orientation:              TextOrientation,
+    pub cpu_temp_button_color:                  ColorType,
+    pub cpu_temp_button_hovered_color:          ColorType,
+    pub cpu_temp_button_hovered_text_color:     ColorType,
+    pub cpu_temp_button_pressed_text_color:     ColorType,
+    pub cpu_temp_button_pressed_color:          ColorType,
+    pub cpu_temp_border_color:                  ColorType,
+    pub cpu_temp_border_size:                   f32,
+    pub cpu_temp_border_radius:                 [f32; 4],
+    pub cpu_temp_side_separator:                Option<SideOption>,
+    pub cpu_temp_side_separator_color:          ColorType,
+    pub cpu_temp_side_separator_width:          f32,
+    pub cpu_temp_side_separator_height:         f32,
+    pub cpu_temp_button_gradient_color:         Option<Gradient>,
+    pub cpu_temp_button_hovered_gradient_color: Option<Gradient>,
+    pub cpu_temp_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for CpuTempConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            cpu_temp_format:                        " {temp}°C".into(),
+            cpu_temp_update_interval:               1050,
+            action_on_left_click_cpu_temp:          ActionOnClick::DefaultAction,
+            action_on_right_click_cpu_temp:         ActionOnClick::DefaultAction,
+            cpu_temp_padding:                       0,
+            cpu_temp_text_size:                     12,
+            cpu_temp_text_color:                    ColorType::RGB([220, 220, 220]),
+            cpu_temp_text_orientation:              TextOrientation::Horizontal,
+            cpu_temp_button_color:                  ColorType::RGB([40, 40, 50]),
+            cpu_temp_button_hovered_color:          ColorType::RGB([60, 60, 75]),
+            cpu_temp_button_hovered_text_color:     ColorType::RGB([255, 255, 255]),
+            cpu_temp_button_pressed_text_color:     ColorType::RGB([255, 255, 255]),
+            cpu_temp_button_pressed_color:          ColorType::RGB([30, 30, 40]),
+            cpu_temp_border_color:                  ColorType::RGB([80, 80, 100]),
+            cpu_temp_border_size:                   1.0,
+            cpu_temp_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            cpu_temp_side_separator:                None,
+            cpu_temp_side_separator_color:          ColorType::RGB([75, 75, 75]),
+            cpu_temp_side_separator_width:          1.,
+            cpu_temp_side_separator_height:         16.,
+            cpu_temp_button_gradient_color:         None,
+            cpu_temp_button_hovered_gradient_color: None,
+            cpu_temp_button_pressed_gradient_color: None,
+        }
+    }
+}
 
 
 
@@ -79,8 +147,8 @@ fn read_temp_file(path: &str) -> Option<f32>
 pub fn define_cpu_temp_text(app: &AppData) -> String
 {
     let temp = app.modules_data.cpu_temp_data.temp_celsius;
-    let text = app.ron_config.cpu_temp_format.replace("{temp}", &format!("{:.0}", temp));
-    orient_text(&text, &app.ron_config.cpu_temp_text_orientation)
+    let text = app.ron_config.cpu_temp.cpu_temp_format.replace("{temp}", &format!("{:.0}", temp));
+    orient_text(&text, &app.ron_config.cpu_temp.cpu_temp_text_orientation)
 }
 
 
@@ -90,17 +158,18 @@ pub fn define_cpu_temp_style(app: &AppData, status: button::Status) -> iced::wid
     set_style(UserStyle
     {
         status,
-        normal:            app.ron_config.cpu_temp_button_color,
-        normal_text:       app.ron_config.cpu_temp_text_color,
-        hovered:           app.ron_config.cpu_temp_button_hovered_color,
-        hovered_text:      app.ron_config.cpu_temp_button_hovered_text_color,
-        pressed:           app.ron_config.cpu_temp_button_pressed_color,
-        border_color:  app.ron_config.cpu_temp_border_color,
-        border_size:       app.ron_config.cpu_temp_border_size,
-        border_radius:     app.ron_config.cpu_temp_border_radius,
-        normal_gradient:   app.ron_config.cpu_temp_button_gradient_color.clone(),
-        hovered_gradient:  app.ron_config.cpu_temp_button_hovered_gradient_color.clone(),
-        pressed_gradient:  app.ron_config.cpu_temp_button_pressed_gradient_color.clone(),
+        normal:            app.ron_config.cpu_temp.cpu_temp_button_color,
+        normal_text:       app.ron_config.cpu_temp.cpu_temp_text_color,
+        hovered:           app.ron_config.cpu_temp.cpu_temp_button_hovered_color,
+        hovered_text:      app.ron_config.cpu_temp.cpu_temp_button_hovered_text_color,
+        pressed_text:      app.ron_config.cpu_temp.cpu_temp_button_pressed_text_color,
+        pressed:           app.ron_config.cpu_temp.cpu_temp_button_pressed_color,
+        border_color:  app.ron_config.cpu_temp.cpu_temp_border_color,
+        border_size:       app.ron_config.cpu_temp.cpu_temp_border_size,
+        border_radius:     app.ron_config.cpu_temp.cpu_temp_border_radius,
+        normal_gradient:   app.ron_config.cpu_temp.cpu_temp_button_gradient_color.clone(),
+        hovered_gradient:  app.ron_config.cpu_temp.cpu_temp_button_hovered_gradient_color.clone(),
+        pressed_gradient:  app.ron_config.cpu_temp.cpu_temp_button_pressed_gradient_color.clone(),
     })
 }
 

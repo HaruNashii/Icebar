@@ -1,6 +1,6 @@
 // ============ IMPORTS ============
 use iced_layershell::{daemon, settings::{StartMode, LayerShellSettings, Settings}};
-use std::{sync::OnceLock, collections::HashMap, time::Instant};
+use std::{sync::OnceLock, collections::HashMap, time::{Instant, Duration}};
 use iced::Font;
 
 
@@ -74,13 +74,13 @@ pub async fn main() -> Result<(), iced_layershell::Error>
 {
     check_if_config_file_exists();
     let (ron_config, current_clock_timezone, active_modules, (mut config_parsed_failed, mut warning_err)) = read_ron_config();
-    let preloaded_images = preload_image(&mut warning_err, &mut config_parsed_failed, &ron_config.images);
-    let anchor_position = define_bar_anchor_position(&ron_config.bar_position);
-    let monitor_res = get_monitor_res(ron_config.display.clone());
+    let preloaded_images = preload_image(&mut warning_err, &mut config_parsed_failed, &ron_config.image.images);
+    let anchor_position = define_bar_anchor_position(&ron_config.general.bar_position);
+    let monitor_res = get_monitor_res(ron_config.general.display.clone());
     if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
     let ron_config_clone = ron_config.clone();
-    let font_name = ron_config.font_family;
-    let start_mode = match ron_config.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };
+    let font_name = ron_config.general.font_family;
+    let start_mode = match ron_config.general.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };
 
 
 
@@ -91,13 +91,13 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         clock_data: ClockData { current_clock_timezone, ..Default::default() },
         network_data: NetworkData 
         {
-            connection_type_icons: ron_config.network_connection_type_icons,
-            network_icons: ron_config.network_level_format,
+            connection_type_icons: ron_config.network.network_connection_type_icons,
+            network_icons: ron_config.network.network_level_format,
             ..Default::default()
         },
         custom_module_data: CustomModuleData
         {
-            custom_module_last_run: vec![Instant::now(); ron_config.custom_modules.len()],
+            custom_module_last_run: vec![Instant::now() - Duration::from_secs(3600); ron_config.custom_module.custom_modules.len()],
             ..Default::default()
         },
         image_data: ImageData
@@ -111,7 +111,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     {
         warning_err,
         config_parsed_failed,
-        default_font: build_font(&font_name, &ron_config.font_style),
+        default_font: build_font(&font_name, &ron_config.general.font_style),
         monitor_size: (monitor_res.0, monitor_res.1),
         ron_config: ron_config_clone, 
         modules_data,

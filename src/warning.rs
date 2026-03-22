@@ -47,7 +47,7 @@ pub fn warning_view<'a>(err: &'a String) -> Element<'a, Message>
             text("X")
             .color(Color::from_rgb8(255, 255, 255))
             .align_y(Alignment::Center)
-            .align_y(Alignment::Center)
+            .align_x(Alignment::Center)
             .size(15)
             .width(Length::Fill)
             .height(Length::Fill)
@@ -60,13 +60,14 @@ pub fn warning_view<'a>(err: &'a String) -> Element<'a, Message>
         {
             let hovered =           ColorType::RGB([225, 255, 5]);
             let hovered_text =      ColorType::RGB([255, 255, 255]);
+            let pressed_text =      ColorType::RGB([255, 255, 255]);
             let pressed =           ColorType::RGB([125, 155, 5]);
             let normal =            ColorType::RGB([225, 50, 50]);
             let normal_text =       ColorType::RGB([255, 255, 255]); 
             let border_color =      ColorType::RGB([225, 255, 5]);
             let border_size =       1.0;
             let border_radius =     [0., 0., 0., 0.];
-            set_style(crate::UserStyle { status, hovered, hovered_text, pressed, normal, normal_text, border_color, border_size, border_radius, hovered_gradient: None, normal_gradient: None, pressed_gradient: None })
+            set_style(crate::UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, hovered_gradient: None, normal_gradient: None, pressed_gradient: None })
         })
     ).into();
     
@@ -87,15 +88,15 @@ pub fn warning_view<'a>(err: &'a String) -> Element<'a, Message>
 
 fn warning_background_button_style() -> iced::widget::container::Style
 {
-    let mut background_style = iced::widget::container::Style 
+    iced::widget::container::Style 
     { 
         background: Some(iced::Background::Color(Color::from_rgb8(225, 50, 50))), 
+        border: iced::Border
+        {
+            radius:     Radius { top_left: 0., top_right: 0., bottom_left: 0., bottom_right: 0.},
+            color:      Color::from_rgb8(225, 255, 5),
+            width:      1.
+        },
         ..Default::default()
-    };
-    background_style.background =       Some(iced::Background::Color(Color::from_rgb8(225, 50, 50)));
-    background_style.border.color =     Color::from_rgb8(225, 255, 5);
-    background_style.border.width =     1.;
-    background_style.border.radius =    Radius { top_left: 0., top_right: 0., bottom_left: 0., bottom_right: 0.};
-
-    background_style
+    }
 }

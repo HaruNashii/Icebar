@@ -82,6 +82,8 @@ X11 is **not supported**.
 - libpulse (Volume Data Fetcher) 
 - wpctl (Volume Action handling) 
 
+> ⚠️ **Audio stack note:** Icebar reads volume data via `libpulse` (PulseAudio) but controls volume via `wpctl` (PipeWire/WirePlumber). On systems running **pure PipeWire without the PulseAudio compatibility layer**, the volume display will not update even though scroll and mute controls work fine. To fix this, install `pipewire-pulse` (the package name may vary by distro), which provides the PulseAudio interface on top of PipeWire.
+
 
 `iced` provides a declarative UI model inspired by Elm architecture.
 
@@ -106,6 +108,8 @@ Requirements for building:
 - gcc-libs
 - libxrandr
 - libxcb
+
+> ⚠️ **Runtime requirement:** `pipewire-pulse` must be installed for volume monitoring to work on PipeWire systems. See the audio stack note in the Tech Stack section above.
 
 **Build And Install With:**
 ```bash

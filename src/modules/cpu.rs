@@ -1,17 +1,81 @@
 // ============ IMPORTS ============
 use iced::widget::button;
-
+use serde::{Deserialize, Serialize};
 
 
 
 
 // ============ CRATES ============
-use crate::helpers::style::{UserStyle, orient_text, set_style};
+use crate::helpers::style::{UserStyle, orient_text, set_style, TextOrientation, SideOption};
+use crate::helpers::color::{ColorType, Gradient};
+use crate::ron::ActionOnClick;
 use crate::AppData;
 
 
 
 
+// ============ CONFIG ============
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct CpuConfig
+{
+    pub cpu_format:                        String,
+    pub cpu_update_interval:               u64,
+    pub action_on_left_click_cpu:          ActionOnClick,
+    pub action_on_right_click_cpu:         ActionOnClick,
+    pub cpu_padding:                       u16,
+    pub cpu_text_size:                     u32,
+    pub cpu_text_color:                    ColorType,
+    pub cpu_text_orientation:              TextOrientation,
+    pub cpu_button_color:                  ColorType,
+    pub cpu_button_hovered_color:          ColorType,
+    pub cpu_button_hovered_text_color:     ColorType,
+    pub cpu_button_pressed_text_color:     ColorType,
+    pub cpu_button_pressed_color:          ColorType,
+    pub cpu_border_color:                  ColorType,
+    pub cpu_border_size:                   f32,
+    pub cpu_border_radius:                 [f32; 4],
+    pub cpu_side_separator:                Option<SideOption>,
+    pub cpu_side_separator_color:          ColorType,
+    pub cpu_side_separator_width:          f32,
+    pub cpu_side_separator_height:         f32,
+    pub cpu_button_gradient_color:         Option<Gradient>,
+    pub cpu_button_hovered_gradient_color: Option<Gradient>,
+    pub cpu_button_pressed_gradient_color: Option<Gradient>,
+}
+
+impl Default for CpuConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            cpu_format:                        "CPU: {usage}%".into(),
+            cpu_update_interval:               1050,
+            action_on_left_click_cpu:          ActionOnClick::DefaultAction,
+            action_on_right_click_cpu:         ActionOnClick::DefaultAction,
+            cpu_padding:                       0,
+            cpu_text_size:                     12,
+            cpu_text_color:                    ColorType::RGB([220, 220, 220]),
+            cpu_text_orientation:              TextOrientation::Horizontal,
+            cpu_button_color:                  ColorType::RGB([40, 40, 50]),
+            cpu_button_hovered_color:          ColorType::RGB([60, 60, 75]),
+            cpu_button_hovered_text_color:     ColorType::RGB([255, 255, 255]),
+            cpu_button_pressed_text_color:     ColorType::RGB([255, 255, 255]),
+            cpu_button_pressed_color:          ColorType::RGB([30, 30, 40]),
+            cpu_border_color:                  ColorType::RGB([80, 80, 100]),
+            cpu_border_size:                   1.0,
+            cpu_border_radius:                 [3.0, 3.0, 3.0, 3.0],
+            cpu_side_separator:                None,
+            cpu_side_separator_color:          ColorType::RGB([75, 75, 75]),
+            cpu_side_separator_width:          1.,
+            cpu_side_separator_height:         16.,
+            cpu_button_gradient_color:         None,
+            cpu_button_hovered_gradient_color: None,
+            cpu_button_pressed_gradient_color: None,
+        }
+    }
+}
 
 // ============ STRUCTS ============
 #[derive(Default, Copy, Clone, Debug)]
@@ -65,8 +129,8 @@ pub fn compute_cpu_usage(prev: &CpuSnapshot, curr: &CpuSnapshot) -> f32
 pub fn define_cpu_text(app: &AppData) -> String
 {
     let usage = app.modules_data.cpu_data.usage_percent;
-    let text  = app.ron_config.cpu_format.replace("{usage}", &format!("{:.0}", usage));
-    orient_text(&text, &app.ron_config.cpu_text_orientation)
+    let text  = app.ron_config.cpu.cpu_format.replace("{usage}", &format!("{:.0}", usage));
+    orient_text(&text, &app.ron_config.cpu.cpu_text_orientation)
 }
 
 pub fn define_cpu_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
@@ -74,17 +138,18 @@ pub fn define_cpu_style(app: &AppData, status: button::Status) -> iced::widget::
     set_style(UserStyle
     {
         status,
-        normal:            app.ron_config.cpu_button_color,
-        normal_text:       app.ron_config.cpu_text_color,
-        hovered:           app.ron_config.cpu_button_hovered_color,
-        hovered_text:      app.ron_config.cpu_button_hovered_text_color,
-        pressed:           app.ron_config.cpu_button_pressed_color,
-        border_color: app.ron_config.cpu_border_color,
-        border_size:       app.ron_config.cpu_border_size,
-        border_radius:     app.ron_config.cpu_border_radius,
-        normal_gradient: app.ron_config.cpu_button_gradient_color.clone(),
-        hovered_gradient: app.ron_config.cpu_button_hovered_gradient_color.clone(),
-        pressed_gradient: app.ron_config.cpu_button_hovered_gradient_color.clone()
+        normal:            app.ron_config.cpu.cpu_button_color,
+        normal_text:       app.ron_config.cpu.cpu_text_color,
+        hovered:           app.ron_config.cpu.cpu_button_hovered_color,
+        hovered_text:      app.ron_config.cpu.cpu_button_hovered_text_color,
+        pressed_text:      app.ron_config.cpu.cpu_button_pressed_text_color,
+        pressed:           app.ron_config.cpu.cpu_button_pressed_color,
+        border_color: app.ron_config.cpu.cpu_border_color,
+        border_size:       app.ron_config.cpu.cpu_border_size,
+        border_radius:     app.ron_config.cpu.cpu_border_radius,
+        normal_gradient: app.ron_config.cpu.cpu_button_gradient_color.clone(),
+        hovered_gradient: app.ron_config.cpu.cpu_button_hovered_gradient_color.clone(),
+        pressed_gradient: app.ron_config.cpu.cpu_button_pressed_gradient_color.clone()
     })
 }
 

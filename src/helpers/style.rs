@@ -31,6 +31,7 @@ pub struct UserStyle
     pub hovered_text: ColorType,
     pub border_radius: [f32;4],
     pub normal_text: ColorType,
+    pub pressed_text: ColorType,
     pub hovered: ColorType,
     pub border_size: f32,
     pub pressed: ColorType,
@@ -94,6 +95,7 @@ pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
         button::Status::Pressed =>
         {
             style.background = match_color_or_gradient(user_style.pressed_gradient, user_style.pressed);
+            style.text_color = user_style.pressed_text.to_iced_color();
         }
         _ =>
         {
@@ -121,16 +123,16 @@ pub fn orient_text(input: &str, orientation: &TextOrientation) -> String
 
 pub fn bar_style(app: &AppData) -> impl Fn(&Theme) -> container::Style
 { 
-    let color = app.ron_config.bar_background_color.to_iced_color();
+    let color = app.ron_config.general.bar_background_color.to_iced_color();
     let bar_style: container::Style = 
     {
         container::Style 
         {
             border: Border 
             {
-                radius: Radius { top_left: app.ron_config.bar_border_radius[0], top_right: app.ron_config.bar_border_radius[1], bottom_left: app.ron_config.bar_border_radius[2], bottom_right: app.ron_config.bar_border_radius[3]},
-                width: app.ron_config.bar_border_size, 
-                color: app.ron_config.bar_border_color.to_iced_color()
+                radius: Radius { top_left: app.ron_config.general.bar_border_radius[0], top_right: app.ron_config.general.bar_border_radius[1], bottom_left: app.ron_config.general.bar_border_radius[2], bottom_right: app.ron_config.general.bar_border_radius[3]},
+                width: app.ron_config.general.bar_border_size, 
+                color: app.ron_config.general.bar_border_color.to_iced_color()
             },
             background: { Some(iced::Background::Color(color)) },
             text_color: None,
@@ -227,6 +229,7 @@ mod tests
             normal_text: ColorType::RGB([200, 210, 220]),
             hovered: ColorType::RGB([50, 60, 70]),
             hovered_text: ColorType::RGB([255, 255, 255]),
+            pressed_text: ColorType::RGB([255, 255, 255]),
             pressed: ColorType::RGB([80, 90, 100]),
             border_color: ColorType::RGB([1, 2, 3]),
             border_size:       2.5,
@@ -336,6 +339,7 @@ mod tests
             normal_text: ColorType::RGB([200, 210, 220]),
             hovered: ColorType::RGB([50, 60, 70]),
             hovered_text: ColorType::RGB([255, 255, 255]),
+            pressed_text: ColorType::RGB([255, 255, 255]),
             pressed: ColorType::RGB([80, 90, 100]),
             border_color: ColorType::RGB([1, 2, 3]),
             border_size:       2.0,

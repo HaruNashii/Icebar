@@ -55,33 +55,33 @@ pub fn validate_bar_data(app: &mut AppData) -> ValidatedBarSizeAndMargin
 {
     let ron_config = &mut app.ron_config;
     let bar_maximum_size: u32 = 400;
-    let mut bar_size_x = ron_config.bar_size[0].clamp(0, bar_maximum_size);
-    let mut bar_size_y = ron_config.bar_size[1].clamp(0, bar_maximum_size);
+    let mut bar_size_x = ron_config.general.bar_size[0].clamp(0, bar_maximum_size);
+    let mut bar_size_y = ron_config.general.bar_size[1].clamp(0, bar_maximum_size);
     let maximum_exclusive_bar_zone_size: u32 = 425;
-    let exclusive_zone_y = (bar_size_y as i32 + ron_config.increased_exclusive_bar_zone).clamp(0, maximum_exclusive_bar_zone_size as i32);
-    let exclusive_zone_x = (bar_size_x as i32 + ron_config.increased_exclusive_bar_zone).clamp(0, maximum_exclusive_bar_zone_size as i32);
+    let exclusive_zone_y = (bar_size_y as i32 + ron_config.general.increased_exclusive_bar_zone).clamp(0, maximum_exclusive_bar_zone_size as i32);
+    let exclusive_zone_x = (bar_size_x as i32 + ron_config.general.increased_exclusive_bar_zone).clamp(0, maximum_exclusive_bar_zone_size as i32);
     
     // Here the bar width is always 0 when the bar is Up or Down, because the size showed is of the
     // container in the view.rs, the same occuors with the Left and Right bars but with the height
-    match ron_config.bar_position 
+    match ron_config.general.bar_position 
     {
         BarPosition::Up => 
         {
-            if (bar_size_y as i32 + ron_config.increased_exclusive_bar_zone) > maximum_exclusive_bar_zone_size as i32
+            if (bar_size_y as i32 + ron_config.general.increased_exclusive_bar_zone) > maximum_exclusive_bar_zone_size as i32
             {
                 println!("\n=== BAR EXCLUSIVE ZONE VALIDATION ===");
                 println!("Warning!!!: Bar exclusive zone is greater than the bar size limit, clamping to: {}", maximum_exclusive_bar_zone_size); 
             };
-            if ron_config.bar_size[1] == 0 
+            if ron_config.general.bar_size[1] == 0 
             { 
                 bar_size_y = 35;
-                ron_config.bar_size[1] = 35;
+                ron_config.general.bar_size[1] = 35;
                 let warning_msg = "Warning!!!: Bar Heigth Can't Be Zero, When The Bar Is On The Top!!!\nUsing default size 35".to_string();
                 eprintln!("{warning_msg}");
                 app.warning_err = warning_msg;
                 app.config_parsed_failed = true;
             }
-            if ron_config.bar_size[1] > bar_maximum_size
+            if ron_config.general.bar_size[1] > bar_maximum_size
             { 
                 println!("\n=== BAR SIZE VALIDATION ===");
                 println!("Warning!!!: Bar height is greater than the bar size limit, clamping to: {}", bar_maximum_size); 
@@ -90,26 +90,26 @@ pub fn validate_bar_data(app: &mut AppData) -> ValidatedBarSizeAndMargin
             {
                 bar_size: (0, bar_size_y),
                 exclusive_zone: exclusive_zone_y,
-                floating_space: (ron_config.floating_space, 0, 0, 0)
+                floating_space: (ron_config.general.floating_space, 0, 0, 0)
             }
         },
         BarPosition::Right =>
         {
-            if (bar_size_x as i32 + ron_config.increased_exclusive_bar_zone) > maximum_exclusive_bar_zone_size as i32
+            if (bar_size_x as i32 + ron_config.general.increased_exclusive_bar_zone) > maximum_exclusive_bar_zone_size as i32
             {
                 println!("\n=== BAR EXCLUSIVE ZONE VALIDATION ===");
                 println!("Warning!!!: Bar exclusive zone is greater than the bar size limit, clamping to: {}", maximum_exclusive_bar_zone_size); 
             }
-            if ron_config.bar_size[0] == 0 
+            if ron_config.general.bar_size[0] == 0 
             { 
                 bar_size_x = 35;
-                ron_config.bar_size[0] = 35;
+                ron_config.general.bar_size[0] = 35;
                 let warning_msg = "ERROR!!!: Bar Width Can't Be Zero, When The Bar Is On The Right!!!\nUsing default size 35".to_string();
                 eprintln!("{warning_msg}");
                 app.warning_err = warning_msg;
                 app.config_parsed_failed = true;
             }
-            if ron_config.bar_size[0] > 400 
+            if ron_config.general.bar_size[0] > 400 
             { 
                 println!("\n=== BAR SIZE VALIDATION ===");
                 println!("Warning!!!: Bar width is greater than the bar size limit, clamping to: {}", bar_maximum_size); }
@@ -118,26 +118,26 @@ pub fn validate_bar_data(app: &mut AppData) -> ValidatedBarSizeAndMargin
             {
                 bar_size: (bar_size_x, 0),
                 exclusive_zone: exclusive_zone_x,
-                floating_space: (0, ron_config.floating_space, 0, 0)
+                floating_space: (0, ron_config.general.floating_space, 0, 0)
             }
         }
         BarPosition::Down =>
         {
-            if (bar_size_y as i32 + ron_config.increased_exclusive_bar_zone) > maximum_exclusive_bar_zone_size as i32
+            if (bar_size_y as i32 + ron_config.general.increased_exclusive_bar_zone) > maximum_exclusive_bar_zone_size as i32
             {
                 println!("\n=== BAR EXCLUSIVE ZONE VALIDATION ===");
                 println!("Warning!!!: Bar exclusive zone is greater than the bar size limit, clamping to: {}", maximum_exclusive_bar_zone_size); 
             };
-            if ron_config.bar_size[1] == 0 
+            if ron_config.general.bar_size[1] == 0 
             { 
                 bar_size_y = 35;
-                ron_config.bar_size[1] = 35;
+                ron_config.general.bar_size[1] = 35;
                 let warning_msg = "ERROR!!!: Bar Heigth Can't Be Zero, When The Bar Is On The Bottom!!!\nUsing default size 35".to_string();
                 eprintln!("{warning_msg}");
                 app.warning_err = warning_msg;
                 app.config_parsed_failed = true;
             }
-            if ron_config.bar_size[1] > 400 
+            if ron_config.general.bar_size[1] > 400 
             { 
                 println!("\n=== BAR SIZE VALIDATION ===");
                 println!("Warning!!!: Bar height is greater than the bar size limit, clamping to: {}", bar_maximum_size); 
@@ -146,26 +146,26 @@ pub fn validate_bar_data(app: &mut AppData) -> ValidatedBarSizeAndMargin
             {
                 bar_size:  (0, bar_size_y),
                 exclusive_zone: exclusive_zone_y,
-                floating_space: (0, 0, ron_config.floating_space, 0)
+                floating_space: (0, 0, ron_config.general.floating_space, 0)
             }
         }
         BarPosition::Left =>
         {
-            if (bar_size_x as i32 + ron_config.increased_exclusive_bar_zone) > maximum_exclusive_bar_zone_size as i32
+            if (bar_size_x as i32 + ron_config.general.increased_exclusive_bar_zone) > maximum_exclusive_bar_zone_size as i32
             {
                 println!("\n=== BAR EXCLUSIVE ZONE VALIDATION ===");
                 println!("Warning!!!: Bar exclusive zone is greater than the bar size limit, clamping to: {}", maximum_exclusive_bar_zone_size); 
             }
-            if ron_config.bar_size[0] == 0 
+            if ron_config.general.bar_size[0] == 0 
             { 
                 bar_size_x = 35;
-                ron_config.bar_size[0] = 35;
+                ron_config.general.bar_size[0] = 35;
                 let warning_msg = "ERROR!!!: Bar Width Can't Be Zero, When The Bar Is On The Left!!!\nUsing default size 35".to_string();
                 eprintln!("{warning_msg}");
                 app.warning_err = warning_msg;
                 app.config_parsed_failed = true;
             }
-            if ron_config.bar_size[0] > 400 
+            if ron_config.general.bar_size[0] > 400 
             { 
                 println!("\n=== BAR SIZE VALIDATION ===");
                 println!("Warning!!!: Bar width is greater than the bar size limit, clamping to: {}", bar_maximum_size); 
@@ -174,7 +174,7 @@ pub fn validate_bar_data(app: &mut AppData) -> ValidatedBarSizeAndMargin
             {
                 bar_size: (bar_size_x, 0),
                 exclusive_zone: exclusive_zone_x,
-                floating_space: (0, 0, 0, ron_config.floating_space)
+                floating_space: (0, 0, 0, ron_config.general.floating_space)
             }
         }
     }
@@ -304,10 +304,10 @@ mod tests
     fn validate_bar_margin_up_applies_to_top()
     {
         let mut config = BarConfig::default();
-        config.bar_position = crate::ron::BarPosition::Up;
-        config.bar_size = [0, 40];
-        config.floating_space = 8;
-        config.increased_exclusive_bar_zone = 0;
+        config.general.bar_position = crate::ron::BarPosition::Up;
+        config.general.bar_size = [0, 40];
+        config.general.floating_space = 8;
+        config.general.increased_exclusive_bar_zone = 0;
 
         let mut app = make_app(config);
         let bar_data = validate_bar_data(&mut app);
@@ -327,10 +327,10 @@ mod tests
     fn validate_bar_margin_down_applies_to_bottom()
     {
         let mut config = BarConfig::default();
-        config.bar_position = crate::ron::BarPosition::Down;
-        config.bar_size = [0, 35];
-        config.floating_space = 4;
-        config.increased_exclusive_bar_zone = 0;
+        config.general.bar_position = crate::ron::BarPosition::Down;
+        config.general.bar_size = [0, 35];
+        config.general.floating_space = 4;
+        config.general.increased_exclusive_bar_zone = 0;
 
         let mut app = make_app(config);
         let bar_data = validate_bar_data(&mut app);
@@ -345,10 +345,10 @@ mod tests
     fn validate_bar_margin_left_applies_to_left()
     {
         let mut config = BarConfig::default();
-        config.bar_position = crate::ron::BarPosition::Left;
-        config.bar_size = [50, 0];
-        config.floating_space = 6;
-        config.increased_exclusive_bar_zone = 0;
+        config.general.bar_position = crate::ron::BarPosition::Left;
+        config.general.bar_size = [50, 0];
+        config.general.floating_space = 6;
+        config.general.increased_exclusive_bar_zone = 0;
 
         let mut app = make_app(config);
         let bar_data = validate_bar_data(&mut app);
@@ -367,10 +367,10 @@ mod tests
     fn validate_bar_margin_right_applies_to_right()
     {
         let mut config = BarConfig::default();
-        config.bar_position = crate::ron::BarPosition::Right;
-        config.bar_size = [50, 0];
-        config.floating_space = 3;
-        config.increased_exclusive_bar_zone = 5;
+        config.general.bar_position = crate::ron::BarPosition::Right;
+        config.general.bar_size = [50, 0];
+        config.general.floating_space = 3;
+        config.general.increased_exclusive_bar_zone = 5;
 
         let mut app = make_app(config);
         let bar_data = validate_bar_data(&mut app);
@@ -386,9 +386,9 @@ mod tests
     fn validate_bar_increased_exclusive_zone_adds_to_exclusive()
     {
         let mut config = BarConfig::default();
-        config.bar_position = crate::ron::BarPosition::Up;
-        config.bar_size = [0, 30];
-        config.increased_exclusive_bar_zone = 10;
+        config.general.bar_position = crate::ron::BarPosition::Up;
+        config.general.bar_size = [0, 30];
+        config.general.increased_exclusive_bar_zone = 10;
 
         let mut app = make_app(config);
         let bar_data = validate_bar_data(&mut app);
@@ -399,8 +399,8 @@ mod tests
     fn validate_bar_up_with_zero_height_uses_default_and_sets_warning()
     {
         let mut config = BarConfig::default();
-        config.bar_position = crate::ron::BarPosition::Up;
-        config.bar_size = [0, 0];
+        config.general.bar_position = crate::ron::BarPosition::Up;
+        config.general.bar_size = [0, 0];
 
         let mut app = make_app(config);
         let bar_data = validate_bar_data(&mut app);
@@ -414,8 +414,8 @@ mod tests
     fn validate_bar_down_with_zero_height_uses_default_and_sets_warning()
     {
         let mut config = BarConfig::default();
-        config.bar_position = crate::ron::BarPosition::Down;
-        config.bar_size = [0, 0];
+        config.general.bar_position = crate::ron::BarPosition::Down;
+        config.general.bar_size = [0, 0];
 
         let mut app = make_app(config);
         let bar_data = validate_bar_data(&mut app);
@@ -429,8 +429,8 @@ mod tests
     fn validate_bar_left_with_zero_width_uses_default_and_sets_warning()
     {
         let mut config = BarConfig::default();
-        config.bar_position = crate::ron::BarPosition::Left;
-        config.bar_size = [0, 0];
+        config.general.bar_position = crate::ron::BarPosition::Left;
+        config.general.bar_size = [0, 0];
 
         let mut app = make_app(config);
         let bar_data = validate_bar_data(&mut app);
@@ -444,8 +444,8 @@ mod tests
     fn validate_bar_right_with_zero_width_uses_default_and_sets_warning()
     {
         let mut config = BarConfig::default();
-        config.bar_position = crate::ron::BarPosition::Right;
-        config.bar_size = [0, 0];
+        config.general.bar_position = crate::ron::BarPosition::Right;
+        config.general.bar_size = [0, 0];
 
         let mut app = make_app(config);
         let bar_data = validate_bar_data(&mut app);

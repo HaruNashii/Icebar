@@ -54,18 +54,18 @@ pub fn view(app: &AppData, id: iced::window::Id) -> Element<'_, Message>
 
 fn main_bar_view(app: &AppData) -> Element<'_, Message>
 {
-    let axis = match app.ron_config.bar_position 
+    let axis = match app.ron_config.general.bar_position 
     {
         BarPosition::Left | BarPosition::Right => Axis::Vertical,
         _ => Axis::Horizontal,
     };
 
-    let start  = build_modules(&app.ron_config.left_modules, app, axis);
-    let center = build_modules(&app.ron_config.center_modules, app, axis);
-    let end    = build_modules(&app.ron_config.right_modules, app, axis);
-    let content = axis_layout(app.ron_config.bar_side_spaces_size, axis, start, center, end);
-    let fixed_bar_size_y = if app.ron_config.bar_size[1] == 0 { app.monitor_size.1 } else { app.ron_config.bar_size[1] };
-    let fixed_bar_size_x = if app.ron_config.bar_size[0] == 0 { app.monitor_size.0 } else { app.ron_config.bar_size[0] };
+    let start  = build_modules(&app.ron_config.general.left_modules, app, axis);
+    let center = build_modules(&app.ron_config.general.center_modules, app, axis);
+    let end    = build_modules(&app.ron_config.general.right_modules, app, axis);
+    let content = axis_layout(app.ron_config.general.bar_side_spaces_size, axis, start, center, end);
+    let fixed_bar_size_y = if app.ron_config.general.bar_size[1] == 0 { app.monitor_size.1 } else { app.ron_config.general.bar_size[1] };
+    let fixed_bar_size_x = if app.ron_config.general.bar_size[0] == 0 { app.monitor_size.0 } else { app.ron_config.general.bar_size[0] };
 
     container
     (
@@ -87,22 +87,22 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let children: Vec<Element<_>> = app.modules_data.tray_icons.iter().enumerate().map(|(i, (icon, _))|
                 {
                     let button_content = define_tray_icon(app, icon);
-                    button(button_content).style(|_: &Theme, status: button::Status| define_tray_style(app, status)).padding(app.ron_config.tray_button_size).on_press(Message::TrayIconClicked(i)).into()
+                    button(button_content).style(|_: &Theme, status: button::Status| define_tray_style(app, status)).padding(app.ron_config.tray.tray_button_size).on_press(Message::TrayIconClicked(i)).into()
                 }).collect();
              
                 let inner: Element<_> = match axis
                 {
-                    Axis::Horizontal => row(children).spacing(app.ron_config.tray_spacing).align_y(Alignment::Center).into(),
-                    Axis::Vertical   => column(children).spacing(app.ron_config.tray_spacing).align_x(Alignment::Center).into(),
+                    Axis::Horizontal => row(children).spacing(app.ron_config.tray.tray_spacing).align_y(Alignment::Center).into(),
+                    Axis::Vertical   => column(children).spacing(app.ron_config.tray.tray_spacing).align_x(Alignment::Center).into(),
                 };
              
                 apply_separator
                 (
                     inner,
-                    app.ron_config.tray_side_separator,
-                    app.ron_config.tray_side_separator_color.to_iced_color(),
-                    app.ron_config.tray_side_separator_width,
-                    app.ron_config.tray_side_separator_height,
+                    app.ron_config.tray.tray_side_separator,
+                    app.ron_config.tray.tray_side_separator_color.to_iced_color(),
+                    app.ron_config.tray.tray_side_separator_width,
+                    app.ron_config.tray.tray_side_separator_height,
                 )
             },
              
@@ -115,8 +115,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     let non_color_workspace_text = define_workspaces_text(app, *i);
                     let size = define_workspaces_size(app, *i);
                     let workspace_text = convert_text_to_rich_text(&non_color_workspace_text);
-                    button(workspace_text.wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace_text_size).center())
-                    .padding(app.ron_config.workspace_padding)
+                    button(workspace_text.wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace.workspace_text_size).center())
+                    .padding(app.ron_config.workspace.workspace_padding)
                     .style(move |_: &Theme, status: button::Status| define_workspaces_style(app, status, i))
                     .width(size.0)
                     .height(size.1)
@@ -126,11 +126,11 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
                 let inner: Element<_> = match axis
                 {
-                    Axis::Horizontal => mouse_area(row(workspace_buttons).align_y(Alignment::Center).spacing(app.ron_config.workspace_spacing))
+                    Axis::Horizontal => mouse_area(row(workspace_buttons).align_y(Alignment::Center).spacing(app.ron_config.workspace.workspace_spacing))
                         .on_enter(Message::IsHoveringWorkspace(true))
                         .on_exit(Message::IsHoveringWorkspace(false))
                         .into(),
-                    Axis::Vertical => mouse_area(column(workspace_buttons).align_x(Alignment::Center).spacing(app.ron_config.workspace_spacing))
+                    Axis::Vertical => mouse_area(column(workspace_buttons).align_x(Alignment::Center).spacing(app.ron_config.workspace.workspace_spacing))
                         .on_enter(Message::IsHoveringWorkspace(true))
                         .on_exit(Message::IsHoveringWorkspace(false))
                         .into(),
@@ -139,10 +139,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 apply_separator
                 (
                     inner,
-                    app.ron_config.workspace_side_separator,
-                    app.ron_config.workspace_side_separator_color.to_iced_color(),
-                    app.ron_config.workspace_side_separator_width,
-                    app.ron_config.workspace_side_separator_height,
+                    app.ron_config.workspace.workspace_side_separator,
+                    app.ron_config.workspace.workspace_side_separator_color.to_iced_color(),
+                    app.ron_config.workspace.workspace_side_separator_width,
+                    app.ron_config.workspace.workspace_side_separator_height,
                 )
             },
              
@@ -150,16 +150,16 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── MediaPlayerMetaData ──────────────────────────────────────────
             Modules::MediaPlayerMetaData =>
             {
-                if app.ron_config.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
+                if app.ron_config.media_player_metadata.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
                 {
                     continue;
                 }
              
                 let text_to_send = define_media_player_metadata_text(app);
-                let left_click_metadata_message: Message  = match &app.ron_config.action_on_left_click_media_player_metadata  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
-                let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_media_player_metadata { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
-                let colored_formated_metadata = convert_text_to_rich_text_ellipsized::<Message>(&text_to_send, &app.ron_config.ellipsis_text, app.ron_config.media_player_metadata_text_limit_len);
-                let inner = create_button_container(app, app.ron_config.media_player_metadata_padding, (colored_formated_metadata, app.ron_config.media_player_metadata_text_size), (Message::IsHoveringMediaPlayerMetaData(true), Message::IsHoveringMediaPlayerMetaData(false)), left_click_metadata_message, right_click_metadata_message, define_media_player_metadata_style);
+                let left_click_metadata_message: Message  = match &app.ron_config.media_player_metadata.action_on_left_click_media_player_metadata  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
+                let right_click_metadata_message: Message = match &app.ron_config.media_player_metadata.action_on_right_click_media_player_metadata { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
+                let colored_formated_metadata = convert_text_to_rich_text_ellipsized::<Message>(&text_to_send, &app.ron_config.general.ellipsis_text, app.ron_config.media_player_metadata.media_player_metadata_text_limit_len);
+                let inner = create_button_container(app, app.ron_config.media_player_metadata.media_player_metadata_padding, (colored_formated_metadata, app.ron_config.media_player_metadata.media_player_metadata_text_size), (Message::IsHoveringMediaPlayerMetaData(true), Message::IsHoveringMediaPlayerMetaData(false)), left_click_metadata_message, right_click_metadata_message, define_media_player_metadata_style);
              
                 apply_separator
                 (
@@ -168,10 +168,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
                         Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
                     },
-                    app.ron_config.media_player_metadata_side_separator,
-                    app.ron_config.media_player_metadata_side_separator_color.to_iced_color(),
-                    app.ron_config.media_player_metadata_side_separator_width,
-                    app.ron_config.media_player_metadata_side_separator_height,
+                    app.ron_config.media_player_metadata.media_player_metadata_side_separator,
+                    app.ron_config.media_player_metadata.media_player_metadata_side_separator_color.to_iced_color(),
+                    app.ron_config.media_player_metadata.media_player_metadata_side_separator_width,
+                    app.ron_config.media_player_metadata.media_player_metadata_side_separator_height,
                 )
             },
              
@@ -179,29 +179,29 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── MediaPlayerButtons ───────────────────────────────────────────
             Modules::MediaPlayerButtons =>
             {
-                if app.ron_config.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
+                if app.ron_config.media_player_metadata.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
                 {
                     continue;
                 }
              
                 let (previous_text, play_pause_text, next_text) = define_media_player_buttons_text(app);
                 let button_data = define_button_data(previous_text, play_pause_text, next_text);
-                let padding = app.ron_config.media_player_button_padding;
+                let padding = app.ron_config.media_player_button.media_player_button_padding;
                 let media_buttons: Vec<Element<Message>> = button_data.into_iter().map(|(label, message)| { create_media_button(app, padding, label, message) }).collect();
              
                 let inner: Element<_> = match axis
                 {
-                    Axis::Horizontal => row(media_buttons).spacing(app.ron_config.media_player_button_spacing).align_y(Alignment::Center).into(),
-                    Axis::Vertical   => column(media_buttons).spacing(app.ron_config.media_player_button_spacing).align_x(Alignment::Center).into(),
+                    Axis::Horizontal => row(media_buttons).spacing(app.ron_config.media_player_button.media_player_button_spacing).align_y(Alignment::Center).into(),
+                    Axis::Vertical   => column(media_buttons).spacing(app.ron_config.media_player_button.media_player_button_spacing).align_x(Alignment::Center).into(),
                 };
              
                 apply_separator
                 (
                     inner,
-                    app.ron_config.media_player_buttons_side_separator,
-                    app.ron_config.media_player_buttons_side_separator_color.to_iced_color(),
-                    app.ron_config.media_player_buttons_side_separator_width,
-                    app.ron_config.media_player_buttons_side_separator_height,
+                    app.ron_config.media_player_button.media_player_buttons_side_separator,
+                    app.ron_config.media_player_button.media_player_buttons_side_separator_color.to_iced_color(),
+                    app.ron_config.media_player_button.media_player_buttons_side_separator_width,
+                    app.ron_config.media_player_button.media_player_buttons_side_separator_height,
                 )
             },
              
@@ -210,26 +210,26 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::FocusedWindowHypr | Modules::FocusedWindowNiri | Modules::FocusedWindowSway =>
             {
                 let text_to_send = &define_focused_window_text(app);
-                if app.ron_config.dont_show_focused_window_if_empty && text_to_send.is_empty() { continue; };
+                if app.ron_config.focused_window.dont_show_focused_window_if_empty && text_to_send.is_empty() { continue; };
                 let text_data =
                 (
                     convert_text_to_rich_text_ellipsized
                     (
                         text_to_send,
-                        &app.ron_config.ellipsis_text,
-                        app.ron_config.focused_window_text_limit_len,
+                        &app.ron_config.general.ellipsis_text,
+                        app.ron_config.focused_window.focused_window_text_limit_len,
                     ),
-                    app.ron_config.focused_window_text_size,
+                    app.ron_config.focused_window.focused_window_text_size,
                 );
-                let inner = create_button_container_without_hover_message(app, app.ron_config.focused_window_padding, text_data, Message::Nothing, Message::Nothing, define_focused_window_style);
+                let inner = create_button_container_without_hover_message(app, app.ron_config.focused_window.focused_window_padding, text_data, Message::Nothing, Message::Nothing, define_focused_window_style);
              
                 apply_separator
                 (
                     inner,
-                    app.ron_config.focused_window_side_separator,
-                    app.ron_config.focused_window_side_separator_color.to_iced_color(),
-                    app.ron_config.focused_window_side_separator_width,
-                    app.ron_config.focused_window_side_separator_height,
+                    app.ron_config.focused_window.focused_window_side_separator,
+                    app.ron_config.focused_window.focused_window_side_separator_color.to_iced_color(),
+                    app.ron_config.focused_window.focused_window_side_separator_width,
+                    app.ron_config.focused_window.focused_window_side_separator_height,
                 )
             },
 
@@ -237,16 +237,16 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── Disk ──────────────────────────────────────────────────────────
             Modules::Disk =>
             {
-                let text_data = (convert_text_to_rich_text::<Message>(&define_disk_text(app)), app.ron_config.disk_text_size);
-                let inner = create_button_container_without_hover_message(app, app.ron_config.disk_padding, text_data, Message::Nothing, Message::Nothing, define_disk_style);
+                let text_data = (convert_text_to_rich_text::<Message>(&define_disk_text(app)), app.ron_config.disk.disk_text_size);
+                let inner = create_button_container_without_hover_message(app, app.ron_config.disk.disk_padding, text_data, Message::Nothing, Message::Nothing, define_disk_style);
              
                 apply_separator
                 (
                     inner,
-                    app.ron_config.disk_side_separator,
-                    app.ron_config.disk_side_separator_color.to_iced_color(),
-                    app.ron_config.disk_side_separator_width,
-                    app.ron_config.disk_side_separator_height,
+                    app.ron_config.disk.disk_side_separator,
+                    app.ron_config.disk.disk_side_separator_color.to_iced_color(),
+                    app.ron_config.disk.disk_side_separator_width,
+                    app.ron_config.disk.disk_side_separator_height,
                 )
             },
              
@@ -254,16 +254,16 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── Ram ──────────────────────────────────────────────────────────
             Modules::Ram =>
             {
-                let text_data = (convert_text_to_rich_text::<Message>(&define_ram_text(app)), app.ron_config.ram_text_size);
-                let inner = create_button_container_without_hover_message(app, app.ron_config.ram_padding, text_data, Message::Nothing, Message::Nothing, define_ram_style);
+                let text_data = (convert_text_to_rich_text::<Message>(&define_ram_text(app)), app.ron_config.ram.ram_text_size);
+                let inner = create_button_container_without_hover_message(app, app.ron_config.ram.ram_padding, text_data, Message::Nothing, Message::Nothing, define_ram_style);
              
                 apply_separator
                 (
                     inner,
-                    app.ron_config.ram_side_separator,
-                    app.ron_config.ram_side_separator_color.to_iced_color(),
-                    app.ron_config.ram_side_separator_width,
-                    app.ron_config.ram_side_separator_height,
+                    app.ron_config.ram.ram_side_separator,
+                    app.ron_config.ram.ram_side_separator_color.to_iced_color(),
+                    app.ron_config.ram.ram_side_separator_width,
+                    app.ron_config.ram.ram_side_separator_height,
                 )
             },
              
@@ -272,10 +272,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::Cpu =>
             {
                 let text_to_send = define_cpu_text(app);
-                let left_click_metadata_message: Message  = match &app.ron_config.action_on_left_click_cpu  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), true, false)) };
-                let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_cpu { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), false, false)) };
+                let left_click_metadata_message: Message  = match &app.ron_config.cpu.action_on_left_click_cpu  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), true, false)) };
+                let right_click_metadata_message: Message = match &app.ron_config.cpu.action_on_right_click_cpu { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), false, false)) };
                 let colored_formated_metadata = convert_text_to_rich_text::<Message>(&text_to_send);
-                let inner = create_button_container_without_hover_message(app, app.ron_config.cpu_padding, (colored_formated_metadata, app.ron_config.cpu_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_style);
+                let inner = create_button_container_without_hover_message(app, app.ron_config.cpu.cpu_padding, (colored_formated_metadata, app.ron_config.cpu.cpu_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_style);
              
                 apply_separator
                 (
@@ -284,10 +284,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
                         Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
                     },
-                    app.ron_config.cpu_side_separator,
-                    app.ron_config.cpu_side_separator_color.to_iced_color(),
-                    app.ron_config.cpu_side_separator_width,
-                    app.ron_config.cpu_side_separator_height,
+                    app.ron_config.cpu.cpu_side_separator,
+                    app.ron_config.cpu.cpu_side_separator_color.to_iced_color(),
+                    app.ron_config.cpu.cpu_side_separator_width,
+                    app.ron_config.cpu.cpu_side_separator_height,
                 )
             },
              
@@ -295,11 +295,11 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── CpuTemp ──────────────────────────────────────────────────────
             Modules::CpuTemp =>
             {
-                let left_click_metadata_message: Message  = match &app.ron_config.action_on_left_click_cpu_temp  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), true, false)) };
-                let right_click_metadata_message: Message = match &app.ron_config.action_on_right_click_cpu_temp { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), false, false)) };
+                let left_click_metadata_message: Message  = match &app.ron_config.cpu_temp.action_on_left_click_cpu_temp  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), true, false)) };
+                let right_click_metadata_message: Message = match &app.ron_config.cpu_temp.action_on_right_click_cpu_temp { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), false, false)) };
                 let text_to_send = define_cpu_temp_text(app);
                 let colored_cpu_temp = convert_text_to_rich_text::<Message>(&text_to_send);
-                let inner = create_button_container_without_hover_message(app, app.ron_config.cpu_temp_padding, (colored_cpu_temp, app.ron_config.cpu_temp_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_temp_style);
+                let inner = create_button_container_without_hover_message(app, app.ron_config.cpu_temp.cpu_temp_padding, (colored_cpu_temp, app.ron_config.cpu_temp.cpu_temp_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_temp_style);
              
                 apply_separator
                 (
@@ -308,10 +308,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
                         Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
                     },
-                    app.ron_config.cpu_temp_side_separator,
-                    app.ron_config.cpu_temp_side_separator_color.to_iced_color(),
-                    app.ron_config.cpu_temp_side_separator_width,
-                    app.ron_config.cpu_temp_side_separator_height,
+                    app.ron_config.cpu_temp.cpu_temp_side_separator,
+                    app.ron_config.cpu_temp.cpu_temp_side_separator_color.to_iced_color(),
+                    app.ron_config.cpu_temp.cpu_temp_side_separator_width,
+                    app.ron_config.cpu_temp.cpu_temp_side_separator_height,
                 )
             },
              
@@ -319,18 +319,18 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── Network ──────────────────────────────────────────────────────
             Modules::Network =>
             {
-                let left_click_message: Message  = match &app.ron_config.action_on_left_click_network  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::ToggleAltNetwork, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false)) };
-                let right_click_message: Message = match &app.ron_config.action_on_right_click_network { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false)) };
+                let left_click_message: Message  = match &app.ron_config.network.action_on_left_click_network  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::ToggleAltNetwork, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false)) };
+                let right_click_message: Message = match &app.ron_config.network.action_on_right_click_network { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false)) };
              
                 let (text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.modules_data.network_data.is_showing_alt_network_module
                 {
-                    let _sep_color_alt_network_side_separator_color = app.ron_config.alt_network_side_separator_color.to_iced_color();
-                    (app.ron_config.alt_network_text_size, app.ron_config.alt_network_padding, app.ron_config.alt_network_side_separator, _sep_color_alt_network_side_separator_color, app.ron_config.alt_network_side_separator_width, app.ron_config.alt_network_side_separator_height)
+                    let _sep_color_alt_network_side_separator_color = app.ron_config.alt_network.alt_network_side_separator_color.to_iced_color();
+                    (app.ron_config.alt_network.alt_network_text_size, app.ron_config.alt_network.alt_network_padding, app.ron_config.alt_network.alt_network_side_separator, _sep_color_alt_network_side_separator_color, app.ron_config.alt_network.alt_network_side_separator_width, app.ron_config.alt_network.alt_network_side_separator_height)
                 }
                 else
                 {
-                    let _sep_color_network_side_separator_color = app.ron_config.network_side_separator_color.to_iced_color();
-                    (app.ron_config.network_text_size, app.ron_config.network_padding, app.ron_config.network_side_separator, _sep_color_network_side_separator_color, app.ron_config.network_side_separator_width, app.ron_config.network_side_separator_height)
+                    let _sep_color_network_side_separator_color = app.ron_config.network.network_side_separator_color.to_iced_color();
+                    (app.ron_config.network.network_text_size, app.ron_config.network.network_padding, app.ron_config.network.network_side_separator, _sep_color_network_side_separator_color, app.ron_config.network.network_side_separator_width, app.ron_config.network.network_side_separator_height)
                 };
              
                 let text_to_send = define_network_text(app);
@@ -355,23 +355,23 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── VolumeOutput ─────────────────────────────────────────────────
             Modules::VolumeOutput =>
             {
-                let left_click_message: Message  = match &app.ron_config.action_on_left_click_volume_output  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false)) };
-                let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_output { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false)) };
+                let left_click_message: Message  = match &app.ron_config.volume_output.action_on_left_click_volume_output  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false)) };
+                let right_click_message: Message = match &app.ron_config.volume_output.action_on_right_click_volume_output { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false)) };
              
                 let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.modules_data.volume_data.volume_output_is_muted
                 {
-                    let _sep_color_muted_volume_output_side_separator_color = app.ron_config.muted_volume_output_side_separator_color.to_iced_color();
+                    let _sep_color_muted_volume_output_side_separator_color = app.ron_config.muted_volume_output.muted_volume_output_side_separator_color.to_iced_color();
                     (
-                        &app.ron_config.muted_volume_output_text_orientation, &app.ron_config.muted_volume_output_text_size, app.ron_config.muted_volume_output_padding,
-                        &app.ron_config.muted_volume_output_side_separator, _sep_color_muted_volume_output_side_separator_color, &app.ron_config.muted_volume_output_side_separator_width, &app.ron_config.muted_volume_output_side_separator_height
+                        &app.ron_config.muted_volume_output.muted_volume_output_text_orientation, &app.ron_config.muted_volume_output.muted_volume_output_text_size, app.ron_config.muted_volume_output.muted_volume_output_padding,
+                        &app.ron_config.muted_volume_output.muted_volume_output_side_separator, _sep_color_muted_volume_output_side_separator_color, &app.ron_config.muted_volume_output.muted_volume_output_side_separator_width, &app.ron_config.muted_volume_output.muted_volume_output_side_separator_height
                     )
                 }
                 else
                 {
-                    let _sep_color_volume_output_side_separator_color = app.ron_config.volume_output_side_separator_color.to_iced_color();
+                    let _sep_color_volume_output_side_separator_color = app.ron_config.volume_output.volume_output_side_separator_color.to_iced_color();
                     (
-                        &app.ron_config.volume_output_text_orientation, &app.ron_config.volume_output_text_size, app.ron_config.volume_output_padding,
-                        &app.ron_config.volume_output_side_separator, _sep_color_volume_output_side_separator_color, &app.ron_config.volume_output_side_separator_width, &app.ron_config.volume_output_side_separator_height
+                        &app.ron_config.volume_output.volume_output_text_orientation, &app.ron_config.volume_output.volume_output_text_size, app.ron_config.volume_output.volume_output_padding,
+                        &app.ron_config.volume_output.volume_output_side_separator, _sep_color_volume_output_side_separator_color, &app.ron_config.volume_output.volume_output_side_separator_width, &app.ron_config.volume_output.volume_output_side_separator_height
                     )
                 };
              
@@ -397,23 +397,23 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── VolumeInput ──────────────────────────────────────────────────
             Modules::VolumeInput =>
             {
-                let left_click_message: Message  = match &app.ron_config.action_on_left_click_volume_input  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedInput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false)) };
-                let right_click_message: Message = match &app.ron_config.action_on_right_click_volume_input { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false)) };
+                let left_click_message: Message  = match &app.ron_config.volume_input.action_on_left_click_volume_input  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedInput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false)) };
+                let right_click_message: Message = match &app.ron_config.volume_input.action_on_right_click_volume_input { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false)) };
              
                 let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.modules_data.volume_data.volume_input_is_muted
                 {
-                    let _sep_color_muted_volume_input_side_separator_color = app.ron_config.muted_volume_input_side_separator_color.to_iced_color();
+                    let _sep_color_muted_volume_input_side_separator_color = app.ron_config.muted_volume_input.muted_volume_input_side_separator_color.to_iced_color();
                     (
-                        &app.ron_config.muted_volume_input_text_orientation, &app.ron_config.muted_volume_input_text_size, app.ron_config.muted_volume_input_padding,
-                        &app.ron_config.muted_volume_input_side_separator, _sep_color_muted_volume_input_side_separator_color, &app.ron_config.muted_volume_input_side_separator_width, &app.ron_config.muted_volume_input_side_separator_height
+                        &app.ron_config.muted_volume_input.muted_volume_input_text_orientation, &app.ron_config.muted_volume_input.muted_volume_input_text_size, app.ron_config.muted_volume_input.muted_volume_input_padding,
+                        &app.ron_config.muted_volume_input.muted_volume_input_side_separator, _sep_color_muted_volume_input_side_separator_color, &app.ron_config.muted_volume_input.muted_volume_input_side_separator_width, &app.ron_config.muted_volume_input.muted_volume_input_side_separator_height
                     )
                 }
                 else
                 {
-                    let _sep_color_volume_input_side_separator_color = app.ron_config.volume_input_side_separator_color.to_iced_color();
+                    let _sep_color_volume_input_side_separator_color = app.ron_config.volume_input.volume_input_side_separator_color.to_iced_color();
                     (
-                        &app.ron_config.volume_input_text_orientation, &app.ron_config.volume_input_text_size, app.ron_config.volume_input_padding,
-                        &app.ron_config.volume_input_side_separator, _sep_color_volume_input_side_separator_color, &app.ron_config.volume_input_side_separator_width, &app.ron_config.volume_input_side_separator_height
+                        &app.ron_config.volume_input.volume_input_text_orientation, &app.ron_config.volume_input.volume_input_text_size, app.ron_config.volume_input.volume_input_padding,
+                        &app.ron_config.volume_input.volume_input_side_separator, _sep_color_volume_input_side_separator_color, &app.ron_config.volume_input.volume_input_side_separator_width, &app.ron_config.volume_input.volume_input_side_separator_height
                     )
                 };
              
@@ -439,7 +439,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             // ── Clock ──────────────────────────────────────────────────
             Modules::Clock => 
             {
-                let left_click_message: Message = match &app.ron_config.action_on_left_click_clock
+                let left_click_message: Message = match &app.ron_config.clock.action_on_left_click_clock
                 {
                     ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::ToggleAltClock,
@@ -447,7 +447,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), true, false))
                 };
-                let right_click_message: Message = match &app.ron_config.action_on_right_click_clock
+                let right_click_message: Message = match &app.ron_config.clock.action_on_right_click_clock
                 {
                     ActionOnClick::Nothing => Message::Nothing,
                     ActionOnClick::DefaultAction => Message::ToggleAltClock,
@@ -458,30 +458,30 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
                 let (text_orientation, text_size, padding, separator_flags, separator_color, separator_width, separator_height) = if app.modules_data.clock_data.is_showing_alt_clock
                 {
-                    let _sep_color_alt_clock_side_separator_color = app.ron_config.alt_clock_side_separator_color.to_iced_color();
+                    let _sep_color_alt_clock_side_separator_color = app.ron_config.clock.alt_clock_side_separator_color.to_iced_color();
                     (
-                        &app.ron_config.alt_clock_text_orientation, 
-                        app.ron_config.alt_clock_text_size, 
-                        app.ron_config.alt_clock_padding, 
+                        &app.ron_config.clock.alt_clock_text_orientation, 
+                        app.ron_config.clock.alt_clock_text_size, 
+                        app.ron_config.clock.alt_clock_padding, 
 
-                        app.ron_config.alt_clock_side_separator,
+                        app.ron_config.clock.alt_clock_side_separator,
                         _sep_color_alt_clock_side_separator_color,
-                        app.ron_config.alt_clock_side_separator_width,
-                        app.ron_config.alt_clock_side_separator_height
+                        app.ron_config.clock.alt_clock_side_separator_width,
+                        app.ron_config.clock.alt_clock_side_separator_height
                     )
                 }
                 else
                 {
-                    let _sep_color_clock_side_separator_color = app.ron_config.clock_side_separator_color.to_iced_color();
+                    let _sep_color_clock_side_separator_color = app.ron_config.clock.clock_side_separator_color.to_iced_color();
                     (
-                        &app.ron_config.clock_text_orientation, 
-                        app.ron_config.clock_text_size, 
-                        app.ron_config.clock_padding, 
+                        &app.ron_config.clock.clock_text_orientation, 
+                        app.ron_config.clock.clock_text_size, 
+                        app.ron_config.clock.clock_padding, 
 
-                        app.ron_config.clock_side_separator,
+                        app.ron_config.clock.clock_side_separator,
                         _sep_color_clock_side_separator_color,
-                        app.ron_config.clock_side_separator_width,
-                        app.ron_config.clock_side_separator_height
+                        app.ron_config.clock.clock_side_separator_width,
+                        app.ron_config.clock.clock_side_separator_height
                     )
                 };
                 let text_string = orient_text(&app.modules_data.clock_data.current_time, text_orientation);
@@ -507,8 +507,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::Image(borrowed_index) => 
             {
                 let index = *borrowed_index;
-                if index >= app.ron_config.images.len() { continue; }
-                let received_image = &app.ron_config.images[index];
+                if index >= app.ron_config.image.images.len() { continue; }
+                let received_image = &app.ron_config.image.images[index];
                 let element: Element<'_, Message> = match &app.modules_data.image_data.preloaded_images_handle[index]
                 {
                     Some((PreloadedImage::Static(handle), _)) => image(handle).content_fit(received_image.content_fit.into()).width(received_image.width).height(received_image.height).into(),
@@ -553,8 +553,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::CustomModule(borrowed_index) => 
             {
                 let index = *borrowed_index;
-                if index >= app.ron_config.custom_modules.len() { continue; }
-                let custom_module = &app.ron_config.custom_modules[index];
+                if index >= app.ron_config.custom_module.custom_modules.len() { continue; }
+                let custom_module = &app.ron_config.custom_module.custom_modules[index];
                 let text_to_render = define_custom_module_text(index, custom_module, app);
                 if custom_module.dont_show_if_any_output_is_empty && text_to_render.is_empty()
                 {
@@ -601,8 +601,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
 
     match axis 
     {
-        Axis::Horizontal => row(children).align_y(Alignment::Center).spacing(app.ron_config.spacing_between_all_modules).into(),
-        Axis::Vertical => column(children).align_x(Alignment::Center).spacing(app.ron_config.spacing_between_all_modules).into(),
+        Axis::Horizontal => row(children).align_y(Alignment::Center).spacing(app.ron_config.general.spacing_between_all_modules).into(),
+        Axis::Vertical => column(children).align_x(Alignment::Center).spacing(app.ron_config.general.spacing_between_all_modules).into(),
     }
 }
 
