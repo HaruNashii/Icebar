@@ -61,6 +61,10 @@ pub struct CustomModule
     pub button_gradient_color: Option<Gradient>,
     pub button_hovered_gradient_color: Option<Gradient>,
     pub button_pressed_gradient_color: Option<Gradient>,
+    pub button_shadow_color: Option<ColorType>,
+    pub button_shadow_x: f32,
+    pub button_shadow_y: f32,
+    pub button_shadow_blur: f32,
     pub border_size: f32,
     pub border_radius: [f32;4],
     pub dont_show_if_any_output_is_empty: bool,
@@ -107,6 +111,10 @@ impl Default for CustomModule
             button_gradient_color: None,
             button_hovered_gradient_color: None,
             button_pressed_gradient_color: None,
+            button_shadow_color: None,
+            button_shadow_x: 0.0,
+            button_shadow_y: 0.0,
+            button_shadow_blur: 0.0,
             border_size: 1.0,
             border_radius: [3., 3., 3., 3.],
             display_err_output_if_failed: true,
@@ -136,7 +144,7 @@ pub fn define_custom_module_style(custom_module: &CustomModule, status: button::
     let border_size = custom_module.border_size; 
     let border_color = custom_module.border_color; 
     let border_radius = custom_module.border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: custom_module.button_gradient_color.clone(), hovered_gradient: custom_module.button_hovered_gradient_color.clone(), pressed_gradient: custom_module.button_pressed_gradient_color.clone() })
+    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: custom_module.button_gradient_color.clone(), hovered_gradient: custom_module.button_hovered_gradient_color.clone(), pressed_gradient: custom_module.button_pressed_gradient_color.clone(), shadow_color: custom_module.button_shadow_color, shadow_x: custom_module.button_shadow_x, shadow_y: custom_module.button_shadow_y, shadow_blur: custom_module.button_shadow_blur })
 }
 
 

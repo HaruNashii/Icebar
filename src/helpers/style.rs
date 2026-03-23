@@ -1,5 +1,5 @@
 // ============ IMPORTS ============
-use iced::{Alignment, Border, Color, Element, Theme, border::Radius, theme::Style, widget::{Space, button, column, container, row}};
+use iced::{Alignment, Border, Color, Element, Theme, Vector, border::Radius, theme::Style, widget::{Space, button, column, container, row}};
 use iced_layershell::reexport::core::{Degrees, gradient::Linear};
 use serde::{Serialize, Deserialize};
 
@@ -36,6 +36,10 @@ pub struct UserStyle
     pub border_size: f32,
     pub pressed: ColorType,
     pub normal: ColorType,
+    pub shadow_color: Option<ColorType>,
+    pub shadow_x: f32,
+    pub shadow_y: f32,
+    pub shadow_blur: f32,
 }
 
 #[derive(Default, Copy, Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -84,7 +88,24 @@ pub fn match_color_or_gradient(gradient: Option<Gradient>, color: ColorType) -> 
 
 pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
 {
-    let mut style = button::Style::default();
+    let mut style = button::Style
+    {
+        border: Border
+        {
+            color: user_style.border_color.to_iced_color(),
+            width: user_style.border_size,
+            radius: Radius { top_left: user_style.border_radius[0], top_right: user_style.border_radius[1], bottom_left: user_style.border_radius[2], bottom_right: user_style.border_radius[3]}
+        },
+        ..Default::default()
+    };
+
+    if let Some(shadow_color) = user_style.shadow_color 
+    {
+        style.shadow.color = shadow_color.to_iced_color();
+        style.shadow.offset = Vector::new(user_style.shadow_x, user_style.shadow_y);
+        style.shadow.blur_radius = user_style.shadow_blur;
+    };
+
     match user_style.status 
     {
         button::Status::Hovered =>
@@ -103,9 +124,7 @@ pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
             style.text_color = user_style.normal_text.to_iced_color();
         }
     }
-    style.border.color = user_style.border_color.to_iced_color();
-    style.border.width = user_style.border_size;
-    style.border.radius = Radius { top_left: user_style.border_radius[0], top_right: user_style.border_radius[1], bottom_left: user_style.border_radius[2], bottom_right: user_style.border_radius[3]};
+
     style
 }
 
@@ -236,7 +255,11 @@ mod tests
             border_radius:     [1.0, 2.0, 3.0, 4.0],
             hovered_gradient: None, 
             normal_gradient: None, 
-            pressed_gradient: None
+            pressed_gradient: None,
+            shadow_color: None,
+            shadow_x: 0.0,
+            shadow_y: 0.0,
+            shadow_blur: 0.0,
         }
     }
  
@@ -346,7 +369,11 @@ mod tests
             border_radius:     [1.0, 2.0, 3.0, 4.0],
             hovered_gradient: None, 
             normal_gradient: None, 
-            pressed_gradient: None
+            pressed_gradient: None,
+            shadow_color: None,
+            shadow_x: 0.0,
+            shadow_y: 0.0,
+            shadow_blur: 0.0,
         })
     }
  

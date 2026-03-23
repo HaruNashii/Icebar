@@ -480,4 +480,104 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.alt_network.alt_network_button_pressed_gradient_color                         = Some(v.clone());
         ron_config.clock.alt_clock_button_pressed_gradient_color                                = Some(v.clone());
     }
+
+    if let Some(v) = &ron_config.general_style.general_alt_button_shadow_color
+    {
+        ron_config.muted_volume_input.muted_volume_input_button_shadow_color                  = Some(*v);
+        ron_config.muted_volume_output.muted_volume_output_button_shadow_color                = Some(*v);
+        ron_config.alt_network.alt_network_button_shadow_color                                = Some(*v);
+        ron_config.clock.alt_clock_button_shadow_color                                        = Some(*v);
+    }
+
+    if let Some(v) = ron_config.general_style.general_alt_button_shadow_x
+    {
+        ron_config.muted_volume_input.muted_volume_input_button_shadow_x                  = v;
+        ron_config.muted_volume_output.muted_volume_output_button_shadow_x                = v;
+        ron_config.alt_network.alt_network_button_shadow_x                                = v;
+        ron_config.clock.alt_clock_button_shadow_x                                        = v;
+    }
+
+    if let Some(v) = ron_config.general_style.general_alt_button_shadow_y
+    {
+        ron_config.muted_volume_input.muted_volume_input_button_shadow_y                  = v;
+        ron_config.muted_volume_output.muted_volume_output_button_shadow_y                = v;
+        ron_config.alt_network.alt_network_button_shadow_y                                = v;
+        ron_config.clock.alt_clock_button_shadow_y                                        = v;
+    }
+
+    if let Some(v) = ron_config.general_style.general_alt_button_shadow_blur
+    {
+        ron_config.muted_volume_input.muted_volume_input_button_shadow_blur                  = v;
+        ron_config.muted_volume_output.muted_volume_output_button_shadow_blur                = v;
+        ron_config.alt_network.alt_network_button_shadow_blur                                = v;
+        ron_config.clock.alt_clock_button_shadow_blur                                        = v;
+    }
+
+    if let Some(v) = &ron_config.general_style.general_button_shadow_color
+    {
+        ron_config.disk.disk_button_shadow_color                                              = Some(*v);
+        ron_config.tray.tray_button_shadow_color                                              = Some(*v);
+        ron_config.focused_window.focused_window_button_shadow_color                          = Some(*v);
+        ron_config.cpu.cpu_button_shadow_color                                                = Some(*v);
+        ron_config.cpu_temp.cpu_temp_button_shadow_color                                      = Some(*v);
+        ron_config.media_player_metadata.media_player_metadata_button_shadow_color            = Some(*v);
+        ron_config.media_player_button.media_player_button_shadow_color                       = Some(*v);
+        ron_config.network.network_button_shadow_color                                        = Some(*v);
+        ron_config.ram.ram_button_shadow_color                                                = Some(*v);
+        ron_config.volume_output.volume_output_button_shadow_color                            = Some(*v);
+        ron_config.clock.clock_button_shadow_color                                            = Some(*v);
+        ron_config.volume_input.volume_input_button_shadow_color                              = Some(*v);
+        ron_config.workspace.workspace_button_shadow_color                                    = Some(*v);
+    }
+
+    if let Some(v) = ron_config.general_style.general_button_shadow_x
+    {
+        ron_config.disk.disk_button_shadow_x                                              = v;
+        ron_config.tray.tray_button_shadow_x                                              = v;
+        ron_config.focused_window.focused_window_button_shadow_x                          = v;
+        ron_config.cpu.cpu_button_shadow_x                                                = v;
+        ron_config.cpu_temp.cpu_temp_button_shadow_x                                      = v;
+        ron_config.media_player_metadata.media_player_metadata_button_shadow_x            = v;
+        ron_config.media_player_button.media_player_button_shadow_x                       = v;
+        ron_config.network.network_button_shadow_x                                        = v;
+        ron_config.ram.ram_button_shadow_x                                                = v;
+        ron_config.volume_output.volume_output_button_shadow_x                            = v;
+        ron_config.clock.clock_button_shadow_x                                            = v;
+        ron_config.volume_input.volume_input_button_shadow_x                              = v;
+        ron_config.workspace.workspace_button_shadow_x                                    = v;
+    }
+
+    if let Some(v) = ron_config.general_style.general_button_shadow_y
+    {
+        ron_config.disk.disk_button_shadow_y                                              = v;
+        ron_config.tray.tray_button_shadow_y                                              = v;
+        ron_config.focused_window.focused_window_button_shadow_y                          = v;
+        ron_config.cpu.cpu_button_shadow_y                                                = v;
+        ron_config.cpu_temp.cpu_temp_button_shadow_y                                      = v;
+        ron_config.media_player_metadata.media_player_metadata_button_shadow_y            = v;
+        ron_config.media_player_button.media_player_button_shadow_y                       = v;
+        ron_config.network.network_button_shadow_y                                        = v;
+        ron_config.ram.ram_button_shadow_y                                                = v;
+        ron_config.volume_output.volume_output_button_shadow_y                            = v;
+        ron_config.clock.clock_button_shadow_y                                            = v;
+        ron_config.volume_input.volume_input_button_shadow_y                              = v;
+        ron_config.workspace.workspace_button_shadow_y                                    = v;
+    }
+
+    if let Some(v) = ron_config.general_style.general_button_shadow_blur
+    {
+        ron_config.disk.disk_button_shadow_blur                                              = v;
+        ron_config.tray.tray_button_shadow_blur                                              = v;
+        ron_config.focused_window.focused_window_button_shadow_blur                          = v;
+        ron_config.cpu.cpu_button_shadow_blur                                                = v;
+        ron_config.cpu_temp.cpu_temp_button_shadow_blur                                      = v;
+        ron_config.media_player_metadata.media_player_metadata_button_shadow_blur            = v;
+        ron_config.media_player_button.media_player_button_shadow_blur                       = v;
+        ron_config.network.network_button_shadow_blur                                        = v;
+        ron_config.ram.ram_button_shadow_blur                                                = v;
+        ron_config.volume_output.volume_output_button_shadow_blur                            = v;
+        ron_config.clock.clock_button_shadow_blur                                            = v;
+        ron_config.volume_input.volume_input_button_shadow_blur                              = v;
+        ron_config.workspace.workspace_button_shadow_blur                                    = v;
+    }
 }

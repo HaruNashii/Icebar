@@ -50,6 +50,10 @@ pub struct MediaPlayerMetadataConfig
     pub media_player_metadata_button_gradient_color:         Option<Gradient>,
     pub media_player_metadata_button_hovered_gradient_color: Option<Gradient>,
     pub media_player_metadata_button_pressed_gradient_color: Option<Gradient>,
+    pub media_player_metadata_button_shadow_color:           Option<ColorType>,
+    pub media_player_metadata_button_shadow_x:               f32,
+    pub media_player_metadata_button_shadow_y:               f32,
+    pub media_player_metadata_button_shadow_blur:            f32,
 }
 
 impl Default for MediaPlayerMetadataConfig
@@ -85,6 +89,10 @@ impl Default for MediaPlayerMetadataConfig
             media_player_metadata_button_gradient_color:         None,
             media_player_metadata_button_hovered_gradient_color: None,
             media_player_metadata_button_pressed_gradient_color: None,
+            media_player_metadata_button_shadow_color:           None,
+            media_player_metadata_button_shadow_x:               0.0,
+            media_player_metadata_button_shadow_y:               0.0,
+            media_player_metadata_button_shadow_blur:            0.0,
         }
     }
 }
@@ -114,6 +122,10 @@ pub struct MediaPlayerButtonConfig
     pub media_player_button_gradient_color:                Option<Gradient>,
     pub media_player_button_hovered_gradient_color:        Option<Gradient>,
     pub media_player_button_pressed_gradient_color:        Option<Gradient>,
+    pub media_player_button_shadow_color:                  Option<ColorType>,
+    pub media_player_button_shadow_x:                      f32,
+    pub media_player_button_shadow_y:                      f32,
+    pub media_player_button_shadow_blur:                   f32,
 }
 
 impl Default for MediaPlayerButtonConfig
@@ -143,6 +155,10 @@ impl Default for MediaPlayerButtonConfig
             media_player_button_gradient_color:                None,
             media_player_button_hovered_gradient_color:        None,
             media_player_button_pressed_gradient_color:        None,
+            media_player_button_shadow_color:                  None,
+            media_player_button_shadow_x:                      0.0,
+            media_player_button_shadow_y:                      0.0,
+            media_player_button_shadow_blur:                   0.0,
         }
     }
 }
@@ -242,7 +258,7 @@ pub fn define_media_player_metadata_style(app: &AppData, status: button::Status)
     let border_size =              app.ron_config.media_player_metadata.media_player_metadata_border_size;
     let border_color =    app.ron_config.media_player_metadata.media_player_metadata_border_color;
     let border_radius =       app.ron_config.media_player_metadata.media_player_metadata_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_pressed_gradient_color.clone() })
+    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.media_player_metadata.media_player_metadata_button_shadow_color, shadow_x: app.ron_config.media_player_metadata.media_player_metadata_button_shadow_x, shadow_y: app.ron_config.media_player_metadata.media_player_metadata_button_shadow_y, shadow_blur: app.ron_config.media_player_metadata.media_player_metadata_button_shadow_blur })
 }
 
 
@@ -258,7 +274,7 @@ pub fn define_media_player_buttons_style(app: &AppData, status: button::Status) 
     let border_size =              app.ron_config.media_player_button.media_player_button_border_size;
     let border_color =    app.ron_config.media_player_button.media_player_button_border_color;
     let border_radius =       app.ron_config.media_player_button.media_player_button_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_button.media_player_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_button.media_player_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_button.media_player_button_pressed_gradient_color.clone() })
+    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_button.media_player_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_button.media_player_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_button.media_player_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.media_player_button.media_player_button_shadow_color, shadow_x: app.ron_config.media_player_button.media_player_button_shadow_x, shadow_y: app.ron_config.media_player_button.media_player_button_shadow_y, shadow_blur: app.ron_config.media_player_button.media_player_button_shadow_blur })
 }
 
 

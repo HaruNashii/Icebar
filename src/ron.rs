@@ -96,19 +96,19 @@ impl Default for GeneralConfig
         {
             bar_position:                       BarPosition::Up,
             bar_check_reload_interval_ms:       Some(500),
-            bar_size:                           [0, 35],
+            bar_size:                           [0, 40],
             bar_border_radius:                  [0., 0., 0., 0.],
             bar_border_size:                    1.0,
-            bar_border_color:                   ColorType::RGB([90, 70, 100]),
-            bar_background_color:               ColorType::RGBA([18, 18, 22, 92]),
-            font_family:                        "JetBrains Mono".into(),
-            font_style:                         "Normal".into(),
+            bar_border_color:                   ColorType::RGB([26, 26, 26]),
+            bar_background_color:               ColorType::RGB([36, 36, 36]),
+            font_family:                        "JetBrains".into(),
+            font_style:                         "Bold".into(),
             center_modules:                     vec![Modules::Clock],
             ellipsis_text:                      "...".to_string(),
 
             left_modules: Vec::new(),
             right_modules: Vec::new(),
-            bar_side_spaces_size: 0,
+            bar_side_spaces_size: 8,
             force_static_position_context_menu: None,
             increased_exclusive_bar_zone: 0,
             spacing_between_all_modules: 0,
@@ -136,6 +136,12 @@ pub struct GeneralStyleConfig
     pub general_button_gradient_color:          Option<Gradient>,
     pub general_button_pressed_gradient_color:  Option<Gradient>,
     pub general_button_hovered_gradient_color:  Option<Gradient>,
+
+    pub general_button_shadow_color:            Option<ColorType>,
+    pub general_button_shadow_x:                Option<f32>,
+    pub general_button_shadow_y:                Option<f32>,
+    pub general_button_shadow_blur:             Option<f32>,
+
     pub general_border_color:                   Option<ColorType>,
     pub general_border_size:                    Option<f32>,
     pub general_border_radius:                  Option<[f32; 4]>,
@@ -162,6 +168,10 @@ pub struct GeneralStyleConfig
     pub general_alt_button_gradient_color:      Option<Gradient>,
     pub general_alt_button_pressed_gradient_color: Option<Gradient>,
     pub general_alt_button_hovered_gradient_color: Option<Gradient>,
+    pub general_alt_button_shadow_color:            Option<ColorType>,
+    pub general_alt_button_shadow_x:                Option<f32>,
+    pub general_alt_button_shadow_y:                Option<f32>,
+    pub general_alt_button_shadow_blur:             Option<f32>,
 }
 
 

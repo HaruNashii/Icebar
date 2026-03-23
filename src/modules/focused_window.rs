@@ -49,6 +49,10 @@ pub struct FocusedWindowConfig
     pub focused_window_button_gradient_color:         Option<Gradient>,
     pub focused_window_button_hovered_gradient_color: Option<Gradient>,
     pub focused_window_button_pressed_gradient_color: Option<Gradient>,
+    pub focused_window_button_shadow_color:           Option<ColorType>,
+    pub focused_window_button_shadow_x:               f32,
+    pub focused_window_button_shadow_y:               f32,
+    pub focused_window_button_shadow_blur:            f32,
 }
 
 impl Default for FocusedWindowConfig
@@ -81,6 +85,10 @@ impl Default for FocusedWindowConfig
             focused_window_button_gradient_color:         None,
             focused_window_button_hovered_gradient_color: None,
             focused_window_button_pressed_gradient_color: None,
+            focused_window_button_shadow_color:           None,
+            focused_window_button_shadow_x:               0.0,
+            focused_window_button_shadow_y:               0.0,
+            focused_window_button_shadow_blur:            0.0,
         }
     }
 }
@@ -183,6 +191,10 @@ pub fn define_focused_window_style(app: &AppData, status: button::Status) -> ice
         normal_gradient:   app.ron_config.focused_window.focused_window_button_gradient_color.clone(),
         hovered_gradient:  app.ron_config.focused_window.focused_window_button_hovered_gradient_color.clone(),
         pressed_gradient:  app.ron_config.focused_window.focused_window_button_pressed_gradient_color.clone(),
+        shadow_color: app.ron_config.focused_window.focused_window_button_shadow_color,
+        shadow_x:     app.ron_config.focused_window.focused_window_button_shadow_x,
+        shadow_y:     app.ron_config.focused_window.focused_window_button_shadow_y,
+        shadow_blur:  app.ron_config.focused_window.focused_window_button_shadow_blur,
     })
 }
 

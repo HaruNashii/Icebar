@@ -47,6 +47,10 @@ pub struct DiskConfig
     pub disk_button_gradient_color:         Option<Gradient>,
     pub disk_button_hovered_gradient_color: Option<Gradient>,
     pub disk_button_pressed_gradient_color: Option<Gradient>,
+    pub disk_button_shadow_color:           Option<ColorType>,
+    pub disk_button_shadow_x:               f32,
+    pub disk_button_shadow_y:               f32,
+    pub disk_button_shadow_blur:            f32,
 }
 
 impl Default for DiskConfig
@@ -77,6 +81,10 @@ impl Default for DiskConfig
             disk_button_gradient_color:         None,
             disk_button_hovered_gradient_color: None,
             disk_button_pressed_gradient_color: None,
+            disk_button_shadow_color:           None,
+            disk_button_shadow_x:               0.0,
+            disk_button_shadow_y:               0.0,
+            disk_button_shadow_blur:            0.0,
         }
     }
 }
@@ -155,6 +163,10 @@ pub fn define_disk_style(app: &AppData, status: button::Status) -> iced::widget:
         normal_gradient:   app.ron_config.disk.disk_button_gradient_color.clone(),
         hovered_gradient:  app.ron_config.disk.disk_button_hovered_gradient_color.clone(),
         pressed_gradient:  app.ron_config.disk.disk_button_pressed_gradient_color.clone(),
+        shadow_color: app.ron_config.disk.disk_button_shadow_color,
+        shadow_x:     app.ron_config.disk.disk_button_shadow_x,
+        shadow_y:     app.ron_config.disk.disk_button_shadow_y,
+        shadow_blur:  app.ron_config.disk.disk_button_shadow_blur,
     })
 }
 

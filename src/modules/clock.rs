@@ -57,6 +57,16 @@ pub struct ClockConfig
     pub alt_clock_button_hovered_gradient_color: Option<Gradient>,
     pub alt_clock_button_pressed_gradient_color: Option<Gradient>,
 
+    // ================= (SHADOW) =================
+    pub clock_button_shadow_color: Option<ColorType>,
+    pub clock_button_shadow_x: f32,
+    pub clock_button_shadow_y: f32,
+    pub clock_button_shadow_blur: f32,
+    pub alt_clock_button_shadow_color: Option<ColorType>,
+    pub alt_clock_button_shadow_x: f32,
+    pub alt_clock_button_shadow_y: f32,
+    pub alt_clock_button_shadow_blur: f32,
+
     // ================= (STYLE) =================
     pub clock_padding: u16,
     pub clock_text_size: u32,
@@ -127,6 +137,14 @@ impl Default for ClockConfig
             alt_clock_button_gradient_color: None,
             alt_clock_button_hovered_gradient_color: None,
             alt_clock_button_pressed_gradient_color: None,
+            clock_button_shadow_color: None,
+            clock_button_shadow_x: 0.0,
+            clock_button_shadow_y: 0.0,
+            clock_button_shadow_blur: 0.0,
+            alt_clock_button_shadow_color: None,
+            alt_clock_button_shadow_x: 0.0,
+            alt_clock_button_shadow_y: 0.0,
+            alt_clock_button_shadow_blur: 0.0,
             clock_padding: 0,
             clock_text_size: 15,
             clock_text_color: ColorType::RGB([255, 255, 255]),
@@ -178,7 +196,11 @@ pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget
         let border_size =       app.ron_config.clock.alt_clock_border_size;
         let border_color =      app.ron_config.clock.alt_clock_border_color;
         let border_radius =     app.ron_config.clock.alt_clock_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.clock.alt_clock_button_gradient_color.clone(), hovered_gradient: app.ron_config.clock.alt_clock_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.clock.alt_clock_button_pressed_gradient_color.clone() })
+        let shadow_color =      app.ron_config.clock.alt_clock_button_shadow_color;
+        let shadow_x =          app.ron_config.clock.alt_clock_button_shadow_x;
+        let shadow_y =          app.ron_config.clock.alt_clock_button_shadow_y;
+        let shadow_blur =       app.ron_config.clock.alt_clock_button_shadow_blur;
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.clock.alt_clock_button_gradient_color.clone(), hovered_gradient: app.ron_config.clock.alt_clock_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.clock.alt_clock_button_pressed_gradient_color.clone(), shadow_color, shadow_x, shadow_y, shadow_blur })
     }
     else
     {
@@ -191,7 +213,14 @@ pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget
         let border_size =       app.ron_config.clock.clock_border_size;
         let border_color =      app.ron_config.clock.clock_border_color;
         let border_radius =     app.ron_config.clock.clock_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.clock.clock_button_gradient_color.clone(), hovered_gradient: app.ron_config.clock.clock_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.clock.clock_button_pressed_gradient_color.clone() })
+        let normal_gradient =   app.ron_config.clock.clock_button_gradient_color.clone();
+        let hovered_gradient =  app.ron_config.clock.clock_button_hovered_gradient_color.clone();
+        let pressed_gradient =  app.ron_config.clock.clock_button_pressed_gradient_color.clone();
+        let shadow_color =      app.ron_config.clock.clock_button_shadow_color;
+        let shadow_x =          app.ron_config.clock.clock_button_shadow_x;
+        let shadow_y =          app.ron_config.clock.clock_button_shadow_y;
+        let shadow_blur =       app.ron_config.clock.clock_button_shadow_blur;
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient, hovered_gradient, pressed_gradient, shadow_color, shadow_x, shadow_y, shadow_blur })
     }
 
 }

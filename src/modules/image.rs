@@ -229,7 +229,7 @@ pub fn define_image_style(image: &Image, status: button::Status) -> iced::widget
     let border_size =   image.border_size; 
     let border_color =  image.border_color; 
     let border_radius = image.border_radius;
-    set_style(UserStyle { status, hovered, hovered_text: text_holder, pressed_text: text_holder, pressed, normal, normal_text: text_holder, border_color, border_size, border_radius, normal_gradient: None, hovered_gradient: None, pressed_gradient: None })
+    set_style(UserStyle { status, hovered, hovered_text: text_holder, pressed_text: text_holder, pressed, normal, normal_text: text_holder, border_color, border_size, border_radius, normal_gradient: None, hovered_gradient: None, pressed_gradient: None, shadow_color: None, shadow_x: 0.0, shadow_y: 0.0, shadow_blur: 0.0 })
 }
 
 

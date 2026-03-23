@@ -48,6 +48,10 @@ pub struct WorkspaceConfig
     pub workspace_button_selected_gradient_color: Option<Gradient>,
     pub workspace_button_hovered_gradient_color:  Option<Gradient>,
     pub workspace_button_pressed_gradient_color:  Option<Gradient>,
+    pub workspace_button_shadow_color:            Option<ColorType>,
+    pub workspace_button_shadow_x:                f32,
+    pub workspace_button_shadow_y:                f32,
+    pub workspace_button_shadow_blur:             f32,
 }
 
 impl Default for WorkspaceConfig
@@ -88,6 +92,10 @@ impl Default for WorkspaceConfig
             workspace_button_selected_gradient_color: None,
             workspace_button_hovered_gradient_color:  None,
             workspace_button_pressed_gradient_color:  None,
+            workspace_button_shadow_color:            None,
+            workspace_button_shadow_x:                0.0,
+            workspace_button_shadow_y:                0.0,
+            workspace_button_shadow_blur:             0.0,
         }
     }
 }
@@ -146,7 +154,7 @@ pub fn define_workspaces_style(app: &AppData, status: button::Status, i: &i32) -
     { app.ron_config.workspace.workspace_button_selected_gradient_color.clone() }
     else
     { app.ron_config.workspace.workspace_button_gradient_color.clone() };
-    set_style(UserStyle {status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient, hovered_gradient: app.ron_config.workspace.workspace_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.workspace.workspace_button_pressed_gradient_color.clone()})
+    set_style(UserStyle {status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient, hovered_gradient: app.ron_config.workspace.workspace_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.workspace.workspace_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.workspace.workspace_button_shadow_color, shadow_x: app.ron_config.workspace.workspace_button_shadow_x, shadow_y: app.ron_config.workspace.workspace_button_shadow_y, shadow_blur: app.ron_config.workspace.workspace_button_shadow_blur})
 }
 
 

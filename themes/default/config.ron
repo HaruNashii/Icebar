@@ -102,6 +102,12 @@ BarConfig
         general_button_gradient_color: None,
         general_button_pressed_gradient_color: None,
         general_button_hovered_gradient_color: None,
+
+	general_button_shadow_color: Some(RGBA((200, 50, 50, 70))),
+   	general_button_shadow_x: Some(2.0),
+   	general_button_shadow_y: Some(2.0),
+   	general_button_shadow_blur: Some(4.0),
+
         general_border_color: Some(RGB((120, 80, 130))),
         general_border_size: Some(1.0),
         general_border_radius: Some((3.0, 3.0, 3.0, 3.0)),
@@ -151,6 +157,12 @@ BarConfig
         clock_button_hovered_gradient_color: None,
         clock_button_pressed_gradient_color: None,
         clock_button_gradient_color: None,
+
+	clock_button_shadow_color: Some(RGBA((200, 50, 50, 70))),
+   	clock_button_shadow_x: 2.0,
+   	clock_button_shadow_y: 2.0,
+   	clock_button_shadow_blur: 4.0,
+
         alt_clock_button_gradient_color: None,
         alt_clock_button_hovered_gradient_color: None,
         alt_clock_button_pressed_gradient_color: None,

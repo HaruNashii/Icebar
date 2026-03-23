@@ -63,6 +63,10 @@ pub struct NetworkConfig
     pub network_button_gradient_color:       Option<Gradient>,
     pub network_button_hovered_gradient_color: Option<Gradient>,
     pub network_button_pressed_gradient_color: Option<Gradient>,
+    pub network_button_shadow_color:         Option<ColorType>,
+    pub network_button_shadow_x:             f32,
+    pub network_button_shadow_y:             f32,
+    pub network_button_shadow_blur:          f32,
 }
 
 impl Default for NetworkConfig
@@ -96,6 +100,10 @@ impl Default for NetworkConfig
             network_button_gradient_color:       None,
             network_button_hovered_gradient_color: None,
             network_button_pressed_gradient_color: None,
+            network_button_shadow_color:         None,
+            network_button_shadow_x:             0.0,
+            network_button_shadow_y:             0.0,
+            network_button_shadow_blur:          0.0,
         }
     }
 }
@@ -126,6 +134,10 @@ pub struct AltNetworkConfig
     pub alt_network_button_gradient_color:       Option<Gradient>,
     pub alt_network_button_hovered_gradient_color: Option<Gradient>,
     pub alt_network_button_pressed_gradient_color: Option<Gradient>,
+    pub alt_network_button_shadow_color:         Option<ColorType>,
+    pub alt_network_button_shadow_x:             f32,
+    pub alt_network_button_shadow_y:             f32,
+    pub alt_network_button_shadow_blur:          f32,
 }
 
 impl Default for AltNetworkConfig
@@ -156,6 +168,10 @@ impl Default for AltNetworkConfig
             alt_network_button_gradient_color:       None,
             alt_network_button_hovered_gradient_color: None,
             alt_network_button_pressed_gradient_color: None,
+            alt_network_button_shadow_color:         None,
+            alt_network_button_shadow_x:             0.0,
+            alt_network_button_shadow_y:             0.0,
+            alt_network_button_shadow_blur:          0.0,
         }
     }
 }
@@ -353,7 +369,7 @@ pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widg
         let border_size =       app.ron_config.alt_network.alt_network_border_size;
         let border_color =      app.ron_config.alt_network.alt_network_border_color;
         let border_radius =     app.ron_config.alt_network.alt_network_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.alt_network.alt_network_button_gradient_color.clone(), hovered_gradient: app.ron_config.alt_network.alt_network_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.alt_network.alt_network_button_pressed_gradient_color.clone() })
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.alt_network.alt_network_button_gradient_color.clone(), hovered_gradient: app.ron_config.alt_network.alt_network_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.alt_network.alt_network_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.alt_network.alt_network_button_shadow_color, shadow_x: app.ron_config.alt_network.alt_network_button_shadow_x, shadow_y: app.ron_config.alt_network.alt_network_button_shadow_y, shadow_blur: app.ron_config.alt_network.alt_network_button_shadow_blur })
     }
     else
     {
@@ -366,7 +382,7 @@ pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widg
         let border_size =       app.ron_config.network.network_border_size;
         let border_color =      app.ron_config.network.network_border_color;
         let border_radius =     app.ron_config.network.network_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.network.network_button_gradient_color.clone(), hovered_gradient: app.ron_config.network.network_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.network.network_button_pressed_gradient_color.clone() })
+        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.network.network_button_gradient_color.clone(), hovered_gradient: app.ron_config.network.network_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.network.network_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.network.network_button_shadow_color, shadow_x: app.ron_config.network.network_button_shadow_x, shadow_y: app.ron_config.network.network_button_shadow_y, shadow_blur: app.ron_config.network.network_button_shadow_blur })
     }
 }
 

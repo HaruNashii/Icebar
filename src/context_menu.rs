@@ -155,7 +155,7 @@ pub fn context_menu_view<'a>(data: &'a ContextMenuData, ron_config: &'a BarConfi
             let border_color =  ron_config.context_menu.context_menu_border_color;
             let border_size =       ron_config.context_menu.context_menu_border_size;
             let border_radius =     ron_config.context_menu.context_menu_border_radius;
-            set_style(crate::UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: None, hovered_gradient: None, pressed_gradient: None })
+            set_style(crate::UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: None, hovered_gradient: None, pressed_gradient: None, shadow_color: None, shadow_blur: 0., shadow_x: 0., shadow_y: 0. })
         }).into()}
     ).collect();
     

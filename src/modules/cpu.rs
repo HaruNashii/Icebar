@@ -42,6 +42,10 @@ pub struct CpuConfig
     pub cpu_button_gradient_color:         Option<Gradient>,
     pub cpu_button_hovered_gradient_color: Option<Gradient>,
     pub cpu_button_pressed_gradient_color: Option<Gradient>,
+    pub cpu_button_shadow_color:           Option<ColorType>,
+    pub cpu_button_shadow_x:               f32,
+    pub cpu_button_shadow_y:               f32,
+    pub cpu_button_shadow_blur:            f32,
 }
 
 impl Default for CpuConfig
@@ -73,6 +77,10 @@ impl Default for CpuConfig
             cpu_button_gradient_color:         None,
             cpu_button_hovered_gradient_color: None,
             cpu_button_pressed_gradient_color: None,
+            cpu_button_shadow_color:           None,
+            cpu_button_shadow_x:               0.0,
+            cpu_button_shadow_y:               0.0,
+            cpu_button_shadow_blur:            0.0,
         }
     }
 }
@@ -149,7 +157,11 @@ pub fn define_cpu_style(app: &AppData, status: button::Status) -> iced::widget::
         border_radius:     app.ron_config.cpu.cpu_border_radius,
         normal_gradient: app.ron_config.cpu.cpu_button_gradient_color.clone(),
         hovered_gradient: app.ron_config.cpu.cpu_button_hovered_gradient_color.clone(),
-        pressed_gradient: app.ron_config.cpu.cpu_button_pressed_gradient_color.clone()
+        pressed_gradient: app.ron_config.cpu.cpu_button_pressed_gradient_color.clone(),
+        shadow_color: app.ron_config.cpu.cpu_button_shadow_color,
+        shadow_x: app.ron_config.cpu.cpu_button_shadow_x,
+        shadow_y: app.ron_config.cpu.cpu_button_shadow_y,
+        shadow_blur: app.ron_config.cpu.cpu_button_shadow_blur,
     })
 }
 
