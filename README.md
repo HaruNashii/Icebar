@@ -269,6 +269,12 @@ The project is primarily a learning and experimentation platform.
 
 ---
 
+## ❤️ Contributors
+
+- **My Wife Lottie** (told me that my project sucks, so I had to make it better)
+
+---
+
 ## 📸 Screenshots
 (Accepting screenshots to display here, if you have one and want to share, i would appreciate it)
 
