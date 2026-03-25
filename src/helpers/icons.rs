@@ -82,6 +82,10 @@ pub fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
         // Flatpak standard paths
         home::home_dir().map(|h| h.join(".local/share/flatpak/exports/share/applications")).unwrap_or_default(),
         PathBuf::from("/var/lib/flatpak/exports/share/applications"),
+
+        // Distrobox
+        PathBuf::from("/run/host/usr/share/applications"),
+        PathBuf::from("/run/host/usr/local/share/applications"),
     ];
 
     if let Some(home_path) = home::home_dir()
@@ -147,7 +151,15 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
     println!("Trying to load icon: {name} with theme_path: {:?}", theme_path);
     if let Some(base) = theme_path && !base.is_empty()
     {
-        let base = PathBuf::from(base);
+        let normal_base = PathBuf::from(base);
+        let base = if !normal_base.exists()
+        {
+            PathBuf::from("/run/host").join(base.trim_start_matches('/'))
+        }
+        else
+        {
+            normal_base
+        };
         
         // Try direct paths in theme_path root (for apps like Spotify)
         for ext in ["svg","png"]
@@ -223,6 +235,8 @@ pub fn load_icon_from_theme(name: &str) -> Option<(Vec<u8>, u32, u32)>
         PathBuf::from("/usr/share/icons"),
         PathBuf::from("/usr/local/share/icons"),
         PathBuf::from("/usr/share/pixmaps"),
+        PathBuf::from("/run/host/usr/share/icons"),
+        PathBuf::from("/run/host/usr/share/pixmaps"),
     ];
 
     if let Some(home) = home::home_dir()

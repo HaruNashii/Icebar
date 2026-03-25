@@ -263,6 +263,71 @@ impl StatusNotifierWatcher
 pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()> 
 {
     let connection = Connection::session().await?;
+
+    let dbus = DBusProxy::new(&connection).await?;
+    let existing_owner = dbus.get_name_owner("org.kde.StatusNotifierWatcher".try_into()?).await;
+
+    if existing_owner.is_ok()
+    {
+        println!("=== TRAY ===");
+        println!("StatusNotifierWatcher already owned (likely Plasma). Registering as host instead.");
+
+        // Register ourselves as a StatusNotifierHost so apps know a host exists
+        let host_name = "org.kde.StatusNotifierHost-icebar";
+        connection.request_name(host_name).await?;
+
+        // Subscribe to item registration signals from the existing watcher
+        let watcher = zbus::Proxy::new(&connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher", "org.kde.StatusNotifierWatcher").await?;
+
+        // Fetch already-registered items
+        let items: Vec<String> = watcher.get_property("RegisteredStatusNotifierItems").await.unwrap_or_default();
+        for item in items
+        {
+            println!("\n=== Tray item registered ===\nItem: '{item}'");
+            let _ = sender.send(TrayEvent::ItemRegistered(item.clone())).await;
+            if let Ok(icon) = fetch_icon(&connection, &item).await
+            {
+                let _ = sender.send(icon).await;
+            }
+        }
+
+        // Listen for new registrations
+        let mut stream = watcher.receive_signal("StatusNotifierItemRegistered").await?;
+        let mut unregister_stream = watcher.receive_signal("StatusNotifierItemUnregistered").await?;
+        let tx2 = sender.clone();
+
+        tokio::spawn(async move 
+        {
+            loop 
+            {
+                tokio::select! 
+                {
+                    Some(msg) = stream.next() => 
+                    {
+                        if let Ok((combined,)) = msg.body().deserialize::<(String,)>() 
+                        {
+                            let _ = sender.send(TrayEvent::ItemRegistered(combined.clone())).await;
+                            if let Ok(icon) = fetch_icon(&connection, &combined).await 
+                            {
+                                let _ = sender.send(icon).await;
+                            }
+                        }
+                    }
+                    Some(msg) = unregister_stream.next() => 
+                    {
+                        if let Ok((combined,)) = msg.body().deserialize::<(String,)>() 
+                        {
+                            let _ = tx2.send(TrayEvent::ItemUnregistered(combined)).await;
+                        }
+                    }
+                }
+            }
+        });
+
+        std::future::pending::<()>().await;
+        return Ok(());
+    }
+
     connection.request_name("org.kde.StatusNotifierWatcher").await?;
     connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender: sender.clone(), connection: connection.clone() }).await?;
     let ctxt = SignalEmitter::new(&connection, "/StatusNotifierWatcher")?;
