@@ -59,7 +59,7 @@ pub fn check_if_config_file_exists() -> Option<String>
 //
 //=================================================================[  TIPS  ]===================================================================
 // All possible modules:
-//   "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri",
+//   "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri", "PlasmaWorkspaces",
 //   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces",
 //   "MediaPlayerMetaData", "MediaPlayerButtons",
 //   "CustomModule(index)", "Image(index)",

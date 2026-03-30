@@ -19,7 +19,7 @@
 //=================================================================[  TIPS  ]===================================================================
 // All possible modules:
 //   "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri",
-//   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces",
+//   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "PlasmaWorkspaces",
 //   "MediaPlayerMetaData", "MediaPlayerButtons",
 //   "CustomModule(index)", "Image(index)",
 //   "CpuTemp", "Ram", "Cpu", "Disk",
