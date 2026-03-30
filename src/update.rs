@@ -19,7 +19,7 @@ use crate::modules::focused_window::{read_focused_window_hypr, read_focused_wind
 use crate::helpers::string::{format_input_volume, format_output_volume};
 use crate::modules::cpu_temp::read_cpu_temp;
 use crate::modules::ram::read_ram_data;
-use crate::modules::{image::preload_image, network::{read_rx_tx, PREV_NET}, disk::read_disk_data, clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
+use crate::modules::{plasma, image::preload_image, network::{read_rx_tx, PREV_NET}, disk::read_disk_data, clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
 use crate::{helpers::{misc::define_bar_anchor_position, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
 use crate::helpers::{misc::{is_active_module, validate_bar_data}, workspaces::build_workspace_list };
 use crate::context_menu::{create_context_menu, get_context_menu_size};
@@ -75,6 +75,8 @@ pub enum Message
     SwayWorkspacesFetched(i32, Vec<i32>),
     NiriWorkspacesFetched(i32, Vec<i32>),
     HyprWorkspacesFetched(i32, Vec<i32>),
+    PlasmaWorkspacesFetched(i32, Vec<i32>, Vec<String>),
+
 
     UpdateNetworkSpeed,
     UpdateDisk,
@@ -85,6 +87,7 @@ pub enum Message
     UpdateFocusedWindowSway,
     UpdateFocusedWindowHypr,
     UpdateMediaPlayerMetadata,
+    UpdatePlasmaWorkspaces,
     UpdateNiriWorkspaces,
     UpdateSwayWorkspaces,
     UpdateHyprWorkspaces,
@@ -202,6 +205,22 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::HyprWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace  = current; app.modules_data.workspace_data.visible_workspaces = list; }
         Message::MediaPlayerDataFetched(data) => { app.modules_data.media_player_data = data; }
 
+        Message::PlasmaWorkspacesFetched(current, list, ids) =>
+        {
+            app.modules_data.workspace_data.current_workspace  = current;
+            app.modules_data.workspace_data.visible_workspaces = list;
+            app.modules_data.plasma_desktop_ids = ids;
+        }
+        
+        Message::UpdatePlasmaWorkspaces =>
+        {
+            let persistent = app.ron_config.workspace.persistent_workspaces;
+            return Task::perform(plasma::get_plasma_workspaces(), move |(current, counts, ids)|
+            {
+                Message::PlasmaWorkspacesFetched(current, build_workspace_list(&counts, persistent), ids)
+            });
+        }
+
         Message::WorkspaceButtonPressed(id) =>
         {
             if is_active_module(&app.modules_data.active_modules, Modules::HyprWorkspaces)
@@ -219,6 +238,14 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             {
                 return Task::perform(
                     tokio::task::spawn_blocking(move || change_workspace_niri(UserWorkspaceAction::ChangeWithIndex(id))),
+                    |_| Message::Nothing,
+                );
+            }
+            else if is_active_module(&app.modules_data.active_modules, Modules::PlasmaWorkspaces)
+            {
+                let ids = app.modules_data.plasma_desktop_ids.clone();
+                return Task::perform(
+                    plasma::change_workspace_plasma(UserWorkspaceAction::ChangeWithIndex(id), ids),
                     |_| Message::Nothing,
                 );
             }
@@ -470,6 +497,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 let hypr_active = is_active_module(&app.modules_data.active_modules, Modules::HyprWorkspaces);
                 let sway_active = is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces);
                 let niri_active = is_active_module(&app.modules_data.active_modules, Modules::NiriWorkspaces);
+                let plasma_active = is_active_module(&app.modules_data.active_modules, Modules::PlasmaWorkspaces);
                 // === SCROLL UP ===
                 if y > 0.
                 {
@@ -478,10 +506,12 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                         if hypr_active { change_workspace_hypr(UserWorkspaceAction::MoveNext); }
                         else if sway_active { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_sway(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
                         else if niri_active { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_niri(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
+                        else if plasma_active { let ids = app.modules_data.plasma_desktop_ids.clone(); return Task::perform(plasma::change_workspace_plasma(UserWorkspaceAction::MoveNext, ids), |_| Message::Nothing); }
                     }
                     else if hypr_active { change_workspace_hypr(UserWorkspaceAction::MovePrev); }
                     else if sway_active { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_sway(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
                     else if niri_active { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_niri(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
+                    else if plasma_active { let ids = app.modules_data.plasma_desktop_ids.clone(); return Task::perform(plasma::change_workspace_plasma(UserWorkspaceAction::MovePrev, ids), |_| Message::Nothing); }
                 }
                 
                 // === SCROLL DOWN ===
@@ -492,10 +522,12 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                         if hypr_active { change_workspace_hypr(UserWorkspaceAction::MovePrev); }
                         else if sway_active { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_sway(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
                         else if niri_active { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_niri(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
+                        else if plasma_active { let ids = app.modules_data.plasma_desktop_ids.clone(); return Task::perform(plasma::change_workspace_plasma(UserWorkspaceAction::MovePrev, ids), |_| Message::Nothing); }
                     }
                     else if hypr_active { change_workspace_hypr(UserWorkspaceAction::MoveNext); }
                     else if sway_active { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_sway(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
                     else if niri_active { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_niri(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
+                    else if plasma_active { let ids = app.modules_data.plasma_desktop_ids.clone(); return Task::perform(plasma::change_workspace_plasma(UserWorkspaceAction::MoveNext, ids), |_| Message::Nothing); }
                 }
             }
         }

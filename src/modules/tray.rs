@@ -269,7 +269,6 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
 
     if existing_owner.is_ok()
     {
-        println!("=== TRAY ===");
         println!("StatusNotifierWatcher already owned (likely Plasma). Registering as host instead.");
 
         // Register ourselves as a StatusNotifierHost so apps know a host exists

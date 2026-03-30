@@ -20,6 +20,7 @@ pub enum Modules
 {
     Image(usize),
     CustomModule(usize),
+    PlasmaWorkspaces,
     HyprWorkspaces,
     NiriWorkspaces,
     SwayWorkspaces,
@@ -47,6 +48,7 @@ pub struct ModulesData
     pub custom_module_data: CustomModuleData,
     pub media_player_data: MediaPlayerData,
     pub workspace_data: WorkspaceData,
+    pub plasma_desktop_ids: Vec<String>,
     pub active_modules: HashSet<Modules>,
     pub cpu_temp_data: CpuTempData,
     pub network_data: NetworkData,

@@ -108,7 +108,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
              
             // ── HyprWorkspaces / SwayWorkspaces / NiriWorkspaces ─────────────
-            Modules::HyprWorkspaces | Modules::SwayWorkspaces | Modules::NiriWorkspaces =>
+            Modules::HyprWorkspaces | Modules::SwayWorkspaces | Modules::NiriWorkspaces | Modules::PlasmaWorkspaces =>
             {
                 let workspace_buttons = app.modules_data.workspace_data.visible_workspaces.iter().map(|i|
                 {

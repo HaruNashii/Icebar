@@ -50,7 +50,6 @@ pub fn resolve_font(requested: &str) -> Option<String>
     let normalized_requested = normalize(requested);
     let fonts = system_fonts();
 
-    // exact normalized match
     for font in &fonts
     {
         if normalize(font) == normalized_requested
@@ -59,7 +58,6 @@ pub fn resolve_font(requested: &str) -> Option<String>
         }
     }
 
-    // prefix match: system font's normalized name starts with what user asked
     for font in &fonts
     {
         if normalize(font).starts_with(&normalized_requested)
@@ -68,9 +66,6 @@ pub fn resolve_font(requested: &str) -> Option<String>
         }
     }
 
-    // reverse prefix match: what user asked starts with a system font name
-    // e.g. user types "JetBrains Mono Nerd Font" and system has "JetBrainsMono NF"
-    // reverse prefix match
     for font in &fonts
     {
         let nf = normalize(font);
@@ -80,7 +75,6 @@ pub fn resolve_font(requested: &str) -> Option<String>
         }
     }
 
-    // substring match (both directions)
     if normalized_requested.len() >= MIN_FUZZY_LEN
     {
         for font in &fonts
@@ -93,9 +87,6 @@ pub fn resolve_font(requested: &str) -> Option<String>
         }
     }
 
-    // fuzzy match — only for inputs long enough to be meaningful, with a
-    // distance threshold proportional to the input length (30%) so short
-    // strings like "a" or "ab" don't spuriously match random fonts
     if normalized_requested.len() >= MIN_FUZZY_LEN
     {
         let max_allowed = ((normalized_requested.len() as f32 * MAX_FUZZY_RATIO).floor() as usize).max(1);
@@ -107,14 +98,16 @@ pub fn resolve_font(requested: &str) -> Option<String>
             let nf = normalize(font);
             let candidate = if nf.len() > normalized_requested.len()
             {
-                nf[..normalized_requested.len()].to_string()
+                let char_count = normalized_requested.chars().count(); 
+                let byte_end   = nf.char_indices().nth(char_count).map(|(i, _)| i).unwrap_or(nf.len());              
+                &nf[..byte_end]
             }
             else
             {
-                nf
+                &nf
             };
 
-            let dist = levenshtein(&normalized_requested, &candidate);
+            let dist = levenshtein(&normalized_requested, candidate);
 
             if dist < best_distance
             {

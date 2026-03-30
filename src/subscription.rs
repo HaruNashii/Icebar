@@ -7,7 +7,7 @@ use std::time::Duration;
 
 
 // ============ CRATES ============
-use crate::{helpers::config_watcher::config_file_watcher, modules::{data::Modules, hypr::hypr_event_subscription, network::network_subscription, sway::sway_event_subscription, tray::{TraySubscription, tray_stream}, volume::volume_subscription}};
+use crate::{helpers::config_watcher::config_file_watcher, modules::{data::Modules, hypr::hypr_event_subscription, network::network_subscription, plasma::plasma_event_subscription, sway::sway_event_subscription, tray::{TraySubscription, tray_stream}, volume::volume_subscription}};
 use crate::update::Message;
 use crate::AppData;
 
@@ -62,6 +62,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             Modules::FocusedWindowNiri =>   subs.push(time::every(Duration::from_millis(app.ron_config.focused_window.focused_window_update_interval)).map(|_| Message::UpdateFocusedWindowNiri)),
             Modules::Clock =>               subs.push(time::every(Duration::from_millis(app.ron_config.clock.clock_update_interval)).map(|_| Message::UpdateClock)),
             Modules::NiriWorkspaces =>      subs.push(time::every(Duration::from_millis(app.ron_config.workspace.niri_workspaces_update_interval)).map(|_| Message::UpdateNiriWorkspaces)),
+            Modules::PlasmaWorkspaces =>    subs.push(iced::Subscription::run(plasma_event_subscription)),
             Modules::MediaPlayerMetaData | Modules::MediaPlayerButtons => 
             {
                 if !media_player_sub_added 

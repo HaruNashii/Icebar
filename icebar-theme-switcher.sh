@@ -10,19 +10,19 @@
 # │     --force        -f          Skip confirmation prompts.               │
 # │     --cycle        -c          Cycle through all themes one by one.     │
 # │     --workspace    -w  <wm>    Bypass workspace picker. <wm>: Sway,     │
-# │                                Hypr, Niri, or None.                     │
+# │                                Hypr, Niri, Plasma or None.              │
 # │     --focused      -fw <wm>    Bypass focused window picker. <wm>:      │
 # │                                Sway, Hypr, Niri, or None.               │
-# │     --select      -s  <name>   Directly install theme by name.           │
-# │     --help         -h          Show this help message and exit.          │
+# │     --select      -s  <name>   Directly install theme by name.          │
+# │     --help         -h          Show this help message and exit.         │
 # ╰─────────────────────────────────────────────────────────────────────────╯
 
 # ── Flags ──────────────────────────────────────────────────────────────────
 NO_EXIT=false
 FORCE=false
 CYCLE=false
-BYPASS_WM=""    # Sway | Hypr | Niri | None
-BYPASS_FW=""    # Sway | Hypr | Niri | None
+BYPASS_WM=""    # Sway | Hypr | Niri | Plasma | None
+BYPASS_FW=""    # Sway | Hypr | Niri | Plasma | None
 SELECT=""       # theme name to install directly
 
 # ── Help ───────────────────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ print_help()
     echo -e "    ${CYAN}-s${RESET}, ${CYAN}--select${RESET}     ${DIM}<name>${RESET}    Directly install a theme by name."
     echo -e "    ${CYAN}-h${RESET}, ${CYAN}--help${RESET}                 Show this help message and exit."
     echo
-    echo -e "  ${BWHITE}<w> and ${BWHITE}<fw> values:${RESET}  ${WHITE}Sway${RESET}  ${WHITE}Hypr${RESET}  ${WHITE}Niri${RESET}  ${WHITE}None${RESET}"
+    echo -e "  ${BWHITE}<w> and ${BWHITE}<fw> values:${RESET}  ${WHITE}Sway${RESET}  ${WHITE}Hypr${RESET}  ${WHITE}Niri${RESET}  ${WHITE}Plasma${RESET}  ${WHITE}None${RESET}"
     echo
     echo -e "  ${BWHITE}Examples:${RESET}"
     echo -e "    ${DIM}./icebar-theme-switcher.sh${RESET}"
@@ -63,6 +63,7 @@ resolve_wm_arg()
         sway)  echo "Sway" ;;
         hypr)  echo "Hypr" ;;
         niri)  echo "Niri" ;;
+	plasma) echo "Plasma" ;;
         none)  echo "None" ;;
         *)
             echo -e "  ${RED}${BOLD}✗${RESET}  Unknown ${type} compositor '${1}'. Valid values: Sway, Hypr, Niri, None." >&2
@@ -149,6 +150,7 @@ pick_module() {
             *Sway*)  wm="Sway"     ;;
             *Hypr*)  wm="Hyprland" ;;
             *Niri*)  wm="Niri"     ;;
+	    *Plasma*) wm="Plasma"  ;;
             *)       wm=""         ;;
         esac
         labels+=("$wm")
@@ -359,7 +361,7 @@ fi  # end of select mode
 fi  # end of cycle/manual selection
 
 # ── Workspace module detection ─────────────────────────────────────────────
-WM_MODULES=("SwayWorkspaces" "HyprWorkspaces" "NiriWorkspaces")
+WM_MODULES=("SwayWorkspaces" "HyprWorkspaces" "NiriWorkspaces" "PlasmaWorkspaces")
 
 FOUND_WM_MODULE=""
 for module in "${WM_MODULES[@]}"; do
