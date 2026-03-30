@@ -32,6 +32,25 @@ enum Tag<'a>
 
 
 // ============ FUNCTIONS ============
+pub fn normalize_item(item: &str) -> String 
+{
+    if item.contains('|') 
+    {
+        item.to_string()
+    } 
+    else if let Some(slash_pos) = item.find('/') 
+    {
+        let (svc, path) = item.split_at(slash_pos);
+        format!("{}|{}", svc, path)
+    } 
+    else 
+    {
+        format!("{}|/StatusNotifierItem", item)
+    }
+}
+
+
+
 pub fn find_field_colon(line: &str) -> Option<usize>
 {
     let mut in_string = false;

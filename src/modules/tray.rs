@@ -12,7 +12,7 @@ use std::sync::LazyLock;
 
 
 // ============ CRATES ============
-use crate::helpers::{color::{ColorType, Gradient}, icons::fetch_icon, style::{UserStyle, set_style, SideOption}};
+use crate::helpers::{color::{ColorType, Gradient}, icons::fetch_icon, string::normalize_item, style::{SideOption, UserStyle, set_style}};
 use crate::update::Message;
 use crate::AppData;
 
@@ -283,9 +283,10 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
         let items: Vec<String> = watcher.get_property("RegisteredStatusNotifierItems").await.unwrap_or_default();
         for item in items
         {
-            println!("\n=== Tray item registered ===\nItem: '{item}'");
-            let _ = sender.send(TrayEvent::ItemRegistered(item.clone())).await;
-            if let Ok(icon) = fetch_icon(&connection, &item).await
+            let combined = normalize_item(&item);
+            println!("\n=== Tray item registered ===\nItem: '{combined}'");
+            let _ = sender.send(TrayEvent::ItemRegistered(combined.clone())).await;
+            if let Ok(icon) = fetch_icon(&connection, &combined).await
             {
                 let _ = sender.send(icon).await;
             }
@@ -304,10 +305,11 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
                 {
                     Some(msg) = stream.next() => 
                     {
-                        if let Ok((combined,)) = msg.body().deserialize::<(String,)>() 
+                        if let Ok((raw,)) = msg.body().deserialize::<(String,)>()
                         {
+                            let combined = normalize_item(&raw);
                             let _ = sender.send(TrayEvent::ItemRegistered(combined.clone())).await;
-                            if let Ok(icon) = fetch_icon(&connection, &combined).await 
+                            if let Ok(icon) = fetch_icon(&connection, &combined).await
                             {
                                 let _ = sender.send(icon).await;
                             }
@@ -315,9 +317,9 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
                     }
                     Some(msg) = unregister_stream.next() => 
                     {
-                        if let Ok((combined,)) = msg.body().deserialize::<(String,)>() 
+                        if let Ok((raw,)) = msg.body().deserialize::<(String,)>() 
                         {
-                            let _ = tx2.send(TrayEvent::ItemUnregistered(combined)).await;
+                            let _ = tx2.send(TrayEvent::ItemUnregistered(normalize_item(&raw))).await;
                         }
                     }
                 }

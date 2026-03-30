@@ -21,17 +21,34 @@ pub async fn fetch_icon(conn: &Connection, combined: &str) -> zbus::Result<TrayE
     let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
     if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("IconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().max_by_key(|(w, h, _)| w * h)
     {
-        return Ok(TrayEvent::Icon {combined: combined.to_string(), data, width: w as u32, height: h as u32});
+        let rgba_data = data.chunks_exact(4).flat_map(|p| [p[1], p[2], p[3], p[0]]).collect::<Vec<u8>>();
+        return Ok(TrayEvent::Icon {combined: combined.to_string(), data: rgba_data, width: w as u32, height: h as u32});
     }
     let theme_path = proxy.get_property::<String>("IconThemePath").await.ok();
     let try_name = |name: String| {load_icon_with_theme_path(&name, theme_path.as_deref())};
-    if let Ok(name) = proxy.get_property::<String>("IconName").await && let Some((d, w, h)) = try_name(name) 
+    if let Ok(name) = proxy.get_property::<String>("IconName").await
     {
-        return Ok(TrayEvent::Icon { combined: combined.to_string(), data: d, width: w, height: h });
+        let result = try_name(name.clone()).or_else(||
+        {
+            let base = name.strip_suffix("-symbolic").unwrap_or(&name);
+            if base != name { try_name(base.to_string()) } else { None }
+        });
+        if let Some((d, w, h)) = result
+        {
+            return Ok(TrayEvent::Icon { combined: combined.to_string(), data: d, width: w, height: h });
+        }
     }
-    if let Ok(name) = proxy.get_property::<String>("AttentionIconName").await && let Some((d, w, h)) = try_name(name) 
+    if let Ok(name) = proxy.get_property::<String>("AttentionIconName").await
     {
-        return Ok(TrayEvent::Icon { combined: combined.to_string(), data: d, width: w, height: h });
+        let result = try_name(name.clone()).or_else(||
+        {
+            let base = name.strip_suffix("-symbolic").unwrap_or(&name);
+            if base != name { try_name(base.to_string()) } else { None }
+        });
+        if let Some((d, w, h)) = result
+        {
+            return Ok(TrayEvent::Icon { combined: combined.to_string(), data: d, width: w, height: h });
+        }
     }
     if let Ok(title) = proxy.get_property::<String>("Title").await && let Some(icon) = load_icon_from_desktop(&title) 
     {
@@ -163,8 +180,7 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
         
         // Try direct paths in theme_path root (for apps like Spotify)
         for ext in ["svg","png"]
-        {
-            let candidate = base.join(format!("{name}.{ext}"));
+        { let candidate = base.join(format!("{name}.{ext}"));
             if let Some(icon) = try_load_icon(&candidate)
             {
                 println!("Loaded icon from app theme root: {:?}", candidate);
@@ -193,6 +209,7 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
         return Some(icon);
     }
 
+    let host_user = std::env::var("USER").unwrap_or_default();
     let home = home::home_dir().expect("Failed to get home directory").display().to_string();
     let flatpak_candidates = 
     [
@@ -200,6 +217,11 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
         format!("{home}/.local/share/flatpak/exports/share/icons/hicolor/48x48/apps/{name}.png"),
         format!("/var/lib/flatpak/exports/share/icons/hicolor/scalable/apps/{name}.svg"),
         format!("/var/lib/flatpak/exports/share/icons/hicolor/48x48/apps/{name}.png"),
+        format!("/run/host/home/{host_user}/.local/share/flatpak/exports/share/icons/hicolor/scalable/apps/{name}.svg"),
+        format!("/run/host/home/{host_user}/.local/share/flatpak/exports/share/icons/hicolor/48x48/apps/{name}.png"),
+        format!("/run/host/var/lib/flatpak/exports/share/icons/hicolor/scalable/apps/{name}.svg"),
+        format!("/run/host/var/lib/flatpak/exports/share/icons/hicolor/48x48/apps/{name}.png"),
+
     ];
 
     for path_str in flatpak_candidates.iter()
