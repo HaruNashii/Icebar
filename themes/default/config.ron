@@ -836,6 +836,7 @@ BarConfig
             //		command_to_exec_on_right_click: ["echo", "IT'S WORKING!!!"],
             //),
             // === Example of an button that displays the continous output ===
+	    //(
             // 		name: "Playerctl Status - Artist - Media",
             //		text: "",
             //		text_size: 15,
@@ -852,7 +853,7 @@ BarConfig
             //		dont_show_if_any_output_is_empty: false,
             //		use_output_as_text: false,
             //		use_continous_output_as_text: true,
-            //		all_output_as_text_format: "    {continous_output}",
+            //		all_output_as_text_format: " {continous_output}",
             //      	output_text_limit_len: 50,
             //      	continous_command_interval: 500,
             //		continous_command: ["playerctl", "--player=spotify", "metadata", "--format", "{{ artist }} - {{ title }}"]
