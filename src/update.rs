@@ -72,6 +72,7 @@ pub enum Message
     VolumeUpdated(f32, bool, f32, bool),
     FocusedWindowSwayFetched(Option<String>),
     FocusedWindowNiriFetched(Option<String>),
+    FocusedWindowHyprFetched(Option<String>),
     SwayWorkspacesFetched(i32, Vec<i32>),
     NiriWorkspacesFetched(i32, Vec<i32>),
     HyprWorkspacesFetched(i32, Vec<i32>),
@@ -197,14 +198,14 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::UpdateRam => { if let Some(data) = read_ram_data() { app.modules_data.ram_data = data; }},
         Message::FocusedWindowNiriFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); }
         Message::FocusedWindowSwayFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); }
+        Message::FocusedWindowHyprFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); },
         Message::UpdateFocusedWindowNiri => { return Task::perform(tokio::task::spawn_blocking(read_focused_window_niri), |result| Message::FocusedWindowNiriFetched(result.ok().flatten())); }
         Message::UpdateFocusedWindowSway => { return Task::perform(tokio::task::spawn_blocking(read_focused_window_sway), |result| Message::FocusedWindowSwayFetched(result.ok().flatten())); }
-        Message::UpdateFocusedWindowHypr => { app.modules_data.focused_window_data.title = read_focused_window_hypr().unwrap_or_default(); },
+        Message::UpdateFocusedWindowHypr => { return Task::perform( tokio::task::spawn_blocking(read_focused_window_hypr), |result| Message::FocusedWindowHyprFetched(result.ok().flatten()),); }
+        Message::MediaPlayerDataFetched(data) => { app.modules_data.media_player_data = data; }
         Message::SwayWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace  = current; app.modules_data.workspace_data.visible_workspaces = list; }
         Message::NiriWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace  = current; app.modules_data.workspace_data.visible_workspaces = list; }
         Message::HyprWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace  = current; app.modules_data.workspace_data.visible_workspaces = list; }
-        Message::MediaPlayerDataFetched(data) => { app.modules_data.media_player_data = data; }
-
         Message::PlasmaWorkspacesFetched(current, list, ids) =>
         {
             app.modules_data.workspace_data.current_workspace  = current;
