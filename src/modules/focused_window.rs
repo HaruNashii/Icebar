@@ -105,9 +105,9 @@ pub struct FocusedWindowData
 
 
 // ============ FUNCTIONS ============
-pub fn read_focused_window_hypr() -> Option<String>
+pub async fn read_focused_window_hypr() -> Option<String>
 {
-    let client = hyprland::data::Client::get_active().ok()??;
+    let client = hyprland::data::Client::get_active_async().await.ok()??;
     Some(client.title)
 }
 

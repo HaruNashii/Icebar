@@ -201,7 +201,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::FocusedWindowHyprFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); },
         Message::UpdateFocusedWindowNiri => { return Task::perform(tokio::task::spawn_blocking(read_focused_window_niri), |result| Message::FocusedWindowNiriFetched(result.ok().flatten())); }
         Message::UpdateFocusedWindowSway => { return Task::perform(tokio::task::spawn_blocking(read_focused_window_sway), |result| Message::FocusedWindowSwayFetched(result.ok().flatten())); }
-        Message::UpdateFocusedWindowHypr => { return Task::perform( tokio::task::spawn_blocking(read_focused_window_hypr), |result| Message::FocusedWindowHyprFetched(result.ok().flatten()),); }
+        Message::UpdateFocusedWindowHypr => { return Task::perform(read_focused_window_hypr(), Message::FocusedWindowHyprFetched); }
         Message::MediaPlayerDataFetched(data) => { app.modules_data.media_player_data = data; }
         Message::SwayWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace  = current; app.modules_data.workspace_data.visible_workspaces = list; }
         Message::NiriWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace  = current; app.modules_data.workspace_data.visible_workspaces = list; }
