@@ -27,6 +27,7 @@ use crate::AppData;
 pub struct VolumeOutputConfig
 {
     pub output_volume_format:                        [String; 6],
+    pub output_volume_unique_format:                 Option<String>,
     pub output_volume_muted_format:                  String,
     pub incremental_steps_output:                    u8,
     pub action_on_left_click_volume_output:          ActionOnClick,
@@ -64,6 +65,7 @@ impl Default for VolumeOutputConfig
         {
             output_volume_format:                        ["   {}%".into(),"󰖀   {}%".into(),"   {}%".into(),"   {}%".into(),"   {}%".into(),"   + {}%".into()],
             output_volume_muted_format:                  "   Muted".into(),
+            output_volume_unique_format:                 None,
             incremental_steps_output:                    10,
             action_on_left_click_volume_output:          ActionOnClick::DefaultAction,
             action_on_right_click_volume_output:         ActionOnClick::DefaultAction,
@@ -161,6 +163,7 @@ impl Default for MutedVolumeOutputConfig
 pub struct VolumeInputConfig
 {
     pub input_volume_format:                        [String; 6],
+    pub input_volume_unique_format:                  Option<String>,
     pub input_volume_muted_format:                  String,
     pub incremental_steps_input:                    u8,
     pub action_on_left_click_volume_input:          ActionOnClick,
@@ -198,6 +201,7 @@ impl Default for VolumeInputConfig
         {
             input_volume_format:                        ["   {}%".into(),"  {}%".into(),"  {}%".into(),"  {}%".into(),"  {}%".into(),"󰢴  {}%".into()],
             input_volume_muted_format:                  "   Muted".into(),
+            input_volume_unique_format:                 None,
             incremental_steps_input:                    10,
             action_on_left_click_volume_input:          ActionOnClick::DefaultAction,
             action_on_right_click_volume_input:         ActionOnClick::DefaultAction,

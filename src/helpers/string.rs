@@ -70,17 +70,14 @@ pub fn find_field_colon(line: &str) -> Option<usize>
 
 
 
-pub fn format_output_volume(vol: f32, muted: bool, formats: &[String; 6], muted_format: &str) -> (String, bool)
+pub fn format_volume(vol: f32, muted: bool, unique_format: Option<String>, formats: &[String; 6], muted_format: &str) -> (String, bool)
 {
     if muted { return (muted_format.to_string(), true); }
-    (apply_format(vol, formats), false)
-}
- 
-
-
-pub fn format_input_volume(vol: f32, muted: bool, formats: &[String; 6], muted_format: &str) -> (String, bool)
-{
-    if muted { return (muted_format.to_string(), true); }
+    if let Some(format_to_send) = unique_format 
+    {
+        let percent = ((vol * 100.0).round() as u32).to_string();
+        return (format_to_send.replace("{}", &percent), false); 
+    };
     (apply_format(vol, formats), false)
 }
  

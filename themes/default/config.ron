@@ -200,6 +200,7 @@ BarConfig
     // ================= VOLUME OUTPUT =================
     volume_output:
     (
+        //output_volume_unique_format:	Some("[Color=(120, 174, 237), String= ]  {}%"),
         output_volume_format:
         (
             "[Color=(120, 174, 237), String=]  {}%",
@@ -271,6 +272,7 @@ BarConfig
     // ================= VOLUME INPUT =================
     volume_input:
     (
+        //input_volume_unique_format:	Some("[Color=(120, 174, 237), String=] {}%"),
         input_volume_format:
         (
             "[Color=(120, 174, 237), String=] {}%",
@@ -432,8 +434,10 @@ BarConfig
         workspace_text_color:                   RGBA((255, 255, 255, 35)),
         workspace_selected_text_color:          RGB((120, 174, 237)),
         workspace_text_orientation:             Horizontal,
-        workspace_text:                         ["•", "•", "•", "•", "•", "•", "•", "•", "•", "•"],
-        workspace_selected_text:                Some(["⬤", "⬤", "⬤", "⬤", "⬤", "⬤", "⬤", "⬤", "⬤", "⬤"]),
+	workspace_unique_text:			Some("•"),
+	workspace_selected_unique_text:		Some("⬤"),
+        //workspace_text:                         ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+        //workspace_selected_text:                Some(["⬤", "⬤", "⬤", "⬤", "⬤", "⬤", "⬤", "⬤", "⬤", "⬤"]),
         workspace_spacing:                      4,
         workspace_padding:                      0,
         workspace_button_color:                 RGBA((0, 0, 0, 0)),

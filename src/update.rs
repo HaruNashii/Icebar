@@ -16,7 +16,7 @@ static WARNING_ONCE: Once = Once::new();
 
 // ============ CRATES ============
 use crate::modules::focused_window::{read_focused_window_hypr, read_focused_window_sway, read_focused_window_niri, };
-use crate::helpers::string::{format_input_volume, format_output_volume};
+use crate::helpers::string::format_volume;
 use crate::modules::cpu_temp::read_cpu_temp;
 use crate::modules::ram::read_ram_data;
 use crate::modules::{plasma, image::preload_image, network::{read_rx_tx, PREV_NET}, disk::read_disk_data, clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
@@ -332,12 +332,12 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             app.modules_data.volume_data.volume_input_raw = in_vol;
 
             // Format output
-            let (output_str, _) = format_output_volume(out_vol, out_muted, &app.ron_config.volume_output.output_volume_format, &app.ron_config.volume_output.output_volume_muted_format);
+            let (output_str, _) = format_volume(out_vol, out_muted, app.ron_config.volume_output.output_volume_unique_format.clone(), &app.ron_config.volume_output.output_volume_format, &app.ron_config.volume_output.output_volume_muted_format);
             app.modules_data.volume_data.output_volume_level = output_str;
             app.modules_data.volume_data.volume_output_is_muted = out_muted;
  
             // Format input
-            let (input_str, _) = format_input_volume(in_vol, in_muted, &app.ron_config.volume_input.input_volume_format, &app.ron_config.volume_input.input_volume_muted_format);
+            let (input_str, _) = format_volume(in_vol, in_muted, app.ron_config.volume_input.input_volume_unique_format.clone(),  &app.ron_config.volume_input.input_volume_format, &app.ron_config.volume_input.input_volume_muted_format);
             app.modules_data.volume_data.input_volume_level = input_str;
             app.modules_data.volume_data.volume_input_is_muted = in_muted;
         }
@@ -461,10 +461,10 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             };
 
 
-            let (output_str, _) = format_output_volume(app.modules_data.volume_data.volume_output_raw, app.modules_data.volume_data.volume_output_is_muted, &app.ron_config.volume_output.output_volume_format, &app.ron_config.volume_output.output_volume_muted_format);
+            let (output_str, _) = format_volume(app.modules_data.volume_data.volume_output_raw, app.modules_data.volume_data.volume_output_is_muted, app.ron_config.volume_output.output_volume_unique_format.clone(), &app.ron_config.volume_output.output_volume_format, &app.ron_config.volume_output.output_volume_muted_format);
             app.modules_data.volume_data.output_volume_level = output_str;
  
-            let (input_str, _) = format_input_volume(app.modules_data.volume_data.volume_input_raw, app.modules_data.volume_data.volume_input_is_muted, &app.ron_config.volume_input.input_volume_format, &app.ron_config.volume_input.input_volume_muted_format);
+            let (input_str, _) = format_volume(app.modules_data.volume_data.volume_input_raw, app.modules_data.volume_data.volume_input_is_muted, app.ron_config.volume_input.input_volume_unique_format.clone(),&app.ron_config.volume_input.input_volume_format, &app.ron_config.volume_input.input_volume_muted_format);
             app.modules_data.volume_data.input_volume_level = input_str;
 
 

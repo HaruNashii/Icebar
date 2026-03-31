@@ -24,11 +24,13 @@ pub struct WorkspaceConfig
     pub workspace_different_selected_width:       Option<u32>,
     pub workspace_different_selected_height:      Option<u32>,
     pub workspace_text_size:                      u32,
+    pub workspace_unique_text:                    Option<String>,
+    pub workspace_selected_unique_text:           Option<String>,
     pub workspace_text:                           Vec<String>,
+    pub workspace_selected_text:                  Option<Vec<String>>,
     pub workspace_text_color:                     ColorType,
     pub workspace_selected_text_color:            ColorType,
     pub workspace_text_orientation:               TextOrientation,
-    pub workspace_selected_text:                  Option<Vec<String>>,
     pub workspace_spacing:                        u32,
     pub workspace_padding:                        u16,
     pub workspace_button_color:                   ColorType,
@@ -67,6 +69,8 @@ impl Default for WorkspaceConfig
             workspace_width:                          30,
             workspace_different_selected_width:       None,
             workspace_different_selected_height:      None,
+            workspace_unique_text:                    None,
+            workspace_selected_unique_text:           None,
             workspace_text_size:                      15,
             workspace_text:                           vec!["1".into(),"2".into(),"3".into(),"4".into(),"5".into(),"6".into(),"7".into(),"8".into(),"9".into(),"10".into()],
             workspace_text_color:                     ColorType::RGB([255, 255, 255]),
@@ -162,19 +166,33 @@ pub fn define_workspaces_text(app: &AppData, id: i32) -> String
 {
     let string_not_oriented = if id == app.modules_data.workspace_data.current_workspace 
     {
-        if let Some(selected) = &app.ron_config.workspace.workspace_selected_text 
+        if let Some(unique_selected_text) = &app.ron_config.workspace.workspace_selected_unique_text
         {
-            let safe_id = id.saturating_sub(1) as usize;
-            selected.get(safe_id).cloned().unwrap_or_else(|| id.to_string()) 
-        } 
-        else 
+            unique_selected_text.to_string()
+        }
+        else
         {
-            id.to_string() 
+            if let Some(selected) = &app.ron_config.workspace.workspace_selected_text 
+            {
+                let safe_id = id.saturating_sub(1) as usize;
+                selected.get(safe_id).cloned().unwrap_or_else(|| id.to_string()) 
+            } 
+            else 
+            {
+                id.to_string() 
+            }
         }
     } 
     else 
     { 
-        app.ron_config.workspace.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
+        if let Some(unique_text) = &app.ron_config.workspace.workspace_unique_text
+        {
+            unique_text.to_string()
+        }
+        else
+        {
+            app.ron_config.workspace.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
+        }
     };
 
     orient_text(&string_not_oriented, &app.ron_config.workspace.workspace_text_orientation)
