@@ -61,8 +61,8 @@ pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Opt
     };
 
 
-    let ron_file_config_path = Path::new(&path);
-    let ron_config_path = Path::new(&file_path);
+    let ron_file_config_path = Path::new(&file_path);
+    let ron_config_path = Path::new(&path);
 
     if Path::exists(ron_config_path)
     {
