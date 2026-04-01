@@ -108,7 +108,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
 
     if let Some(reload_interval) = app.ron_config.general.bar_check_reload_interval_ms 
     {
-        subs.push(config_file_watcher(reload_interval));
+        subs.push(config_file_watcher(reload_interval, app.cli_data.config.clone()));
     };
 
     iced::Subscription::batch(subs)
