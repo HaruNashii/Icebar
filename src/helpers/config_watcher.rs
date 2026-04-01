@@ -14,9 +14,7 @@ use crate::update::Message;
 
 
 // ============ FUNCTIONS ============
-pub fn config_file_watcher(reload_interval: u64, cli_config: Option<String>) -> iced::Subscription<Message> {
-    iced::Subscription::run_with((reload_interval, cli_config), config_watcher_stream)
-}
+pub fn config_file_watcher(reload_interval: u64, cli_config: Option<String>) -> iced::Subscription<Message> { iced::Subscription::run_with((reload_interval, cli_config), config_watcher_stream) }
 
 
 

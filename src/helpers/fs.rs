@@ -18,12 +18,13 @@ pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Opt
 
     let path: String = if let Some(ref user_config_path) = different_config_path
     {
+        println!("Using user parsed config path...");
         if user_config_path.ends_with(".ron")
         {
             match user_config_path.rfind('/') 
             {
                 Some(i) => user_config_path[..i].to_string(),
-                None    => return Some("Parsed config path, doesn't exist".to_string())
+                None => user_config_path.to_string(),
             }
         }
         else
