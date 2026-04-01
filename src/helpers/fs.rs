@@ -1,12 +1,12 @@
 // ============ IMPORTS ============
-use std::{io::Write, fs, fs::File, path::Path};
+use std::{fs::{self, File}, io::Write, path::Path};
 
 
 
 
 
 // ============ FUNCTIONS ============
-pub fn check_if_config_file_exists() -> Option<String>
+pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Option<String>
 {
     println!("\n=== FS CHECK RUNNING... ===");
     let home_path = match home::home_dir()
@@ -14,10 +14,55 @@ pub fn check_if_config_file_exists() -> Option<String>
         Some(home_dir) => home_dir.display().to_string(),
         None => return Some("Warning!!!: Failed to get Home directory".to_string()),
     };
-    let ron_config_dir = format!("{}/.config/icebar", home_path);
-    let ron_config_file_dir = format!("{}/config.ron", ron_config_dir);
-    let ron_file_config_path = Path::new(&ron_config_file_dir);
-    let ron_config_path = Path::new(&ron_config_dir);
+
+
+    let path: String = if let Some(ref user_config_path) = different_config_path
+    {
+        if user_config_path.ends_with(".ron")
+        {
+            match user_config_path.rfind('/') 
+            {
+                Some(i) => user_config_path[..i].to_string(),
+                None    => return Some("Parsed config path, doesn't exist".to_string())
+            }
+        }
+        else
+        {
+            user_config_path.to_owned()
+        }
+    }
+    else
+    {
+        format!("{}/.config/icebar", home_path)
+    };
+
+
+    let file_path = if let Some(ref user_config_path) = different_config_path
+    {
+        if user_config_path.ends_with(".ron")
+        {
+            user_config_path.to_owned()
+        }
+        else
+        {
+            if user_config_path.ends_with("/")
+            {
+                format!("{user_config_path}config.ron")
+            }
+            else
+            {
+                format!("{user_config_path}/config.ron")
+            }
+        }
+    }
+    else
+    {
+        format!("{}/.config/icebar/config.ron", home_path)
+    };
+
+
+    let ron_file_config_path = Path::new(&path);
+    let ron_config_path = Path::new(&file_path);
 
     if Path::exists(ron_config_path)
     {
@@ -25,6 +70,11 @@ pub fn check_if_config_file_exists() -> Option<String>
     }
     else
     {
+        if different_config_path.is_some()
+        {
+            eprintln!("Warning!!!: User parsed Ron config directory doesn't exist!!!");
+            return Some("Warning!!!: User parsed Ron config directory doesn't exist!!!".to_string())
+        };
         println!("Ron config directory doesn't exist, Creating...");
         if let Err(err) = fs::create_dir_all(ron_config_path)
         {
@@ -38,6 +88,11 @@ pub fn check_if_config_file_exists() -> Option<String>
     }
     else
     {
+        if different_config_path.is_some()
+        {
+            eprintln!("Warning!!!: User parsed Ron config file doesn't exist!!!");
+            return Some("Warning!!!: User parsed Ron config file doesn't exist!!!".to_string())
+        };
         println!("Ron config file doesn't exist, Creating...");
         let ron_default_data = r#"//==============================================================================================================================================
 // This file is auto-generated when icebar detects that the config file or config directory doesn't exist.

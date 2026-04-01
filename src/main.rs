@@ -1,6 +1,7 @@
 // ============ IMPORTS ============
 use iced_layershell::{daemon, settings::{StartMode, LayerShellSettings, Settings}};
 use std::{sync::OnceLock, collections::HashMap, time::{Instant, Duration}};
+use clap::Parser;
 use iced::Font;
 
 
@@ -42,6 +43,13 @@ mod ron;
 
 
 // ============ ENUM/STRUCT, ETC ============
+#[derive(Default, Parser, Clone)]
+struct Cli 
+{
+    #[arg(short = 'c', long = "config")]
+    config: Option<String>,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WindowInfo 
 {
@@ -61,6 +69,7 @@ pub struct AppData
     config_parsed_failed: bool,
     ron_config: BarConfig,
     default_font: Font,
+    cli_data: Cli,
 }
 
 
@@ -72,8 +81,9 @@ pub struct AppData
 #[tokio::main]
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
-    check_if_config_file_exists();
-    let (ron_config, current_clock_timezone, active_modules, (mut config_parsed_failed, mut warning_err)) = read_ron_config();
+    let args = Cli::parse();
+    check_if_config_file_exists(args.config.clone());
+    let (ron_config, current_clock_timezone, active_modules, (mut config_parsed_failed, mut warning_err)) = read_ron_config(args.config.clone());
     let preloaded_images = preload_image(&mut warning_err, &mut config_parsed_failed, &ron_config.image.images);
     let anchor_position = define_bar_anchor_position(&ron_config.general.bar_position);
     let monitor_res = get_monitor_res(ron_config.general.display.clone());
@@ -115,6 +125,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         monitor_size: (monitor_res.0, monitor_res.1),
         ron_config: ron_config_clone, 
         modules_data,
+        cli_data: args,
         ..Default::default()
     };
     let validated_bar_data = validate_bar_data(&mut app_data);

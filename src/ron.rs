@@ -1,6 +1,6 @@
 // ============ IMPORTS ============
 use serde::{Deserialize, Serialize};
-use std::{fs, collections::HashSet};
+use std::{collections::HashSet, fs, path::PathBuf};
 
 
 
@@ -208,21 +208,46 @@ pub struct BarConfig
 
 
 // ============ FUNCTIONS ============
-pub fn read_ron_config() -> RonReturn
+pub fn read_ron_config(different_config_path: Option<String>) -> RonReturn
 {
 
     println!("\n=== READING CONFIG FILE ===");
-    let home_path = match home::home_dir()
+    let path = if let Some(user_config_path) = different_config_path
     {
-        Some(home_dir) => home_dir,
-        None => 
+        let path_string = if user_config_path.ends_with(".ron")
         {
-            let mut modules_hashmap = HashSet::new();
-            modules_hashmap.insert(Modules::Clock);
-            return (BarConfig::default(), None, modules_hashmap, (true, "Warning!!!: Failed to get Home directory".to_string()))
+            user_config_path
         }
+        else
+        {
+            if user_config_path.ends_with("/")
+            {
+                format!("{user_config_path}config.ron")
+            }
+            else
+            {
+                format!("{user_config_path}/config.ron")
+            }
+        };
+        let mut path = PathBuf::new();
+        path.push(path_string);
+        path
+    }
+    else
+    {
+        let home_path = match home::home_dir()
+        {
+            Some(home_dir) => home_dir,
+            None => 
+            {
+                let mut modules_hashmap = HashSet::new();
+                modules_hashmap.insert(Modules::Clock);
+                return (BarConfig::default(), None, modules_hashmap, (true, "Warning!!!: Failed to get Home directory".to_string()))
+            }
+        };
+        home_path.join(".config/icebar/config.ron")
     };
-    let path = home_path.join(".config/icebar/config.ron");
+
     let mut config_failed = false;
     let mut warning_logs = String::new();
 

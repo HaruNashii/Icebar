@@ -409,8 +409,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             let Some(&id) = MAIN_ID.get() else { return Task::none(); };
             println!("\n=== CONFIG RELOAD ===");
             println!("[icebar] config.ron changed — reloading in place...");
-            check_if_config_file_exists();
-            let (new_config, current_clock_timezone, active_modules, (mut config_parsed_failed, mut warning_err)) = read_ron_config();
+            check_if_config_file_exists(app.cli_data.config.clone());
+            let (new_config, current_clock_timezone, active_modules, (mut config_parsed_failed, mut warning_err)) = read_ron_config(app.cli_data.config.clone());
             let preloaded_images = preload_image(&mut warning_err, &mut config_parsed_failed, &new_config.image.images);
             let new_anchor = define_bar_anchor_position(&new_config.general.bar_position);
             let monitor_res = get_monitor_res(new_config.general.display.clone());
@@ -437,6 +437,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 monitor_size: monitor_res,
                 ron_config: new_config, 
                 modules_data,
+                cli_data: app.cli_data.clone(),
                 ..Default::default()
             };
 
