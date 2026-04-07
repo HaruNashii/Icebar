@@ -30,6 +30,12 @@ mod tests
     use super::*;
  
     // ---- no persistent workspaces ------------------------------------------
+    #[test]
+    fn duplicate_real_workspaces_no_persistent_deduplicated() 
+    {
+        let result = build_workspace_list(&[1, 1, 2], None);
+        assert_eq!(result, vec![1, 2]);
+    }
  
     #[test]
     fn real_workspaces_no_persistent_returns_sorted_real()
