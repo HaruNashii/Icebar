@@ -173,7 +173,7 @@ BarConfig
     // ================= MUTED VOLUME OUTPUT =================
     muted_volume_output:
     (
-        muted_volume_output_padding:                            7,
+        muted_volume_output_padding:                            0,
         muted_volume_output_text_size:                          15,
         muted_volume_output_text_color:                         RGB((0, 0, 0)),
         muted_volume_output_text_orientation:                   Horizontal,
@@ -215,7 +215,7 @@ BarConfig
         incremental_steps_input:                        10,
         action_on_left_click_volume_input:              DefaultAction,
         action_on_right_click_volume_input:             CustomAction(["kitty", "pulsemixer"]),
-        volume_input_padding:                           7,
+        volume_input_padding:                           0,
         volume_input_text_size:                         15,
         volume_input_text_color:                        RGB((205, 214, 244)),
         volume_input_text_orientation:                  Horizontal,
@@ -244,7 +244,7 @@ BarConfig
     // ================= MUTED VOLUME INPUT =================
     muted_volume_input:
     (
-        muted_volume_input_padding:                         7,
+        muted_volume_input_padding:                         0,
         muted_volume_input_text_size:                       15,
         muted_volume_input_text_color:                      RGB((0, 0, 0)),
         muted_volume_input_text_orientation:                Horizontal,
@@ -290,7 +290,7 @@ BarConfig
         ),
         action_on_left_click_network:           DefaultAction,
         action_on_right_click_network:          DefaultAction,
-        network_padding:                        7,
+        network_padding:                        0,
         network_text_size:                      15,
         network_text_color:                     RGB((205, 214, 244)),
         network_text_orientation:               Horizontal,
@@ -322,7 +322,7 @@ BarConfig
         alt_network_module_format:          "{level}   {id}",
         alt_network_level_format:           ("󰖩", "󱚵", "󱚼", "󰖪"),
         alt_network_connection_type_icons:  ("󰈀", "", "?"),
-        alt_network_padding:                        7,
+        alt_network_padding:                        0,
         alt_network_text_size:                      15,
         alt_network_text_color:                     RGB((0, 0, 0)),
         alt_network_text_orientation:               Horizontal,
@@ -485,8 +485,8 @@ BarConfig
     // ================= MEDIA PLAYER BUTTONS =================
     media_player_button:
     (
-        media_player_buttons_format:                    ("󰒮", "⏸", "▶", "󰒭"),
-        media_player_button_spacing:                    5,
+        media_player_buttons_format:                    ("󰒮", "⏸", "[Tuning=1]▶", "󰒭"),
+        media_player_button_spacing:                    3,
         media_player_button_padding:                    7,
         media_player_button_text_size:                  15,
         media_player_button_text_color:                 RGB((205, 214, 244)),
@@ -574,8 +574,8 @@ BarConfig
                 use_continous_output_as_text:       false,
                 all_output_as_text_format:          "",
                 output_text_limit_len:              0,
-                command_to_exec_on_left_click:      ["wofi", "--show", "drun"],
-                command_to_exec_on_right_click:     ["wofi", "--show", "run"],
+                command_to_exec_on_left_click:      ["icelauncher"],
+                command_to_exec_on_right_click:     ["icelauncher", "--shell"],
                 continous_command_interval:         500,
                 continous_command:                  []
             ),
