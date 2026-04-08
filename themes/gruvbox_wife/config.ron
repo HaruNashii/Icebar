@@ -360,7 +360,7 @@ BarConfig
         workspace_different_selected_height:    None,
         workspace_text_size:                    15,
         workspace_text_color:                   RGB((255, 255, 255)),
-        workspace_selected_text_color:          RGB((255, 255, 255)),
+        workspace_selected_text_color:       	RGB((235, 219, 178)),
         workspace_text_orientation:             Horizontal,
         workspace_text:
         [
@@ -553,6 +553,7 @@ BarConfig
                 text_size:                      15,
                 text_orientation:               Horizontal,
                 height:                         30,
+		text_color: 			RGB((235, 219, 178)),
                 button_color:                   RGB((152, 151, 26)),
                 button_hovered_color:           RGB((84, 55, 44)),
                 button_hovered_text_color:      RGB((235, 219, 178)),
