@@ -1,7 +1,10 @@
 > [!WARNING]
 > This project is in a very early beta stage.
+>
 > The system is undergoing constant changes and may contain serious bugs, performance issues, or memory leaks.
+> 
 > Use it with caution and expect instability.
+>
 > I’m currently working on three “ice” projects simultaneously—there’s only so much I can realistically handle at once.
 
 
