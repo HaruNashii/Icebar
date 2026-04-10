@@ -168,7 +168,14 @@ pub fn define_workspaces_text(app: &AppData, id: i32) -> String
     {
         if let Some(unique_selected_text) = &app.ron_config.workspace.workspace_selected_unique_text
         {
-            unique_selected_text.to_string()
+            if unique_selected_text.contains("{workspace_number}")
+            {
+                unique_selected_text.replace("{workspace_number}", &id.to_string())
+            }
+            else
+            {
+                unique_selected_text.to_string()
+            }
         }
         else
         {
@@ -187,7 +194,14 @@ pub fn define_workspaces_text(app: &AppData, id: i32) -> String
     { 
         if let Some(unique_text) = &app.ron_config.workspace.workspace_unique_text
         {
-            unique_text.to_string()
+            if unique_text.contains("{workspace_number}")
+            {
+                unique_text.replace("{workspace_number}", &id.to_string())
+            }
+            else
+            {
+                unique_text.to_string()
+            }
         }
         else
         {
