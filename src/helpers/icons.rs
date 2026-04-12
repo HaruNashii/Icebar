@@ -60,6 +60,51 @@ pub async fn fetch_icon(conn: &Connection, combined: &str) -> zbus::Result<TrayE
 
 
 
+pub async fn fetch_attention_icon(conn: &Connection, combined: &str, attention_icon_enabled: bool) -> Option<TrayEvent>
+{
+    if !attention_icon_enabled
+    {
+        return None;
+    }
+
+    let (service, path) = combined.split_once('|').unwrap_or((combined, "/StatusNotifierItem"));
+    let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await.ok()?;
+
+    let status = proxy.get_property::<String>("Status").await.ok()?;
+    if status != "NeedsAttention"
+    {
+        return None;
+    }
+
+    // Prefer raw pixmap data
+    if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("AttentionIconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().max_by_key(|(w, h, _)| w * h)
+    {
+        let rgba_data = data.chunks_exact(4).flat_map(|p| [p[1], p[2], p[3], p[0]]).collect::<Vec<u8>>();
+        return Some(TrayEvent::AttentionIcon { combined: combined.to_string(), data: rgba_data, width: w as u32, height: h as u32 });
+    }
+
+    // Fall back to icon name
+    let theme_path = proxy.get_property::<String>("IconThemePath").await.ok();
+    let try_name = |name: String| { load_icon_with_theme_path(&name, theme_path.as_deref()) };
+
+    if let Ok(name) = proxy.get_property::<String>("AttentionIconName").await
+    {
+        let result = try_name(name.clone()).or_else(||
+        {
+            let base = name.strip_suffix("-symbolic").unwrap_or(&name);
+            if base != name { try_name(base.to_string()) } else { None }
+        });
+        if let Some((d, w, h)) = result
+        {
+            return Some(TrayEvent::AttentionIcon { combined: combined.to_string(), data: d, width: w, height: h });
+        }
+    }
+
+    None
+}
+
+
+
 pub fn try_load_icon(path: &std::path::Path) -> Option<(Vec<u8>, u32, u32)>
 {
     let bytes = std::fs::read(path).ok()?;

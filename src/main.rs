@@ -87,7 +87,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let preloaded_images = preload_image(&mut warning_err, &mut config_parsed_failed, &ron_config.image.images);
     let anchor_position = define_bar_anchor_position(&ron_config.general.bar_position);
     let monitor_res = get_monitor_res(ron_config.general.display.clone());
-    if is_active_module(&active_modules, Modules::Tray) { start_tray(); }
+    if is_active_module(&active_modules, Modules::Tray) { start_tray(ron_config.tray.tray_attention_icon); }
     let ron_config_clone = ron_config.clone();
     let font_name = ron_config.general.font_family;
     let start_mode = match ron_config.general.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };

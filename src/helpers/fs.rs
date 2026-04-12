@@ -115,8 +115,8 @@ pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Opt
 //
 //=================================================================[  TIPS  ]===================================================================
 // All possible modules:
-//   "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri", "PlasmaWorkspaces",
-//   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces",
+//   "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri",
+//   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "PlasmaWorkspaces",
 //   "MediaPlayerMetaData", "MediaPlayerButtons",
 //   "CustomModule(index)", "Image(index)",
 //   "CpuTemp", "Ram", "Cpu", "Disk",
@@ -566,6 +566,7 @@ BarConfig
     // ================= TRAY =================
     tray:
     (
+        tray_attention_icon:                true,
         tray_icon_size:                     19,
         tray_spacing:                       4,
         tray_button_size:                   4,

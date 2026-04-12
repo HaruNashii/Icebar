@@ -12,7 +12,7 @@ use std::sync::LazyLock;
 
 
 // ============ CRATES ============
-use crate::helpers::{color::{ColorType, Gradient}, icons::fetch_icon, string::normalize_item, style::{SideOption, UserStyle, set_style}};
+use crate::helpers::{color::{ColorType, Gradient}, icons::{fetch_icon, fetch_attention_icon}, string::normalize_item, style::{SideOption, UserStyle, set_style}};
 use crate::update::Message;
 use crate::AppData;
 
@@ -61,12 +61,23 @@ pub enum TrayEvent
         height: u32,
         width: u32,
     },
+    AttentionIcon
+    {
+        combined: String,
+        data: Vec<u8>,
+        height: u32,
+        width: u32,
+    },
+    /// Emitted when an item's status returns to Active/Passive —
+    /// the caller should re-fetch and display the normal icon.
+    IconRestored(String),
 }
 
 pub struct StatusNotifierWatcher 
 {
     pub sender: Sender<TrayEvent>,
     pub connection: Connection,
+    pub attention_icon_enabled: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -110,6 +121,7 @@ pub struct TrayConfig
     pub tray_button_shadow_x:              f32,
     pub tray_button_shadow_y:              f32,
     pub tray_button_shadow_blur:           f32,
+    pub tray_attention_icon:               bool,
 }
 
 impl Default for TrayConfig
@@ -140,6 +152,7 @@ impl Default for TrayConfig
             tray_button_shadow_x:              0.0,
             tray_button_shadow_y:              0.0,
             tray_button_shadow_blur:           0.0,
+            tray_attention_icon:               true,
         }
     }
 }
@@ -158,7 +171,7 @@ pub fn tray_stream(_: &TraySubscription) -> Pin<Box<dyn Stream<Item = Message> +
 
 
 
-pub fn start_tray() 
+pub fn start_tray(attention_icon_enabled: bool) 
 {
     if TRAY_RECEIVER.lock().unwrap_or_else(|p| p.into_inner()).is_some() 
     {
@@ -195,7 +208,7 @@ pub fn start_tray()
     
     tokio::spawn(async move 
     {
-        if let Err(e) = start_watcher(tx).await { eprintln!("Watcher failed: {e}"); }
+        if let Err(e) = start_watcher(tx, attention_icon_enabled).await { eprintln!("Watcher failed: {e}"); }
     });
 }
 
@@ -237,6 +250,11 @@ impl StatusNotifierWatcher
         {
             let _ = self.sender.send(icon).await;
         }
+        if let Some(attn) = fetch_attention_icon(&self.connection, &combined, self.attention_icon_enabled).await
+        {
+            let _ = self.sender.send(attn).await;
+        }
+        spawn_item_watcher(combined.clone(), self.sender.clone(), self.attention_icon_enabled);
     }
 
     #[zbus(property)]
@@ -260,7 +278,7 @@ impl StatusNotifierWatcher
 
 
 
-pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()> 
+pub async fn start_watcher(sender: Sender<TrayEvent>, attention_icon_enabled: bool) -> zbus::Result<()> 
 {
     let connection = Connection::session().await?;
 
@@ -289,6 +307,11 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
             {
                 let _ = sender.send(icon).await;
             }
+            if let Some(attn) = fetch_attention_icon(&connection, &combined, attention_icon_enabled).await
+            {
+                let _ = sender.send(attn).await;
+            }
+            spawn_item_watcher(combined.clone(), sender.clone(), attention_icon_enabled);
         }
 
         // Listen for new registrations
@@ -312,6 +335,11 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
                             {
                                 let _ = sender.send(icon).await;
                             }
+                            if let Some(attn) = fetch_attention_icon(&connection, &combined, attention_icon_enabled).await
+                            {
+                                let _ = sender.send(attn).await;
+                            }
+                            spawn_item_watcher(combined.clone(), sender.clone(), attention_icon_enabled);
                         }
                     }
                     Some(msg) = unregister_stream.next() => 
@@ -330,7 +358,7 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
     }
 
     connection.request_name("org.kde.StatusNotifierWatcher").await?;
-    connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender: sender.clone(), connection: connection.clone() }).await?;
+    connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender: sender.clone(), connection: connection.clone(), attention_icon_enabled }).await?;
     let ctxt = SignalEmitter::new(&connection, "/StatusNotifierWatcher")?;
     StatusNotifierWatcher::status_notifier_host_registered(&ctxt).await?;
     println!("\n=== StatusNotifier ===");
@@ -430,6 +458,95 @@ fn extract_layout_node(id: i32, props: &HashMap<String, zbus::zvariant::OwnedVal
             extract_layout_node(child_id, &child_props, &child_children, out);
         }
     }
+}
+
+
+
+/// Spawns a background task that watches a single tray item for status and
+/// icon-change signals. When the item emits `NewStatus("NeedsAttention")` or
+/// `NewAttentionIcon` the task sends `TrayEvent::AttentionIcon`; when the
+/// status returns to `Active` or `Passive` it sends `TrayEvent::IconRestored`
+/// so the caller can switch back to the normal icon.
+pub fn spawn_item_watcher(combined: String, sender: Sender<TrayEvent>, attention_icon_enabled: bool)
+{
+    tokio::spawn(async move
+    {
+        let conn = match Connection::session().await
+        {
+            Ok(c) => c,
+            Err(e) => { eprintln!("spawn_item_watcher: session bus error: {e}"); return; }
+        };
+
+        let (service, path) = combined.split_once('|').unwrap_or((&combined, "/StatusNotifierItem"));
+        let proxy = match zbus::Proxy::new(&conn, service, path, "org.kde.StatusNotifierItem").await
+        {
+            Ok(p) => p,
+            Err(e) => { eprintln!("spawn_item_watcher: proxy error for {combined}: {e}"); return; }
+        };
+
+        // Subscribe to both signals before entering the loop so we don't miss
+        // a rapid status change that happens right after registration.
+        let mut status_stream = match proxy.receive_signal("NewStatus").await
+        {
+            Ok(s) => s,
+            Err(e) => { eprintln!("spawn_item_watcher: NewStatus subscribe error: {e}"); return; }
+        };
+        let mut attn_stream = match proxy.receive_signal("NewAttentionIcon").await
+        {
+            Ok(s) => s,
+            Err(e) => { eprintln!("spawn_item_watcher: NewAttentionIcon subscribe error: {e}"); return; }
+        };
+        let mut icon_stream = match proxy.receive_signal("NewIcon").await
+        {
+            Ok(s) => s,
+            Err(e) => { eprintln!("spawn_item_watcher: NewIcon subscribe error: {e}"); return; }
+        };
+
+        loop
+        {
+            tokio::select!
+            {
+                // ── Status changed ────────────────────────────────────────
+                Some(msg) = status_stream.next() =>
+                {
+                    let status = msg.body().deserialize::<(String,)>().map(|(s,)| s).unwrap_or_default();
+                    println!("\n=== Tray status changed ===\n{combined}: {status}");
+
+                    if status == "NeedsAttention" && attention_icon_enabled
+                    {
+                        if let Some(attn) = fetch_attention_icon(&conn, &combined, true).await
+                        {
+                            let _ = sender.send(attn).await;
+                        }
+                    }
+                    else
+                    {
+                        // Status went back to Active/Passive — restore normal icon
+                        let _ = sender.send(TrayEvent::IconRestored(combined.clone())).await;
+                    }
+                }
+
+                // ── App signalled that its attention icon changed ──────────
+                Some(_) = attn_stream.next() =>
+                {
+                    if !attention_icon_enabled { continue; }
+                    // Only use it if the item is actually in NeedsAttention
+                    if let Some(attn) = fetch_attention_icon(&conn, &combined, true).await
+                    {
+                        let _ = sender.send(attn).await;
+                    }
+                }
+
+                // ── Normal icon changed ───────────────────────────────────
+                Some(_) = icon_stream.next() =>
+                {
+                    // Re-fetch the normal icon and send IconRestored so
+                    // update.rs can re-load it via fetch_icon.
+                    let _ = sender.send(TrayEvent::IconRestored(combined.clone())).await;
+                }
+            }
+        }
+    });
 }
 
 

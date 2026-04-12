@@ -660,6 +660,37 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                     }
                 }
 
+                TrayEvent::AttentionIcon { combined, data, width, height } =>
+                {
+                    // Overwrite the stored icon handle with the attention icon so
+                    // apps like Discord/Signal show their notification badge.
+                    if let Some((handle, _)) = app.modules_data.tray_icons.iter_mut().find(|(_, s)| s == &combined)
+                    {
+                        *handle = Some(image::Handle::from_rgba(width, height, data));
+                    }
+                }
+
+                TrayEvent::IconRestored(combined) =>
+                {
+                    // Status went back to Active/Passive (or the normal icon changed):
+                    // re-fetch the normal icon asynchronously and push it back in.
+                    return Task::perform(
+                        async move
+                        {
+                            let conn = zbus::Connection::session().await.ok()?;
+                            crate::helpers::icons::fetch_icon(&conn, &combined).await.ok()
+                        },
+                        |maybe_event|
+                        {
+                            match maybe_event
+                            {
+                                Some(event) => Message::TrayEvent(event),
+                                None => Message::Nothing,
+                            }
+                        }
+                    );
+                }
+
             }
         }
 
@@ -1210,5 +1241,64 @@ mod tests
         assert!(app.modules_data.tray_icons[0].0.is_none()); // untouched
         assert!(app.modules_data.tray_icons[1].0.is_some()); // assigned
         assert!(app.modules_data.tray_icons[2].0.is_none()); // untouched
+    }
+
+    // ---- TrayEvent: AttentionIcon -------------------------------------------
+
+    #[test]
+    fn attention_icon_overwrites_existing_handle()
+    {
+        let mut app = AppData::default();
+        app.modules_data.tray_icons = vec![(None, "svc|/path".into())];
+
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::AttentionIcon {
+            combined: "svc|/path".into(),
+            data: vec![255u8; 4],
+            width: 1,
+            height: 1,
+        }));
+
+        assert!(app.modules_data.tray_icons[0].0.is_some());
+    }
+
+    #[test]
+    fn attention_icon_unknown_combined_does_not_panic()
+    {
+        let mut app = AppData::default();
+        app.modules_data.tray_icons = vec![(None, "svc|/path".into())];
+
+        // Should silently do nothing
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::AttentionIcon {
+            combined: "other|/path".into(),
+            data: vec![0u8; 4],
+            width: 1,
+            height: 1,
+        }));
+
+        assert!(app.modules_data.tray_icons[0].0.is_none());
+    }
+
+    // ---- TrayEvent: IconRestored --------------------------------------------
+
+    #[test]
+    fn icon_restored_returns_task_for_known_item()
+    {
+        let mut app = AppData::default();
+        app.modules_data.tray_icons = vec![(None, "svc|/path".into())];
+
+        // Task::perform is returned — the test just checks it doesn't panic
+        // and the item list is unchanged (the async re-fetch happens later).
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::IconRestored("svc|/path".into())));
+        assert_eq!(app.modules_data.tray_icons.len(), 1);
+    }
+
+    #[test]
+    fn icon_restored_unknown_combined_does_not_panic()
+    {
+        let mut app = AppData::default();
+        app.modules_data.tray_icons = vec![(None, "svc|/path".into())];
+
+        let _ = update(&mut app, Message::TrayEvent(TrayEvent::IconRestored("ghost|/path".into())));
+        assert_eq!(app.modules_data.tray_icons.len(), 1);
     }
 }
