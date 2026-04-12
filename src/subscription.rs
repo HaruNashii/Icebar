@@ -59,6 +59,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             Modules::Cpu =>                 subs.push(time::every(Duration::from_millis(app.ron_config.cpu.cpu_update_interval)).map(|_| Message::UpdateCpu)),
             Modules::CpuTemp =>             subs.push(time::every(Duration::from_millis(app.ron_config.cpu_temp.cpu_temp_update_interval)).map(|_| Message::UpdateCpuTemp)),
             Modules::Ram =>                 subs.push(time::every(Duration::from_millis(app.ron_config.ram.ram_update_interval)).map(|_| Message::UpdateRam)),
+            Modules::PowerProfile =>        subs.push(time::every(Duration::from_millis(app.ron_config.power_profile.power_profile_update_interval)).map(|_| Message::UpdatePowerProfile)),
             Modules::FocusedWindowNiri =>   subs.push(time::every(Duration::from_millis(app.ron_config.focused_window.focused_window_update_interval)).map(|_| Message::UpdateFocusedWindowNiri)),
             Modules::Clock =>               subs.push(time::every(Duration::from_millis(app.ron_config.clock.clock_update_interval)).map(|_| Message::UpdateClock)),
             Modules::NiriWorkspaces =>      subs.push(time::every(Duration::from_millis(app.ron_config.workspace.niri_workspaces_update_interval)).map(|_| Message::UpdateNiriWorkspaces)),

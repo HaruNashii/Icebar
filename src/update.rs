@@ -19,6 +19,7 @@ use crate::modules::focused_window::{read_focused_window_hypr, read_focused_wind
 use crate::helpers::string::format_volume;
 use crate::modules::cpu_temp::read_cpu_temp;
 use crate::modules::ram::read_ram_data;
+use crate::modules::power_profile::{read_power_profile, cycle_power_profile};
 use crate::modules::{plasma, image::preload_image, network::{read_rx_tx, PREV_NET}, disk::read_disk_data, clock::cycle_clock_timezones, cpu::{compute_cpu_usage, read_cpu_snapshot}};
 use crate::{helpers::{misc::define_bar_anchor_position, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
 use crate::helpers::{misc::{is_active_module, validate_bar_data}, workspaces::build_workspace_list };
@@ -84,6 +85,8 @@ pub enum Message
     UpdateRam,
     UpdateCpu,
     UpdateCpuTemp,
+    UpdatePowerProfile,
+    CyclePowerProfile,
     UpdateFocusedWindowNiri,
     UpdateFocusedWindowSway,
     UpdateFocusedWindowHypr,
@@ -196,6 +199,20 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::ToggleAltClockAndCycleClockTimeZones => { app.modules_data.clock_data.is_showing_alt_clock = !app.modules_data.clock_data.is_showing_alt_clock; cycle_clock_timezones(app); },
         Message::UpdateCpuTemp => if let Some(temp) = read_cpu_temp() { app.modules_data.cpu_temp_data.temp_celsius = temp; }
         Message::UpdateRam => { if let Some(data) = read_ram_data() { app.modules_data.ram_data = data; }},
+        Message::UpdatePowerProfile =>
+        {
+            if let Some(profile) = read_power_profile()
+            {
+                app.modules_data.power_profile_data.current_profile = profile;
+            }
+        }
+        Message::CyclePowerProfile =>
+        {
+            if let Some(new_profile) = cycle_power_profile(&app.modules_data.power_profile_data.current_profile)
+            {
+                app.modules_data.power_profile_data.current_profile = new_profile;
+            }
+        }
         Message::FocusedWindowNiriFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); }
         Message::FocusedWindowSwayFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); }
         Message::FocusedWindowHyprFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); },

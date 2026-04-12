@@ -91,6 +91,7 @@ X11 is **not supported**.
 - Wayland layer-shell protocol
 - libpulse (Volume Data Fetcher) 
 - wpctl (Volume Action handling) 
+- power-profiles-daemon (Power Profile Management)
 
 > ⚠️ **Audio stack note:** Icebar reads volume data via `libpulse` (PulseAudio) but controls volume via `wpctl` (PipeWire/WirePlumber). On systems running **pure PipeWire without the PulseAudio compatibility layer**, the volume display will not update even though scroll and mute controls work fine. To fix this, install `pipewire-pulse` (the package name may vary by distro), which provides the PulseAudio interface on top of PipeWire.
 

@@ -8,7 +8,7 @@ use iced_gif::gif;
 
 // ============ CRATES ============
 use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_text, cpu_temp::{define_cpu_temp_style, define_cpu_temp_text}, focused_window::{define_focused_window_style, define_focused_window_text}, ram::{define_ram_style, define_ram_text}, volume::define_volume_text}};
-use crate::modules::{image::{PreloadedImage, define_image_style}, disk::{define_disk_style, define_disk_text},cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
+use crate::modules::{image::{PreloadedImage, define_image_style}, disk::{define_disk_style, define_disk_text},cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, power_profile::{define_power_profile_rich_text, define_power_profile_style}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::context_menu::context_menu_view;
 use crate::update::Message;
@@ -247,6 +247,25 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     app.ron_config.disk.disk_side_separator_color.to_iced_color(),
                     app.ron_config.disk.disk_side_separator_width,
                     app.ron_config.disk.disk_side_separator_height,
+                )
+            },
+
+
+            // ── PowerProfile ─────────────────────────────────────────────────
+            Modules::PowerProfile =>
+            {
+                let rich = convert_text_to_rich_text::<Message>(&define_power_profile_rich_text(app));
+                let left_click: Message  = match &app.ron_config.power_profile.action_on_left_click_power_profile  { ActionOnClick::DefaultAction => Message::CyclePowerProfile, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "PowerProfile Custom Action".to_string(), true,  false)) };
+                let right_click: Message = match &app.ron_config.power_profile.action_on_right_click_power_profile { ActionOnClick::DefaultAction => Message::CyclePowerProfile, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "PowerProfile Custom Action".to_string(), false, false)) };
+                let inner = create_button_container_without_hover_message(app, app.ron_config.power_profile.power_profile_padding, (rich, app.ron_config.power_profile.power_profile_text_size), left_click, right_click, define_power_profile_style);
+
+                apply_separator
+                (
+                    inner,
+                    app.ron_config.power_profile.power_profile_side_separator,
+                    app.ron_config.power_profile.power_profile_side_separator_color.to_iced_color(),
+                    app.ron_config.power_profile.power_profile_side_separator_width,
+                    app.ron_config.power_profile.power_profile_side_separator_height,
                 )
             },
              

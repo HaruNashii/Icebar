@@ -10,7 +10,7 @@ use iced::Font;
 
 // ============ CRATES ============
 use crate::helpers::{font::build_font, fs::check_if_config_file_exists, misc::{define_bar_anchor_position, is_active_module, validate_bar_data}, monitor::get_monitor_res, string::{intern_string, weight_from_str}, style::{UserStyle, set_style, style} };
-use crate::modules::{custom_modules::CustomModuleData, network::NetworkData, clock::ClockData, image::{ImageData, preload_image}, data::{Modules, ModulesData}, tray::{self, TrayEvent, start_tray}};
+use crate::modules::{custom_modules::CustomModuleData, network::NetworkData, clock::ClockData, image::{ImageData, preload_image}, data::{Modules, ModulesData}, power_profile::{PowerProfileData, read_power_profile}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{read_ron_config, BarConfig};
 use crate::context_menu::ContextMenuData;
 use crate::subscription::subscription;
@@ -113,6 +113,10 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         image_data: ImageData
         {
             preloaded_images_handle: preloaded_images
+        },
+        power_profile_data: PowerProfileData
+        {
+            current_profile: read_power_profile().unwrap_or_default(),
         },
         ..Default::default()
     };

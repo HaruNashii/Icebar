@@ -1,5 +1,6 @@
 pub mod custom_modules;
 pub mod focused_window;
+pub mod power_profile;
 pub mod media_player;
 pub mod workspaces;
 pub mod cpu_temp;

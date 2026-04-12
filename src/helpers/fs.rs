@@ -119,7 +119,7 @@ pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Opt
 //   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "PlasmaWorkspaces",
 //   "MediaPlayerMetaData", "MediaPlayerButtons",
 //   "CustomModule(index)", "Image(index)",
-//   "CpuTemp", "Ram", "Cpu", "Disk",
+//   "CpuTemp", "Ram", "Cpu", "Disk", "PowerProfile"
 //   "VolumeOutput", "VolumeInput",
 //   "Network", "Clock", "Tray"
 //
@@ -180,7 +180,7 @@ BarConfig
         force_static_position_context_menu: None,
         left_modules:                       [CustomModule(0), Cpu, CpuTemp, Ram, Disk],
         center_modules:                     [Clock, MediaPlayerMetaData, MediaPlayerButtons],
-        right_modules:                      [Tray, Network, VolumeOutput, VolumeInput],
+        right_modules:                      [PowerProfile, Tray, Network, VolumeOutput, VolumeInput],
     ),
 
 
@@ -845,6 +845,45 @@ BarConfig
         focused_window_button_shadow_y:                 0.0,
         focused_window_button_shadow_blur:              0.0,
     ),
+
+
+
+    // ================= POWER PROFILE =================
+    power_profile:
+    (
+        // Text shown for each profile. Supports [Color=...] tags.
+        // Left-click (DefaultAction) cycles through: Balanced → Performance → PowerSaver → …
+        power_profile_format_power_saver:   "[Color=(120, 174, 237), String= 󰌪 ] Saver",
+        power_profile_format_balanced:      "[Color=(120, 174, 237), String= 󰈐 ] Balanced",
+        power_profile_format_performance:   "[Color=(120, 174, 237), String= 󱐋 ] Performance",
+        power_profile_update_interval:      5000,
+        action_on_left_click_power_profile:  DefaultAction,
+        action_on_right_click_power_profile: Nothing,
+        power_profile_padding:                   0,
+        power_profile_text_size:                 13,
+        power_profile_text_color:                HEX("ffffff"),
+        power_profile_text_orientation:          Horizontal,
+        power_profile_button_color:              HEX("303030"),
+        power_profile_button_hovered_color:      HEX("3d3d3d"),
+        power_profile_button_hovered_text_color: HEX("ffffff"),
+        power_profile_button_pressed_text_color: HEX("ffffff"),
+        power_profile_button_pressed_color:      HEX("1c1c1c"),
+        power_profile_border_color:              HEX("3d3d3d"),
+        power_profile_border_size:               1.0,
+        power_profile_border_radius:             (6.0, 6.0, 6.0, 6.0),
+        power_profile_side_separator:            None,
+        power_profile_side_separator_color:      HEX("3d3d3d"),
+        power_profile_side_separator_width:      1.,
+        power_profile_side_separator_height:     18.,
+        power_profile_button_gradient_color:         None,
+        power_profile_button_hovered_gradient_color: None,
+        power_profile_button_pressed_gradient_color: None,
+        power_profile_button_shadow_color:           Some(RGBA((0, 0, 0, 50))),
+        power_profile_button_shadow_x:               0.0,
+        power_profile_button_shadow_y:               1.0,
+        power_profile_button_shadow_blur:            3.0,
+    ),
+
 
 
     // ================= IMAGE =================
