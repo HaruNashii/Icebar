@@ -103,7 +103,7 @@ BarConfig
         clock_format: "%H · %M",
         clock_alt_format: "%H · %M · %S    %a %d %b",
         action_on_left_click_clock: DefaultAction,
-        action_on_right_click_clock: CustomAction(["kitty", "bash", "-c", "cal && echo '' && read -n 1"]),
+        action_on_right_click_clock:            ShowCalendar,
         clock_side_separator: None,
         clock_side_separator_color: RGB((75, 75, 75)),
         clock_side_separator_width: 1.,
@@ -621,6 +621,207 @@ BarConfig
         focused_window_button_gradient_color: None,
         focused_window_button_hovered_gradient_color: None,
         focused_window_button_pressed_gradient_color: None,
+    ),
+
+
+
+    // ================= CALENDAR =================
+    calendar_window:
+    (
+        // ── Window ───────────────────────────────────────────────────────
+        calendar_window_size:                   (340, 310),
+
+        // ── Background / frame ───────────────────────────────────────────
+        calendar_background_color:              RGBA((252, 248, 241, 98)),
+        calendar_background_border_color:       RGB((185, 160, 130)),
+        calendar_background_border_size:        1.0,
+        calendar_background_border_radius:      (10.0, 10.0, 10.0, 10.0),
+        calendar_padding:                       8,
+
+        // ── Nav bar ──────────────────────────────────────────────────────
+        calendar_nav_spacing_y:                 0,
+        calendar_nav_position:                  Above,
+        calendar_nav_grid_spacing:              6,
+        calendar_nav_spacing:                   4,
+        calendar_nav_button_height:             28,
+        calendar_nav_button_width:              80,
+        calendar_nav_text_size:                 14,
+        calendar_nav_button_style:
+        (
+            color:               RGB((248, 243, 235)),
+            hovered_color:       RGB((235, 226, 214)),
+            pressed_color:       RGB((218, 206, 190)),
+            text_color:          RGB((80, 60, 45)),
+            hovered_text_color:  RGB((80, 60, 45)),
+            pressed_text_color:  RGB((80, 60, 45)),
+            border_color:        RGB((185, 160, 130)),
+            border_size:         1.0,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
+        calendar_nav_active_button_style:
+        (
+            color:               RGB((180, 80, 35)),
+            hovered_color:       RGB((210, 110, 60)),
+            pressed_color:       RGB((145, 60, 25)),
+            text_color:          RGB((252, 248, 241)),
+            hovered_text_color:  RGB((252, 248, 241)),
+            pressed_text_color:  RGB((252, 248, 241)),
+            border_color:        RGB((200, 110, 65)),
+            border_size:         1.0,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
+
+        // ── Prev / Next arrow buttons ─────────────────────────────────────
+        calendar_prev_label:                    "‹",
+        calendar_next_label:                    "›",
+        calendar_arrow_button_height:           28,
+        calendar_arrow_button_width:            28,
+        calendar_arrow_text_size:               18,
+        calendar_arrow_button_style:
+        (
+            color:               RGB((248, 243, 235)),
+            hovered_color:       RGB((235, 226, 214)),
+            pressed_color:       RGB((218, 206, 190)),
+            text_color:          RGB((80, 60, 45)),
+            hovered_text_color:  RGB((80, 60, 45)),
+            pressed_text_color:  RGB((80, 60, 45)),
+            border_color:        RGB((185, 160, 130)),
+            border_size:         1.0,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
+
+        // ── Month view ────────────────────────────────────────────────────
+	calendar_total_day_cells:		35,
+	calendar_month_spacing_y:		5,
+        calendar_weekday_labels:                ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+        calendar_show_weekday_header:           true,
+        calendar_weekday_header_text_size:      12,
+        calendar_weekday_header_text_color:     RGB((180, 80, 35)),
+        calendar_show_week_numbers:             false,
+        calendar_week_number_text_size:         11,
+        calendar_week_number_text_color:        RGB((160, 130, 105)),
+        calendar_first_week_day:                Monday,
+        calendar_day_cell_width:                40,
+        calendar_day_cell_height:               38,
+        calendar_grid_spacing:                  2,
+        calendar_day_text_size:                 13,
+        calendar_show_overflow_days_prev_month:            true,
+        calendar_show_overflow_days_next_month:            true,
+        calendar_day_button_style:
+        (
+            color:               RGB((248, 243, 235)),
+            hovered_color:       RGB((235, 226, 214)),
+            pressed_color:       RGB((218, 206, 190)),
+            text_color:          RGB((80, 60, 45)),
+            hovered_text_color:  RGB((80, 60, 45)),
+            pressed_text_color:  RGB((80, 60, 45)),
+            border_color:        RGB((185, 160, 130)),
+            border_size:         1.0,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
+        calendar_today_button_style:
+        (
+            color:               RGB((145, 60, 25)),
+            hovered_color:       RGB((180, 80, 35)),
+            pressed_color:       RGB((115, 45, 18)),
+            text_color:          RGB((252, 248, 241)),
+            hovered_text_color:  RGB((252, 248, 241)),
+            pressed_text_color:  RGB((252, 248, 241)),
+            border_color:        RGB((200, 110, 65)),
+            border_size:         1.5,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
+        calendar_selected_day_button_style:
+        (
+            color:               RGB((210, 110, 60)),
+            hovered_color:       RGB((225, 135, 85)),
+            pressed_color:       RGB((180, 80, 35)),
+            text_color:          RGB((252, 248, 241)),
+            hovered_text_color:  RGB((252, 248, 241)),
+            pressed_text_color:  RGB((252, 248, 241)),
+            border_color:        RGB((210, 110, 60)),
+            border_size:         1.5,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
+        calendar_overflow_day_button_style:
+        (
+            color:               RGBA((230, 222, 210, 60)),
+            hovered_color:       RGBA((218, 210, 196, 80)),
+            pressed_color:       RGBA((205, 196, 182, 60)),
+            text_color:          RGB((180, 160, 138)),
+            hovered_text_color:  RGB((155, 132, 110)),
+            pressed_text_color:  RGB((155, 132, 110)),
+            border_color:        RGBA((185, 160, 130, 45)),
+            border_size:         0.5,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
+        calendar_day_click_action:              HighlightOnly,
+
+        // ── Year view ─────────────────────────────────────────────────────
+	calendar_year_spacing_y:		45,
+        calendar_month_cell_width:              55,
+        calendar_month_cell_height:             55,
+        calendar_year_grid_columns:             4,
+        calendar_year_grid_spacing:             4,
+        calendar_month_text_size:               13,
+        calendar_month_labels:                  ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        calendar_month_button_style:
+        (
+            color:               RGB((248, 243, 235)),
+            hovered_color:       RGB((235, 226, 214)),
+            pressed_color:       RGB((218, 206, 190)),
+            text_color:          RGB((80, 60, 45)),
+            hovered_text_color:  RGB((80, 60, 45)),
+            pressed_text_color:  RGB((80, 60, 45)),
+            border_color:        RGB((185, 160, 130)),
+            border_size:         1.0,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
+        calendar_current_month_button_style:
+        (
+            color:               RGB((180, 80, 35)),
+            hovered_color:       RGB((210, 110, 60)),
+            pressed_color:       RGB((145, 60, 25)),
+            text_color:          RGB((252, 248, 241)),
+            hovered_text_color:  RGB((252, 248, 241)),
+            pressed_text_color:  RGB((252, 248, 241)),
+            border_color:        RGB((200, 110, 65)),
+            border_size:         1.5,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
+
+        // ── Decade view ───────────────────────────────────────────────────
+	calendar_decade_spacing_y:		45,
+        calendar_year_cell_width:               55,
+        calendar_year_cell_height:              55,
+        calendar_decade_grid_columns:           4,
+        calendar_decade_grid_spacing:           4,
+        calendar_year_text_size:                13,
+        calendar_year_button_style:
+        (
+            color:               RGB((248, 243, 235)),
+            hovered_color:       RGB((235, 226, 214)),
+            pressed_color:       RGB((218, 206, 190)),
+            text_color:          RGB((80, 60, 45)),
+            hovered_text_color:  RGB((80, 60, 45)),
+            pressed_text_color:  RGB((80, 60, 45)),
+            border_color:        RGB((185, 160, 130)),
+            border_size:         1.0,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
+        calendar_current_year_button_style:
+        (
+            color:               RGB((180, 80, 35)),
+            hovered_color:       RGB((210, 110, 60)),
+            pressed_color:       RGB((145, 60, 25)),
+            text_color:          RGB((252, 248, 241)),
+            hovered_text_color:  RGB((252, 248, 241)),
+            pressed_text_color:  RGB((252, 248, 241)),
+            border_color:        RGB((200, 110, 65)),
+            border_size:         1.5,
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+        ),
     ),
 
 

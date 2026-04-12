@@ -27,6 +27,7 @@ use crate::modules::
 };
 use crate::context_menu::ContextMenuConfig;
 use crate::helpers::{string::find_field_colon, color::{ColorType, Gradient}, ron_general::apply_general_settings, style::{SideOption, TextOrientation}};
+use crate::calendar::CalendarWindowConfig;
 
 
 
@@ -50,14 +51,15 @@ pub enum BarPosition
 }
 
 
-#[derive(Default, Clone, Debug, Deserialize, Serialize)]
+#[derive(Default, Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum ActionOnClick 
 {
     #[default] Nothing,
     DefaultAction,
     CustomAction(Vec<String>),
     CycleClockTimezones,
-    ToggleAltClockAndCycleClockTimezones
+    ToggleAltClockAndCycleClockTimezones,
+    ShowCalendar,
 }
 
 
@@ -203,6 +205,7 @@ pub struct BarConfig
     pub context_menu:           ContextMenuConfig,
     pub image:                  ImageConfig,
     pub custom_module:          CustomModuleConfig,
+    pub calendar_window:        CalendarWindowConfig,
 }
 
 

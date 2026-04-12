@@ -2,6 +2,7 @@
 use iced::{Task, mouse::ScrollDelta, widget::image};
 use std::{sync::Once, time::{Duration, Instant}};
 use iced_layershell::to_layer_message;
+use chrono::Datelike;
 
 
 
@@ -26,6 +27,7 @@ use crate::helpers::{misc::{is_active_module, validate_bar_data}, workspaces::bu
 use crate::context_menu::{create_context_menu, get_context_menu_size};
 use crate::ron::read_ron_config;
 use crate::{warning::create_warning, MAIN_ID, AppData, WindowInfo};
+use crate::calendar::{CalendarView, DayClickAction, create_calendar_window};
 
 
 
@@ -40,6 +42,7 @@ pub enum Message
     TrayAction(String, String, i32, String),
     MouseButtonClicked,
     CloseContextMenu,
+    CloseContextMenuAndCalendar,
     CloseWarning,
 
     MediaPlayerDataFetched(crate::modules::media_player::MediaPlayerData),
@@ -68,6 +71,16 @@ pub enum Message
     ToggleAltClock,
     ConfigChanged,
     Nothing,
+
+    // CALENDAR
+    ShowCalendar,
+    CloseCalendar,
+    CalendarPrev,
+    CalendarNext,
+    CalendarSetView(CalendarView),
+    CalendarDaySelected(u32),
+    CalendarMonthSelected(u32),
+    CalendarYearSelected(i32),
 
     Tick,
     VolumeUpdated(f32, bool, f32, bool),
@@ -149,19 +162,45 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 let (width, height) = get_context_menu_size(&app.context_menu_data, &app.ron_config);
                 app.context_menu_data.cursor_is_inside_menu = position.x >= 0.0 && position.y >= 0.0 && position.x <= width as f32 && position.y <= height as f32;
             }
+            if app.modules_data.calendar_data.is_open
+            {
+                let [cw, ch] = app.ron_config.calendar_window.calendar_window_size;
+                app.modules_data.calendar_data.cursor_inside =
+                    position.x >= 0.0 && position.y >= 0.0
+                    && position.x <= cw as f32 && position.y <= ch as f32;
+            }
+            // Always keep mouse_pos up-to-date for calendar window positioning.
+            app.modules_data.calendar_data.mouse_pos = (position.x as i32, position.y as i32);
         }
 
         Message::MouseButtonClicked =>
         {
+            let mut tasks: Vec<Task<Message>> = Vec::new();
+
+            // ── Context menu ─────────────────────────────────────────────
             let has_context_menu = app.ids.values().any(|v| *v == WindowInfo::ContextMenu);
-            if !has_context_menu { return Task::none(); }  // add this guard
-            app.context_menu_data.context_menu_is_open = false;
-            if !app.context_menu_data.cursor_is_inside_menu
+            if has_context_menu
             {
-                let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
-                for id in &window_ids_to_close { app.ids.remove(id);  }
-                return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+                app.context_menu_data.context_menu_is_open = false;
+                if !app.context_menu_data.cursor_is_inside_menu
+                {
+                    let ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
+                    for id in &ids_to_close { app.ids.remove(id); }
+                    tasks.extend(ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+                }
             }
+
+            // ── Calendar ─────────────────────────────────────────────────
+            let has_calendar = app.ids.values().any(|v| *v == WindowInfo::Calendar);
+            if has_calendar && !app.modules_data.calendar_data.cursor_inside
+            {
+                app.modules_data.calendar_data.is_open = false;
+                let ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::Calendar).map(|(id, _)| *id).collect();
+                for id in &ids_to_close { app.ids.remove(id); }
+                tasks.extend(ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            }
+
+            if !tasks.is_empty() { return Task::batch(tasks); }
         }
 
         Message::CloseContextMenu =>
@@ -170,6 +209,31 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
             for id in &window_ids_to_close { app.ids.remove(id);  }
             return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+        }
+
+        Message::CloseCalendar =>
+        {
+            app.modules_data.calendar_data.is_open = false;
+            let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::Calendar).map(|(id, _)| *id).collect();
+            for id in &window_ids_to_close { app.ids.remove(id); }
+            return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+        }
+
+        Message::CloseContextMenuAndCalendar =>
+        {
+            let mut tasks: Vec<Task<Message>> = Vec::new();
+
+            app.context_menu_data.context_menu_is_open = false;
+            let context_ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
+            for id in &context_ids { app.ids.remove(id); }
+            tasks.extend(context_ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+
+            app.modules_data.calendar_data.is_open = false;
+            let calendar_ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::Calendar).map(|(id, _)| *id).collect();
+            for id in &calendar_ids { app.ids.remove(id); }
+            tasks.extend(calendar_ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+
+            if !tasks.is_empty() { return Task::batch(tasks); }
         }
 
 
@@ -756,6 +820,139 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             
             return create_context_menu(app);
         }
+
+        // ── Calendar ─────────────────────────────────────────────────────────
+        Message::ShowCalendar =>
+        {
+            let already_open = app.ids.values().any(|v| *v == WindowInfo::Calendar);
+            if already_open
+            {
+                // Toggle: close it.
+                app.modules_data.calendar_data.is_open = false;
+                let ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::Calendar).map(|(id, _)| *id).collect();
+                for id in &ids_to_close { app.ids.remove(id); }
+                return Task::batch(ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            }
+            // Open it.
+            app.modules_data.calendar_data.is_open       = true;
+            app.modules_data.calendar_data.cursor_inside = false;
+            return create_calendar_window(app);
+        }
+
+        Message::CalendarPrev =>
+        {
+            match app.modules_data.calendar_data.current_view
+            {
+                CalendarView::Month =>
+                {
+                    let d = app.modules_data.calendar_data.viewing_month;
+                    let (y, m) = if d.month() == 1 { (d.year() - 1, 12u32) } else { (d.year(), d.month() - 1) };
+                    if let Some(nd) = chrono::NaiveDate::from_ymd_opt(y, m, 1)
+                    {
+                        app.modules_data.calendar_data.viewing_month = nd;
+                    }
+                }
+                CalendarView::Year =>
+                {
+                    app.modules_data.calendar_data.viewing_year -= 1;
+                }
+                CalendarView::Decade =>
+                {
+                    app.modules_data.calendar_data.viewing_decade -= 10;
+                }
+            }
+        }
+
+        Message::CalendarNext =>
+        {
+            match app.modules_data.calendar_data.current_view
+            {
+                CalendarView::Month =>
+                {
+                    let d = app.modules_data.calendar_data.viewing_month;
+                    let (y, m) = if d.month() == 12 { (d.year() + 1, 1u32) } else { (d.year(), d.month() + 1) };
+                    if let Some(nd) = chrono::NaiveDate::from_ymd_opt(y, m, 1)
+                    {
+                        app.modules_data.calendar_data.viewing_month = nd;
+                    }
+                }
+                CalendarView::Year =>
+                {
+                    app.modules_data.calendar_data.viewing_year += 1;
+                }
+                CalendarView::Decade =>
+                {
+                    app.modules_data.calendar_data.viewing_decade += 10;
+                }
+            }
+        }
+
+        Message::CalendarSetView(view) =>
+        {
+            // When switching to Year view, sync viewing_year to current month view's year.
+            // When switching to Decade view, sync viewing_decade to current year.
+            match view
+            {
+                CalendarView::Year =>
+                {
+                    app.modules_data.calendar_data.viewing_year =
+                        app.modules_data.calendar_data.viewing_month.year();
+                }
+                CalendarView::Decade =>
+                {
+                    let y = app.modules_data.calendar_data.viewing_year;
+                    app.modules_data.calendar_data.viewing_decade = (y / 10) * 10;
+                }
+                _ => {}
+            }
+            app.modules_data.calendar_data.current_view = view;
+        }
+
+        Message::CalendarMonthSelected(month) =>
+        {
+            // User picked a month in year-view → go to that month and switch to month view.
+            let year = app.modules_data.calendar_data.viewing_year;
+            if let Some(nd) = chrono::NaiveDate::from_ymd_opt(year, month, 1)
+            {
+                app.modules_data.calendar_data.viewing_month = nd;
+            }
+            app.modules_data.calendar_data.current_view = CalendarView::Month;
+        }
+
+        Message::CalendarYearSelected(year) =>
+        {
+            // User picked a year in decade-view → go to that year and switch to year view.
+            app.modules_data.calendar_data.viewing_year  = year;
+            app.modules_data.calendar_data.current_view  = CalendarView::Year;
+        }
+
+        Message::CalendarDaySelected(day) =>
+        {
+            let base  = app.modules_data.calendar_data.viewing_month;
+            let dated = chrono::NaiveDate::from_ymd_opt(base.year(), base.month(), day);
+
+            match &app.ron_config.calendar_window.calendar_day_click_action.clone()
+            {
+                DayClickAction::HighlightOnly =>
+                {
+                    app.modules_data.calendar_data.selected_day = dated;
+                }
+                DayClickAction::CustomAction(cmd) =>
+                {
+                    app.modules_data.calendar_data.selected_day = dated;
+                    if !cmd.is_empty()
+                    {
+                        // Replace {date} placeholder with the selected date.
+                        let date_str = dated.map(|d| d.format("%Y-%m-%d").to_string()).unwrap_or_default();
+                        let expanded: Vec<String> = cmd.iter().map(|part| part.replace("{date}", &date_str)).collect();
+                        return Task::done(Message::CreateCustomModuleCommand(
+                            (None, expanded, "Calendar Day Action".to_string(), true, false)
+                        ));
+                    }
+                }
+            }
+        }
+
         _=> {},
     }
 

@@ -117,7 +117,7 @@ impl Default for ClockConfig
             alt_clock_border_radius: [3.0, 3.0, 3.0, 3.0],
             
             action_on_left_click_clock: ActionOnClick::DefaultAction, 
-            action_on_right_click_clock: ActionOnClick::DefaultAction, 
+            action_on_right_click_clock: ActionOnClick::ShowCalendar, 
             clock_update_interval: 400,
             clock_format: "󰥔  %H:%M".into(),
             clock_alt_format: "󰃭  %a %d %b |  󰥔  %H:%M:%S".into(),

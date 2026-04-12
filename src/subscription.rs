@@ -121,8 +121,8 @@ fn event_reader_with_tray(event: iced::Event, _status: iced::event::Status, _id:
 {
     match event 
     {
-        iced::Event::Keyboard(iced::keyboard::Event::KeyPressed {key: iced::keyboard::Key::Named(iced::keyboard::key::Named::Escape), .. }) => { Some(Message::CloseContextMenu) }
-        iced::Event::Mouse(mouse::Event::ButtonPressed(_)) => { Some(Message::MouseButtonClicked) }
+        iced::Event::Keyboard(iced::keyboard::Event::KeyPressed {key: iced::keyboard::Key::Named(iced::keyboard::key::Named::Escape), .. }) => { Some(Message::CloseContextMenuAndCalendar) }
+        iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => { Some(Message::MouseButtonClicked) }
         iced::Event::Mouse(mouse::Event::WheelScrolled { delta, .. }) => Some(Message::MouseWheelScrolled(delta)),
         iced::Event::Mouse(mouse::Event::CursorMoved { position })    => Some(Message::CursorMoved(position)),
         _ => None
@@ -136,6 +136,8 @@ fn event_reader_without_tray(event: iced::Event, _status: iced::event::Status, _
     match event 
     {
         iced::Event::Mouse(mouse::Event::WheelScrolled { delta, .. }) => Some(Message::MouseWheelScrolled(delta)),
+        iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => Some(Message::MouseButtonClicked),
+        iced::Event::Mouse(mouse::Event::CursorMoved { position })    => Some(Message::CursorMoved(position)),
         _ => None
     }
 }

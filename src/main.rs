@@ -37,6 +37,7 @@ mod warning;
 mod update;
 mod view;
 mod ron;
+mod calendar;
 
 
 
@@ -55,7 +56,8 @@ pub enum WindowInfo
 {
     MainBar,
     Warning,
-    ContextMenu
+    ContextMenu,
+    Calendar,
 }
 
 #[derive(Default, Clone)]

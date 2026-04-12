@@ -9,7 +9,7 @@ use iced::widget::image;
 
 // ============ CRATES ============
 use crate::modules::{clock::ClockData, cpu::CpuData, cpu_temp::CpuTempData, custom_modules::CustomModuleData, disk::DiskData, focused_window::FocusedWindowData, image::ImageData, media_player::MediaPlayerData, network::NetworkData, power_profile::PowerProfileData, ram::RamData, volume::VolumeData, workspaces::WorkspaceData};
-
+use crate::calendar::CalendarData;
 
 
 
@@ -45,13 +45,14 @@ pub enum Modules
 pub struct ModulesData
 {
     pub tray_icons: Vec<(Option<image::Handle>, String)>,
-    pub power_profile_data: PowerProfileData,
     pub focused_window_data: FocusedWindowData,
     pub custom_module_data: CustomModuleData,
+    pub power_profile_data: PowerProfileData,
     pub media_player_data: MediaPlayerData,
-    pub workspace_data: WorkspaceData,
-    pub plasma_desktop_ids: Vec<String>,
     pub active_modules: HashSet<Modules>,
+    pub plasma_desktop_ids: Vec<String>,
+    pub workspace_data: WorkspaceData,
+    pub calendar_data: CalendarData,
     pub cpu_temp_data: CpuTempData,
     pub network_data: NetworkData,
     pub volume_data: VolumeData,
