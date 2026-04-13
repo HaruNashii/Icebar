@@ -97,9 +97,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             {
                 if !volume_sub_added
                 {
-                    subs.push(
-                        iced::Subscription::run(volume_subscription)
-                    );
+                    subs.push(iced::Subscription::run(volume_subscription));
                     volume_sub_added = true;
                 }
             }
@@ -111,6 +109,13 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
     {
         subs.push(config_file_watcher(reload_interval, app.cli_data.config.clone()));
     };
+
+    // ── auto-hide timer ───────────────────────────────────────────────────
+    if app.ron_config.auto_hide.is_some()
+    {
+        // 50 ms granularity is fine for human-perceptible hide/show delays.
+        subs.push(time::every(Duration::from_millis(50)).map(|_| Message::BarVisibilityTick));
+    }
 
     iced::Subscription::batch(subs)
 }

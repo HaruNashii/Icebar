@@ -60,7 +60,7 @@ pub enum WindowInfo
     Calendar,
 }
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct AppData
 { 
     ids: HashMap<iced::window::Id, WindowInfo>,
@@ -72,6 +72,35 @@ pub struct AppData
     ron_config: BarConfig,
     default_font: Font,
     cli_data: Cli,
+
+    // ── auto-hide state ────────────────────────────────────────────────────
+    pub bar_visible: bool,
+    pub cursor_on_bar: bool,
+    pub hide_timer: Option<Instant>,
+    pub show_timer: Option<Instant>,
+}
+
+impl Default for AppData
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            ids: Default::default(),
+            monitor_size: Default::default(),
+            context_menu_data: Default::default(),
+            modules_data: Default::default(),
+            warning_err: Default::default(),
+            config_parsed_failed: Default::default(),
+            ron_config: Default::default(),
+            default_font: Default::default(),
+            cli_data: Default::default(),
+            bar_visible: true,
+            cursor_on_bar: false,
+            hide_timer: None,
+            show_timer: None,
+        }
+    }
 }
 
 

@@ -71,7 +71,12 @@ fn main_bar_view(app: &AppData) -> Element<'_, Message>
 
     container
     (
-        container(content).height(Length::Fixed(fixed_bar_size_y as f32)).width(Length::Fixed(fixed_bar_size_x as f32)).style(bar_style(app))
+        mouse_area
+        (
+            container(content).height(Length::Fixed(fixed_bar_size_y as f32)).width(Length::Fixed(fixed_bar_size_x as f32)).style(bar_style(app))
+        )
+        .on_enter(Message::BarEnter)
+        .on_exit(Message::BarLeave)
     ).width(Length::Fill).height(Length::Fill).center(Length::Fill).into()
 }
 

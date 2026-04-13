@@ -1107,4 +1107,22 @@ BarConfig
 	    //), 
 	],
     ),
+
+
+    // ================= AUTO-HIDE =================
+    // The bar hides itself after the cursor leaves and slides back when
+    // the cursor touches the hot edge.  Set to None to disable.
+    //
+    // Available options:
+    //   hide_delay_ms  -- ms to wait after cursor leaves before hiding  (default: 500)
+    //   show_delay_ms  -- ms to wait after cursor enters before showing (default: 0 = instant)
+    //   peek_size      -- px of bar kept visible as a hot edge          (default: 1)
+    //
+    auto_hide: None,
+    //auto_hide: Some
+    //((
+    //    hide_delay_ms:  500,
+    //    show_delay_ms:  0,
+    //    peek_size:      1,
+    //)),
 )

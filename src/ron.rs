@@ -179,6 +179,44 @@ pub struct GeneralStyleConfig
 
 
 
+// ============ AUTO-HIDE CONFIG ============
+/// Auto-hide: the bar hides itself when the cursor leaves and re-appears when it enters.
+///
+/// Example RON:
+/// ```
+/// auto_hide: Some(AutoHideConfig(
+///     hide_delay_ms:   500,   // ms to wait before hiding after cursor leaves
+///     show_delay_ms:   0,     // ms to wait before showing after cursor enters
+///     peek_size:       2,     // px of bar kept visible as a "hot edge" when hidden
+/// )),
+/// ```
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct AutoHideConfig
+{
+    /// Milliseconds to wait after the cursor leaves before actually hiding the bar.
+    pub hide_delay_ms:  u64,
+    /// Milliseconds to wait after the cursor enters before showing the bar.
+    pub show_delay_ms:  u64,
+    /// Pixels of bar that remain visible as a hot edge so the cursor can trigger re-show.
+    /// Set to 0 to fully hide (bar won't re-appear until something moves on the edge).
+    pub peek_size:      i32,
+}
+impl Default for AutoHideConfig
+{
+    fn default() -> Self
+    {
+        Self
+        {
+            hide_delay_ms:  500,
+            show_delay_ms:  0,
+            peek_size:      2,
+        }
+    }
+}
+
+
+
 #[derive(Default, Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct BarConfig
@@ -206,6 +244,7 @@ pub struct BarConfig
     pub image:                  ImageConfig,
     pub custom_module:          CustomModuleConfig,
     pub calendar_window:        CalendarWindowConfig,
+    pub auto_hide:              Option<AutoHideConfig>,
 }
 
 

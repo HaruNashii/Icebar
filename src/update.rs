@@ -72,6 +72,13 @@ pub enum Message
     ConfigChanged,
     Nothing,
 
+
+    // AUTO-HIDE
+    BarEnter,
+    BarLeave,
+    BarVisibilityTick,
+
+
     // CALENDAR
     ShowCalendar,
     CloseCalendar,
@@ -519,6 +526,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 ron_config: new_config, 
                 modules_data,
                 cli_data: app.cli_data.clone(),
+                // Preserve runtime visibility
+                bar_visible:  app.bar_visible,
                 ..Default::default()
             };
 
@@ -953,10 +962,141 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             }
         }
 
+        // ── auto-hide: cursor entered the bar surface ─────────────────────────
+        Message::BarEnter =>
+        {
+            app.cursor_on_bar = true;
+            app.hide_timer    = None; // cancel any pending hide
+
+            if let Some(cfg) = app.ron_config.auto_hide.clone() && !app.bar_visible
+            {
+                    if cfg.show_delay_ms == 0
+                    {
+                        // Show immediately.
+                        app.bar_visible = true;
+                        app.show_timer  = None;
+                        return Task::batch(show_bar(app));
+                    }
+                    else
+                    {
+                        // Start show-delay timer (handled in BarVisibilityTick).
+                        if app.show_timer.is_none()
+                        {
+                            app.show_timer = Some(Instant::now());
+                        }
+                    }
+            }
+        }
+
+        // ── auto-hide: cursor left the bar surface ────────────────────────────
+        Message::BarLeave =>
+        {
+            app.cursor_on_bar = false;
+            app.show_timer    = None; // cancel any pending show
+
+            if app.ron_config.auto_hide.is_some() && app.bar_visible
+            {
+                app.hide_timer = Some(Instant::now());
+            }
+        }
+
+        // ── auto-hide: periodic timer tick ────────────────────────────────────
+        Message::BarVisibilityTick =>
+        {
+            let Some(cfg) = app.ron_config.auto_hide.clone() else { return Task::none(); };
+            let mut tasks: Vec<Task<Message>> = Vec::new();
+
+            // ── hide path ───────────────────────────────────────────────────
+            if let Some(t) = app.hide_timer && t.elapsed() >= Duration::from_millis(cfg.hide_delay_ms)
+            {
+                app.hide_timer  = None;
+                app.bar_visible = false;
+                tasks.extend(hide_bar(app, cfg.peek_size));
+            }
+
+            // ── show path ───────────────────────────────────────────────────
+            if let Some(t) = app.show_timer && t.elapsed() >= Duration::from_millis(cfg.show_delay_ms)
+            {
+                app.show_timer  = None;
+                app.bar_visible = true;
+                tasks.extend(show_bar(app));
+            }
+
+            if !tasks.is_empty() { return Task::batch(tasks); }
+        }
+
         _=> {},
     }
 
     Task::none()
+}
+
+
+
+// ============ AUTO-HIDE HELPERS ============
+fn hidden_exclusive_zone(peek: i32) -> i32 { peek.max(0) }
+
+
+
+fn shown_exclusive_zone(app: &AppData) -> i32
+{
+    let cfg = &app.ron_config.general;
+    use crate::ron::BarPosition;
+    let base = match cfg.bar_position
+    {
+        BarPosition::Up | BarPosition::Down => cfg.bar_size[1] as i32,
+        BarPosition::Left | BarPosition::Right => cfg.bar_size[0] as i32,
+    };
+    (base + cfg.increased_exclusive_bar_zone).max(0)
+}
+
+
+fn hide_bar(app: &AppData, peek: i32) -> Vec<Task<Message>>
+{
+    let Some(&id) = MAIN_ID.get() else { return vec![]; };
+    use crate::ron::BarPosition;
+
+    let bar_thick = match app.ron_config.general.bar_position
+    {
+        BarPosition::Up | BarPosition::Down  => app.ron_config.general.bar_size[1] as i32,
+        BarPosition::Left | BarPosition::Right => app.ron_config.general.bar_size[0] as i32,
+    };
+    // Negative margin pushes the bar toward the screen edge (off-screen).
+    // We keep `peek` px visible so the hot-edge still exists.
+    let slide = -(bar_thick - peek);
+    let base  = app.ron_config.general.floating_space;
+    let margin = match app.ron_config.general.bar_position
+    {
+        BarPosition::Up    => (base + slide, 0, 0, 0),
+        BarPosition::Down  => (0, 0, base + slide, 0),
+        BarPosition::Left  => (0, 0, 0, base + slide),
+        BarPosition::Right => (0, base + slide, 0, 0),
+    };
+    vec![
+        Task::done(Message::ExclusiveZoneChange { id, zone_size: hidden_exclusive_zone(peek) }),
+        Task::done(Message::MarginChange { id, margin }),
+    ]
+}
+
+
+
+fn show_bar(app: &AppData) -> Vec<Task<Message>>
+{
+    let Some(&id) = MAIN_ID.get() else { return vec![]; };
+    use crate::ron::BarPosition;
+
+    let base = app.ron_config.general.floating_space;
+    let margin = match app.ron_config.general.bar_position
+    {
+        BarPosition::Up    => (base, 0, 0, 0),
+        BarPosition::Down  => (0, 0, base, 0),
+        BarPosition::Left  => (0, 0, 0, base),
+        BarPosition::Right => (0, base, 0, 0),
+    };
+    vec![
+        Task::done(Message::ExclusiveZoneChange { id, zone_size: shown_exclusive_zone(app) }),
+        Task::done(Message::MarginChange { id, margin }),
+    ]
 }
 
 
