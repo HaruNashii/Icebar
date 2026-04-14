@@ -38,7 +38,7 @@ pub fn define_bar_anchor_position(bar_position: &BarPosition) -> Anchor
         BarPosition::Up => Anchor::Top | Anchor::Left | Anchor::Right,
         BarPosition::Down => Anchor::Bottom | Anchor::Left | Anchor::Right,
         BarPosition::Left => Anchor::Left | Anchor::Top | Anchor::Bottom,
-        BarPosition::Right => Anchor::Right | Anchor::Top | Anchor::Bottom,
+        BarPosition::Right => Anchor::Right | Anchor::Top | Anchor::Bottom
     }
 }
 
@@ -61,8 +61,6 @@ pub fn validate_bar_data(app: &mut AppData) -> ValidatedBarSizeAndMargin
     let exclusive_zone_y = (bar_size_y as i32 + ron_config.general.increased_exclusive_bar_zone).clamp(0, maximum_exclusive_bar_zone_size as i32);
     let exclusive_zone_x = (bar_size_x as i32 + ron_config.general.increased_exclusive_bar_zone).clamp(0, maximum_exclusive_bar_zone_size as i32);
     
-    // Here the bar width is always 0 when the bar is Up or Down, because the size showed is of the
-    // container in the view.rs, the same occuors with the Left and Right bars but with the height
     match ron_config.general.bar_position 
     {
         BarPosition::Up => 
@@ -187,9 +185,9 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
 {
     container
     (
-        button
+        mouse_area
         (
-            mouse_area
+            button
             (
                 text_data.0
                 .wrapping(iced::widget::text::Wrapping::Word)
@@ -197,13 +195,13 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
                 .size(text_data.1)
                 .center()
             )
-            .on_right_press(right_click_message)
+            .on_press(left_click_message)
+            .style(move |_: &Theme, status: button::Status| 
+            {
+                style_func(app, status)
+            })
         )
-        .on_press(left_click_message)
-        .style(move |_: &Theme, status: button::Status| 
-        {
-            style_func(app, status)
-        })
+        .on_right_press(right_click_message)
     ).align_x(Alignment::Center).align_y(Alignment::Center).padding(padding)
     .into()
 }
@@ -219,15 +217,11 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
         (
             button
             (
-                mouse_area
-                (
-                    text_data.0
-                    .wrapping(iced::widget::text::Wrapping::Word)
-                    .font(app.default_font)
-                    .size(text_data.1)
-                    .center()
-                )
-                .on_right_press(right_click_message)
+                text_data.0
+                .wrapping(iced::widget::text::Wrapping::Word)
+                .font(app.default_font)
+                .size(text_data.1)
+                .center()
             )
             .on_press(left_click_message)
             .style(move |_: &Theme, status: button::Status| 
@@ -235,6 +229,7 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
                 style_func(app, status)
             })
         )
+        .on_right_press(right_click_message)
         .on_enter(hover_message.0)
         .on_exit(hover_message.1)
     ).align_x(Alignment::Center).align_y(Alignment::Center).padding(padding)
@@ -259,7 +254,6 @@ mod tests
         AppData { ron_config: config, ..Default::default() }
     }
 
-    // ---- is_active_module ---------------------------------------------------
 
     #[test]
     fn is_active_module_found()
@@ -298,7 +292,6 @@ mod tests
         assert!(!is_active_module(&modules, Modules::CustomModule(1)));
     }
 
-    // ---- validate_bar_data --------------------------------------------------
 
     #[test]
     fn validate_bar_margin_up_applies_to_top()

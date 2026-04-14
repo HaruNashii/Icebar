@@ -7,6 +7,7 @@ use chrono_tz::Tz;
 
 
 
+
 // ============ CRATES ============
 use crate::helpers::{color::{ColorType, Gradient}, style::{TextOrientation, UserStyle, set_style, SideOption}};
 use crate::ron::ActionOnClick;
@@ -39,6 +40,7 @@ pub struct ClockConfig
     pub action_on_left_click_clock: ActionOnClick, 
     pub action_on_right_click_clock: ActionOnClick, 
 
+
     // ================= (SIDE SEPARATOR) =================
     pub clock_side_separator: Option<SideOption>,
     pub clock_side_separator_color: ColorType,
@@ -49,6 +51,7 @@ pub struct ClockConfig
     pub alt_clock_side_separator_width: f32,
     pub alt_clock_side_separator_height: f32,
 
+
     // ================= (GRADIENT) =================
     pub clock_button_gradient_color: Option<Gradient>,
     pub clock_button_hovered_gradient_color: Option<Gradient>,
@@ -56,6 +59,7 @@ pub struct ClockConfig
     pub alt_clock_button_gradient_color: Option<Gradient>,
     pub alt_clock_button_hovered_gradient_color: Option<Gradient>,
     pub alt_clock_button_pressed_gradient_color: Option<Gradient>,
+
 
     // ================= (SHADOW) =================
     pub clock_button_shadow_color: Option<ColorType>,
@@ -66,6 +70,7 @@ pub struct ClockConfig
     pub alt_clock_button_shadow_x: f32,
     pub alt_clock_button_shadow_y: f32,
     pub alt_clock_button_shadow_blur: f32,
+
 
     // ================= (STYLE) =================
     pub clock_padding: u16,
@@ -91,7 +96,7 @@ pub struct ClockConfig
     pub alt_clock_button_pressed_color: ColorType,
     pub alt_clock_border_color: ColorType,
     pub alt_clock_border_size: f32,
-    pub alt_clock_border_radius: [f32;4],
+    pub alt_clock_border_radius: [f32;4]
 }
 
 
@@ -156,7 +161,7 @@ impl Default for ClockConfig
             clock_button_pressed_color: ColorType::RGB([80, 25, 45]),
             clock_border_color: ColorType::RGB([120, 80, 130]),
             clock_border_size: 1.0,
-            clock_border_radius: [3.0, 3.0, 3.0, 3.0],
+            clock_border_radius: [3.0, 3.0, 3.0, 3.0]
         }
     }
 }
@@ -324,7 +329,6 @@ mod tests
     #[test]
     fn get_current_time_format_hhmm_has_correct_length()
     {
-        // "%H:%M" always produces exactly 5 chars: "HH:MM"
         let result = get_current_time("%H:%M", &None);
         assert_eq!(result.len(), 5);
         assert!(result.contains(':'));
@@ -334,7 +338,6 @@ mod tests
     fn get_current_time_with_invalid_timezone_falls_back_to_local()
     {
         let tz = Some(("NotARealTimezone".to_string(), 0));
-        // Should not panic — falls back to local time silently
         let result = get_current_time("%H:%M", &tz);
         assert_eq!(result.len(), 5);
     }
@@ -351,12 +354,10 @@ mod tests
     #[test]
     fn get_current_time_static_literal_format()
     {
-        // Literal text in strftime is passed through unchanged
         let result = get_current_time("TIME", &None);
         assert_eq!(result, "TIME");
     }
 
-    // ---- cycle_clock_timezones ----------------------------------------------
  
     #[test]
     fn cycle_clock_advances_to_next_timezone()
@@ -392,7 +393,6 @@ mod tests
         app.modules_data.clock_data.current_clock_timezone = Some(("UTC".into(), 0));
  
         cycle_clock_timezones(&mut app);
-        // Should remain unchanged
         let (tz, idx) = app.modules_data.clock_data.current_clock_timezone.unwrap();
         assert_eq!(tz, "UTC");
         assert_eq!(idx, 0);

@@ -16,8 +16,6 @@ use crate::AppData;
 
 
 
-
-
 // ============ CONFIG ============
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
@@ -53,7 +51,7 @@ pub struct MediaPlayerMetadataConfig
     pub media_player_metadata_button_shadow_color:           Option<ColorType>,
     pub media_player_metadata_button_shadow_x:               f32,
     pub media_player_metadata_button_shadow_y:               f32,
-    pub media_player_metadata_button_shadow_blur:            f32,
+    pub media_player_metadata_button_shadow_blur:            f32
 }
 
 impl Default for MediaPlayerMetadataConfig
@@ -92,7 +90,7 @@ impl Default for MediaPlayerMetadataConfig
             media_player_metadata_button_shadow_color:           None,
             media_player_metadata_button_shadow_x:               0.0,
             media_player_metadata_button_shadow_y:               0.0,
-            media_player_metadata_button_shadow_blur:            0.0,
+            media_player_metadata_button_shadow_blur:            0.0
         }
     }
 }
@@ -125,7 +123,7 @@ pub struct MediaPlayerButtonConfig
     pub media_player_button_shadow_color:                  Option<ColorType>,
     pub media_player_button_shadow_x:                      f32,
     pub media_player_button_shadow_y:                      f32,
-    pub media_player_button_shadow_blur:                   f32,
+    pub media_player_button_shadow_blur:                   f32
 }
 
 impl Default for MediaPlayerButtonConfig
@@ -158,10 +156,14 @@ impl Default for MediaPlayerButtonConfig
             media_player_button_shadow_color:                  None,
             media_player_button_shadow_x:                      0.0,
             media_player_button_shadow_y:                      0.0,
-            media_player_button_shadow_blur:                   0.0,
+            media_player_button_shadow_blur:                   0.0
         }
     }
 }
+
+
+
+
 
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Debug, Clone)]
@@ -228,13 +230,13 @@ pub fn media_player_action(player: &str, action: MediaPlayerAction) -> Task<crat
         MediaPlayerAction::Next      => "next",
         MediaPlayerAction::Prev      => "previous",
         MediaPlayerAction::VolumeUp  => "volume",
-        MediaPlayerAction::VolumeDown => "volume",
+        MediaPlayerAction::VolumeDown => "volume"
     };
     let extra_arg = match action
     {
         MediaPlayerAction::VolumeUp   => Some("0.1+"),
         MediaPlayerAction::VolumeDown => Some("0.1-"),
-        _                             => None,
+        _                             => None
     };
     Task::perform(async move 
     {
@@ -370,13 +372,11 @@ mod tests
     fn make_style_app() -> AppData
     {
         let mut app = AppData { ..Default::default() };
-        // metadata style colors
         app.ron_config.media_player_metadata.media_player_metadata_button_color = ColorType::RGB([10, 20, 30]);
         app.ron_config.media_player_metadata.media_player_metadata_button_hovered_color = ColorType::RGB([50, 60, 70]);
         app.ron_config.media_player_metadata.media_player_metadata_button_pressed_color = ColorType::RGB([80, 90, 100]);
         app.ron_config.media_player_metadata.media_player_metadata_text_color = ColorType::RGB([200, 210, 220]);
         app.ron_config.media_player_metadata.media_player_metadata_button_hovered_text_color = ColorType::RGB([255, 255, 255]);
-        // buttons style colors
         app.ron_config.media_player_button.media_player_button_color = ColorType::RGB([1, 2, 3]);
         app.ron_config.media_player_button.media_player_button_hovered_color = ColorType::RGB([4, 5, 6]);
         app.ron_config.media_player_button.media_player_button_pressed_color = ColorType::RGB([7, 8, 9]);
@@ -385,7 +385,6 @@ mod tests
         app
     }
  
-    // ---- define_media_player_metadata_style ---------------------------------
  
     #[test]
     fn metadata_style_active_uses_metadata_normal_color()
@@ -426,7 +425,6 @@ mod tests
         }
     }
  
-    // ---- define_media_player_buttons_style ----------------------------------
  
     #[test]
     fn buttons_style_active_uses_button_normal_color()
@@ -452,7 +450,6 @@ mod tests
     #[test]
     fn metadata_style_and_buttons_style_have_different_active_backgrounds()
     {
-        // The two style functions must not be accidentally swapped
         let app = make_style_app();
         let meta    = define_media_player_metadata_style(&app, button::Status::Active);
         let buttons = define_media_player_buttons_style( &app, button::Status::Active);
@@ -466,7 +463,7 @@ mod tests
         {
             is_hovering_media_player_meta_data: false,
             metadata: metadata.into(),
-            status: status.into(),
+            status: status.into()
         };
         app.ron_config.media_player_metadata.media_player_metadata_text_limit_len = 20;
         app.ron_config.general.ellipsis_text = "...".into();
@@ -476,7 +473,6 @@ mod tests
         app
     }
  
-    // ---- define_media_player_metadata_text ----------------------------------
  
     #[test]
     fn metadata_text_short_returned_as_is()
@@ -504,7 +500,6 @@ mod tests
         assert_eq!(result, "No Media");
     }
  
-    // ---- define_media_player_buttons_text -----------------------------------
  
     #[test]
     fn buttons_text_playing_returns_pause_symbol()
@@ -531,7 +526,6 @@ mod tests
         assert_eq!(next, ">>");
     }
 
-    // ---- define_button_data -------------------------------------------------
  
     #[test]
     fn button_data_vec_has_three_entries()
@@ -559,7 +553,6 @@ mod tests
         assert!(matches!(data[2].1, Message::MediaPlayerClickNext));
     }
  
-    // ---- metadata text with orientation ------------------------------------
  
     #[test]
     fn metadata_text_vertical_orientation_inserts_newlines()
@@ -576,9 +569,87 @@ mod tests
     {
         let mut app = make_app("", "Stopped");
         app.ron_config.media_player_metadata.dont_show_metadata_if_empty = true;
-        // When dont_show is true and metadata is empty, it should still use
-        // the empty string (not the fallback), then ellipsize — result is empty.
         let result = define_media_player_metadata_text(&app);
         assert_eq!(result, "");
     }
+}
+
+
+
+
+
+// ============ MEDIA PLAYER EVENT SUBSCRIPTION ============
+use std::pin::Pin;
+
+const STATUS_PREFIX: &str = "__STATUS__:";
+
+pub fn media_player_subscription(player: String, format: String) -> Pin<Box<dyn futures::Stream<Item = crate::update::Message> + Send>>
+{
+    Box::pin(async_stream::stream!
+    {
+        let init = get_player_data_with_format(&player, &format).await;
+        yield crate::update::Message::MediaPlayerDataFetched(init);
+
+        loop
+        {
+            let combined_format = format!("{}{}\t{}", STATUS_PREFIX, "{{status}}", format);
+            let player_arg = format!("--player={}", player);
+
+            let child = tokio::process::Command::new("playerctl")
+                .args([&player_arg, "--follow", "metadata", "--format", &combined_format])
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::null())
+                .spawn();
+
+            let mut child = match child
+            {
+                Ok(c) => c,
+                Err(e) =>
+                {
+                    eprintln!("[icebar] media_player_subscription: spawn error: {e}");
+                    tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+                    continue;
+                }
+            };
+
+            let stdout = match child.stdout.take()
+            {
+                Some(s) => s,
+                None =>
+                {
+                    tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+                    continue;
+                }
+            };
+
+            use tokio::io::{AsyncBufReadExt, BufReader};
+            let mut lines = BufReader::new(stdout).lines();
+
+            while let Ok(Some(line)) = lines.next_line().await
+            {
+                if let Some(rest) = line.strip_prefix(STATUS_PREFIX)
+                {
+                    let (status_str, metadata_str) = if let Some(idx) = rest.find('\t')
+                    {
+                        (&rest[..idx], &rest[idx + 1..])
+                    }
+                    else
+                    {
+                        (rest, "")
+                    };
+
+                    yield crate::update::Message::MediaPlayerDataFetched(MediaPlayerData
+                    {
+                        is_hovering_media_player_meta_data: false,
+                        metadata: metadata_str.to_owned(),
+                        status:   status_str.to_owned()
+                    });
+                }
+            }
+
+            let _ = child.wait().await;
+            eprintln!("[icebar] media_player_subscription: playerctl exited — retrying in 3s");
+            tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+        }
+    })
 }

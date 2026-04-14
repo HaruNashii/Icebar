@@ -1,6 +1,6 @@
 // ============ IMPORTS ============
 use serde::{Serialize, Deserialize};
-use std::collections::{HashSet};
+use std::collections::HashSet;
 use iced::widget::image;
 
 
@@ -8,15 +8,16 @@ use iced::widget::image;
 
 
 // ============ CRATES ============
-use crate::modules::{clock::ClockData, cpu::CpuData, cpu_temp::CpuTempData, custom_modules::CustomModuleData, disk::DiskData, focused_window::FocusedWindowData, image::ImageData, media_player::MediaPlayerData, network::NetworkData, power_profile::PowerProfileData, ram::RamData, volume::VolumeData, workspaces::WorkspaceData};
+use crate::modules::{clock::ClockData, custom_modules::CustomModuleData, focused_window::FocusedWindowData, image::ImageData, media_player::MediaPlayerData, network::NetworkData, power_profile::PowerProfileData, volume::VolumeData, workspaces::WorkspaceData};
 use crate::calendar::CalendarData;
 
 
 
 
-// ============ STRUCTS/ENUM'S ============
+
+// ============ ENUM/STRUCT, ETC ============
 #[derive(Debug, Hash, Clone, PartialEq, Eq, Deserialize, Serialize)]
-pub enum Modules 
+pub enum Modules
 {
     Image(usize),
     CustomModule(usize),
@@ -38,7 +39,7 @@ pub enum Modules
     Tray,
     Disk,
     Cpu,
-    Ram,
+    Ram
 }
 
 #[derive(Default, Clone)]
@@ -53,14 +54,14 @@ pub struct ModulesData
     pub plasma_desktop_ids: Vec<String>,
     pub workspace_data: WorkspaceData,
     pub calendar_data: CalendarData,
-    pub cpu_temp_data: CpuTempData,
     pub network_data: NetworkData,
     pub volume_data: VolumeData,
     pub clock_data: ClockData,
     pub image_data: ImageData,
-    pub disk_data: DiskData,
-    pub cpu_data: CpuData,
-    pub ram_data: RamData
+    pub cpu_text: String,
+    pub ram_text: String,
+    pub disk_text: String,
+    pub cpu_temp_text: String
 }
 
 
@@ -72,9 +73,7 @@ pub struct ModulesData
 mod tests
 {
     use super::*;
- 
-    // ---- Modules PartialEq --------------------------------------------------
- 
+
     #[test]
     fn modules_same_variants_are_equal()
     {
@@ -90,7 +89,7 @@ mod tests
         assert_eq!(Modules::MediaPlayerMetaData, Modules::MediaPlayerMetaData);
         assert_eq!(Modules::MediaPlayerButtons,  Modules::MediaPlayerButtons);
     }
- 
+
     #[test]
     fn modules_different_variants_are_not_equal()
     {
@@ -99,65 +98,63 @@ mod tests
         assert_ne!(Modules::HyprWorkspaces, Modules::SwayWorkspaces);
         assert_ne!(Modules::SwayWorkspaces, Modules::NiriWorkspaces);
     }
- 
+
     #[test]
     fn modules_custom_module_same_index_equal()
     {
         assert_eq!(Modules::CustomModule(0), Modules::CustomModule(0));
         assert_eq!(Modules::CustomModule(9), Modules::CustomModule(9));
     }
- 
+
     #[test]
     fn modules_custom_module_different_index_not_equal()
     {
         assert_ne!(Modules::CustomModule(0), Modules::CustomModule(1));
     }
- 
+
     #[test]
     fn modules_custom_module_not_equal_to_non_custom_variants()
     {
         assert_ne!(Modules::CustomModule(0), Modules::Clock);
         assert_ne!(Modules::CustomModule(0), Modules::Tray);
     }
- 
-    // ---- ModulesData default ------------------------------------------------
- 
+
     #[test]
     fn modules_data_default_tray_icons_is_empty()
     {
         assert!(ModulesData::default().tray_icons.is_empty());
     }
- 
+
     #[test]
     fn modules_data_default_active_modules_is_empty()
     {
         assert!(ModulesData::default().active_modules.is_empty());
     }
- 
+
     #[test]
     fn modules_data_default_clock_time_is_empty_string()
     {
         assert_eq!(ModulesData::default().clock_data.current_time, "");
     }
- 
+
     #[test]
     fn modules_data_default_network_id_is_empty_string()
     {
         assert_eq!(ModulesData::default().network_data.id, "");
     }
- 
+
     #[test]
     fn modules_data_default_media_metadata_is_empty_string()
     {
         assert_eq!(ModulesData::default().media_player_data.metadata, "");
     }
- 
+
     #[test]
     fn modules_data_default_workspace_visible_is_empty()
     {
         assert!(ModulesData::default().workspace_data.visible_workspaces.is_empty());
     }
- 
+
     #[test]
     fn modules_data_default_workspace_current_is_zero()
     {

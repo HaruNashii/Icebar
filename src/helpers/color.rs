@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 
 
 
-// ============ STRUCTS/ENUM'S ============
+// ============ ENUM/STRUCT, ETC ============
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub enum Gradient 
+pub enum Gradient
 {
     Gradient((f32, Vec<(f32, ColorType)>))
 }
@@ -16,22 +16,13 @@ pub enum Gradient
 #[allow(clippy::upper_case_acronyms)]
 pub enum ColorType
 {
-    RGB([u32;3]),
-    RGBA([u32;4]),
-    HEX([u8; 9]),
+    RGB([u32; 3]),
+    RGBA([u32; 4]),
+    HEX([u8; 9])
 }
 
-
-
-
-
-// ============ IMPL ============
 impl Default for ColorType { fn default() -> Self { ColorType::RGB([255, 255, 255]) } }
 
-
-
-// Custom deserializer so HEX can be written as HEX("#FF0000") in config files
-// rather than as a raw byte array.
 impl<'de> serde::Deserialize<'de> for ColorType
 {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>
@@ -42,18 +33,16 @@ impl<'de> serde::Deserialize<'de> for ColorType
         {
             RGB([u32; 3]),
             RGBA([u32; 4]),
-            HEX(String),
+            HEX(String)
         }
         match Helper::deserialize(deserializer)?
         {
             Helper::RGB(v)  => Ok(ColorType::RGB(v)),
             Helper::RGBA(v) => Ok(ColorType::RGBA(v)),
-            Helper::HEX(s)  => Ok(hex_color(&s)),
+            Helper::HEX(s)  => Ok(hex_color(&s))
         }
     }
 }
-
-
 
 impl ColorType
 {
@@ -61,9 +50,9 @@ impl ColorType
     {
         match self
         {
-            ColorType::RGB([r, g, b])    => iced::Color::from_rgb8(r as u8, g as u8, b as u8),
+            ColorType::RGB([r, g, b])     => iced::Color::from_rgb8(r as u8, g as u8, b as u8),
             ColorType::RGBA([r, g, b, a]) => iced::Color::from_rgba8(r as u8, g as u8, b as u8, (a as f32).clamp(0., 100.) / 100.),
-            ColorType::HEX(bytes)        => hex_to_iced_color(&bytes).unwrap_or(iced::Color::WHITE),
+            ColorType::HEX(bytes)         => hex_to_iced_color(&bytes).unwrap_or(iced::Color::WHITE)
         }
     }
 }
@@ -86,7 +75,6 @@ pub fn hex_color(s: &str) -> ColorType
 
 fn hex_to_iced_color(bytes: &[u8; 9]) -> Option<iced::Color>
 {
-    // Find the null terminator to get the actual string length
     let end = bytes.iter().position(|&b| b == 0).unwrap_or(9);
     let s = std::str::from_utf8(&bytes[..end]).ok()?;
     let hex = s.trim_start_matches('#');
@@ -107,5 +95,3 @@ fn hex_to_iced_color(bytes: &[u8; 9]) -> Option<iced::Color>
     }
     else { None }
 }
-
-

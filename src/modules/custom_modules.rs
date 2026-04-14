@@ -21,7 +21,7 @@ pub struct CustomModuleData
 {
     pub cached_continuous_outputs: Vec<String>,
     pub custom_module_last_run: Vec<Instant>,
-    pub cached_command_outputs: Vec<String>,
+    pub cached_command_outputs: Vec<String>
 }
 
 
@@ -31,7 +31,7 @@ pub struct CustomModuleData
 pub struct CustomModuleConfig
 {
     pub custom_modules_spacing: u32,
-    pub custom_modules:         Vec<CustomModule>,
+    pub custom_modules:         Vec<CustomModule>
 }
 
 
@@ -151,7 +151,6 @@ pub fn define_custom_module_style(custom_module: &CustomModule, status: button::
 
 pub fn define_custom_module_text(index: usize, custom_module: &CustomModule, app: &AppData) -> String
 {
-    // COMMAND_OUTPUT
     if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()
     {
         let output_text = app.modules_data.custom_module_data.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
@@ -159,14 +158,12 @@ pub fn define_custom_module_text(index: usize, custom_module: &CustomModule, app
         if custom_module.dont_show_if_any_output_is_empty && output_text.is_empty() { return String::new() };
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
     }
-    // CONTINOUS_OUTPUT
     else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.modules_data.custom_module_data.cached_continuous_outputs.is_empty() && (app.modules_data.custom_module_data.cached_continuous_outputs.len() - 1) >= index
     {
         let output_text = ellipsize(&app.ron_config.general.ellipsis_text, &app.modules_data.custom_module_data.cached_continuous_outputs[index], custom_module.output_text_limit_len);
         if custom_module.dont_show_if_any_output_is_empty && output_text.is_empty() { return String::new() };
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{continous_output}", &output_text).replace('\n', "")
     }
-    // NO OUTPUT JUST TEXT
     else 
     {
         custom_module.text.clone()
@@ -200,7 +197,6 @@ mod tests
         }
     }
  
-    // ---- define_custom_module_text ------------------------------------------
  
     #[test]
     fn custom_module_text_plain_returns_text_field()
@@ -345,12 +341,10 @@ mod tests
         }
     }
  
-    // --- define_custom_module_text edge cases --------------------------------
  
     #[test]
     fn custom_module_text_output_index_oob_falls_back_to_empty_output()
     {
-        // cached_command_outputs is empty → get(5) = None → output_text = ""
         let app = AppData { ..Default::default() };
         let m = CustomModule
         {
@@ -404,7 +398,6 @@ mod tests
             all_output_as_text_format: "{continous_output}".into(),
             ..CustomModule::default()
         };
-        // index 5 is beyond vec → condition fails → falls to plain text branch
         assert_eq!(define_custom_module_text(5, &m, &app), "Fallback");
     }
 }

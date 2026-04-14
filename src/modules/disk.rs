@@ -7,10 +7,8 @@ use std::mem;
 
 
 // ============ CRATES ============
-use crate::helpers::style::{orient_text, UserStyle, set_style};
+use crate::helpers::style::{UserStyle, set_style};
 use crate::AppData;
-
-
 
 
 
@@ -50,7 +48,7 @@ pub struct DiskConfig
     pub disk_button_shadow_color:           Option<ColorType>,
     pub disk_button_shadow_x:               f32,
     pub disk_button_shadow_y:               f32,
-    pub disk_button_shadow_blur:            f32,
+    pub disk_button_shadow_blur:            f32
 }
 
 impl Default for DiskConfig
@@ -84,13 +82,17 @@ impl Default for DiskConfig
             disk_button_shadow_color:           None,
             disk_button_shadow_x:               0.0,
             disk_button_shadow_y:               0.0,
-            disk_button_shadow_blur:            0.0,
+            disk_button_shadow_blur:            0.0
         }
     }
 }
 
+
+
+
+
 // ============ ENUM/STRUCT, ETC ============
-#[derive(Default, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct DiskData
 {
     pub total: u64,
@@ -131,21 +133,6 @@ pub fn read_disk_data(mount: &str) -> Option<DiskData>
 
 
 
-pub fn define_disk_text(app: &AppData) -> String
-{
-    let data = &app.modules_data.disk_data;
-
-    let text = app.ron_config.disk.disk_format
-        .replace("{total}",   &(data.total   / 1_073_741_824).to_string())
-        .replace("{free}",    &(data.free    / 1_073_741_824).to_string())
-        .replace("{used}",    &(data.used    / 1_073_741_824).to_string()) 
-        .replace("{percent}", &data.percent.to_string());
-
-    orient_text(&text, &app.ron_config.disk.disk_text_orientation)
-}
-
-
-
 pub fn define_disk_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
     set_style(UserStyle
@@ -166,7 +153,7 @@ pub fn define_disk_style(app: &AppData, status: button::Status) -> iced::widget:
         shadow_color: app.ron_config.disk.disk_button_shadow_color,
         shadow_x:     app.ron_config.disk.disk_button_shadow_x,
         shadow_y:     app.ron_config.disk.disk_button_shadow_y,
-        shadow_blur:  app.ron_config.disk.disk_button_shadow_blur,
+        shadow_blur:  app.ron_config.disk.disk_button_shadow_blur
     })
 }
 
@@ -184,12 +171,10 @@ mod tests
     use iced::{Background, Color};
     use iced::widget::button;
 
-    // ---- read_disk_data --------------------------------------------------------
 
     #[test]
     fn read_disk_data_root_returns_some()
     {
-        // / always exists on Linux
         assert!(read_disk_data("/").is_some());
     }
 
@@ -230,77 +215,6 @@ mod tests
         assert_eq!(data.percent, expected);
     }
 
-    // ---- define_disk_text ------------------------------------------------------
-
-    fn make_app_with_disk(total: u64, free: u64, used: u64, percent: u64) -> AppData
-    {
-        let mut app = AppData::default();
-        app.modules_data.disk_data = DiskData { total, free, used, percent };
-        app
-    }
-
-    #[test]
-    fn disk_text_total_placeholder_replaced()
-    {
-        let mut app = make_app_with_disk(10 * 1_073_741_824, 0, 0, 0);
-        app.ron_config.disk.disk_format = "{total}GB".into();
-        assert_eq!(define_disk_text(&app), "10GB");
-    }
-
-    #[test]
-    fn disk_text_used_placeholder_replaced()
-    {
-        let mut app = make_app_with_disk(0, 0, 3 * 1_073_741_824, 0);
-        app.ron_config.disk.disk_format = "{used}GB".into();
-        assert_eq!(define_disk_text(&app), "3GB");
-    }
-
-    #[test]
-    fn disk_text_free_placeholder_replaced()
-    {
-        let mut app = make_app_with_disk(0, 7 * 1_073_741_824, 0, 0);
-        app.ron_config.disk.disk_format = "{free}GB".into();
-        assert_eq!(define_disk_text(&app), "7GB");
-    }
-
-    #[test]
-    fn disk_text_percent_placeholder_replaced()
-    {
-        let mut app = make_app_with_disk(0, 0, 0, 42);
-        app.ron_config.disk.disk_format = "{percent}%".into();
-        assert_eq!(define_disk_text(&app), "42%");
-    }
-
-    #[test]
-    fn disk_text_all_placeholders_replaced()
-    {
-        let mut app = make_app_with_disk(
-            10 * 1_073_741_824,
-            7  * 1_073_741_824,
-            3  * 1_073_741_824,
-            30,
-        );
-        app.ron_config.disk.disk_format = "{used}GB / {total}GB ({percent}%)".into();
-        assert_eq!(define_disk_text(&app), "3GB / 10GB (30%)");
-    }
-
-    #[test]
-    fn disk_text_no_placeholders_returns_literal()
-    {
-        let mut app = make_app_with_disk(0, 0, 0, 0);
-        app.ron_config.disk.disk_format = "Disk".into();
-        assert_eq!(define_disk_text(&app), "Disk");
-    }
-
-    #[test]
-    fn disk_text_bytes_less_than_one_gb_rounds_to_zero()
-    {
-        let mut app = make_app_with_disk(500_000_000, 0, 0, 0);
-        app.ron_config.disk.disk_format = "{total}GB".into();
-        assert_eq!(define_disk_text(&app), "0GB");
-    }
-
-    // ---- define_disk_style -----------------------------------------------------
 
     fn make_style_app() -> AppData
     {

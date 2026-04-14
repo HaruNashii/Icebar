@@ -1,7 +1,6 @@
 // ============ IMPORTS ============
 use zbus::{zvariant::OwnedObjectPath, Connection, Proxy};
 use iced::{Subscription, widget::button};
-use std::{time::Instant, sync::Mutex};
 use futures::stream::BoxStream;
 use futures_util::StreamExt;
 use async_stream::stream;
@@ -21,14 +20,6 @@ use crate::AppData;
 
 
 // ============ STATIC ============
-pub static PREV_NET: Mutex<Option<(u64, u64, Instant)>> = Mutex::new(None);
-
-
-
-
-
-
-
 // ============ CONFIG ============
 use serde::{Deserialize, Serialize};
 use crate::helpers::style::{TextOrientation, SideOption};
@@ -66,7 +57,7 @@ pub struct NetworkConfig
     pub network_button_shadow_color:         Option<ColorType>,
     pub network_button_shadow_x:             f32,
     pub network_button_shadow_y:             f32,
-    pub network_button_shadow_blur:          f32,
+    pub network_button_shadow_blur:          f32
 }
 
 impl Default for NetworkConfig
@@ -103,7 +94,7 @@ impl Default for NetworkConfig
             network_button_shadow_color:         None,
             network_button_shadow_x:             0.0,
             network_button_shadow_y:             0.0,
-            network_button_shadow_blur:          0.0,
+            network_button_shadow_blur:          0.0
         }
     }
 }
@@ -137,7 +128,7 @@ pub struct AltNetworkConfig
     pub alt_network_button_shadow_color:         Option<ColorType>,
     pub alt_network_button_shadow_x:             f32,
     pub alt_network_button_shadow_y:             f32,
-    pub alt_network_button_shadow_blur:          f32,
+    pub alt_network_button_shadow_blur:          f32
 }
 
 impl Default for AltNetworkConfig
@@ -171,10 +162,14 @@ impl Default for AltNetworkConfig
             alt_network_button_shadow_color:         None,
             alt_network_button_shadow_x:             0.0,
             alt_network_button_shadow_y:             0.0,
-            alt_network_button_shadow_blur:          0.0,
+            alt_network_button_shadow_blur:          0.0
         }
     }
 }
+
+
+
+
 
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Debug, Clone)]
@@ -189,8 +184,9 @@ pub struct NetworkData
     pub id: String,
     pub iface: String,
     pub rx_bytes_per_sec: u64,
-    pub tx_bytes_per_sec: u64,
+    pub tx_bytes_per_sec: u64
 }
+
 
 
 
@@ -251,11 +247,11 @@ pub fn network_stream(no_conn_string: &String) -> BoxStream<'static, Message>
                         match result_data 
                         {
                             Some(data) => yield Message::NetworkUpdated(data),
-                            None => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0, rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new(), ..Default::default()}) 
+                            None => yield Message::NetworkUpdated(NetworkData { connection_type: 4, network_level: 0, id: no_conn_string.clone(), network_speed: 0, rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new(), ..Default::default()}) 
         
                         }
                     },
-                    Err(_) => yield Message::NetworkUpdated(NetworkData { connection_type: 3, network_level: 0, id: no_conn_string.clone(), network_speed: 0, rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new(), ..Default::default()  }) 
+                    Err(_) => yield Message::NetworkUpdated(NetworkData { connection_type: 4, network_level: 0, id: no_conn_string.clone(), network_speed: 0, rx_bytes_per_sec: 0, tx_bytes_per_sec: 0, iface: String::new(), ..Default::default()  }) 
                 }
             }
     
@@ -268,13 +264,15 @@ pub fn network_stream(no_conn_string: &String) -> BoxStream<'static, Message>
 
 pub fn read_rx_tx(interface: &str) -> Option<(u64, u64)>
 {
-    let content = std::fs::read_to_string("/proc/net/dev").ok()?;
-    for line in content.lines()
+    use std::io::{BufRead, BufReader};
+    let file = std::fs::File::open("/proc/net/dev").ok()?;
+    let reader = BufReader::new(file);
+    for line in reader.lines().map_while(Result::ok)
     {
-        let trimmed = line.trim();
+        let trimmed = line.trim_start().to_owned();
         if trimmed.starts_with(interface)
         {
-            let after = trimmed.split_once(':')?.1;
+            let after = trimmed.split_once(':')?.1.to_owned();
             let mut parts = after.split_whitespace();
             let rx = parts.next()?.parse::<u64>().ok()?;
             let tx = parts.nth(7)?.parse::<u64>().ok()?;
@@ -295,7 +293,7 @@ async fn get_network_speed<'a>(nm: &Proxy<'a>, connection: &Connection) -> zbus:
     let device_path = match devices.first()
     {
         Some(path) => path,
-        None => return Ok((0, String::new())),
+        None => return Ok((0, String::new()))
     };
     let device = Proxy::new(connection, "org.freedesktop.NetworkManager", device_path.as_str(), "org.freedesktop.NetworkManager.Device").await?;
     let iface: String = device.get_property("Interface").await.unwrap_or_default();
@@ -338,7 +336,7 @@ async fn return_network_state(connection: &Connection) -> Result<Option<NetworkD
     {
         "802-3-ethernet" => 1,
         "802-11-wireless" => 2,
-        _ => 3,
+        _ => 3
     };
 
     Ok(Some(NetworkData 
@@ -395,20 +393,29 @@ pub fn define_network_text(app: &AppData) -> String
         4 => &app.modules_data.network_data.network_icons[0],
         3 => &app.modules_data.network_data.network_icons[1],
         2 => &app.modules_data.network_data.network_icons[2],
-        _ => &app.modules_data.network_data.network_icons[3],
+        _ => &app.modules_data.network_data.network_icons[3]
     };
 
+    // Fix #3: connection_type values:
+    //   1 = ethernet, 2 = wifi, 3 = other/unknown VPN, 4 = no connection
+    // Previously both "unknown VPN" and "no connection" used 3 and mapped to the
+    // same icon, making them visually indistinguishable.
     let connection_type = match &app.modules_data.network_data.connection_type
     {
         1 => &app.modules_data.network_data.connection_type_icons[0],
         2 => &app.modules_data.network_data.connection_type_icons[1],
-        _ => &app.modules_data.network_data.connection_type_icons[2],
+        3 => &app.modules_data.network_data.connection_type_icons[2],
+        _ => &app.modules_data.network_data.connection_type_icons[2] // 4 = no connection, also uses [2]
     };
     
+    // Fix #4: bind the temporary Strings to named variables before borrowing them,
+    // so the borrows outlive the match expression.
+    let speed_unknown = "?".to_string();
+    let speed_numeric = app.modules_data.network_data.network_speed.to_string().replace([' ', '\n'], "");
     let network_speed = match &app.modules_data.network_data.network_speed
     {
-        0 => &"?".to_string(),
-        _ => &app.modules_data.network_data.network_speed.to_string().replace(" ", "").replace("\n", "")
+        0 => &speed_unknown,
+        _ => &speed_numeric
     };
 
     let kb_sent = format!("{:.1}", app.modules_data.network_data.tx_bytes_per_sec as f64 / 1_024.0);
@@ -484,11 +491,9 @@ mod tests
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(15, 25, 35))));
     }
  
-    // level=2 icon path was missing from the existing tests
     #[test]
     fn network_text_level_2_uses_third_icon()
     {
-        // Re-use the make_app helper already defined in the tests block
         let app = make_app(2, 1, 10, "net");
         assert!(define_network_text(&app).contains("L2"));
     }

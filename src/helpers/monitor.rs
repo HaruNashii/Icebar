@@ -21,7 +21,6 @@ pub fn get_monitor_res(option_display: Option<String>) -> (u32, u32)
                     println!("Display Parsed With Ron: {}", display);
                     println!("Display Parsed With DisplayInfo: {}", vec_display.name);
                     return (vec_display.width, vec_display.height);
-
                 }
             }
         }

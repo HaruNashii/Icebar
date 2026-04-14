@@ -1,11 +1,12 @@
 // ============ IMPORTS ============
+use std::pin::Pin;
 use niri_ipc::{Action, Request, Response, Workspace, WorkspaceReferenceArg, socket::Socket};
 
 
 
 
 
-// ============ FUNCTIONS ============
+// ============ CRATES ============
 use crate::modules::workspaces::UserWorkspaceAction;
 
 
@@ -24,11 +25,11 @@ pub fn workspace_count() -> Vec<i32>
 
 
 
-pub fn current_workspace() -> i32 
-{ 
+pub fn current_workspace() -> i32
+{
     let workspaces = niri_ipc_workspaces_setup();
     let result_focused_idx = workspaces.iter().find(|w| w.is_focused).map(|w| w.idx);
-    if let Some(focused_idx) = result_focused_idx 
+    if let Some(focused_idx) = result_focused_idx
     {
         focused_idx as i32
     }
@@ -52,23 +53,93 @@ pub fn change_workspace_niri(action: UserWorkspaceAction)
         eprintln!("Failed To Connect To Niri Socket");
         return;
     };
-    
-    match action 
+
+    match action
     {
         UserWorkspaceAction::ChangeWithIndex(id) =>
         {
             let safe_id = id.clamp(1, 255) as u8;
-            let _ = socket.send(Request::Action(Action::FocusWorkspace{reference: WorkspaceReferenceArg::Index(safe_id)}));
+            let _ = socket.send(Request::Action(Action::FocusWorkspace { reference: WorkspaceReferenceArg::Index(safe_id) }));
         }
         UserWorkspaceAction::MoveNext =>
         {
-            let _ = socket.send(Request::Action(Action::FocusWorkspaceDown{}));
+            let _ = socket.send(Request::Action(Action::FocusWorkspaceDown {}));
         }
         UserWorkspaceAction::MovePrev =>
         {
-            let _ = socket.send(Request::Action(Action::FocusWorkspaceUp{}));
+            let _ = socket.send(Request::Action(Action::FocusWorkspaceUp {}));
         }
     }
+}
+
+
+
+pub fn niri_event_subscription() -> Pin<Box<dyn futures::Stream<Item = crate::update::Message> + Send>>
+{
+    Box::pin(async_stream::stream!
+    {
+        yield crate::update::Message::UpdateNiriWorkspaces;
+        yield crate::update::Message::UpdateFocusedWindowNiri;
+
+        loop
+        {
+            let result = tokio::task::spawn_blocking(||
+            {
+                let mut socket = Socket::connect().ok()?;
+                match socket.send(Request::EventStream)
+                {
+                    Ok(_)  => Some(socket),
+                    Err(_) => None
+                }
+            }).await;
+
+            let socket = match result
+            {
+                Ok(Some(s)) => s,
+                _ =>
+                {
+                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    continue;
+                }
+            };
+
+            let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<crate::update::Message>();
+
+            std::thread::spawn(move ||
+            {
+                let mut read_next = socket.read_events();
+                while let Ok(event) = read_next()
+                {
+                    use niri_ipc::Event;
+                    let msg = match event
+                    {
+                        Event::WorkspacesChanged { .. }
+                        | Event::WorkspaceActivated { .. }
+                        | Event::WorkspaceActiveWindowChanged { .. } =>
+                            Some(crate::update::Message::UpdateNiriWorkspaces),
+
+                        Event::WindowFocusChanged { .. }
+                        | Event::WindowsChanged { .. }
+                        | Event::WindowOpenedOrChanged { .. }
+                        | Event::WindowClosed { .. } =>
+                            Some(crate::update::Message::UpdateFocusedWindowNiri),
+
+                        _ => None
+                    };
+                    if let Some(m) = msg
+                        && tx.send(m).is_err() { break; }
+                }
+            });
+
+            while let Some(msg) = rx.recv().await
+            {
+                yield msg;
+            }
+
+            eprintln!("[icebar] niri event stream ended — reconnecting in 2s");
+            tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+        }
+    })
 }
 
 
@@ -92,8 +163,8 @@ fn niri_ipc_workspaces_setup() -> Vec<Workspace>
         replay
     }
     else
-    { 
-        eprintln!("Failed to request workspaces"); 
+    {
+        eprintln!("Failed to request workspaces");
         return Vec::new();
     };
 
@@ -102,15 +173,15 @@ fn niri_ipc_workspaces_setup() -> Vec<Workspace>
         replay
     }
     else
-    { 
-        eprintln!("Failed to request workspaces"); 
+    {
+        eprintln!("Failed to request workspaces");
         return Vec::new();
     };
 
     match response
     {
         Response::Workspaces(ws) => ws,
-        _ => 
+        _ =>
         {
             eprintln!("Unexpected response type");
             Vec::new()

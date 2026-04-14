@@ -6,10 +6,8 @@ use iced::widget::button;
 
 
 // ============ CRATES ============
-use crate::helpers::style::{UserStyle, orient_text, set_style};
+use crate::helpers::style::{UserStyle, set_style};
 use crate::AppData;
-
-
 
 
 
@@ -48,7 +46,7 @@ pub struct RamConfig
     pub ram_button_shadow_color:           Option<ColorType>,
     pub ram_button_shadow_x:               f32,
     pub ram_button_shadow_y:               f32,
-    pub ram_button_shadow_blur:            f32,
+    pub ram_button_shadow_blur:            f32
 }
 
 impl Default for RamConfig
@@ -81,18 +79,22 @@ impl Default for RamConfig
             ram_button_shadow_color:           None,
             ram_button_shadow_x:               0.0,
             ram_button_shadow_y:               0.0,
-            ram_button_shadow_blur:            0.0,
+            ram_button_shadow_blur:            0.0
         }
     }
 }
 
+
+
+
+
 // ============ STRUCTS ============
-#[derive(Default, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct RamData
 {
     pub used_mb:    u64,
     pub total_mb:   u64,
-    pub percent:    f32,
+    pub percent:    f32
 }
 
 
@@ -113,15 +115,17 @@ fn compute_ram_data(total_kb: u64, available_kb: u64) -> RamData
 
 pub fn read_ram_data() -> Option<RamData>
 {
-    let content = std::fs::read_to_string("/proc/meminfo").ok()?;
+    use std::io::{BufRead, BufReader};
+    let file = std::fs::File::open("/proc/meminfo").ok()?;
+    let reader = BufReader::new(file);
 
     let mut total:     Option<u64> = None;
     let mut available: Option<u64> = None;
 
-    for line in content.lines()
+    for line in reader.lines().map_while(Result::ok)
     {
-        if line.starts_with("MemTotal:")     { total     = parse_kb(line); }
-        if line.starts_with("MemAvailable:") { available = parse_kb(line); }
+        if line.starts_with("MemTotal:")     { total     = parse_kb(&line); }
+        if line.starts_with("MemAvailable:") { available = parse_kb(&line); }
         if total.is_some() && available.is_some() { break; }
     }
 
@@ -136,18 +140,6 @@ pub fn read_ram_data() -> Option<RamData>
 fn parse_kb(line: &str) -> Option<u64>
 {
     line.split_whitespace().nth(1)?.parse().ok()
-}
-
-
-
-pub fn define_ram_text(app: &AppData) -> String
-{
-    let d    = &app.modules_data.ram_data;
-    let text = app.ron_config.ram.ram_format
-        .replace("{used}",    &d.used_mb.to_string())
-        .replace("{total}",   &d.total_mb.to_string())
-        .replace("{percent}", &format!("{:.0}", d.percent));
-    orient_text(&text, &app.ron_config.ram.ram_text_orientation)
 }
 
 
@@ -172,7 +164,7 @@ pub fn define_ram_style(app: &AppData, status: button::Status) -> iced::widget::
         shadow_color: app.ron_config.ram.ram_button_shadow_color,
         shadow_x:     app.ron_config.ram.ram_button_shadow_x,
         shadow_y:     app.ron_config.ram.ram_button_shadow_y,
-        shadow_blur:  app.ron_config.ram.ram_button_shadow_blur,
+        shadow_blur:  app.ron_config.ram.ram_button_shadow_blur
     })
 }
 
@@ -186,7 +178,6 @@ mod tests
 {
     use super::*;
 
-    // ---- parse_kb -----------------------------------------------------------
 
     #[test]
     fn parse_kb_valid_line()
@@ -206,7 +197,6 @@ mod tests
         assert_eq!(parse_kb("MemTotal: abc kB"), None);
     }
 
-    // ---- read_ram_data ------------------------------------------------------
 
     #[test]
     fn read_ram_data_returns_some_on_linux()
@@ -235,7 +225,6 @@ mod tests
         assert!(d.total_mb > 0);
     }
 
-        // ---- parse_kb: edge cases -----------------------------------------------
  
     #[test]
     fn parse_kb_zero_value()
@@ -246,7 +235,6 @@ mod tests
     #[test]
     fn parse_kb_no_unit_still_parses_number()
     {
-        // unit column is ignored — only the number matters
         assert_eq!(parse_kb("MemTotal: 8192"), Some(8192));
     }
  
@@ -277,7 +265,6 @@ mod tests
     #[test]
     fn parse_kb_negative_string_returns_none()
     {
-        // u64 cannot be negative
         assert_eq!(parse_kb("MemTotal: -1024 kB"), None);
     }
  
@@ -287,7 +274,6 @@ mod tests
         assert_eq!(parse_kb("MemTotal: 1024.5 kB"), None);
     }
  
-    // ---- compute_ram_data: math ---------------------------------------------
  
     #[test]
     fn compute_ram_data_used_is_total_minus_available()
@@ -334,7 +320,6 @@ mod tests
     #[test]
     fn compute_ram_data_zero_total_returns_zero_percent()
     {
-        // Guard against divide-by-zero
         let d = compute_ram_data(0, 0);
         assert_eq!(d.percent, 0.0);
     }
@@ -342,7 +327,6 @@ mod tests
     #[test]
     fn compute_ram_data_available_greater_than_total_saturates_to_zero_used()
     {
-        // saturating_sub prevents underflow
         let d = compute_ram_data(1000, 2000);
         assert_eq!(d.used_mb, 0);
         assert_eq!(d.percent, 0.0);
@@ -370,12 +354,10 @@ mod tests
         }
     }
  
-    // ---- read_ram_data: live /proc/meminfo ----------------------------------
  
     #[test]
     fn read_ram_data_used_is_nonzero_on_running_system()
     {
-        // A running system always has some RAM in use
         let d = read_ram_data().unwrap();
         assert!(d.used_mb > 0);
     }
@@ -390,8 +372,6 @@ mod tests
     #[test]
     fn read_ram_data_used_plus_available_approximately_equals_total()
     {
-        // used_mb + available_mb should be very close to total_mb
-        // We re-parse available directly to check the invariant
         let content = std::fs::read_to_string("/proc/meminfo").unwrap();
         let mut available_kb: u64 = 0;
         for line in content.lines()
@@ -400,11 +380,9 @@ mod tests
         }
         let d = read_ram_data().unwrap();
         let available_mb = available_kb / 1024;
-        // Allow 1 MB rounding slack from the /1024 integer division
         assert!(d.used_mb + available_mb <= d.total_mb + 1);
     }
  
-    // ---- RamData default ----------------------------------------------------
  
     #[test]
     fn ram_data_default_all_zero()

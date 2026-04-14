@@ -10,8 +10,9 @@ use crate::{modules::workspaces::UserWorkspaceAction, update::Message};
 
 
 
+
+
 // ============ ENUM/STRUCT, ETC ============
-// desktops property: a(uss) = array of (position: u32, id: String, name: String)
 #[derive(Debug, zbus::zvariant::Type, zbus::zvariant::OwnedValue, zbus::zvariant::Value, serde::Deserialize, serde::Serialize)]
 struct Desktop { position: u32, id: String, name: String }
 
@@ -167,7 +168,7 @@ pub fn resolve_target_id(action: &UserWorkspaceAction, current_id: &str, ids: &[
     {
         UserWorkspaceAction::ChangeWithIndex(i) => ids.get(*i as usize - 1).cloned(),
         UserWorkspaceAction::MoveNext           => ids.get(current_pos + 1).cloned(),
-        UserWorkspaceAction::MovePrev           => if current_pos > 0 { ids.get(current_pos - 1).cloned() } else { None },
+        UserWorkspaceAction::MovePrev           => if current_pos > 0 { ids.get(current_pos - 1).cloned() } else { None }
     }
 }
 
@@ -192,7 +193,6 @@ mod tests
     }
 
 
-    // ---- resolve_workspaces ------------------------------------------------
 
     #[test]
     fn resolve_workspaces_current_is_first()
@@ -266,7 +266,6 @@ mod tests
     }
 
 
-    // ---- resolve_target_id -------------------------------------------------
 
     #[test]
     fn change_with_index_selects_correct_id()
@@ -341,7 +340,6 @@ mod tests
     #[test]
     fn unknown_current_id_move_next_returns_second()
     {
-        // unknown id → position 0 → next is index 1
         let ids = ids(&[(0, "aaa", ""), (1, "bbb", ""), (2, "ccc", "")]);
         assert_eq!(resolve_target_id(&UserWorkspaceAction::MoveNext, "zzz", &ids), Some("bbb".into()));
     }
@@ -349,7 +347,6 @@ mod tests
     #[test]
     fn unknown_current_id_move_prev_returns_none()
     {
-        // unknown id → position 0 → prev is out of bounds
         let ids = ids(&[(0, "aaa", ""), (1, "bbb", "")]);
         assert_eq!(resolve_target_id(&UserWorkspaceAction::MovePrev, "zzz", &ids), None);
     }

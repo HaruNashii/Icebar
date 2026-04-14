@@ -5,8 +5,6 @@ use iced::widget::button;
 
 
 
-
-
 // ============ CONFIG ============
 use serde::{Deserialize, Serialize};
 use crate::helpers::style::{TextOrientation, SideOption};
@@ -53,7 +51,7 @@ pub struct WorkspaceConfig
     pub workspace_button_shadow_color:            Option<ColorType>,
     pub workspace_button_shadow_x:                f32,
     pub workspace_button_shadow_y:                f32,
-    pub workspace_button_shadow_blur:             f32,
+    pub workspace_button_shadow_blur:             f32
 }
 
 impl Default for WorkspaceConfig
@@ -99,10 +97,14 @@ impl Default for WorkspaceConfig
             workspace_button_shadow_color:            None,
             workspace_button_shadow_x:                0.0,
             workspace_button_shadow_y:                0.0,
-            workspace_button_shadow_blur:             0.0,
+            workspace_button_shadow_blur:             0.0
         }
     }
 }
+
+
+
+
 
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Clone)]
@@ -258,7 +260,7 @@ mod tests
         {
             is_hovering_workspace: false,
             current_workspace: current,
-            visible_workspaces: vec![1, 2, 3],
+            visible_workspaces: vec![1, 2, 3]
         };
         app.ron_config.workspace.workspace_text = vec!["ws1".into(), "ws2".into(), "ws3".into()];
         app.ron_config.workspace.workspace_selected_text = Some(vec!["[1]".into(), "[2]".into(), "[3]".into()]);
@@ -267,7 +269,6 @@ mod tests
         app
     }
  
-    // ---- define_workspaces_text ---------------------------------------------
  
     #[test]
     fn workspace_text_returns_normal_text_for_inactive()
@@ -289,7 +290,6 @@ mod tests
     fn workspace_text_falls_back_to_id_when_out_of_bounds()
     {
         let app = make_app(1);
-        // workspace 10 doesn't exist in the vec
         let text = define_workspaces_text(&app, 10);
         assert_eq!(text, "10");
     }
@@ -307,7 +307,6 @@ mod tests
     fn workspace_text_id_1_returns_first_element()
     {
         let app = make_app(3);
-        // workspace 1 is not current (current=3), should return workspace_text[0]
         assert_eq!(define_workspaces_text(&app, 1), "ws1");
     }
  
@@ -325,7 +324,6 @@ mod tests
     {
         let mut app = make_app(2);
         app.ron_config.workspace.workspace_selected_text = None;
-        // Should fall back to id.to_string() when no selected_text provided
         assert_eq!(define_workspaces_text(&app, 2), "2");
     }
  

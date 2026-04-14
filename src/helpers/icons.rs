@@ -76,14 +76,12 @@ pub async fn fetch_attention_icon(conn: &Connection, combined: &str, attention_i
         return None;
     }
 
-    // Prefer raw pixmap data
     if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("AttentionIconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().max_by_key(|(w, h, _)| w * h)
     {
         let rgba_data = data.chunks_exact(4).flat_map(|p| [p[1], p[2], p[3], p[0]]).collect::<Vec<u8>>();
         return Some(TrayEvent::AttentionIcon { combined: combined.to_string(), data: rgba_data, width: w as u32, height: h as u32 });
     }
 
-    // Fall back to icon name
     let theme_path = proxy.get_property::<String>("IconThemePath").await.ok();
     let try_name = |name: String| { load_icon_with_theme_path(&name, theme_path.as_deref()) };
 
@@ -136,16 +134,13 @@ pub fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
     println!("Searching .desktop files for app: {name}");
     let mut desktop_paths = vec!
     [
-        // System and user installations
         PathBuf::from("/usr/share/applications"),
         PathBuf::from("/usr/local/share/applications"),
         home::home_dir().map(|h| h.join(".local/share/applications")).unwrap_or_default(),
 
-        // Flatpak standard paths
         home::home_dir().map(|h| h.join(".local/share/flatpak/exports/share/applications")).unwrap_or_default(),
         PathBuf::from("/var/lib/flatpak/exports/share/applications"),
 
-        // Distrobox
         PathBuf::from("/run/host/usr/share/applications"),
         PathBuf::from("/run/host/usr/local/share/applications"),
     ];
@@ -223,7 +218,6 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
             normal_base
         };
         
-        // Try direct paths in theme_path root (for apps like Spotify)
         for ext in ["svg","png"]
         { let candidate = base.join(format!("{name}.{ext}"));
             if let Some(icon) = try_load_icon(&candidate)
@@ -233,7 +227,6 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
             }
         }
         
-        // Original nested path search
         for size in ["scalable","512x512","256x256","128x128","96x96","72x72","64x64","48x48","36x36","32x32","24x24","22x22","16x16"]
         {
             for ext in ["svg","png"]
@@ -279,7 +272,6 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
         }
     }
 
-    // 4️⃣ Symbolic hicolor fallback
     let symbolic_candidate = PathBuf::from("/usr/share/icons/hicolor/scalable/apps").join(format!("{name}.svg"));
     if let Some(icon) = try_load_icon(&symbolic_candidate)
     {
@@ -287,7 +279,6 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
         return Some(icon);
     }
 
-    // None found
     println!("No icon found for {name}");
     None
 }
@@ -356,7 +347,6 @@ mod tests
     use super::*;
     use std::fs;
  
-    // ---- search_icon_recursive ---------------------------------------------
  
     #[test]
     fn search_icon_finds_png_in_flat_dir()
@@ -409,7 +399,6 @@ mod tests
         let dir = tempfile::tempdir().unwrap();
         fs::write(dir.path().join("myapp.jpg"), b"jpeg data").unwrap();
  
-        // looking for png/svg only — should not match .jpg
         let result = search_icon_recursive(dir.path(), "myapp", &["png", "svg"]);
         assert!(result.is_none());
     }
@@ -420,7 +409,6 @@ mod tests
         let dir = tempfile::tempdir().unwrap();
         fs::write(dir.path().join("myapp-extra.png"), b"fake").unwrap();
  
-        // stem is "myapp-extra", not "myapp"
         let result = search_icon_recursive(dir.path(), "myapp", &["png"]);
         assert!(result.is_none());
     }
@@ -439,7 +427,7 @@ mod tests
         let result = search_icon_recursive(
             std::path::Path::new("/tmp/this_dir_does_not_exist_12345"),
             "myapp",
-            &["png"],
+            &["png"]
         );
         assert!(result.is_none());
     }

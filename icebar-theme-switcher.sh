@@ -9,6 +9,7 @@
 # │     --no-exit      -n          Loop back to theme list after install.   │
 # │     --force        -f          Skip confirmation prompts.               │
 # │     --cycle        -c          Cycle through all themes one by one.     │
+# │     --cycletime    -ct <s>     Auto-advance cycle every <s> seconds.    │
 # │     --workspace    -w  <wm>    Bypass workspace picker. <wm>: Sway,     │
 # │                                Hypr, Niri, Plasma or None.              │
 # │     --focused      -fw <wm>    Bypass focused window picker. <wm>:      │
@@ -21,6 +22,7 @@
 NO_EXIT=false
 FORCE=false
 CYCLE=false
+CYCLE_TIME=0    # seconds to wait between themes (0 = manual prompt)
 BYPASS_WM=""    # Sway | Hypr | Niri | Plasma | None
 BYPASS_FW=""    # Sway | Hypr | Niri | Plasma | None
 SELECT=""       # theme name to install directly
@@ -38,6 +40,7 @@ print_help()
     echo -e "    ${CYAN}-n${RESET}, ${CYAN}--no-exit${RESET}              Loop back to the theme list after installing."
     echo -e "    ${CYAN}-f${RESET}, ${CYAN}--force${RESET}                Skip all confirmation prompts."
     echo -e "    ${CYAN}-c${RESET}, ${CYAN}--cycle${RESET}                Cycle through every theme one by one."
+    echo -e "    ${CYAN}-ct${RESET}, ${CYAN}--cycletime${RESET}  ${DIM}<s>${RESET}     Auto-advance cycle every <s> seconds (implies --cycle)."
     echo -e "    ${CYAN}-w${RESET}, ${CYAN}--workspace${RESET}  ${DIM}<wm>${RESET}      Bypass workspace module picker."
     echo -e "    ${CYAN}-fw${RESET}, ${CYAN}--focused${RESET}   ${DIM}<wm>${RESET}      Bypass focused window module picker."
     echo -e "    ${CYAN}-s${RESET}, ${CYAN}--select${RESET}     ${DIM}<name>${RESET}    Directly install a theme by name."
@@ -48,6 +51,7 @@ print_help()
     echo -e "  ${BWHITE}Examples:${RESET}"
     echo -e "    ${DIM}./icebar-theme-switcher.sh${RESET}"
     echo -e "    ${DIM}./icebar-theme-switcher.sh --cycle -w Hypr -fw Hypr${RESET}"
+    echo -e "    ${DIM}./icebar-theme-switcher.sh --cycletime 10 -w Hypr -fw Hypr${RESET}"
     echo -e "    ${DIM}./icebar-theme-switcher.sh --force --workspace Niri${RESET}"
     echo -e "    ${DIM}./icebar-theme-switcher.sh -n${RESET}"
     echo
@@ -80,6 +84,16 @@ while [[ $i -le $# ]]; do
         --no-exit|-n)   NO_EXIT=true ;;
         --force|-f)     FORCE=true   ;;
         --cycle|-c)     CYCLE=true   ;;
+        --cycletime|-ct)
+            i=$(( i + 1 ))
+            [[ $i -gt $# ]] && { echo -e "  ${RED}${BOLD}✗${RESET}  --cycletime/-ct requires a number of seconds." >&2; exit 1; }
+            if ! [[ "${!i}" =~ ^[0-9]+$ ]]; then
+                echo -e "  ${RED}${BOLD}✗${RESET}  --cycletime/-ct value must be a positive integer (got '${!i}')." >&2
+                exit 1
+            fi
+            CYCLE_TIME="${!i}"
+            CYCLE=true   # --cycletime implies --cycle
+            ;;
         --workspace|-w)
             i=$(( i + 1 ))
             [[ $i -gt $# ]] && { echo -e "  ${RED}${BOLD}✗${RESET}  --workspace/-w requires a value (Sway, Hypr, Niri, None)." >&2; exit 1; }
@@ -534,18 +548,46 @@ if cp "$CHOSEN_CONFIG" "$ICEBAR_CONFIG"; then
     if [[ "$CYCLE" == true ]]; then
         if (( CYCLE_INDEX < ${#THEMES[@]} )); then
             echo
-            echo -ne "  ${BWHITE}Try next theme (${THEMES[$CYCLE_INDEX]})? ${DIM}[y/n/q]:${RESET} "
-            read -r cycle_ans
-            case "${cycle_ans,,}" in
-                y|"") echo; continue ;;
-                q)    echo; print_info "Stopped cycling."; echo; exit 0 ;;
-                *)
-                    echo
-                    print_info "Keeping current theme. Goodbye."
-                    echo
-                    exit 0
-                    ;;
-            esac
+            if (( CYCLE_TIME > 0 )); then
+                # ── Timed auto-advance ─────────────────────────────────────
+                echo -e "  ${DIM}Next theme in ${CYCLE_TIME}s — press ${BWHITE}q${RESET}${DIM} to stop, ${BWHITE}s${RESET}${DIM} to skip immediately…${RESET}"
+                timed_out=true
+                for (( _t=CYCLE_TIME; _t>0; _t-- )); do
+                    printf "\r  ${DIM}%3ds remaining…${RESET}   " "$_t"
+                    if read -r -t 1 -n 1 _key 2>/dev/null; then
+                        case "${_key,,}" in
+                            q)
+                                echo
+                                echo
+                                print_info "Stopped cycling."
+                                echo
+                                exit 0
+                                ;;
+                            s)
+                                timed_out=true
+                                break
+                                ;;
+                        esac
+                    fi
+                done
+                printf "\r%-45s\r" " "   # clear the countdown line
+                echo
+                continue
+            else
+                # ── Manual prompt ──────────────────────────────────────────
+                echo -ne "  ${BWHITE}Try next theme (${THEMES[$CYCLE_INDEX]})? ${DIM}[y/n/q]:${RESET} "
+                read -r cycle_ans
+                case "${cycle_ans,,}" in
+                    y|"") echo; continue ;;
+                    q)    echo; print_info "Stopped cycling."; echo; exit 0 ;;
+                    *)
+                        echo
+                        print_info "Keeping current theme. Goodbye."
+                        echo
+                        exit 0
+                        ;;
+                esac
+            fi
         fi
     elif [[ "$NO_EXIT" == true ]]; then
         echo -ne "  ${BWHITE}Switch to another theme? ${DIM}[y/n]:${RESET} "

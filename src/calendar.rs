@@ -25,7 +25,7 @@ pub enum CalendarView
 {
     #[default] Month,
     Year,
-    Decade,
+    Decade
 }
 
 #[derive(Default, Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -34,7 +34,7 @@ pub enum CalendarNavPosition
     #[default] Above,
     Below,
     Left,
-    Right,
+    Right
 }
 
 #[derive(Default, Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -42,14 +42,14 @@ pub enum FirstWeekDay
 {
     #[default] Monday,
     Sunday,
-    Saturday,
+    Saturday
 }
 
 #[derive(Default, Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum DayClickAction
 {
     #[default] HighlightOnly,
-    CustomAction(Vec<String>),
+    CustomAction(Vec<String>)
 }
 
 #[derive(Clone, Debug)]
@@ -62,7 +62,7 @@ pub struct CalendarData
     pub viewing_year:      i32,
     pub viewing_decade:    i32,
     pub selected_day:      Option<NaiveDate>,
-    pub mouse_pos:         (i32, i32),
+    pub mouse_pos:         (i32, i32)
 }
 
 impl Default for CalendarData
@@ -79,7 +79,7 @@ impl Default for CalendarData
             viewing_year:   today.year(),
             viewing_decade: (today.year() / 10) * 10,
             selected_day:   None,
-            mouse_pos:      (0, 0),
+            mouse_pos:      (0, 0)
         }
     }
 }
@@ -96,7 +96,7 @@ pub struct CalendarButtonStyle
     pub pressed_text_color:     ColorType,
     pub border_color:           ColorType,
     pub border_size:            f32,
-    pub border_radius:          [f32; 4],
+    pub border_radius:          [f32; 4]
 }
 
 impl Default for CalendarButtonStyle
@@ -113,7 +113,7 @@ impl Default for CalendarButtonStyle
             pressed_text_color:  ColorType::RGB([255, 255, 255]),
             border_color:        ColorType::RGB([80, 70, 100]),
             border_size:         1.0,
-            border_radius:       [4., 4., 4., 4.],
+            border_radius:       [4., 4., 4., 4.]
         }
     }
 }
@@ -140,7 +140,7 @@ impl CalendarButtonStyle
             shadow_color:      None,
             shadow_x:          0.,
             shadow_y:          0.,
-            shadow_blur:       0.,
+            shadow_blur:       0.
         })
     }
 }
@@ -207,7 +207,7 @@ pub struct CalendarWindowConfig
     pub calendar_decade_grid_spacing:       u16,
     pub calendar_year_text_size:            u32,
     pub calendar_year_button_style:         CalendarButtonStyle,
-    pub calendar_current_year_button_style: CalendarButtonStyle,
+    pub calendar_current_year_button_style: CalendarButtonStyle
 }
 
 impl Default for CalendarWindowConfig
@@ -241,7 +241,7 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([255, 255, 255]),
                 border_color:       ColorType::RGB([80, 65, 100]),
                 border_size:        1.0,
-                border_radius:      [4., 4., 4., 4.],
+                border_radius:      [4., 4., 4., 4.]
             },
             calendar_nav_active_button_style:   CalendarButtonStyle
             {
@@ -253,7 +253,7 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([235, 235, 255]),
                 border_color:       ColorType::RGB([160, 100, 200]),
                 border_size:        1.0,
-                border_radius:      [4., 4., 4., 4.],
+                border_radius:      [4., 4., 4., 4.]
             },
             calendar_month_spacing_y:           0,
             calendar_year_spacing_y:            0,
@@ -291,7 +291,7 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([255, 255, 255]),
                 border_color:       ColorType::RGB([140, 100, 200]),
                 border_size:        1.5,
-                border_radius:      [4., 4., 4., 4.],
+                border_radius:      [4., 4., 4., 4.]
             },
             calendar_selected_day_button_style: CalendarButtonStyle
             {
@@ -303,7 +303,7 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([235, 220, 255]),
                 border_color:       ColorType::RGB([200, 140, 255]),
                 border_size:        1.5,
-                border_radius:      [4., 4., 4., 4.],
+                border_radius:      [4., 4., 4., 4.]
             },
             calendar_overflow_day_button_style: CalendarButtonStyle
             {
@@ -315,7 +315,7 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([120, 110, 140]),
                 border_color:       ColorType::RGBA([70, 60, 90, 40]),
                 border_size:        0.5,
-                border_radius:      [4., 4., 4., 4.],
+                border_radius:      [4., 4., 4., 4.]
             },
             calendar_day_click_action:          DayClickAction::HighlightOnly,
             calendar_month_cell_width:          70,
@@ -340,7 +340,7 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([235, 220, 255]),
                 border_color:       ColorType::RGB([180, 120, 230]),
                 border_size:        1.5,
-                border_radius:      [4., 4., 4., 4.],
+                border_radius:      [4., 4., 4., 4.]
             },
             calendar_year_cell_width:           60,
             calendar_year_cell_height:          38,
@@ -358,8 +358,8 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([235, 220, 255]),
                 border_color:       ColorType::RGB([180, 120, 230]),
                 border_size:        1.5,
-                border_radius:      [4., 4., 4., 4.],
-            },
+                border_radius:      [4., 4., 4., 4.]
+            }
         }
     }
 }
@@ -379,7 +379,7 @@ pub fn create_calendar_window(app: &mut AppData) -> Task<Message>
         BarPosition::Down  => Anchor::Bottom | Anchor::Left,
         BarPosition::Up    => Anchor::Top    | Anchor::Left,
         BarPosition::Left  => Anchor::Left   | Anchor::Top,
-        BarPosition::Right => Anchor::Right  | Anchor::Top,
+        BarPosition::Right => Anchor::Right  | Anchor::Top
     };
 
     let (mx, my) = app.modules_data.calendar_data.mouse_pos;
@@ -398,7 +398,7 @@ pub fn create_calendar_window(app: &mut AppData) -> Task<Message>
             margin:                  Some((pos_y, 0, 0, pos_x)),
             ..Default::default()
         },
-        id,
+        id
     })
 }
 
@@ -417,7 +417,7 @@ pub fn calendar_view<'a>(app: &'a AppData) -> Element<'a, Message>
         CalendarNavPosition::Above => column![nav_bar, Space::new().height(spacing as f32), grid].align_x(Alignment::Center).into(),
         CalendarNavPosition::Below => column![grid, Space::new().height(spacing as f32), nav_bar].align_x(Alignment::Center).into(),
         CalendarNavPosition::Left => row![nav_bar, Space::new().width(spacing as f32), grid].align_y(Alignment::Center).into(),
-        CalendarNavPosition::Right => row![grid, Space::new().width(spacing as f32), nav_bar].align_y(Alignment::Center).into(),
+        CalendarNavPosition::Right => row![grid, Space::new().width(spacing as f32), nav_bar].align_y(Alignment::Center).into()
     };
 
     container(inner)
@@ -434,7 +434,7 @@ pub fn calendar_view<'a>(app: &'a AppData) -> Element<'a, Message>
                 {
                     color:   cfg.calendar_background_border_color.to_iced_color(),
                     width:   cfg.calendar_background_border_size,
-                    radius:  Radius { top_left: cfg.calendar_background_border_radius[0], top_right: cfg.calendar_background_border_radius[1], bottom_left: cfg.calendar_background_border_radius[2], bottom_right: cfg.calendar_background_border_radius[3] },
+                    radius:  Radius { top_left: cfg.calendar_background_border_radius[0], top_right: cfg.calendar_background_border_radius[1], bottom_left: cfg.calendar_background_border_radius[2], bottom_right: cfg.calendar_background_border_radius[3] }
                 },
                 ..Default::default()
             }
@@ -515,7 +515,7 @@ fn build_grid<'a>(cfg: &'a CalendarWindowConfig, data: &'a CalendarData) -> Elem
     {
         CalendarView::Month  => build_month_grid(cfg, data),
         CalendarView::Year   => build_year_grid(cfg, data),
-        CalendarView::Decade => build_decade_grid(cfg, data),
+        CalendarView::Decade => build_decade_grid(cfg, data)
     }
 }
 
@@ -684,7 +684,8 @@ fn build_month_grid<'a>(cfg: &'a CalendarWindowConfig, data: &'a CalendarData) -
 fn make_day_cell<'a>(cfg: &CalendarWindowConfig, label: &str, _date: Option<NaiveDate>, style: CalendarButtonStyle, msg: Message) -> Element<'a, Message>
 {
     let owned = label.to_string();
-    button(
+    button
+    (
         text(owned)
             .size(cfg.calendar_day_text_size)
             .width(Length::Fill)
@@ -729,8 +730,10 @@ fn build_year_grid<'a>(cfg: &'a CalendarWindowConfig, data: &'a CalendarData) ->
         let msg     = Message::CalendarMonthSelected(month);
         let owned   = lbl.clone();
 
-        row_cells.push(
-            button(
+        row_cells.push
+        (
+            button
+            (
                 text(owned)
                     .size(cfg.calendar_month_text_size)
                     .width(Length::Fill).height(Length::Fill)
@@ -779,8 +782,10 @@ fn build_decade_grid<'a>(cfg: &'a CalendarWindowConfig, data: &'a CalendarData) 
         let style   = if is_curr { cfg.calendar_current_year_button_style.clone() } else { cfg.calendar_year_button_style.clone() };
         let msg     = Message::CalendarYearSelected(year);
 
-        row_cells.push(
-            button(
+        row_cells.push
+        (
+            button
+            (
                 text(format!("{year}"))
                     .size(cfg.calendar_year_text_size)
                     .width(Length::Fill).height(Length::Fill)
@@ -820,7 +825,7 @@ fn first_weekday_offset(first: NaiveDate, fwd: &FirstWeekDay) -> i32
     {
         FirstWeekDay::Monday   => Weekday::Mon,
         FirstWeekDay::Sunday   => Weekday::Sun,
-        FirstWeekDay::Saturday => Weekday::Sat,
+        FirstWeekDay::Saturday => Weekday::Sat
     };
     let iso_num = |wd: Weekday| -> i32 { wd.num_days_from_monday() as i32 };
     (iso_num(iso_wd) - iso_num(col0_iso)).rem_euclid(7)
@@ -843,7 +848,7 @@ fn ordered_weekday_labels(cfg: &CalendarWindowConfig) -> Vec<String>
     {
         FirstWeekDay::Monday   => 0,
         FirstWeekDay::Sunday   => 1,
-        FirstWeekDay::Saturday => 2,
+        FirstWeekDay::Saturday => 2
     };
     let mut out = base.clone();
     out.rotate_right(rotate_by);
@@ -887,7 +892,6 @@ mod tests
     fn dec_1_2023() -> NaiveDate { NaiveDate::from_ymd_opt(2023, 12, 1).unwrap() }
     fn feb_1_2023() -> NaiveDate { NaiveDate::from_ymd_opt(2023, 2, 1).unwrap() }
 
-    // ── days_in_month ────────────────────────────────────────────────────────
 
     #[test]
     fn days_in_month_january_is_31()
@@ -973,7 +977,6 @@ mod tests
         }
     }
 
-    // ── prev_month_day_count ─────────────────────────────────────────────────
 
     #[test]
     fn prev_month_day_count_january_wraps_to_december()
@@ -1011,7 +1014,6 @@ mod tests
         assert_eq!(prev_month_day_count(2024, 12), 30);
     }
 
-    // ── first_weekday_offset ─────────────────────────────────────────────────
 
     #[test]
     fn first_weekday_offset_monday_start_jan_2024_is_0()
@@ -1117,7 +1119,6 @@ mod tests
         assert_eq!(first_weekday_offset(d, &FirstWeekDay::Monday), 4);
     }
 
-    // ── ordered_weekday_labels ────────────────────────────────────────────────
 
     #[test]
     fn ordered_weekday_labels_monday_start_first_is_mo()
@@ -1251,7 +1252,6 @@ mod tests
         assert_eq!(labels.len(), 7);
     }
 
-    // ── CalendarData default ─────────────────────────────────────────────────
 
     #[test]
     fn calendar_data_default_is_closed()
@@ -1322,7 +1322,6 @@ mod tests
         assert_eq!(data.viewing_month.month(), today.month());
     }
 
-    // ── CalendarWindowConfig default ─────────────────────────────────────────
 
     #[test]
     fn calendar_window_config_default_window_size_is_non_zero()
@@ -1461,7 +1460,6 @@ mod tests
         assert_eq!(cfg.calendar_decade_grid_columns, 3);
     }
 
-    // ── CalendarButtonStyle default ───────────────────────────────────────────
 
     #[test]
     fn calendar_button_style_default_border_size_is_positive()
@@ -1486,7 +1484,6 @@ mod tests
         assert_eq!(style.border_radius[2], style.border_radius[3]);
     }
 
-    // ── CalendarView ─────────────────────────────────────────────────────────
 
     #[test]
     fn calendar_view_default_is_month()
@@ -1509,7 +1506,6 @@ mod tests
         assert_eq!(v, v.clone());
     }
 
-    // ── CalendarNavPosition ───────────────────────────────────────────────────
 
     #[test]
     fn calendar_nav_position_default_is_above()
@@ -1525,7 +1521,6 @@ mod tests
         assert_ne!(CalendarNavPosition::Above, CalendarNavPosition::Left);
     }
 
-    // ── FirstWeekDay ─────────────────────────────────────────────────────────
 
     #[test]
     fn first_week_day_default_is_monday()
@@ -1541,7 +1536,6 @@ mod tests
         assert_ne!(FirstWeekDay::Monday,   FirstWeekDay::Saturday);
     }
 
-    // ── DayClickAction ────────────────────────────────────────────────────────
 
     #[test]
     fn day_click_action_default_is_highlight_only()
@@ -1560,7 +1554,7 @@ mod tests
                 assert_eq!(cmds[0], "notify-send");
                 assert_eq!(cmds[1], "{date}");
             }
-            _ => panic!("expected CustomAction"),
+            _ => panic!("expected CustomAction")
         }
     }
 
@@ -1577,7 +1571,6 @@ mod tests
         assert_ne!(action, DayClickAction::HighlightOnly);
     }
 
-    // ── Decade grid range ─────────────────────────────────────────────────────
 
     #[test]
     fn decade_grid_starts_one_before_decade()
@@ -1609,7 +1602,6 @@ mod tests
         assert!(years.contains(&today_year));
     }
 
-    // ── Overflow day arithmetic ───────────────────────────────────────────────
 
     #[test]
     fn prev_overflow_day_label_for_jan_2024_offset_minus_1()
@@ -1646,7 +1638,6 @@ mod tests
         assert_eq!(d, 2);
     }
 
-    // ── Month label defaults ──────────────────────────────────────────────────
 
     #[test]
     fn month_labels_default_january_is_jan()
@@ -1669,7 +1660,6 @@ mod tests
         assert_eq!(cfg.calendar_month_labels[5], "Jun");
     }
 
-    // ── first_weekday_offset edge cases ──────────────────────────────────────
 
     #[test]
     fn first_weekday_offset_sunday_month_start_monday_grid_gives_6()
@@ -1699,7 +1689,6 @@ mod tests
         assert_eq!(first_weekday_offset(d, &FirstWeekDay::Saturday), 0);
     }
 
-    // ── Serialization round-trip ──────────────────────────────────────────────
 
     #[test]
     fn day_click_action_highlight_only_serializes_and_deserializes()

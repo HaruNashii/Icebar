@@ -15,8 +15,10 @@ use crate::ron::ActionOnClick;
 use crate::update::Message;
 use crate::AppData;
 
+
  
  
+
 
 
 
@@ -54,7 +56,7 @@ pub struct VolumeOutputConfig
     pub volume_output_button_shadow_color:           Option<ColorType>,
     pub volume_output_button_shadow_x:               f32,
     pub volume_output_button_shadow_y:               f32,
-    pub volume_output_button_shadow_blur:            f32,
+    pub volume_output_button_shadow_blur:            f32
 }
 
 impl Default for VolumeOutputConfig
@@ -91,7 +93,7 @@ impl Default for VolumeOutputConfig
             volume_output_button_shadow_color:           None,
             volume_output_button_shadow_x:               0.0,
             volume_output_button_shadow_y:               0.0,
-            volume_output_button_shadow_blur:            0.0,
+            volume_output_button_shadow_blur:            0.0
         }
     }
 }
@@ -122,7 +124,7 @@ pub struct MutedVolumeOutputConfig
     pub muted_volume_output_button_shadow_color:           Option<ColorType>,
     pub muted_volume_output_button_shadow_x:               f32,
     pub muted_volume_output_button_shadow_y:               f32,
-    pub muted_volume_output_button_shadow_blur:            f32,
+    pub muted_volume_output_button_shadow_blur:            f32
 }
 
 impl Default for MutedVolumeOutputConfig
@@ -153,7 +155,7 @@ impl Default for MutedVolumeOutputConfig
             muted_volume_output_button_shadow_color:           None,
             muted_volume_output_button_shadow_x:               0.0,
             muted_volume_output_button_shadow_y:               0.0,
-            muted_volume_output_button_shadow_blur:            0.0,
+            muted_volume_output_button_shadow_blur:            0.0
         }
     }
 }
@@ -190,7 +192,7 @@ pub struct VolumeInputConfig
     pub volume_input_button_shadow_color:           Option<ColorType>,
     pub volume_input_button_shadow_x:               f32,
     pub volume_input_button_shadow_y:               f32,
-    pub volume_input_button_shadow_blur:            f32,
+    pub volume_input_button_shadow_blur:            f32
 }
 
 impl Default for VolumeInputConfig
@@ -227,7 +229,7 @@ impl Default for VolumeInputConfig
             volume_input_button_shadow_color:           None,
             volume_input_button_shadow_x:               0.0,
             volume_input_button_shadow_y:               0.0,
-            volume_input_button_shadow_blur:            0.0,
+            volume_input_button_shadow_blur:            0.0
         }
     }
 }
@@ -258,7 +260,7 @@ pub struct MutedVolumeInputConfig
     pub muted_volume_input_button_shadow_color:           Option<ColorType>,
     pub muted_volume_input_button_shadow_x:               f32,
     pub muted_volume_input_button_shadow_y:               f32,
-    pub muted_volume_input_button_shadow_blur:            f32,
+    pub muted_volume_input_button_shadow_blur:            f32
 }
 
 impl Default for MutedVolumeInputConfig
@@ -289,10 +291,14 @@ impl Default for MutedVolumeInputConfig
             muted_volume_input_button_shadow_color:           None,
             muted_volume_input_button_shadow_x:               0.0,
             muted_volume_input_button_shadow_y:               0.0,
-            muted_volume_input_button_shadow_blur:            0.0,
+            muted_volume_input_button_shadow_blur:            0.0
         }
     }
 }
+
+
+
+
 
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Clone)]
@@ -305,7 +311,7 @@ pub struct VolumeData
     pub is_hovering_volume_output: bool,
     pub is_hovering_volume_input: bool,
     pub volume_output_raw: f32,
-    pub volume_input_raw: f32,
+    pub volume_input_raw: f32
 }
  
 #[derive(Default, Clone)]
@@ -314,7 +320,7 @@ struct PulseState
     output_volume: f32,   
     output_muted:  bool,
     input_volume:  f32,
-    input_muted:   bool,
+    input_muted:   bool
 }
  
 pub enum VolumeAction
@@ -324,7 +330,7 @@ pub enum VolumeAction
     IncreaseInput(u8),
     DecreaseInput(u8),
     MuteOutput,
-    MuteInput,
+    MuteInput
 }
  
 
@@ -345,14 +351,10 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
             let mut mainloop = match Mainloop::new()
             {
                 Some(m) => m,
-                None    => return,
+                None    => return
             };
             if mainloop.start().is_err() { return; }
 
-            // SAFETY: All PA operations called from outside a PA callback
-            // must be performed while holding the threaded mainloop lock.
-            // Without it, concurrent pushes into PA's internal queue trigger
-            // the `pa_queue_push` assertion and abort the process.
             mainloop.lock();
 
             let context = match Context::new(&mainloop, "icebar-volume")
@@ -388,7 +390,6 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
                 mainloop.lock();
             }
 
-            // ── fetch initial state ─────────────────────────────────────────
             {
                 let s = Arc::clone(&state_cb);
                 let t = tx_clone.clone();
@@ -397,7 +398,6 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
                 fetch_source(&introspector, Arc::clone(&s), t.clone());
             }
 
-            // ── subscribe to sink + source change events ────────────────────
             {
                 let ctx = Arc::clone(&context);
                 let s   = Arc::clone(&state_cb);
@@ -405,7 +405,7 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
 
                 context.lock().unwrap().subscribe(
                     InterestMaskSet::SINK | InterestMaskSet::SOURCE,
-                    |_| {},
+                    |_| {}
                 );
 
                 context.lock().unwrap().set_subscribe_callback(Some(Box::new(
@@ -426,7 +426,6 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
             loop { std::thread::sleep(std::time::Duration::from_secs(60)); }
         });
  
-        // ── yield a Message each time the callback fires ────────────────────
         while rx.recv().await.is_some()
         {
             let s = state.lock().unwrap().clone();
@@ -480,7 +479,7 @@ pub fn volume(volume_modifier: VolumeAction) -> Task<crate::update::Message>
         VolumeAction::MuteOutput        => ("set-mute",   "@DEFAULT_SINK@",   "toggle".into()),
         VolumeAction::IncreaseInput(v)  => ("set-volume", "@DEFAULT_SOURCE@", format!("{}%+", v)),
         VolumeAction::DecreaseInput(v)  => ("set-volume", "@DEFAULT_SOURCE@", format!("{}%-", v)),
-        VolumeAction::MuteInput         => ("set-mute",   "@DEFAULT_SOURCE@", "toggle".into()),
+        VolumeAction::MuteInput         => ("set-mute",   "@DEFAULT_SOURCE@", "toggle".into())
     };
     Task::perform(async move 
     {
@@ -569,7 +568,6 @@ mod tests
     use iced::{widget::button, Background, Color};
     use crate::helpers::{color::ColorType, style::TextOrientation};
  
-    // ---- define_volume_text ------------------------------------------------
  
     #[test]
     fn volume_text_horizontal_returns_unchanged()
@@ -591,7 +589,6 @@ mod tests
         assert_eq!(define_volume_text("", &TextOrientation::Vertical),   "");
     }
  
-    // ---- define_volume_output_style ----------------------------------------
  
     fn make_output_app(muted: bool) -> AppData
     {
@@ -654,7 +651,6 @@ mod tests
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(0, 50, 0))));
     }
  
-    // ---- define_volume_input_style -----------------------------------------
  
     fn make_input_app(muted: bool) -> AppData
     {

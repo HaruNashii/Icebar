@@ -4,11 +4,15 @@ use serde::{Deserialize, Serialize};
 
 
 
+
+
 // ============ CRATES ============
-use crate::helpers::style::{UserStyle, orient_text, set_style, TextOrientation, SideOption};
+use crate::helpers::style::{UserStyle, set_style, TextOrientation, SideOption};
 use crate::helpers::color::{ColorType, Gradient};
 use crate::ron::ActionOnClick;
 use crate::AppData;
+
+
 
 
 
@@ -43,7 +47,7 @@ pub struct CpuTempConfig
     pub cpu_temp_button_shadow_color:           Option<ColorType>,
     pub cpu_temp_button_shadow_x:               f32,
     pub cpu_temp_button_shadow_y:               f32,
-    pub cpu_temp_button_shadow_blur:            f32,
+    pub cpu_temp_button_shadow_blur:            f32
 }
 
 impl Default for CpuTempConfig
@@ -78,24 +82,32 @@ impl Default for CpuTempConfig
             cpu_temp_button_shadow_color:           None,
             cpu_temp_button_shadow_x:               0.0,
             cpu_temp_button_shadow_y:               0.0,
-            cpu_temp_button_shadow_blur:            0.0,
+            cpu_temp_button_shadow_blur:            0.0
         }
     }
 }
 
 
 
-// ============ STRUCTS ============
-#[derive(Default, Clone)]
-pub struct CpuTempData
-{
-    pub temp_celsius: f32,
-}
+
+
+// ============ STATICS ============
+static CACHED_TEMP_PATH: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
+
+
 
 
 
 // ============ FUNCTIONS ============
 pub fn read_cpu_temp() -> Option<f32>
+{
+    let path = CACHED_TEMP_PATH.get_or_init(discover_temp_path);
+    path.as_deref().and_then(read_temp_file)
+}
+
+
+
+fn discover_temp_path() -> Option<String>
 {
     let base = "/sys/class/hwmon";
     let Ok(entries) = std::fs::read_dir(base) else { return None };
@@ -103,37 +115,35 @@ pub fn read_cpu_temp() -> Option<f32>
     let mut hwmons: Vec<_> = entries.flatten().collect();
     hwmons.sort_by_key(|e| e.file_name());
 
-    for entry in hwmons
+    for entry in &hwmons
     {
         let path = entry.path();
         let name = std::fs::read_to_string(path.join("name")).unwrap_or_default();
         let name = name.trim();
 
-        // These are the common CPU temp sources — add yours if different
         if matches!(name, "coretemp" | "k10temp" | "zenpower" | "acpitz" | "cpu_thermal")
         {
-            // Try temp1_input, temp2_input, ... until one works
             for i in 1..=10
             {
                 let temp_path = path.join(format!("temp{}_input", i));
-                if let Some(t) = read_temp_file(temp_path.to_str()?)
+                let path_str = temp_path.to_string_lossy().into_owned();
+                if read_temp_file(&path_str).is_some()
                 {
-                    return Some(t);
+                    return Some(path_str);
                 }
             }
         }
     }
 
-    // Fallback: return the first temp*_input we can find anywhere
-    let Ok(entries) = std::fs::read_dir(base) else { return None };
-    for entry in entries.flatten()
+    for entry in hwmons
     {
         for i in 1..=10
         {
             let temp_path = entry.path().join(format!("temp{}_input", i));
-            if let Some(t) = read_temp_file(temp_path.to_str()?)
+            let path_str = temp_path.to_string_lossy().into_owned();
+            if read_temp_file(&path_str).is_some()
             {
-                return Some(t);
+                return Some(path_str);
             }
         }
     }
@@ -145,18 +155,8 @@ pub fn read_cpu_temp() -> Option<f32>
 
 fn read_temp_file(path: &str) -> Option<f32>
 {
-    // /sys/.../temp is in millidegrees Celsius
     let raw: i64 = std::fs::read_to_string(path).ok()?.trim().parse().ok()?;
     Some(raw as f32 / 1000.0)
-}
-
-
-
-pub fn define_cpu_temp_text(app: &AppData) -> String
-{
-    let temp = app.modules_data.cpu_temp_data.temp_celsius;
-    let text = app.ron_config.cpu_temp.cpu_temp_format.replace("{temp}", &format!("{:.0}", temp));
-    orient_text(&text, &app.ron_config.cpu_temp.cpu_temp_text_orientation)
 }
 
 
@@ -181,7 +181,7 @@ pub fn define_cpu_temp_style(app: &AppData, status: button::Status) -> iced::wid
         shadow_color: app.ron_config.cpu_temp.cpu_temp_button_shadow_color,
         shadow_x: app.ron_config.cpu_temp.cpu_temp_button_shadow_x,
         shadow_y: app.ron_config.cpu_temp.cpu_temp_button_shadow_y,
-        shadow_blur: app.ron_config.cpu_temp.cpu_temp_button_shadow_blur,
+        shadow_blur: app.ron_config.cpu_temp.cpu_temp_button_shadow_blur
     })
 }
 
@@ -195,12 +195,10 @@ mod tests
 {
     use super::*;
 
-    // ---- read_temp_file -----------------------------------------------------
 
     #[test]
     fn read_temp_file_parses_millidegrees()
     {
-        // Write a fake temp file
         let dir  = tempfile::tempdir().unwrap();
         let path = dir.path().join("temp");
         std::fs::write(&path, "45000\n").unwrap();
@@ -233,21 +231,17 @@ mod tests
         assert!(read_temp_file(path.to_str().unwrap()).is_none());
     }
 
-    // ---- read_cpu_temp ------------------------------------------------------
 
     #[test]
     fn read_cpu_temp_returns_plausible_value()
     {
         if let Some(temp) = read_cpu_temp()
         {
-            // Sane range for any running system: -10°C to 110°C
             assert!(temp > -10.0 && temp < 110.0, "implausible temp: {temp}");
         }
-        // If None, machine has no thermal zones — that's fine, don't fail
     }
 
     
-    // ---- read_temp_file: edge cases -----------------------------------------
  
     #[test]
     fn read_temp_file_zero_millidegrees_returns_zero()
@@ -288,7 +282,6 @@ mod tests
     #[test]
     fn read_temp_file_float_string_returns_none()
     {
-        // The kernel always writes integers — a float must not parse
         let dir  = tempfile::tempdir().unwrap();
         let path = dir.path().join("temp");
         std::fs::write(&path, "45.5\n").unwrap();
@@ -300,12 +293,10 @@ mod tests
     {
         let dir  = tempfile::tempdir().unwrap();
         let path = dir.path().join("temp");
-        // 1 millidegree → 0.001 °C
         std::fs::write(&path, "1\n").unwrap();
         assert!((read_temp_file(path.to_str().unwrap()).unwrap() - 0.001).abs() < 0.0001);
     }
  
-    // ---- read_cpu_temp via fake hwmon tree ----------------------------------
  
     fn write_hwmon(dir: &tempfile::TempDir, name: &str, temps: &[i64])
     {
@@ -318,7 +309,6 @@ mod tests
         }
     }
  
-    // Helper that runs read_cpu_temp against a custom base path
     fn read_cpu_temp_from(base: &str) -> Option<f32>
     {
         let Ok(entries) = std::fs::read_dir(base) else { return None };
@@ -340,7 +330,6 @@ mod tests
             }
         }
  
-        // Fallback
         let Ok(entries) = std::fs::read_dir(base) else { return None };
         for entry in entries.flatten()
         {
@@ -374,7 +363,6 @@ mod tests
     #[test]
     fn fake_hwmon_unknown_name_uses_fallback()
     {
-        // Name is not in the known list — should still work via fallback loop
         let dir = tempfile::tempdir().unwrap();
         write_hwmon(&dir, "some_unknown_sensor", &[40000]);
         let result = read_cpu_temp_from(dir.path().to_str().unwrap());
@@ -394,27 +382,17 @@ mod tests
     fn fake_hwmon_empty_dir_returns_none()
     {
         let dir = tempfile::tempdir().unwrap();
-        // No hwmon subdirectories at all
         assert!(read_cpu_temp_from(dir.path().to_str().unwrap()).is_none());
     }
  
     #[test]
     fn fake_hwmon_name_file_missing_uses_fallback()
     {
-        // No name file → name defaults to "" → not in known list → fallback picks it up
         let dir    = tempfile::tempdir().unwrap();
         let hwmon  = dir.path().join("hwmon0");
         std::fs::create_dir_all(&hwmon).unwrap();
         std::fs::write(hwmon.join("temp1_input"), "38000\n").unwrap();
         let result = read_cpu_temp_from(dir.path().to_str().unwrap());
         assert!((result.unwrap() - 38.0).abs() < 0.01);
-    }
- 
-    // ---- CpuTempData default ------------------------------------------------
- 
-    #[test]
-    fn cpu_temp_data_default_is_zero()
-    {
-        assert_eq!(CpuTempData::default().temp_celsius, 0.0);
     }
 }

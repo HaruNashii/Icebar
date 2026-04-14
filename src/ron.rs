@@ -23,7 +23,7 @@ use crate::modules::
     workspaces::WorkspaceConfig,
     image::ImageConfig,
     custom_modules::CustomModuleConfig,
-    data::Modules,
+    data::Modules
 };
 use crate::context_menu::ContextMenuConfig;
 use crate::helpers::{string::find_field_colon, color::{ColorType, Gradient}, ron_general::apply_general_settings, style::{SideOption, TextOrientation}};
@@ -59,7 +59,7 @@ pub enum ActionOnClick
     CustomAction(Vec<String>),
     CycleClockTimezones,
     ToggleAltClockAndCycleClockTimezones,
-    ShowCalendar,
+    ShowCalendar
 }
 
 
@@ -89,7 +89,7 @@ pub struct GeneralConfig
     pub force_static_position_context_menu: Option<(i32, i32)>,
     pub left_modules:                     Vec<Modules>,
     pub center_modules:                   Vec<Modules>,
-    pub right_modules:                    Vec<Modules>,
+    pub right_modules:                    Vec<Modules>
 }
 impl Default for GeneralConfig
 {
@@ -108,7 +108,6 @@ impl Default for GeneralConfig
             font_style:                         "Bold".into(),
             center_modules:                     vec![Modules::Clock],
             ellipsis_text:                      "...".to_string(),
-
             left_modules: Vec::new(),
             right_modules: Vec::new(),
             bar_side_spaces_size: 8,
@@ -116,7 +115,7 @@ impl Default for GeneralConfig
             increased_exclusive_bar_zone: 0,
             spacing_between_all_modules: 0,
             floating_space: 0,
-            display: None,
+            display: None
         }
     }
 }
@@ -174,34 +173,23 @@ pub struct GeneralStyleConfig
     pub general_alt_button_shadow_color:            Option<ColorType>,
     pub general_alt_button_shadow_x:                Option<f32>,
     pub general_alt_button_shadow_y:                Option<f32>,
-    pub general_alt_button_shadow_blur:             Option<f32>,
+    pub general_alt_button_shadow_blur:             Option<f32>
 }
+
+
 
 
 
 // ============ AUTO-HIDE CONFIG ============
-/// Auto-hide: the bar hides itself when the cursor leaves and re-appears when it enters.
-///
-/// Example RON:
-/// ```
-/// auto_hide: Some(AutoHideConfig(
-///     hide_delay_ms:   500,   // ms to wait before hiding after cursor leaves
-///     show_delay_ms:   0,     // ms to wait before showing after cursor enters
-///     peek_size:       2,     // px of bar kept visible as a "hot edge" when hidden
-/// )),
-/// ```
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct AutoHideConfig
 {
-    /// Milliseconds to wait after the cursor leaves before actually hiding the bar.
     pub hide_delay_ms:  u64,
-    /// Milliseconds to wait after the cursor enters before showing the bar.
     pub show_delay_ms:  u64,
-    /// Pixels of bar that remain visible as a hot edge so the cursor can trigger re-show.
-    /// Set to 0 to fully hide (bar won't re-appear until something moves on the edge).
-    pub peek_size:      i32,
+    pub peek_size:      i32
 }
+
 impl Default for AutoHideConfig
 {
     fn default() -> Self
@@ -210,12 +198,10 @@ impl Default for AutoHideConfig
         {
             hide_delay_ms:  500,
             show_delay_ms:  0,
-            peek_size:      2,
+            peek_size:      2
         }
     }
 }
-
-
 
 #[derive(Default, Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
@@ -244,7 +230,7 @@ pub struct BarConfig
     pub image:                  ImageConfig,
     pub custom_module:          CustomModuleConfig,
     pub calendar_window:        CalendarWindowConfig,
-    pub auto_hide:              Option<AutoHideConfig>,
+    pub auto_hide:              Option<AutoHideConfig>
 }
 
 
@@ -366,9 +352,9 @@ pub fn read_ron_config(different_config_path: Option<String>) -> RonReturn
 }
 
 
+
 fn parse_with_fallback(content: &str) -> BarConfig
 {
-    // Strip the outer BarConfig( ... ) wrapper to get a flat body we can iterate.
     let body = extract_outer_body(content);
     let top_level = collect_fields(&body);
 
@@ -376,7 +362,6 @@ fn parse_with_fallback(content: &str) -> BarConfig
 
     for (field_name, raw_value) in top_level
     {
-        // Fast path: the whole top-level field is valid as-is.
         let snippet = format!("({}: {})", field_name, raw_value);
         if ron::from_str::<BarConfig>(&snippet).is_ok()
         {
@@ -384,10 +369,6 @@ fn parse_with_fallback(content: &str) -> BarConfig
             continue;
         }
 
-        // The top-level field failed. If it's a nested struct, try dropping
-        // inner fields one-by-one until the struct parses cleanly.
-        // Because all inner structs use #[serde(default)], any subset of
-        // valid fields will parse — we only need to exclude the bad one(s).
         if let Some(inner_body) = extract_struct_body(&raw_value)
         {
             let inner_fields = collect_fields(&inner_body);
@@ -420,12 +401,9 @@ fn parse_with_fallback(content: &str) -> BarConfig
 }
 
 
-// Try to build a valid "field_name: ( ...inner_fields... )" by dropping any
-// inner fields that cause a parse failure, one at a time.
-// Returns None only if no combination of the inner fields produces a valid result.
+
 fn recover_struct(field_name: &str, inner_fields: Vec<(String, String)>) -> Option<String>
 {
-    // Start with all fields included, then drop bad ones.
     let mut candidates: Vec<String> = inner_fields
         .iter()
         .map(|(k, v)| format!("{}: {}", k, v))
@@ -449,8 +427,6 @@ fn recover_struct(field_name: &str, inner_fields: Vec<(String, String)>) -> Opti
             return Some(attempt);
         }
 
-        // Find and drop the first inner field that is individually bad.
-        // We do this by trying each candidate removed in turn.
         let mut dropped = false;
         for i in 0..candidates.len()
         {
@@ -473,14 +449,12 @@ fn recover_struct(field_name: &str, inner_fields: Vec<(String, String)>) -> Opti
 
         if !dropped
         {
-            // Could not isolate a single bad field — drop all and give up.
             eprintln!("WARNING: Could not recover any fields from '{}'", field_name);
             return None;
         }
 
         if candidates.is_empty()
         {
-            // All inner fields were bad; return an empty struct so defaults apply.
             let attempt = format!("{}: ()", field_name);
             let snippet  = format!("({})", attempt);
             if ron::from_str::<BarConfig>(&snippet).is_ok()
@@ -493,13 +467,9 @@ fn recover_struct(field_name: &str, inner_fields: Vec<(String, String)>) -> Opti
 }
 
 
-// Strip "BarConfig\n(\n...\n)" and return the inner body string.
-// Skips comment lines when searching for the opening paren so that a '('
-// inside a header comment doesn't get mistaken for the struct opener.
+
 fn extract_outer_body(content: &str) -> String
 {
-    // Walk line-by-line, skipping comment lines, to find the first '(' that
-    // actually opens the BarConfig struct body.
     let start = {
         let mut found = None;
         let mut byte_pos = 0usize;
@@ -542,7 +512,7 @@ fn extract_outer_body(content: &str) -> String
 }
 
 
-// If `raw` is a RON struct literal "( ... )", return the inner body.
+
 fn extract_struct_body(raw: &str) -> Option<String>
 {
     let trimmed = raw.trim();
@@ -551,8 +521,7 @@ fn extract_struct_body(raw: &str) -> Option<String>
 }
 
 
-// Parse a flat RON struct body into (key, raw_value) pairs, handling
-// multi-line values and nested structs/arrays correctly.
+
 fn collect_fields(body: &str) -> Vec<(String, String)>
 {
     let mut fields: Vec<(String, String)> = Vec::new();
@@ -566,7 +535,6 @@ fn collect_fields(body: &str) -> Vec<(String, String)>
     {
         let trimmed = line.trim();
 
-        // Skip blank lines and full-line comments only when not mid-value.
         if current_field.is_none()
         {
             if trimmed.is_empty() || trimmed.starts_with("//") { continue; }
@@ -588,7 +556,6 @@ fn collect_fields(body: &str) -> Vec<(String, String)>
         }
         else
         {
-            // Strip inline comments before accounting for depth.
             let code_part = strip_line_comment(trimmed, &in_string);
             depth += count_depth_change_stateful(code_part, &mut in_string, &mut escaped);
             if !current_value.is_empty() { current_value.push(' '); }
@@ -610,7 +577,7 @@ fn collect_fields(body: &str) -> Vec<(String, String)>
 }
 
 
-// Remove a trailing `// ...` comment from a line, but only when not inside a string.
+
 fn strip_line_comment<'a>(line: &'a str, in_string: &bool) -> &'a str
 {
     if *in_string { return line; }
@@ -632,7 +599,8 @@ fn strip_line_comment<'a>(line: &'a str, in_string: &bool) -> &'a str
     line
 }
 
-// replaces count_depth_change — takes mutable string/escape state
+
+
 fn count_depth_change_stateful(s: &str, in_string: &mut bool, escaped: &mut bool) -> i32
 {
     let mut depth = 0i32;
@@ -654,12 +622,18 @@ fn count_depth_change_stateful(s: &str, in_string: &mut bool, escaped: &mut bool
 
 
 
+
+
 // ============ TESTS ============
 #[cfg(test)]
 mod tests
 {
     use super::*;
  
+
+
+
+
     #[test]
     fn bar_config_default_has_nonzero_bar_height()
     {
@@ -667,6 +641,8 @@ mod tests
         assert!(config.general.bar_size[1] > 0, "default bar height should be > 0");
     }
  
+
+
     #[test]
     fn bar_config_default_has_nonempty_font_family()
     {
@@ -674,6 +650,8 @@ mod tests
         assert!(!config.general.font_family.is_empty());
     }
  
+
+
     #[test]
     fn bar_config_default_has_nonempty_font_style()
     {
@@ -681,6 +659,8 @@ mod tests
         assert!(!config.general.font_style.is_empty());
     }
  
+
+
     #[test]
     fn bar_config_default_workspace_text_has_ten_entries()
     {
@@ -688,6 +668,8 @@ mod tests
         assert_eq!(config.workspace.workspace_text.len(), 10);
     }
  
+
+
     #[test]
     fn bar_config_default_workspace_selected_text_has_ten_entries()
     {
@@ -696,6 +678,8 @@ mod tests
         assert_eq!(selected.len(), 10);
     }
  
+
+
     #[test]
     fn bar_config_default_output_volume_format_has_six_entries()
     {
@@ -703,6 +687,8 @@ mod tests
         assert_eq!(config.volume_output.output_volume_format.len(), 6);
     }
  
+
+
     #[test]
     fn bar_config_default_input_volume_format_has_six_entries()
     {
@@ -710,6 +696,8 @@ mod tests
         assert_eq!(config.volume_input.input_volume_format.len(), 6);
     }
  
+
+
     #[test]
     fn bar_config_default_media_player_buttons_format_has_four_entries()
     {
@@ -717,6 +705,8 @@ mod tests
         assert_eq!(config.media_player_button.media_player_buttons_format.len(), 4);
     }
  
+
+
     #[test]
     fn bar_config_default_network_level_format_has_four_entries()
     {
@@ -724,6 +714,8 @@ mod tests
         assert_eq!(config.network.network_level_format.len(), 4);
     }
  
+
+
     #[test]
     fn bar_config_default_connection_type_icons_has_three_entries()
     {
@@ -731,24 +723,32 @@ mod tests
         assert_eq!(config.network.network_connection_type_icons.len(), 3);
     }
  
+
+
     #[test]
     fn bar_config_default_position_is_up()
     {
         assert_eq!(BarConfig::default().general.bar_position, BarPosition::Up);
     }
  
+
+
     #[test]
     fn bar_config_default_clock_timezones_is_none()
     {
         assert!(BarConfig::default().clock.clock_timezones.is_none());
     }
  
+
+
     #[test]
     fn bar_config_default_ellipsis_text_is_three_dots()
     {
         assert_eq!(BarConfig::default().general.ellipsis_text, "...");
     }
  
+
+
     #[test]
     fn bar_config_default_incremental_steps_are_nonzero()
     {
@@ -757,41 +757,47 @@ mod tests
         assert!(config.volume_input.incremental_steps_input > 0);
     }
 
-        // ---- alt_network default arrays ----------------------------------------
  
+
     #[test]
     fn bar_config_default_alt_network_level_format_has_four_entries()
     {
         assert_eq!(BarConfig::default().alt_network.alt_network_level_format.len(), 4);
     }
  
+
+
     #[test]
     fn bar_config_default_alt_network_connection_type_icons_has_three_entries()
     {
         assert_eq!(BarConfig::default().alt_network.alt_network_connection_type_icons.len(), 3);
     }
  
-    // ---- Option fields default to None / Some sentinel ---------------------
  
+    
     #[test]
     fn bar_config_default_display_is_none()
     {
         assert!(BarConfig::default().general.display.is_none());
     }
  
+
+
     #[test]
     fn bar_config_default_persistent_workspaces_is_none()
     {
         assert!(BarConfig::default().workspace.persistent_workspaces.is_none());
     }
  
+
+
     #[test]
     fn bar_config_default_force_static_position_context_menu_is_none()
     {
         assert!(BarConfig::default().general.force_static_position_context_menu.is_none());
     }
  
-    // ---- String defaults are non-empty -------------------------------------
+
  
     #[test]
     fn bar_config_default_ellipsis_text_is_nonempty()
@@ -799,57 +805,71 @@ mod tests
         assert!(!BarConfig::default().general.ellipsis_text.is_empty());
     }
  
+
+
     #[test]
     fn bar_config_default_network_disconnected_text_is_nonempty()
     {
         assert!(!BarConfig::default().network.network_disconnected_text.is_empty());
     }
  
+
+
     #[test]
     fn bar_config_default_clock_format_is_nonempty()
     {
         assert!(!BarConfig::default().clock.clock_format.is_empty());
     }
  
+
+
     #[test]
     fn bar_config_default_network_module_format_is_nonempty()
     {
         assert!(!BarConfig::default().network.network_module_format.is_empty());
     }
  
-    // ---- Numeric defaults are sane -----------------------------------------
  
+
     #[test]
     fn bar_config_default_incremental_steps_output_is_positive()
     {
         assert!(BarConfig::default().volume_output.incremental_steps_output > 0);
     }
  
+
+
     #[test]
     fn bar_config_default_incremental_steps_input_is_positive()
     {
         assert!(BarConfig::default().volume_input.incremental_steps_input > 0);
     }
  
+
+
     #[test]
     fn bar_config_default_context_menu_item_size_is_positive()
     {
         assert!(BarConfig::default().context_menu.context_menu_item_size > 0);
     }
  
+
+
     #[test]
     fn bar_config_default_context_menu_size_is_positive()
     {
         assert!(BarConfig::default().context_menu.context_menu_size > 0);
     }
  
+
+
     #[test]
     fn bar_config_default_tray_icon_size_is_positive()
     {
         assert!(BarConfig::default().tray.tray_icon_size > 0);
     }
  
-    // ---- Vec defaults are empty (user configures modules) ------------------
+
  
     #[test]
     fn bar_config_default_custom_modules_is_empty()
@@ -857,25 +877,7 @@ mod tests
         assert!(BarConfig::default().custom_module.custom_modules.is_empty());
     }
  
-    //#[test]
-    //fn bar_config_default_left_modules_is_empty()
-    //{
-    //    assert!(BarConfig::default().left_modules.is_empty());
-    //}
- 
-    //#[test]
-    //fn bar_config_default_center_modules_is_empty()
-    //{
-    //    assert!(BarConfig::default().center_modules.is_empty());
-    //}
- 
-    //#[test]
-    //fn bar_config_default_right_modules_is_empty()
-    //{
-    //    assert!(BarConfig::default().right_modules.is_empty());
-    //}
- 
-    // ---- BarPosition equality ----------------------------------------------
+
  
     #[test]
     fn bar_position_same_variants_are_equal()

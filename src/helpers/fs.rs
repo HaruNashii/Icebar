@@ -9,12 +9,12 @@ use std::{fs::{self, File}, io::Write, path::Path};
 pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Option<String>
 {
     println!("\n=== FS CHECK RUNNING... ===");
+
     let home_path = match home::home_dir()
     {
         Some(home_dir) => home_dir.display().to_string(),
-        None => return Some("Warning!!!: Failed to get Home directory".to_string()),
+        None => return Some("Warning!!!: Failed to get Home directory".to_string())
     };
-
 
     let path: String = if let Some(ref user_config_path) = different_config_path
     {
@@ -24,7 +24,7 @@ pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Opt
             match user_config_path.rfind('/') 
             {
                 Some(i) => user_config_path[..i].to_string(),
-                None => user_config_path.to_string(),
+                None => user_config_path.to_string()
             }
         }
         else
@@ -154,11 +154,9 @@ pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Opt
 // - Join the contact server: https://discord.gg/CRsz24Ts3a
 //
 // =============================================================================================================================================
-
-
-
 BarConfig
 (
+
 
     // ================= GENERAL =================
     general:
@@ -180,7 +178,7 @@ BarConfig
         force_static_position_context_menu: None,
         left_modules:                       [CustomModule(0), Cpu, CpuTemp, Ram, Disk],
         center_modules:                     [Clock, MediaPlayerMetaData, MediaPlayerButtons],
-        right_modules:                      [PowerProfile, Tray, Network, VolumeOutput, VolumeInput],
+        right_modules:                      [PowerProfile, Tray, Network, VolumeOutput, VolumeInput]
     ),
 
 
@@ -232,7 +230,7 @@ BarConfig
         general_alt_button_shadow_color:            Some(RGBA((0, 0, 0, 50))),
         general_alt_button_shadow_x:                Some(1.0),
         general_alt_button_shadow_y:                Some(2.0),
-        general_alt_button_shadow_blur:             Some(5.0),
+        general_alt_button_shadow_blur:             Some(5.0)
     ),
 
 
@@ -290,7 +288,7 @@ BarConfig
         alt_clock_button_pressed_color:         RGB((86, 148, 210)),
         alt_clock_border_color:                 HEX("5a8fc7"),
         alt_clock_border_size:                  1.0,
-        alt_clock_border_radius:                (6.0, 6.0, 6.0, 6.0),
+        alt_clock_border_radius:                (6.0, 6.0, 6.0, 6.0)
     ),
 
 
@@ -333,7 +331,7 @@ BarConfig
         volume_output_button_shadow_color:              Some(RGBA((0, 0, 0, 50))),
         volume_output_button_shadow_x:                  0.0,
         volume_output_button_shadow_y:                  1.0,
-        volume_output_button_shadow_blur:               3.0,
+        volume_output_button_shadow_blur:               3.0
     ),
 
 
@@ -362,7 +360,7 @@ BarConfig
         muted_volume_output_button_shadow_color:                Some(RGBA((0, 0, 0, 50))),
         muted_volume_output_button_shadow_x:                    0.0,
         muted_volume_output_button_shadow_y:                    1.0,
-        muted_volume_output_button_shadow_blur:                 3.0,
+        muted_volume_output_button_shadow_blur:                 3.0
     ),
 
 
@@ -405,7 +403,7 @@ BarConfig
         volume_input_button_shadow_color:               Some(RGBA((0, 0, 0, 50))),
         volume_input_button_shadow_x:                   0.0,
         volume_input_button_shadow_y:                   1.0,
-        volume_input_button_shadow_blur:                3.0,
+        volume_input_button_shadow_blur:                3.0
     ),
 
 
@@ -434,7 +432,7 @@ BarConfig
         muted_volume_input_button_shadow_color:             Some(RGBA((0, 0, 0, 50))),
         muted_volume_input_button_shadow_x:                 0.0,
         muted_volume_input_button_shadow_y:                 1.0,
-        muted_volume_input_button_shadow_blur:              3.0,
+        muted_volume_input_button_shadow_blur:              3.0
     ),
 
 
@@ -480,7 +478,7 @@ BarConfig
         network_button_shadow_color:            Some(RGBA((0, 0, 0, 50))),
         network_button_shadow_x:                0.0,
         network_button_shadow_y:                1.0,
-        network_button_shadow_blur:             3.0,
+        network_button_shadow_blur:             3.0
     ),
 
 
@@ -513,7 +511,7 @@ BarConfig
         alt_network_button_shadow_color:            None,
         alt_network_button_shadow_x:                0.0,
         alt_network_button_shadow_y:                0.0,
-        alt_network_button_shadow_blur:             0.0,
+        alt_network_button_shadow_blur:             0.0
     ),
 
 
@@ -559,7 +557,7 @@ BarConfig
         workspace_button_shadow_color:              None,
         workspace_button_shadow_x:                  0.0,
         workspace_button_shadow_y:                  0.0,
-        workspace_button_shadow_blur:               0.0,
+        workspace_button_shadow_blur:               0.0
     ),
 
 
@@ -588,8 +586,9 @@ BarConfig
         tray_button_shadow_color:           Some(RGBA((0, 0, 0, 50))),
         tray_button_shadow_x:               0.0,
         tray_button_shadow_y:               1.0,
-        tray_button_shadow_blur:            3.0,
+        tray_button_shadow_blur:            3.0
     ),
+
 
     // ================= MEDIA PLAYER METADATA =================
     media_player_metadata:
@@ -625,7 +624,7 @@ BarConfig
         media_player_metadata_button_shadow_color:              Some(RGBA((0, 0, 0, 50))),
         media_player_metadata_button_shadow_x:                  0.0,
         media_player_metadata_button_shadow_y:                  1.0,
-        media_player_metadata_button_shadow_blur:               3.0,
+        media_player_metadata_button_shadow_blur:               3.0
     ),
 
 
@@ -656,7 +655,7 @@ BarConfig
         media_player_button_shadow_color:               Some(RGBA((0, 0, 0, 50))),
         media_player_button_shadow_x:                   0.0,
         media_player_button_shadow_y:                   1.0,
-        media_player_button_shadow_blur:                3.0,
+        media_player_button_shadow_blur:                3.0
     ),
 
 
@@ -689,7 +688,7 @@ BarConfig
         cpu_button_shadow_color:            Some(RGBA((0, 0, 0, 50))),
         cpu_button_shadow_x:                0.0,
         cpu_button_shadow_y:                1.0,
-        cpu_button_shadow_blur:             3.0,
+        cpu_button_shadow_blur:             3.0
     ),
 
 
@@ -722,7 +721,7 @@ BarConfig
         cpu_temp_button_shadow_color:           Some(RGBA((0, 0, 0, 50))),
         cpu_temp_button_shadow_x:               0.0,
         cpu_temp_button_shadow_y:               1.0,
-        cpu_temp_button_shadow_blur:            3.0,
+        cpu_temp_button_shadow_blur:            3.0
     ),
 
 
@@ -753,7 +752,7 @@ BarConfig
         ram_button_shadow_color:            Some(RGBA((0, 0, 0, 50))),
         ram_button_shadow_x:               0.0,
         ram_button_shadow_y:               1.0,
-        ram_button_shadow_blur:            3.0,
+        ram_button_shadow_blur:            3.0
     ),
 
 
@@ -785,7 +784,7 @@ BarConfig
         disk_button_shadow_color:           Some(RGBA((0, 0, 0, 50))),
         disk_button_shadow_x:               0.0,
         disk_button_shadow_y:               1.0,
-        disk_button_shadow_blur:            3.0,
+        disk_button_shadow_blur:            3.0
     ),
 
 
@@ -809,7 +808,7 @@ BarConfig
         context_menu_button_pressed_color:      HEX("1c1c1c"),
         context_menu_border_color:              HEX("3d3d3d"),
         context_menu_border_size:               1.0,
-        context_menu_border_radius:             (6.0, 6.0, 6.0, 6.0),
+        context_menu_border_radius:             (6.0, 6.0, 6.0, 6.0)
     ),
 
 
@@ -843,9 +842,8 @@ BarConfig
         focused_window_button_shadow_color:             None,
         focused_window_button_shadow_x:                 0.0,
         focused_window_button_shadow_y:                 0.0,
-        focused_window_button_shadow_blur:              0.0,
+        focused_window_button_shadow_blur:              0.0
     ),
-
 
 
     // ================= POWER PROFILE =================
@@ -881,9 +879,8 @@ BarConfig
         power_profile_button_shadow_color:           Some(RGBA((0, 0, 0, 50))),
         power_profile_button_shadow_x:               0.0,
         power_profile_button_shadow_y:               1.0,
-        power_profile_button_shadow_blur:            3.0,
+        power_profile_button_shadow_blur:            3.0
     ),
-
 
 
     // ================= IMAGE =================
@@ -947,7 +944,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_nav_active_button_style:
         (
@@ -959,7 +956,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
 
         // ── Prev / Next arrow buttons ─────────────────────────────────────
@@ -978,7 +975,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
 
         // ── Month view ────────────────────────────────────────────────────
@@ -1008,7 +1005,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_today_button_style:
         (
@@ -1020,7 +1017,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_selected_day_button_style:
         (
@@ -1032,7 +1029,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((143, 191, 245)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_overflow_day_button_style:
         (
@@ -1044,7 +1041,7 @@ BarConfig
             pressed_text_color:  RGB((120, 120, 120)),
             border_color:        RGBA((61, 61, 61, 40)),
             border_size:         0.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_day_click_action:              HighlightOnly,
 
@@ -1067,7 +1064,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_current_month_button_style:
         (
@@ -1079,7 +1076,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
 
         // ── Decade view ───────────────────────────────────────────────────
@@ -1099,7 +1096,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_current_year_button_style:
         (
@@ -1111,8 +1108,8 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
-        ),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
+        )
     ),
 
 
@@ -1155,9 +1152,9 @@ BarConfig
                 use_continous_output_as_text:       false,
                 all_output_as_text_format:          "",
                 output_text_limit_len:              0,
-                command_to_exec_on_left_click:      ["wofi", "--show", "drun"],
-                command_to_exec_on_right_click:     ["wofi", "--show", "run"],
-                continous_command_interval:         500,
+                command_to_exec_on_left_click:      ["icelauncher"],
+                command_to_exec_on_right_click:     ["icelauncher", "--shell"],
+                continous_command_interval:         1000,
                 continous_command:                  []
             ),
             // === Example of an button that displays the output on click ===
@@ -1202,7 +1199,7 @@ BarConfig
             //      	continous_command_interval: 500,
             //		continous_command: ["playerctl", "--player=spotify", "metadata", "--format", "{{ artist }} - {{ title }}"]
 	    //), 
-	],
+	]
     ),
 
 
@@ -1221,7 +1218,7 @@ BarConfig
     //    hide_delay_ms:  500,
     //    show_delay_ms:  0,
     //    peek_size:      1,
-    //)),
+    //))
 )"#;
         let result_file = File::create(ron_file_config_path);
         match result_file

@@ -7,8 +7,8 @@ use iced_gif::gif;
 
 
 // ============ CRATES ============
-use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_text, cpu_temp::{define_cpu_temp_style, define_cpu_temp_text}, focused_window::{define_focused_window_style, define_focused_window_text}, ram::{define_ram_style, define_ram_text}, volume::define_volume_text}};
-use crate::modules::{image::{PreloadedImage, define_image_style}, disk::{define_disk_style, define_disk_text},cpu::define_cpu_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, power_profile::{define_power_profile_rich_text, define_power_profile_style}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
+use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_style, cpu_temp::define_cpu_temp_style, focused_window::{define_focused_window_style, define_focused_window_text}, ram::define_ram_style, volume::define_volume_text}};
+use crate::modules::{image::{PreloadedImage, define_image_style}, disk::define_disk_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, power_profile::{define_power_profile_rich_text, define_power_profile_style}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::context_menu::context_menu_view;
 use crate::update::Message;
@@ -24,7 +24,7 @@ use crate::calendar::calendar_view;
 pub enum Axis 
 {
     #[default] Horizontal,
-    Vertical,
+    Vertical
 }
 
 
@@ -45,7 +45,7 @@ pub fn view(app: &AppData, id: iced::window::Id) -> Element<'_, Message>
                 return warning_view(&app.warning_err);
             };
         }
-        _=> {},
+        _=> {}
     };
 
     MAIN_ID.get_or_init(|| id);
@@ -59,7 +59,7 @@ fn main_bar_view(app: &AppData) -> Element<'_, Message>
     let axis = match app.ron_config.general.bar_position 
     {
         BarPosition::Left | BarPosition::Right => Axis::Vertical,
-        _ => Axis::Horizontal,
+        _ => Axis::Horizontal
     };
 
     let start  = build_modules(&app.ron_config.general.left_modules, app, axis);
@@ -100,7 +100,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let inner: Element<_> = match axis
                 {
                     Axis::Horizontal => row(children).spacing(app.ron_config.tray.tray_spacing).align_y(Alignment::Center).into(),
-                    Axis::Vertical   => column(children).spacing(app.ron_config.tray.tray_spacing).align_x(Alignment::Center).into(),
+                    Axis::Vertical   => column(children).spacing(app.ron_config.tray.tray_spacing).align_x(Alignment::Center).into()
                 };
              
                 apply_separator
@@ -109,12 +109,11 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     app.ron_config.tray.tray_side_separator,
                     app.ron_config.tray.tray_side_separator_color.to_iced_color(),
                     app.ron_config.tray.tray_side_separator_width,
-                    app.ron_config.tray.tray_side_separator_height,
+                    app.ron_config.tray.tray_side_separator_height
                 )
             },
              
              
-            // ── HyprWorkspaces / SwayWorkspaces / NiriWorkspaces ─────────────
             Modules::HyprWorkspaces | Modules::SwayWorkspaces | Modules::NiriWorkspaces | Modules::PlasmaWorkspaces =>
             {
                 let workspace_buttons = app.modules_data.workspace_data.visible_workspaces.iter().map(|i|
@@ -140,7 +139,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     Axis::Vertical => mouse_area(column(workspace_buttons).align_x(Alignment::Center).spacing(app.ron_config.workspace.workspace_spacing))
                         .on_enter(Message::IsHoveringWorkspace(true))
                         .on_exit(Message::IsHoveringWorkspace(false))
-                        .into(),
+                        .into()
                 };
              
                 apply_separator
@@ -149,12 +148,11 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     app.ron_config.workspace.workspace_side_separator,
                     app.ron_config.workspace.workspace_side_separator_color.to_iced_color(),
                     app.ron_config.workspace.workspace_side_separator_width,
-                    app.ron_config.workspace.workspace_side_separator_height,
+                    app.ron_config.workspace.workspace_side_separator_height
                 )
             },
              
              
-            // ── MediaPlayerMetaData ──────────────────────────────────────────
             Modules::MediaPlayerMetaData =>
             {
                 if app.ron_config.media_player_metadata.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
@@ -173,17 +171,16 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     match axis
                     {
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
-                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
+                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into()
                     },
                     app.ron_config.media_player_metadata.media_player_metadata_side_separator,
                     app.ron_config.media_player_metadata.media_player_metadata_side_separator_color.to_iced_color(),
                     app.ron_config.media_player_metadata.media_player_metadata_side_separator_width,
-                    app.ron_config.media_player_metadata.media_player_metadata_side_separator_height,
+                    app.ron_config.media_player_metadata.media_player_metadata_side_separator_height
                 )
             },
              
              
-            // ── MediaPlayerButtons ───────────────────────────────────────────
             Modules::MediaPlayerButtons =>
             {
                 if app.ron_config.media_player_metadata.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
@@ -199,7 +196,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 let inner: Element<_> = match axis
                 {
                     Axis::Horizontal => row(media_buttons).spacing(app.ron_config.media_player_button.media_player_button_spacing).align_y(Alignment::Center).into(),
-                    Axis::Vertical   => column(media_buttons).spacing(app.ron_config.media_player_button.media_player_button_spacing).align_x(Alignment::Center).into(),
+                    Axis::Vertical   => column(media_buttons).spacing(app.ron_config.media_player_button.media_player_button_spacing).align_x(Alignment::Center).into()
                 };
              
                 apply_separator
@@ -208,12 +205,11 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     app.ron_config.media_player_button.media_player_buttons_side_separator,
                     app.ron_config.media_player_button.media_player_buttons_side_separator_color.to_iced_color(),
                     app.ron_config.media_player_button.media_player_buttons_side_separator_width,
-                    app.ron_config.media_player_button.media_player_buttons_side_separator_height,
+                    app.ron_config.media_player_button.media_player_buttons_side_separator_height
                 )
             },
              
              
-            // ── FocusedWindow ────────────────────────────────────────────────
             Modules::FocusedWindowHypr | Modules::FocusedWindowNiri | Modules::FocusedWindowSway =>
             {
                 let text_to_send = &define_focused_window_text(app);
@@ -224,9 +220,9 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     (
                         text_to_send,
                         &app.ron_config.general.ellipsis_text,
-                        app.ron_config.focused_window.focused_window_text_limit_len,
+                        app.ron_config.focused_window.focused_window_text_limit_len
                     ),
-                    app.ron_config.focused_window.focused_window_text_size,
+                    app.ron_config.focused_window.focused_window_text_size
                 );
                 let inner = create_button_container_without_hover_message(app, app.ron_config.focused_window.focused_window_padding, text_data, Message::Nothing, Message::Nothing, define_focused_window_style);
              
@@ -236,15 +232,14 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     app.ron_config.focused_window.focused_window_side_separator,
                     app.ron_config.focused_window.focused_window_side_separator_color.to_iced_color(),
                     app.ron_config.focused_window.focused_window_side_separator_width,
-                    app.ron_config.focused_window.focused_window_side_separator_height,
+                    app.ron_config.focused_window.focused_window_side_separator_height
                 )
             },
 
 
-            // ── Disk ──────────────────────────────────────────────────────────
             Modules::Disk =>
             {
-                let text_data = (convert_text_to_rich_text::<Message>(&define_disk_text(app)), app.ron_config.disk.disk_text_size);
+                let text_data = (convert_text_to_rich_text::<Message>(&app.modules_data.disk_text), app.ron_config.disk.disk_text_size);
                 let inner = create_button_container_without_hover_message(app, app.ron_config.disk.disk_padding, text_data, Message::Nothing, Message::Nothing, define_disk_style);
              
                 apply_separator
@@ -253,12 +248,11 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     app.ron_config.disk.disk_side_separator,
                     app.ron_config.disk.disk_side_separator_color.to_iced_color(),
                     app.ron_config.disk.disk_side_separator_width,
-                    app.ron_config.disk.disk_side_separator_height,
+                    app.ron_config.disk.disk_side_separator_height
                 )
             },
 
 
-            // ── PowerProfile ─────────────────────────────────────────────────
             Modules::PowerProfile =>
             {
                 let rich = convert_text_to_rich_text::<Message>(&define_power_profile_rich_text(app));
@@ -272,15 +266,14 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     app.ron_config.power_profile.power_profile_side_separator,
                     app.ron_config.power_profile.power_profile_side_separator_color.to_iced_color(),
                     app.ron_config.power_profile.power_profile_side_separator_width,
-                    app.ron_config.power_profile.power_profile_side_separator_height,
+                    app.ron_config.power_profile.power_profile_side_separator_height
                 )
             },
              
              
-            // ── Ram ──────────────────────────────────────────────────────────
             Modules::Ram =>
             {
-                let text_data = (convert_text_to_rich_text::<Message>(&define_ram_text(app)), app.ron_config.ram.ram_text_size);
+                let text_data = (convert_text_to_rich_text::<Message>(&app.modules_data.ram_text), app.ron_config.ram.ram_text_size);
                 let inner = create_button_container_without_hover_message(app, app.ron_config.ram.ram_padding, text_data, Message::Nothing, Message::Nothing, define_ram_style);
              
                 apply_separator
@@ -289,15 +282,14 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     app.ron_config.ram.ram_side_separator,
                     app.ron_config.ram.ram_side_separator_color.to_iced_color(),
                     app.ron_config.ram.ram_side_separator_width,
-                    app.ron_config.ram.ram_side_separator_height,
+                    app.ron_config.ram.ram_side_separator_height
                 )
             },
              
              
-            // ── Cpu ──────────────────────────────────────────────────────────
             Modules::Cpu =>
             {
-                let text_to_send = define_cpu_text(app);
+                let text_to_send = app.modules_data.cpu_text.clone();
                 let left_click_metadata_message: Message  = match &app.ron_config.cpu.action_on_left_click_cpu  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), true, false)) };
                 let right_click_metadata_message: Message = match &app.ron_config.cpu.action_on_right_click_cpu { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), false, false)) };
                 let colored_formated_metadata = convert_text_to_rich_text::<Message>(&text_to_send);
@@ -308,22 +300,21 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     match axis
                     {
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
-                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
+                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into()
                     },
                     app.ron_config.cpu.cpu_side_separator,
                     app.ron_config.cpu.cpu_side_separator_color.to_iced_color(),
                     app.ron_config.cpu.cpu_side_separator_width,
-                    app.ron_config.cpu.cpu_side_separator_height,
+                    app.ron_config.cpu.cpu_side_separator_height
                 )
             },
              
              
-            // ── CpuTemp ──────────────────────────────────────────────────────
             Modules::CpuTemp =>
             {
                 let left_click_metadata_message: Message  = match &app.ron_config.cpu_temp.action_on_left_click_cpu_temp  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), true, false)) };
                 let right_click_metadata_message: Message = match &app.ron_config.cpu_temp.action_on_right_click_cpu_temp { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), false, false)) };
-                let text_to_send = define_cpu_temp_text(app);
+                let text_to_send = app.modules_data.cpu_temp_text.clone();
                 let colored_cpu_temp = convert_text_to_rich_text::<Message>(&text_to_send);
                 let inner = create_button_container_without_hover_message(app, app.ron_config.cpu_temp.cpu_temp_padding, (colored_cpu_temp, app.ron_config.cpu_temp.cpu_temp_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_temp_style);
              
@@ -332,17 +323,16 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     match axis
                     {
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
-                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
+                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into()
                     },
                     app.ron_config.cpu_temp.cpu_temp_side_separator,
                     app.ron_config.cpu_temp.cpu_temp_side_separator_color.to_iced_color(),
                     app.ron_config.cpu_temp.cpu_temp_side_separator_width,
-                    app.ron_config.cpu_temp.cpu_temp_side_separator_height,
+                    app.ron_config.cpu_temp.cpu_temp_side_separator_height
                 )
             },
              
              
-            // ── Network ──────────────────────────────────────────────────────
             Modules::Network =>
             {
                 let left_click_message: Message  = match &app.ron_config.network.action_on_left_click_network  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::ToggleAltNetwork, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false)) };
@@ -368,7 +358,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     match axis
                     {
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
-                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
+                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into()
                     },
                     side_separator,
                     side_separator_color,
@@ -378,7 +368,6 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             },
              
              
-            // ── VolumeOutput ─────────────────────────────────────────────────
             Modules::VolumeOutput =>
             {
                 let left_click_message: Message  = match &app.ron_config.volume_output.action_on_left_click_volume_output  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false)) };
@@ -410,7 +399,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     match axis
                     {
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
-                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
+                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into()
                     },
                     *side_separator,
                     side_separator_color,
@@ -420,7 +409,6 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             },
              
              
-            // ── VolumeInput ──────────────────────────────────────────────────
             Modules::VolumeInput =>
             {
                 let left_click_message: Message  = match &app.ron_config.volume_input.action_on_left_click_volume_input  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedInput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false)) };
@@ -452,7 +440,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     match axis
                     {
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
-                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
+                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into()
                     },
                     *side_separator,
                     side_separator_color,
@@ -462,7 +450,6 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             },
 
 
-            // ── Clock ──────────────────────────────────────────────────
             Modules::Clock => 
             {
                 let left_click_message: Message = match &app.ron_config.clock.action_on_left_click_clock
@@ -521,7 +508,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     match axis
                     {
                         Axis::Horizontal => row([inner]).align_y(Alignment::Center).into(),
-                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into(),
+                        Axis::Vertical   => column([inner]).align_x(Alignment::Center).into()
                     },
                     separator_flags,
                     separator_color,
@@ -531,7 +518,6 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             }
 
 
-            // ── Image ──────────────────────────────────────────────────
             Modules::Image(borrowed_index) => 
             {
                 let index = *borrowed_index;
@@ -571,13 +557,12 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     received_image.side_separator,
                     received_image.separator_color.to_iced_color(), 
                     received_image.separator_width,
-                    received_image.separator_height,
+                    received_image.separator_height
                 )
             }
 
 
 
-            // ── CustomModule ──────────────────────────────────────────────────
             Modules::CustomModule(borrowed_index) => 
             {
                 let index = *borrowed_index;
@@ -620,7 +605,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     custom_module.side_separator,
                     custom_module.separator_color.to_iced_color(), 
                     custom_module.separator_width,
-                    custom_module.separator_height,
+                    custom_module.separator_height
                 )
             }
         };
@@ -630,7 +615,7 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
     match axis 
     {
         Axis::Horizontal => row(children).align_y(Alignment::Center).spacing(app.ron_config.general.spacing_between_all_modules).into(),
-        Axis::Vertical => column(children).align_x(Alignment::Center).spacing(app.ron_config.general.spacing_between_all_modules).into(),
+        Axis::Vertical => column(children).align_x(Alignment::Center).spacing(app.ron_config.general.spacing_between_all_modules).into()
     }
 }
 

@@ -24,7 +24,7 @@ fn config_watcher_stream(data: &(u64, Option<String>)) -> Pin<Box<dyn futures::S
     let cli_config = data.1.clone();
     Box::pin(async_stream::stream!
     {
-        let config_path = if let Some(user_config_path) = cli_config 
+        let config_path = if let Some(user_config_path) = cli_config
         {
             let path_string = if user_config_path.ends_with(".ron")
             {
@@ -53,6 +53,8 @@ fn config_watcher_stream(data: &(u64, Option<String>)) -> Pin<Box<dyn futures::S
         let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
         let config_path_for_filter = config_path.clone();
 
+        let (shutdown_tx, shutdown_rx) = std::sync::mpsc::channel::<()>();
+
         std::thread::spawn(move ||
         {
             let tx_inner = tx.clone();
@@ -72,7 +74,7 @@ fn config_watcher_stream(data: &(u64, Option<String>)) -> Pin<Box<dyn futures::S
             })
             {
                 Ok(w)  => w,
-                Err(_) => return,
+                Err(_) => return
             };
 
             if watcher.watch(&watch_dir, RecursiveMode::NonRecursive).is_err()
@@ -80,8 +82,10 @@ fn config_watcher_stream(data: &(u64, Option<String>)) -> Pin<Box<dyn futures::S
                 return;
             }
 
-            loop { std::thread::park(); }
+            let _ = shutdown_rx.recv();
         });
+
+        let _shutdown_guard = shutdown_tx;
 
         while rx.recv().await.is_some()
         {

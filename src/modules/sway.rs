@@ -1,8 +1,7 @@
-use std::pin::Pin;
-
 // ============ IMPORTS ============
+use std::pin::Pin;
 use swayipc::{Connection, EventType, Event};
- 
+
 
 
 
@@ -28,17 +27,17 @@ pub fn sway_event_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> 
             std::thread::spawn(move ||
             {
                 let subs = [EventType::Workspace, EventType::Window];
- 
+
                 let events = match Connection::new().and_then(|conn| conn.subscribe(subs))
                 {
                     Ok(e)  => e,
                     Err(e) =>
                     {
                         eprintln!("[icebar] sway subscribe failed: {e}");
-                        return; // thread exits → tx drops → reconnect
+                        return;
                     }
                 };
- 
+
                 for event in events
                 {
                     match event
@@ -55,14 +54,14 @@ pub fn sway_event_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> 
                         Err(e) =>
                         {
                             eprintln!("[icebar] sway event error: {e}");
-                            break; // socket error → thread exits → reconnect
+                            break;
                         }
                     }
                 }
             });
             drop(tx);
             while let Some(msg) = rx.recv().await { yield msg; }
- 
+
             eprintln!("[icebar] sway event listener stopped — reconnecting in 2s");
             tokio::time::sleep(std::time::Duration::from_secs(2)).await;
         }
@@ -94,7 +93,7 @@ pub fn current_workspace() -> i32
 
 
 pub fn workspace_count() -> Vec<i32>
-{ 
+{
     let result_connection = Connection::new();
     if let Ok(mut connection) = result_connection
     {
@@ -118,7 +117,7 @@ pub fn change_workspace_sway(action: UserWorkspaceAction)
     {
         Ok(mut conn) =>
         {
-            match action 
+            match action
             {
                 UserWorkspaceAction::ChangeWithIndex(index) =>
                 {

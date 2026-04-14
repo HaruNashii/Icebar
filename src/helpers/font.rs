@@ -4,14 +4,23 @@ use strsim::levenshtein;
 use iced::font::Family;
 use iced::Font;
 
+
+
+
+
+// ============ CRATES ============
 use crate::weight_from_str;
 use crate::intern_string;
 
 
 
-// ============ CONST ============
+
+
+// ============ STATIC'S ============
 const MIN_FUZZY_LEN: usize = 4;
 const MAX_FUZZY_RATIO: f32 = 0.3;
+
+
 
 
 
@@ -98,8 +107,8 @@ pub fn resolve_font(requested: &str) -> Option<String>
             let nf = normalize(font);
             let candidate = if nf.len() > normalized_requested.len()
             {
-                let char_count = normalized_requested.chars().count(); 
-                let byte_end   = nf.char_indices().nth(char_count).map(|(i, _)| i).unwrap_or(nf.len());              
+                let char_count = normalized_requested.chars().count();
+                let byte_end   = nf.char_indices().nth(char_count).map(|(i, _)| i).unwrap_or(nf.len());
                 &nf[..byte_end]
             }
             else
@@ -118,7 +127,7 @@ pub fn resolve_font(requested: &str) -> Option<String>
 
         if best_distance <= max_allowed && let Some(font) = best_font
         {
-                return Some(font);
+            return Some(font);
         }
     }
 
@@ -143,8 +152,6 @@ fn system_fonts() -> Vec<String>
             }
         }
 
-        // Sort so shorter/simpler names come first — base families like
-        // "JetBrainsMono Nerd Font" beat "JetBrainsMono NFM ExtraBold"
         let mut fonts: Vec<String> = set.into_iter().collect();
         fonts.sort_by_key(|f| f.len());
         fonts
@@ -168,12 +175,14 @@ fn normalize(name: &str) -> String
 
 
 
+
+
+// ============ TESTS ============
 #[cfg(test)]
 mod tests
 {
     use super::*;
 
-    // ============ NORMALIZE TESTS ============
     #[test]
     fn normalize_strips_noise_words()
     {
@@ -212,12 +221,11 @@ mod tests
         assert_eq!(normalize("nf nfm nfp"), "");
     }
 
-    // ============ RESOLVE FONT TESTS ============
     fn resolve_from(requested: &str, fonts: &[&str]) -> Option<String>
     {
         let normalized_requested = normalize(requested);
         let fonts: Vec<String> = fonts.iter().map(|s| s.to_string()).collect();
-    
+
         for font in &fonts
         {
             if normalize(font) == normalized_requested { return Some(font.clone()); }
@@ -226,13 +234,11 @@ mod tests
         {
             if normalize(font).starts_with(&normalized_requested) { return Some(font.clone()); }
         }
-        // reverse prefix — guard added
         for font in &fonts
         {
             let nf = normalize(font);
             if nf.len() >= MIN_FUZZY_LEN && normalized_requested.starts_with(&nf) { return Some(font.clone()); }
         }
-        // substring — guard added
         if normalized_requested.len() >= MIN_FUZZY_LEN
         {
             for font in &fonts
@@ -241,13 +247,13 @@ mod tests
                 if nf.contains(&normalized_requested) || normalized_requested.contains(&nf) { return Some(font.clone()); }
             }
         }
-    
+
         if normalized_requested.len() >= MIN_FUZZY_LEN
         {
             let max_allowed = ((normalized_requested.len() as f32 * MAX_FUZZY_RATIO).floor() as usize).max(1);
             let mut best_font = None;
             let mut best_distance = usize::MAX;
-    
+
             for font in &fonts
             {
                 let nf = normalize(font);
@@ -256,7 +262,7 @@ mod tests
                     nf[..normalized_requested.len()].to_string()
                 }
                 else { nf };
-    
+
                 let dist = levenshtein(&normalized_requested, &candidate);
                 if dist < best_distance
                 {
@@ -264,13 +270,13 @@ mod tests
                     best_font = Some(font.clone());
                 }
             }
-    
+
             if best_distance <= max_allowed
             {
                 if let Some(font) = best_font { return Some(font); }
             }
         }
-    
+
         None
     }
 
@@ -284,7 +290,7 @@ mod tests
         "FiraCode Nerd Font",
         "FiraCode NF",
         "Ubuntu",
-        "DejaVu Sans",
+        "DejaVu Sans"
     ];
 
     #[test]

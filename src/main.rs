@@ -9,7 +9,7 @@ use iced::Font;
 
 
 // ============ CRATES ============
-use crate::helpers::{font::build_font, fs::check_if_config_file_exists, misc::{define_bar_anchor_position, is_active_module, validate_bar_data}, monitor::get_monitor_res, string::{intern_string, weight_from_str}, style::{UserStyle, set_style, style} };
+use crate::helpers::{font::build_font, fs::check_if_config_file_exists, misc::{define_bar_anchor_position, is_active_module, validate_bar_data}, monitor::get_monitor_res, string::{intern_string, weight_from_str}, style::{UserStyle, set_style, style}};
 use crate::modules::{custom_modules::CustomModuleData, network::NetworkData, clock::ClockData, image::{ImageData, preload_image}, data::{Modules, ModulesData}, power_profile::{PowerProfileData, read_power_profile}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{read_ron_config, BarConfig};
 use crate::context_menu::ContextMenuData;
@@ -45,24 +45,24 @@ mod calendar;
 
 // ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Parser, Clone)]
-struct Cli 
+struct Cli
 {
     #[arg(short = 'c', long = "config")]
-    config: Option<String>,
+    config: Option<String>
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum WindowInfo 
+pub enum WindowInfo
 {
     MainBar,
     Warning,
     ContextMenu,
-    Calendar,
+    Calendar
 }
 
 #[derive(Clone)]
 pub struct AppData
-{ 
+{
     ids: HashMap<iced::window::Id, WindowInfo>,
     monitor_size: (u32, u32),
     context_menu_data: ContextMenuData,
@@ -72,12 +72,10 @@ pub struct AppData
     ron_config: BarConfig,
     default_font: Font,
     cli_data: Cli,
-
-    // ── auto-hide state ────────────────────────────────────────────────────
     pub bar_visible: bool,
     pub cursor_on_bar: bool,
     pub hide_timer: Option<Instant>,
-    pub show_timer: Option<Instant>,
+    pub show_timer: Option<Instant>
 }
 
 impl Default for AppData
@@ -98,7 +96,7 @@ impl Default for AppData
             bar_visible: true,
             cursor_on_bar: false,
             hide_timer: None,
-            show_timer: None,
+            show_timer: None
         }
     }
 }
@@ -107,8 +105,15 @@ impl Default for AppData
 
 
 
-
 // ============ FUNCTIONS ============
+fn namespace() -> String { String::from("icebar") }
+
+
+
+pub fn id_info(app: &AppData, id: iced::window::Id) -> Option<WindowInfo> { app.ids.get(&id).cloned() }
+
+
+
 #[tokio::main]
 pub async fn main() -> Result<(), iced_layershell::Error>
 {
@@ -121,16 +126,21 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     if is_active_module(&active_modules, Modules::Tray) { start_tray(ron_config.tray.tray_attention_icon); }
     let ron_config_clone = ron_config.clone();
     let font_name = ron_config.general.font_family;
-    let start_mode = match ron_config.general.display { Some(output) => StartMode::TargetScreen(output), None => StartMode::Active };
-
-
-
+    let start_mode = match ron_config.general.display
+    {
+        Some(output) => StartMode::TargetScreen(output),
+        None => StartMode::Active
+    };
 
     let modules_data = ModulesData
     {
         active_modules: active_modules.clone(),
-        clock_data: ClockData { current_clock_timezone, ..Default::default() },
-        network_data: NetworkData 
+        clock_data: ClockData
+        {
+            current_clock_timezone,
+            ..Default::default()
+        },
+        network_data: NetworkData
         {
             connection_type_icons: ron_config.network.network_connection_type_icons,
             network_icons: ron_config.network.network_level_format,
@@ -147,8 +157,9 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         },
         power_profile_data: PowerProfileData
         {
-            current_profile: read_power_profile().unwrap_or_default(),
+            current_profile: read_power_profile().unwrap_or_default()
         },
+        disk_text: "Loading...".to_string(),
         ..Default::default()
     };
 
@@ -158,27 +169,28 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         config_parsed_failed,
         default_font: build_font(&font_name, &ron_config.general.font_style),
         monitor_size: (monitor_res.0, monitor_res.1),
-        ron_config: ron_config_clone, 
+        ron_config: ron_config_clone,
         modules_data,
         cli_data: args,
         ..Default::default()
     };
     let validated_bar_data = validate_bar_data(&mut app_data);
 
-    daemon(move || app_data.clone(), namespace, update, view).style(style).subscription(subscription).settings(Settings
-    {
-        layer_settings: LayerShellSettings
+    daemon(move || app_data.clone(), namespace, update, view)
+        .style(style)
+        .subscription(subscription)
+        .settings(Settings
         {
-            exclusive_zone: validated_bar_data.exclusive_zone,
-            size: Some(validated_bar_data.bar_size),
-            layer: iced_layershell::reexport::Layer::Top,
-            margin: validated_bar_data.floating_space,
-            anchor: anchor_position,
-            start_mode,
+            layer_settings: LayerShellSettings
+            {
+                exclusive_zone: validated_bar_data.exclusive_zone,
+                size: Some(validated_bar_data.bar_size),
+                layer: iced_layershell::reexport::Layer::Top,
+                margin: validated_bar_data.floating_space,
+                anchor: anchor_position,
+                start_mode,
+                ..Default::default()
+            },
             ..Default::default()
-        },
-        ..Default::default()
-    }).run()
+        }).run()
 }
-fn namespace() -> String { String::from("icebar") }
-pub fn id_info(app: &AppData, id: iced::window::Id) -> Option<WindowInfo> { app.ids.get(&id).cloned() }

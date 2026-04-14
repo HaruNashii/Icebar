@@ -276,7 +276,6 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
     }
 
 
-    // ---- alt fields ----
 
     if let Some(v) = ron_config.general_style.general_alt_padding
     {

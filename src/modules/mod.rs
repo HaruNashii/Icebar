@@ -8,6 +8,8 @@ pub mod network;
 pub mod volume;
 pub mod plasma;
 pub mod clock;
+pub mod clock_subscription;
+pub mod poll_subscriptions;
 pub mod image;
 pub mod tray;
 pub mod niri;

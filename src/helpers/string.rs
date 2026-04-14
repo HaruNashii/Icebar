@@ -18,13 +18,13 @@ static INTERNED_STRINGS: Mutex<Option<HashSet<&'static str>>> = Mutex::new(None)
 struct Segment 
 {
     text:  String,
-    color: Option<Color>,
+    color: Option<Color>
 }
 
 enum Tag<'a>
 {
     Color(Color, &'a str),
-    Tuning(u32),
+    Tuning(u32)
 }
 
 
@@ -88,13 +88,11 @@ pub fn intern_string(s: String) -> &'static str
     let mut guard = INTERNED_STRINGS.lock().unwrap_or_else(|p| p.into_inner());
     let set = guard.get_or_insert_with(HashSet::new);
 
-    // If this exact string was already interned, return the existing pointer
     if let Some(&existing) = set.iter().find(|&&interned| interned == s.as_str())
     {
         return existing;
     }
 
-    // New string — leak it once and store the pointer
     let leaked: &'static str = Box::leak(s.into_boxed_str());
     set.insert(leaked);
     leaked
@@ -210,7 +208,7 @@ fn ellipsize_segments(segments: Vec<Segment>, ellipsis: &str, limit: usize) -> V
             result.push(Segment 
             {
                 text:  format!("{}{}", cut, ellipsis),
-                color: seg.color,
+                color: seg.color
             });
             budget    = 0;
             truncated = true;
@@ -240,7 +238,7 @@ fn make_span_owned(text: String, color: Option<Color>) -> Span<'static>
     match color 
     {
         Some(c) => span(text).color(c),
-        None    => span(text),
+        None    => span(text)
     }
 }
 
@@ -251,7 +249,6 @@ fn try_parse_tag<'a>(text: &'a str) -> Option<(&'a str, Tag<'a>, &'a str)>
     let before        = &text[..bracket_start];
     let inside        = text[bracket_start + 1..].trim_start();
 
-    // try Tuning tag first
     if let Some(inside) = inside.strip_prefix("Tuning")
     {
         let inside = inside.trim_start().strip_prefix('=')?.trim_start();
@@ -260,7 +257,6 @@ fn try_parse_tag<'a>(text: &'a str) -> Option<(&'a str, Tag<'a>, &'a str)>
         return Some((before, Tag::Tuning(n), rest));
     }
 
-    // existing Color tag
     let inside        = inside.strip_prefix("Color")?.trim_start();
     let inside        = inside.strip_prefix('=')?.trim_start();
     let inside        = inside.strip_prefix('(')?.trim_start();
@@ -283,7 +279,7 @@ fn parse_color(rgb_str: &str) -> Option<Color>
     match values.as_slice() 
     {
         [r, g, b] => Some(Color::from_rgb8(*r as u8, *g as u8, *b as u8)),
-        _=> None,
+        _=> None
     }
 }
 
@@ -302,7 +298,7 @@ pub fn weight_from_str(s: &str) -> Weight
         "bold"                              => Weight::Bold,
         "extra_bold" | "extrabold" | "ultrabold" => Weight::ExtraBold,
         "black" | "heavy"                  => Weight::Black,
-        _                                  => Weight::Normal,
+        _                                  => Weight::Normal
     }
 }
 
@@ -323,6 +319,7 @@ pub fn ellipsize(ellipsis: &String, text: &str, limit: usize) -> String
 
 
 
+
 // ============ TESTS ============
 // ============ TESTS ============
 #[cfg(test)]
@@ -331,7 +328,6 @@ mod tests
     use super::*;
     use iced::Color;
  
-    // ---- parse_color --------------------------------------------------------
  
     #[test]
     fn parse_color_valid_rgb()
@@ -371,7 +367,6 @@ mod tests
         assert!(parse_color("").is_none());
     }
  
-    // ---- try_parse_tag — Color ----------------------------------------------
  
     #[test]
     fn try_parse_tag_basic_unquoted()
@@ -386,7 +381,7 @@ mod tests
                 assert_eq!(color, Color::from_rgb8(0, 255, 0));
                 assert_eq!(text, "world");
             }
-            _ => panic!("expected Color tag"),
+            _ => panic!("expected Color tag")
         }
     }
  
@@ -399,7 +394,7 @@ mod tests
         match tag
         {
             Tag::Color(_, text) => assert_eq!(text, "blue"),
-            _ => panic!("expected Color tag"),
+            _ => panic!("expected Color tag")
         }
     }
  
@@ -414,7 +409,7 @@ mod tests
                 assert_eq!(color, Color::from_rgb8(255, 128, 0));
                 assert_eq!(text, "spaced");
             }
-            _ => panic!("expected Color tag"),
+            _ => panic!("expected Color tag")
         }
     }
  
@@ -455,7 +450,7 @@ mod tests
                 assert_eq!(color, Color::from_rgb8(10, 20, 30));
                 assert_eq!(text, "only");
             }
-            _ => panic!("expected Color tag"),
+            _ => panic!("expected Color tag")
         }
     }
  
@@ -467,7 +462,7 @@ mod tests
         match tag
         {
             Tag::Color(_, text) => assert_eq!(text, ""),
-            _ => panic!("expected Color tag"),
+            _ => panic!("expected Color tag")
         }
     }
  
@@ -483,7 +478,6 @@ mod tests
         assert!(try_parse_tag("[Color=(255,0,0) String=abc]").is_none());
     }
 
-    // ---- try_parse_tag — Tuning ---------------------------------------------
 
     #[test]
     fn try_parse_tag_tuning_basic()
@@ -494,7 +488,7 @@ mod tests
         match tag
         {
             Tag::Tuning(n) => assert_eq!(n, 3),
-            _ => panic!("expected Tuning tag"),
+            _ => panic!("expected Tuning tag")
         }
     }
 
@@ -505,7 +499,7 @@ mod tests
         match tag
         {
             Tag::Tuning(n) => assert_eq!(n, 0),
-            _ => panic!("expected Tuning tag"),
+            _ => panic!("expected Tuning tag")
         }
     }
 
@@ -538,7 +532,6 @@ mod tests
         assert_eq!(segments[0].text, "");
     }
 
-    // ---- two_consecutive_color_tags -----------------------------------------
  
     #[test]
     fn two_consecutive_color_tags_both_parsed()
@@ -550,7 +543,7 @@ mod tests
         match tag1
         {
             Tag::Color(c, t) => { assert_eq!(c, Color::from_rgb8(255, 0, 0)); assert_eq!(t, "red"); }
-            _ => panic!("expected Color tag"),
+            _ => panic!("expected Color tag")
         }
 
         let (before2, tag2, rest2) = try_parse_tag(rest1).unwrap();
@@ -559,11 +552,10 @@ mod tests
         match tag2
         {
             Tag::Color(c, t) => { assert_eq!(c, Color::from_rgb8(0, 255, 0)); assert_eq!(t, "green"); }
-            _ => panic!("expected Color tag"),
+            _ => panic!("expected Color tag")
         }
     }
 
-    // ---- ellipsize ----------------------------------------------------------
  
     #[test]
     fn ellipsize_short_text_unchanged()
@@ -621,7 +613,6 @@ mod tests
         assert_eq!(result, "abc");
     }
  
-    // ---- weight_from_str ----------------------------------------------------
  
     #[test]
     fn weight_from_str_known_values()
@@ -657,7 +648,6 @@ mod tests
         assert_eq!(weight_from_str(""),         Weight::Normal);
     }
 
-    // ---- full pipeline ------------------------------------------------------
  
     #[test]
     fn full_pipeline_plain_text_does_not_panic()

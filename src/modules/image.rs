@@ -19,7 +19,7 @@ use crate::helpers::{color::ColorType, style::{SideOption, UserStyle, set_style}
 #[derive(Default, Clone)]
 pub struct ImageData
 {
-    pub preloaded_images_handle: Vec<Option<(PreloadedImage, usize)>>,
+    pub preloaded_images_handle: Vec<Option<(PreloadedImage, usize)>>
 }
 
 
@@ -29,7 +29,7 @@ pub struct ImageData
 pub struct ImageConfig
 {
     pub images_spacing: u32,
-    pub images:         Vec<Image>,
+    pub images:         Vec<Image>
 }
 
 
@@ -57,14 +57,14 @@ pub struct Image
     pub border_size: f32,
     pub border_radius: [f32;4],
     pub command_to_exec_on_left_click: Vec<String>,
-    pub command_to_exec_on_right_click: Vec<String>,
+    pub command_to_exec_on_right_click: Vec<String>
 }
 
 
 pub enum PreloadedImage
 {
     Static(iced::widget::image::Handle),
-    Gif(Arc<gif::Frames>),
+    Gif(Arc<gif::Frames>)
 }
 
 
@@ -91,7 +91,7 @@ impl Clone for PreloadedImage
         match self
         {
             PreloadedImage::Static(h) => PreloadedImage::Static(h.clone()),
-            PreloadedImage::Gif(f)    => PreloadedImage::Gif(Arc::clone(f)),
+            PreloadedImage::Gif(f)    => PreloadedImage::Gif(Arc::clone(f))
         }
     }
 }
@@ -108,12 +108,10 @@ impl From<UserContentFit> for ContentFit
             UserContentFit::Cover => ContentFit::Cover,
             UserContentFit::Fill => ContentFit::Fill,
             UserContentFit::None => ContentFit::None,
-            UserContentFit::ScaleDown => ContentFit::ScaleDown,
+            UserContentFit::ScaleDown => ContentFit::ScaleDown
         }
     }
 }
-
-
 
 
 
@@ -146,7 +144,7 @@ impl Default for Image
             border_size: 1.0,
             border_radius: [3., 3., 3., 3.],
             command_to_exec_on_left_click: vec![], 
-            command_to_exec_on_right_click: vec![],
+            command_to_exec_on_right_click: vec![]
         }
     }
 }
@@ -244,7 +242,6 @@ mod tests
     use iced::{Background, Color};
     use iced::widget::button;
 
-    // ── Image default ────────────────────────────────────────────────────────
 
     #[test]
     fn image_default_path_is_empty()
@@ -324,7 +321,6 @@ mod tests
         assert!(Image::default().separator_height > 0.0);
     }
 
-    // ── UserContentFit → ContentFit conversion ───────────────────────────────
 
     #[test]
     fn user_content_fit_contain_converts()
@@ -383,7 +379,6 @@ mod tests
         }
     }
 
-    // ── PreloadedImage clone ─────────────────────────────────────────────────
 
     #[test]
     fn preloaded_image_static_clone_does_not_panic()
@@ -396,19 +391,13 @@ mod tests
     #[test]
     fn preloaded_image_gif_clone_shares_arc()
     {
-        // We can't easily construct gif::Frames without a real GIF buffer,
-        // but we can test that Arc clone works by checking refcount behaviour
-        // through the Static variant as a structural proxy.
-        // For the Gif variant, we verify the Arc wrapping compiles and clones.
         let handle = iced::widget::image::Handle::from_bytes(vec![]);
         let img = PreloadedImage::Static(handle);
         let cloned = img.clone();
-        // Both are independently valid — no panic means Arc mechanics work
         drop(img);
         drop(cloned);
     }
 
-    // ── preload_image — path handling ────────────────────────────────────────
 
     #[test]
     fn preload_image_empty_slice_returns_empty_vec()
@@ -441,10 +430,8 @@ mod tests
     #[test]
     fn preload_image_existing_static_image_returns_some_with_correct_index()
     {
-        // Create a real temp file with valid PNG bytes (1x1 red pixel)
         use std::io::Write;
         let mut tmp = tempfile::NamedTempFile::new().unwrap();
-        // Minimal valid 1x1 red PNG
         let png_bytes: &[u8] = &[
             0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a,
             0x00,0x00,0x00,0x0d,0x49,0x48,0x44,0x52,
@@ -482,7 +469,6 @@ mod tests
         assert!(result[0].is_none());
     }
 
-    // ── define_image_style ───────────────────────────────────────────────────
 
     fn make_image(normal: [u32;3], hovered: [u32;3], pressed: [u32;3]) -> Image
     {
@@ -584,7 +570,6 @@ mod tests
         assert_eq!(style.border.width, 0.0);
     }
 
-    // ── UserContentFit serde ─────────────────────────────────────────────────
 
     #[test]
     fn user_content_fit_serializes_and_deserializes_roundtrip()
@@ -604,7 +589,6 @@ mod tests
         }
     }
 
-    // ── Image serde ──────────────────────────────────────────────────────────
 
     #[test]
     fn image_default_serializes_without_panic()
@@ -615,7 +599,6 @@ mod tests
     #[test]
     fn image_deserializes_from_minimal_ron()
     {
-        // serde(default) means all fields are optional
         let s = "Image()";
         let result = ron::from_str::<Image>(s);
         assert!(result.is_ok(), "expected Ok, got {:?}", result);

@@ -14,8 +14,6 @@ use crate::AppData;
 
 
 
-
-
 // ============ CONFIG ============
 use serde::{Deserialize, Serialize};
 use crate::helpers::style::{TextOrientation, SideOption};
@@ -52,7 +50,7 @@ pub struct FocusedWindowConfig
     pub focused_window_button_shadow_color:           Option<ColorType>,
     pub focused_window_button_shadow_x:               f32,
     pub focused_window_button_shadow_y:               f32,
-    pub focused_window_button_shadow_blur:            f32,
+    pub focused_window_button_shadow_blur:            f32
 }
 
 impl Default for FocusedWindowConfig
@@ -88,16 +86,20 @@ impl Default for FocusedWindowConfig
             focused_window_button_shadow_color:           None,
             focused_window_button_shadow_x:               0.0,
             focused_window_button_shadow_y:               0.0,
-            focused_window_button_shadow_blur:            0.0,
+            focused_window_button_shadow_blur:            0.0
         }
     }
 }
+
+
+
+
 
 // ============ STRUCTS ============
 #[derive(Default, Clone)]
 pub struct FocusedWindowData
 {
-    pub title: String,
+    pub title: String
 }
 
 
@@ -127,11 +129,10 @@ fn find_focused_sway(node: &swayipc::Node) -> Option<String>
 
     if node.focused
     {
-        // Only return a title for actual windows, not workspaces/outputs
         return match node.node_type
         {
             NodeType::Con | NodeType::FloatingCon => node.name.clone(),
-            _                                     => None,
+            _                                     => None
         };
     }
     for child in &node.nodes
@@ -154,7 +155,7 @@ pub fn read_focused_window_niri() -> Option<String>
     match reply
     {
         Ok(Response::FocusedWindow(Some(w))) => w.title,
-        _=> None,
+        _=> None
     }
 }
 
@@ -194,9 +195,10 @@ pub fn define_focused_window_style(app: &AppData, status: button::Status) -> ice
         shadow_color: app.ron_config.focused_window.focused_window_button_shadow_color,
         shadow_x:     app.ron_config.focused_window.focused_window_button_shadow_x,
         shadow_y:     app.ron_config.focused_window.focused_window_button_shadow_y,
-        shadow_blur:  app.ron_config.focused_window.focused_window_button_shadow_blur,
+        shadow_blur:  app.ron_config.focused_window.focused_window_button_shadow_blur
     })
 }
+
 
 
 
@@ -208,13 +210,12 @@ mod tests
     use super::*;
     use crate::AppData;
  
-    // ---- helpers ------------------------------------------------------------
     fn make_node(name: Option<&str>, focused: bool, nodes: Vec<swayipc::Node>, floating: Vec<swayipc::Node>) -> swayipc::Node
     {
         let name_val = match name
         {
             Some(n) => format!("\"{}\"", n),
-            None    => "null".into(),
+            None    => "null".into()
         };
         let nodes_json    = serde_json::to_string(&nodes).unwrap();
         let floating_json = serde_json::to_string(&floating).unwrap();
@@ -256,7 +257,6 @@ mod tests
         app
     }
  
-    // ---- find_focused_sway --------------------------------------------------
  
     #[test]
     fn find_focused_sway_returns_title_of_focused_node()
@@ -325,7 +325,6 @@ mod tests
     #[test]
     fn find_focused_sway_prefers_regular_child_over_floating()
     {
-        // Regular nodes are searched first
         let regular  = make_node(Some("Regular"),  true, vec![], vec![]);
         let floating = make_node(Some("Floating"), true, vec![], vec![]);
         let root     = make_node(None, false, vec![regular], vec![floating]);
@@ -348,7 +347,6 @@ mod tests
         assert!(find_focused_sway(&root).is_none());
     }
  
-    // ---- define_focused_window_text -----------------------------------------
  
     #[test]
     fn focused_window_text_replaces_title_placeholder()
@@ -425,7 +423,6 @@ mod tests
         assert_eq!(define_focused_window_text(&app), "Vim | Vim");
     }
  
-    // ---- find_focused_sway: extra cases -------------------------------------
 
     #[test]
     fn find_focused_sway_unicode_title()
@@ -451,7 +448,6 @@ mod tests
     #[test]
     fn find_focused_sway_whitespace_only_name_returned_as_is()
     {
-        // Whitespace is a valid name string — we don't trim it
         let node = make_node(Some("   "), true, vec![], vec![]);
         assert_eq!(find_focused_sway(&node), Some("   ".into()));
     }
@@ -469,7 +465,6 @@ mod tests
     #[test]
     fn find_focused_sway_focused_node_is_root_even_with_children()
     {
-        // Root itself is focused — should return root's title without descending
         let child = make_node(Some("Child"), false, vec![], vec![]);
         let root  = make_node(Some("Root"),  true,  vec![child], vec![]);
         assert_eq!(find_focused_sway(&root), Some("Root".into()));
@@ -505,17 +500,14 @@ mod tests
     #[test]
     fn find_focused_sway_empty_string_name_treated_as_some()
     {
-        // Some("") is different from None — we return it
         let node = make_node(Some(""), true, vec![], vec![]);
         assert_eq!(find_focused_sway(&node), Some("".into()));
     }
 
-    // ---- define_focused_window_text: extra cases ----------------------------
 
     #[test]
     fn focused_window_text_whitespace_title_is_not_empty()
     {
-        // "   " is not empty() so it goes through the normal format path
         let app = make_app("   ");
         assert_eq!(define_focused_window_text(&app), "   ");
     }
@@ -546,7 +538,6 @@ mod tests
     #[test]
     fn focused_window_text_fallback_empty_returns_empty_string_when_flag_false()
     {
-        // text_when_focused_window_is_empty itself is empty
         let mut app = make_app("");
         app.ron_config.focused_window.text_when_focused_window_is_empty = "".into();
         app.ron_config.focused_window.dont_show_focused_window_if_empty = false;
@@ -565,11 +556,8 @@ mod tests
     #[test]
     fn focused_window_text_title_containing_placeholder_not_double_replaced()
     {
-        // If the title itself contains "{title}", it must not be replaced again
         let mut app = make_app("{title}");
         app.ron_config.focused_window.focused_window_format = "{title}".into();
-        // str::replace replaces the first occurrence — result is "{title}" expanded once
-        // i.e. the title value "{title}" is placed where {title} was
         assert_eq!(define_focused_window_text(&app), "{title}");
     }
 
@@ -582,7 +570,6 @@ mod tests
         assert_eq!(define_focused_window_text(&app), "~ desktop ~");
     }
 
-    // ---- FocusedWindowData --------------------------------------------------
 
     #[test]
     fn focused_window_data_default_title_is_empty()
@@ -613,7 +600,6 @@ mod tests
         assert_eq!(data.title, "ターミナル");
     }
 
-    // ---- define_focused_window_text: title present --------------------------
 
     #[test]
     fn text_basic_title_substitution()
@@ -693,7 +679,6 @@ mod tests
         assert_eq!(define_focused_window_text(&app), "Vim");
     }
 
-    // ---- define_focused_window_text: empty title ----------------------------
 
     #[test]
     fn text_empty_title_returns_fallback_string()
@@ -735,7 +720,6 @@ mod tests
         assert_eq!(define_focused_window_text(&app), "デスクトップ");
     }
 
-    // whitespace title is NOT considered empty by is_empty()
     #[test]
     fn text_whitespace_title_goes_through_format_not_fallback()
     {
@@ -743,7 +727,6 @@ mod tests
         assert_eq!(define_focused_window_text(&app), "   ");
     }
 
-    // ---- define_focused_window_text: orientation ----------------------------
 
     #[test]
     fn text_title_vertical_orientation_contains_newline()

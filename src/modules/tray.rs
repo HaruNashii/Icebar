@@ -68,8 +68,6 @@ pub enum TrayEvent
         height: u32,
         width: u32,
     },
-    /// Emitted when an item's status returns to Active/Passive —
-    /// the caller should re-fetch and display the normal icon.
     IconRestored(String),
 }
 

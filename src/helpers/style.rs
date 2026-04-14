@@ -5,6 +5,8 @@ use serde::{Serialize, Deserialize};
 
 
 
+
+
 // ============ CRATES ============
 use crate::helpers::color::{ColorType, Gradient};
 use crate::AppData;
@@ -14,7 +16,7 @@ use crate::AppData;
 
 
 // ============ ENUM/STRUCT, ETC ============
-#[derive(Default, Copy, Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
 pub enum TextOrientation
 {
     #[default] Horizontal,
@@ -39,7 +41,7 @@ pub struct UserStyle
     pub shadow_color: Option<ColorType>,
     pub shadow_x: f32,
     pub shadow_y: f32,
-    pub shadow_blur: f32,
+    pub shadow_blur: f32
 }
 
 #[derive(Default, Copy, Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -50,7 +52,7 @@ pub enum SideOption
     Up,
     Down,
     LeftAndRight,
-    UpAndDown,
+    UpAndDown
 }
 
 
@@ -222,7 +224,7 @@ pub fn apply_separator<'a, Message: 'a>(element: Element<'a, Message>, flags: Op
     match flags
     {
         Some(flags) => with_unique_border(element, color, width, height, flags),
-        None => element,
+        None => element
     }
 }
 
@@ -259,7 +261,7 @@ mod tests
             shadow_color: None,
             shadow_x: 0.0,
             shadow_y: 0.0,
-            shadow_blur: 0.0,
+            shadow_blur: 0.0
         }
     }
  
@@ -301,7 +303,6 @@ mod tests
     #[test]
     fn set_style_disabled_background_is_normal_color()
     {
-        // Disabled falls through to the `_` arm which uses normal colors
         let style = set_style(base_user_style(button::Status::Disabled));
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(10, 20, 30))));
     }
@@ -373,11 +374,10 @@ mod tests
             shadow_color: None,
             shadow_x: 0.0,
             shadow_y: 0.0,
-            shadow_blur: 0.0,
+            shadow_blur: 0.0
         })
     }
  
-    // ---- set_style: Active/Normal ------------------------------------------
  
     #[test]
     fn set_style_active_uses_normal_background()
@@ -395,7 +395,6 @@ mod tests
         assert_eq!(style.text_color, Color::from_rgb8(200, 210, 220));
     }
  
-    // ---- set_style: Hovered ------------------------------------------------
  
     #[test]
     fn set_style_hovered_uses_hovered_background()
@@ -413,7 +412,6 @@ mod tests
         assert_eq!(style.text_color, Color::from_rgb8(255, 255, 255));
     }
  
-    // ---- set_style: Pressed ------------------------------------------------
  
     #[test]
     fn set_style_pressed_uses_pressed_background()
@@ -423,7 +421,6 @@ mod tests
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(80, 90, 100))));
     }
  
-    // ---- set_style: Border -------------------------------------------------
  
     #[test]
     fn set_style_border_width_applied()
@@ -448,7 +445,6 @@ mod tests
         assert_eq!(style.border.color, Color::from_rgb8(1, 2, 3));
     }
  
-    // ---- set_style: all statuses produce non-None background ---------------
  
     #[test]
     fn set_style_all_statuses_produce_background()
@@ -460,7 +456,6 @@ mod tests
         }
     }
 
-    // ---- orient_text --------------------------------------------------------
  
     #[test]
     fn orient_text_horizontal_unchanged()

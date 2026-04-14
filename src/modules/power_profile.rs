@@ -6,6 +6,7 @@ use std::process::Command;
 
 
 
+
 // ============ CRATES ============
 use crate::helpers::color::{ColorType, Gradient};
 use crate::helpers::style::{SideOption, TextOrientation, UserStyle, orient_text, set_style};
@@ -15,11 +16,12 @@ use crate::AppData;
 
 
 
+
 // ============ ENUM/STRUCT ============
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct PowerProfileData
 {
-    pub current_profile: PowerProfile,
+    pub current_profile: PowerProfile
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -28,7 +30,7 @@ pub enum PowerProfile
     PowerSaver,
     #[default]
     Balanced,
-    Performance,
+    Performance
 }
 
 impl PowerProfile
@@ -39,7 +41,7 @@ impl PowerProfile
         {
             PowerProfile::PowerSaver   => "power-saver",
             PowerProfile::Balanced     => "balanced",
-            PowerProfile::Performance  => "performance",
+            PowerProfile::Performance  => "performance"
         }
     }
 
@@ -49,7 +51,7 @@ impl PowerProfile
         {
             "power-saver" => PowerProfile::PowerSaver,
             "performance" => PowerProfile::Performance,
-            _             => PowerProfile::Balanced,
+            _             => PowerProfile::Balanced
         }
     }
 
@@ -59,10 +61,11 @@ impl PowerProfile
         {
             PowerProfile::PowerSaver  => PowerProfile::Balanced,
             PowerProfile::Balanced    => PowerProfile::Performance,
-            PowerProfile::Performance => PowerProfile::PowerSaver,
+            PowerProfile::Performance => PowerProfile::PowerSaver
         }
     }
 }
+
 
 
 
@@ -100,7 +103,7 @@ pub struct PowerProfileConfig
     pub power_profile_button_shadow_color:           Option<ColorType>,
     pub power_profile_button_shadow_x:               f32,
     pub power_profile_button_shadow_y:               f32,
-    pub power_profile_button_shadow_blur:            f32,
+    pub power_profile_button_shadow_blur:            f32
 }
 
 impl Default for PowerProfileConfig
@@ -137,7 +140,7 @@ impl Default for PowerProfileConfig
             power_profile_button_shadow_color:           None,
             power_profile_button_shadow_x:               0.0,
             power_profile_button_shadow_y:               0.0,
-            power_profile_button_shadow_blur:            0.0,
+            power_profile_button_shadow_blur:            0.0
         }
     }
 }
@@ -145,10 +148,8 @@ impl Default for PowerProfileConfig
 
 
 
-// ============ FUNCTIONS ============
 
-/// Read the active power profile from `powerprofilesctl`.
-/// Returns `None` if the tool is not installed or the call fails.
+// ============ FUNCTIONS ============
 pub fn read_power_profile() -> Option<PowerProfile>
 {
     let output = Command::new("powerprofilesctl")
@@ -161,8 +162,6 @@ pub fn read_power_profile() -> Option<PowerProfile>
     Some(PowerProfile::from_str(&s))
 }
 
-/// Cycle to the next profile by calling `powerprofilesctl set <profile>`.
-/// Returns the profile that was set, or `None` on failure.
 pub fn cycle_power_profile(current: &PowerProfile) -> Option<PowerProfile>
 {
     let next = current.next();
@@ -182,7 +181,7 @@ pub fn define_power_profile_text(app: &AppData) -> String
     {
         PowerProfile::PowerSaver  => app.ron_config.power_profile.power_profile_format_power_saver.clone(),
         PowerProfile::Balanced    => app.ron_config.power_profile.power_profile_format_balanced.clone(),
-        PowerProfile::Performance => app.ron_config.power_profile.power_profile_format_performance.clone(),
+        PowerProfile::Performance => app.ron_config.power_profile.power_profile_format_performance.clone()
     }
 }
 
@@ -209,7 +208,7 @@ pub fn define_power_profile_style(app: &AppData, status: button::Status) -> iced
         shadow_color:     cfg.power_profile_button_shadow_color,
         shadow_x:         cfg.power_profile_button_shadow_x,
         shadow_y:         cfg.power_profile_button_shadow_y,
-        shadow_blur:      cfg.power_profile_button_shadow_blur,
+        shadow_blur:      cfg.power_profile_button_shadow_blur
     })
 }
 
@@ -223,13 +222,13 @@ pub fn define_power_profile_rich_text(app: &AppData) -> String
 
 
 
+
 // ============ TESTS ============
 #[cfg(test)]
 mod tests
 {
     use super::*;
 
-    // ---- PowerProfile::from_str ---------------------------------------------
 
     #[test]
     fn from_str_power_saver()
@@ -263,7 +262,6 @@ mod tests
         assert_eq!(PowerProfile::from_str("  power-saver "), PowerProfile::PowerSaver);
     }
 
-    // ---- PowerProfile::as_str -----------------------------------------------
 
     #[test]
     fn as_str_round_trips()
@@ -274,7 +272,6 @@ mod tests
         }
     }
 
-    // ---- PowerProfile::next -------------------------------------------------
 
     #[test]
     fn next_cycles_power_saver_to_balanced()
@@ -302,7 +299,6 @@ mod tests
         assert_eq!(cycled, start);
     }
 
-    // ---- PowerProfileConfig default -----------------------------------------
 
     #[test]
     fn config_default_update_interval_is_positive()
@@ -319,11 +315,75 @@ mod tests
         assert!(!cfg.power_profile_format_performance.is_empty());
     }
 
-    // ---- PowerProfileData default -------------------------------------------
 
     #[test]
     fn data_default_profile_is_balanced()
     {
         assert_eq!(PowerProfileData::default().current_profile, PowerProfile::Balanced);
     }
+}
+
+
+
+
+
+// ============ POWER PROFILE DBUS SUBSCRIPTION ============
+use std::pin::Pin;
+
+pub fn power_profile_subscription() -> Pin<Box<dyn futures::Stream<Item = crate::update::Message> + Send>>
+{
+    Box::pin(async_stream::stream!
+    {
+        yield crate::update::Message::UpdatePowerProfile;
+
+        loop
+        {
+            let conn = match zbus::Connection::system().await
+            {
+                Ok(c) => c,
+                Err(e) =>
+                {
+                    eprintln!("[icebar] power_profile_subscription: DBus connect error: {e}");
+                    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                    continue;
+                }
+            };
+
+            let proxy = match zbus::Proxy::new(
+                &conn,
+                "net.hadess.PowerProfiles",
+                "/net/hadess/PowerProfiles",
+                "org.freedesktop.DBus.Properties"
+            ).await
+            {
+                Ok(p) => p,
+                Err(e) =>
+                {
+                    eprintln!("[icebar] power_profile_subscription: proxy error: {e}");
+                    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                    continue;
+                }
+            };
+
+            let mut signals = match proxy.receive_signal("PropertiesChanged").await
+            {
+                Ok(s) => s,
+                Err(e) =>
+                {
+                    eprintln!("[icebar] power_profile_subscription: signal error: {e}");
+                    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                    continue;
+                }
+            };
+
+            use futures::StreamExt;
+            while signals.next().await.is_some()
+            {
+                yield crate::update::Message::UpdatePowerProfile;
+            }
+
+            eprintln!("[icebar] power_profile_subscription: signal stream ended — reconnecting in 5s");
+            tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+        }
+    })
 }
