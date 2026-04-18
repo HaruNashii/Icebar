@@ -321,6 +321,114 @@ mod tests
     {
         assert_eq!(PowerProfileData::default().current_profile, PowerProfile::Balanced);
     }
+
+    // ---- Additional PowerProfile tests ----
+
+    #[test]
+    fn power_profile_all_variants_have_nonempty_as_str()
+    {
+        assert!(!PowerProfile::PowerSaver.as_str().is_empty());
+        assert!(!PowerProfile::Balanced.as_str().is_empty());
+        assert!(!PowerProfile::Performance.as_str().is_empty());
+    }
+
+    #[test]
+    fn power_profile_as_str_is_lowercase()
+    {
+        let s = PowerProfile::PowerSaver.as_str();
+        assert_eq!(s, s.to_lowercase());
+        let s2 = PowerProfile::Performance.as_str();
+        assert_eq!(s2, s2.to_lowercase());
+    }
+
+    #[test]
+    fn power_profile_from_str_empty_defaults_to_balanced()
+    {
+        assert_eq!(PowerProfile::from_str(""), PowerProfile::Balanced);
+    }
+
+    #[test]
+    fn power_profile_from_str_garbage_defaults_to_balanced()
+    {
+        assert_eq!(PowerProfile::from_str("xyz_not_a_profile"), PowerProfile::Balanced);
+    }
+
+    #[test]
+    fn power_profile_from_str_case_matters()
+    {
+        // "POWER-SAVER" is not matched (from_str is exact match after trim)
+        // if unknown → Balanced
+        let result = PowerProfile::from_str("POWER-SAVER");
+        assert_eq!(result, PowerProfile::Balanced);
+    }
+
+    #[test]
+    fn power_profile_next_forms_complete_cycle()
+    {
+        let start = PowerProfile::PowerSaver;
+        let a = start.next();
+        let b = a.next();
+        let c = b.next();
+        assert_eq!(c, PowerProfile::PowerSaver);
+    }
+
+    #[test]
+    fn power_profile_variants_are_distinct()
+    {
+        assert_ne!(PowerProfile::PowerSaver, PowerProfile::Balanced);
+        assert_ne!(PowerProfile::Balanced, PowerProfile::Performance);
+        assert_ne!(PowerProfile::PowerSaver, PowerProfile::Performance);
+    }
+
+    #[test]
+    fn power_profile_round_trip_as_str_then_from_str()
+    {
+        for profile in [PowerProfile::PowerSaver, PowerProfile::Balanced, PowerProfile::Performance]
+        {
+            let s = profile.as_str();
+            assert_eq!(PowerProfile::from_str(s), profile);
+        }
+    }
+
+    #[test]
+    fn from_str_trims_and_parses_power_saver_with_surrounding_whitespace()
+    {
+        // from_str already trims (based on the existing trim test), verify again
+        assert_eq!(PowerProfile::from_str("  power-saver  "), PowerProfile::PowerSaver);
+    }
+
+    #[test]
+    fn power_profile_config_default_text_size_is_positive()
+    {
+        assert!(PowerProfileConfig::default().power_profile_text_size > 0);
+    }
+
+    #[test]
+    fn power_profile_config_default_update_interval_is_positive()
+    {
+        assert!(PowerProfileConfig::default().power_profile_update_interval > 0);
+    }
+
+    #[test]
+    fn power_profile_config_default_gradient_is_none()
+    {
+        let cfg = PowerProfileConfig::default();
+        assert!(cfg.power_profile_button_gradient_color.is_none());
+    }
+
+    #[test]
+    fn power_profile_config_default_shadow_color_is_none()
+    {
+        assert!(PowerProfileConfig::default().power_profile_button_shadow_color.is_none());
+    }
+
+    #[test]
+    fn power_profile_config_default_border_radius_is_uniform()
+    {
+        let r = PowerProfileConfig::default().power_profile_border_radius;
+        assert_eq!(r[0], r[1]);
+        assert_eq!(r[1], r[2]);
+    }
 }
 
 

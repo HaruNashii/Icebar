@@ -5,7 +5,6 @@ use iced::event;
 
 
 
-
 // ============ CRATES ============
 use crate::helpers::config_watcher::config_file_watcher;
 use crate::AppData;
@@ -25,7 +24,7 @@ use crate::modules::
     tray::{TraySubscription, tray_stream},
     poll_subscriptions::{CpuPollConfig, cpu_subscription, RamPollConfig, ram_subscription, DiskPollConfig, disk_subscription, CpuTempPollConfig, cpu_temp_subscription, NetworkSpeedPollConfig, network_speed_subscription}
 };
-
+use crate::volume_mixer::volume_mixer_subscription;
 
 
 
@@ -33,10 +32,34 @@ use crate::modules::
 // ============ FUNCTIONS ============
 pub fn subscription(app: &AppData) -> iced::Subscription<Message>
 {
+    let has_mixer_action = |action: &ActionOnClick| matches!(action,
+        ActionOnClick::ShowVolumeOutputMixer | ActionOnClick::ShowVolumeInputMixer | ActionOnClick::ShowCalendar
+    );
+
     let needs_cursor = app.modules_data.active_modules.contains(&Modules::Tray)
-        || app.modules_data.active_modules.contains(&Modules::Clock) && (app.ron_config.clock.action_on_left_click_clock  == ActionOnClick::ShowCalendar
-        || app.ron_config.clock.action_on_right_click_clock == ActionOnClick::ShowCalendar)
-        || app.ron_config.auto_hide.is_some();
+        || app.ron_config.auto_hide.is_some()
+        // Clock
+        || app.modules_data.active_modules.contains(&Modules::Clock) && (has_mixer_action(&app.ron_config.clock.action_on_left_click_clock)
+        || has_mixer_action(&app.ron_config.clock.action_on_right_click_clock))
+        // Volume output
+        || has_mixer_action(&app.ron_config.volume_output.action_on_left_click_volume_output)
+        || has_mixer_action(&app.ron_config.volume_output.action_on_right_click_volume_output)
+        // Volume input
+        || has_mixer_action(&app.ron_config.volume_input.action_on_left_click_volume_input)
+        || has_mixer_action(&app.ron_config.volume_input.action_on_right_click_volume_input)
+        // Bug 4 fix: also cover network, cpu, cpu_temp, media player, and power_profile
+        // which all have configurable click actions that can open popups.
+        || app.modules_data.active_modules.contains(&Modules::Network) && (has_mixer_action(&app.ron_config.network.action_on_left_click_network)
+        || has_mixer_action(&app.ron_config.network.action_on_right_click_network))
+        || app.modules_data.active_modules.contains(&Modules::Cpu) && (has_mixer_action(&app.ron_config.cpu.action_on_left_click_cpu)
+        || has_mixer_action(&app.ron_config.cpu.action_on_right_click_cpu))
+        || app.modules_data.active_modules.contains(&Modules::CpuTemp) && (has_mixer_action(&app.ron_config.cpu_temp.action_on_left_click_cpu_temp)
+        || has_mixer_action(&app.ron_config.cpu_temp.action_on_right_click_cpu_temp))
+        || (app.modules_data.active_modules.contains(&Modules::MediaPlayerMetaData) || app.modules_data.active_modules.contains(&Modules::MediaPlayerButtons))
+            && (has_mixer_action(&app.ron_config.media_player_metadata.action_on_left_click_media_player_metadata)
+            || has_mixer_action(&app.ron_config.media_player_metadata.action_on_right_click_media_player_metadata))
+        || app.modules_data.active_modules.contains(&Modules::PowerProfile) && (has_mixer_action(&app.ron_config.power_profile.action_on_left_click_power_profile)
+        || has_mixer_action(&app.ron_config.power_profile.action_on_right_click_power_profile));
 
     let event_reader = match (app.modules_data.active_modules.contains(&Modules::Tray), needs_cursor)
     {
@@ -65,6 +88,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
     }
 
     let mut volume_sub_added        = false;
+    let mut mixer_sub_added         = false;
     let mut hypr_sub_added          = false;
     let mut sway_sub_added          = false;
     let mut niri_event_sub_added    = false;
@@ -79,7 +103,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             {
                 let cfg = CpuPollConfig
                 {
-                    interval_ms: app.ron_config.cpu.cpu_update_interval,
+                    interval_ms: app.ron_config.cpu.cpu_update_interval.max(1),
                     format:      app.ron_config.cpu.cpu_format.clone(),
                     orientation: app.ron_config.cpu.cpu_text_orientation
                 };
@@ -90,7 +114,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             {
                 let cfg = RamPollConfig
                 {
-                    interval_ms: app.ron_config.ram.ram_update_interval,
+                    interval_ms: app.ron_config.ram.ram_update_interval.max(1),
                     format:      app.ron_config.ram.ram_format.clone(),
                     orientation: app.ron_config.ram.ram_text_orientation
                 };
@@ -101,7 +125,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             {
                 let cfg = DiskPollConfig
                 {
-                    interval_ms: app.ron_config.disk.disk_update_interval,
+                    interval_ms: app.ron_config.disk.disk_update_interval.max(1),
                     format:      app.ron_config.disk.disk_format.clone(),
                     orientation: app.ron_config.disk.disk_text_orientation,
                     mount:       app.ron_config.disk.disk_mount.clone()
@@ -113,7 +137,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             {
                 let cfg = CpuTempPollConfig
                 {
-                    interval_ms: app.ron_config.cpu_temp.cpu_temp_update_interval,
+                    interval_ms: app.ron_config.cpu_temp.cpu_temp_update_interval.max(1),
                     format:      app.ron_config.cpu_temp.cpu_temp_format.clone(),
                     orientation: app.ron_config.cpu_temp.cpu_temp_text_orientation
                 };
@@ -123,8 +147,9 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             Modules::Network =>
             {
                 subs.push(network_subscription(app.ron_config.network.network_disconnected_text.clone()));
-                let cfg = NetworkSpeedPollConfig { iface: app.modules_data.network_data.iface.clone() };
-                subs.push(iced::Subscription::run_with(cfg, network_speed_subscription));
+                // Bug D fix: NetworkSpeedPollConfig no longer carries iface; the
+                // subscription discovers the active interface itself each tick.
+                subs.push(iced::Subscription::run_with(NetworkSpeedPollConfig, network_speed_subscription));
             }
 
             Modules::Clock =>
@@ -133,34 +158,24 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
                 subs.push(clock_subscription(granularity));
             }
 
-            Modules::PowerProfile =>
+            Modules::PowerProfile if !power_profile_sub_added =>
             {
-                if !power_profile_sub_added
-                {
                     subs.push(iced::Subscription::run(power_profile_subscription));
                     power_profile_sub_added = true;
-                }
             }
 
-            Modules::NiriWorkspaces | Modules::FocusedWindowNiri =>
+            Modules::NiriWorkspaces | Modules::FocusedWindowNiri if !niri_event_sub_added =>
             {
-                if !niri_event_sub_added
-                {
                     subs.push(iced::Subscription::run(niri_event_subscription));
                     niri_event_sub_added = true;
-                }
             }
 
-            Modules::Tray =>
-                subs.push(iced::Subscription::run_with(TraySubscription, tray_stream)),
+            Modules::Tray => subs.push(iced::Subscription::run_with(TraySubscription, tray_stream)),
 
-            Modules::PlasmaWorkspaces =>
-                subs.push(iced::Subscription::run(plasma_event_subscription)),
+            Modules::PlasmaWorkspaces => subs.push(iced::Subscription::run(plasma_event_subscription)),
 
-            Modules::MediaPlayerMetaData | Modules::MediaPlayerButtons =>
+            Modules::MediaPlayerMetaData | Modules::MediaPlayerButtons if !media_player_sub_added =>
             {
-                if !media_player_sub_added
-                {
                     let player = app.ron_config.media_player_metadata.player.clone();
                     let format = app.ron_config.media_player_metadata.media_player_metadata_format.clone();
                     subs.push(iced::Subscription::run_with((player, format), |(p, f)|
@@ -168,25 +183,18 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
                         media_player_subscription(p.clone(), f.clone())
                     }));
                     media_player_sub_added = true;
-                }
             }
 
-            Modules::FocusedWindowHypr | Modules::HyprWorkspaces =>
+            Modules::FocusedWindowHypr | Modules::HyprWorkspaces if !hypr_sub_added =>
             {
-                if !hypr_sub_added
-                {
                     subs.push(iced::Subscription::run(hypr_event_subscription));
                     hypr_sub_added = true;
-                }
             }
 
-            Modules::SwayWorkspaces | Modules::FocusedWindowSway =>
+            Modules::SwayWorkspaces | Modules::FocusedWindowSway if !sway_sub_added =>
             {
-                if !sway_sub_added
-                {
                     subs.push(iced::Subscription::run(sway_event_subscription));
                     sway_sub_added = true;
-                }
             }
 
             Modules::VolumeOutput | Modules::VolumeInput =>
@@ -195,6 +203,11 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
                 {
                     subs.push(iced::Subscription::run(crate::modules::volume::volume_subscription));
                     volume_sub_added = true;
+                }
+                if !mixer_sub_added
+                {
+                    subs.push(iced::Subscription::run(volume_mixer_subscription));
+                    mixer_sub_added = true;
                 }
             }
 

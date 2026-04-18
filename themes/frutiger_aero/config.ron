@@ -203,7 +203,7 @@ BarConfig
         output_volume_muted_format: "[Color=(93, 184, 122), String=]󰝟  Muted",
         incremental_steps_output: 5,
         action_on_left_click_volume_output: DefaultAction,
-        action_on_right_click_volume_output: CustomAction(["kitty", "pulsemixer"]),
+        action_on_right_click_volume_output: ShowVolumeOutputMixer,
         volume_output_padding: 2,
         volume_output_text_size: 13,
         volume_output_text_color: RGB((232, 248, 255)),
@@ -284,7 +284,7 @@ BarConfig
         input_volume_muted_format: "[Color=(93, 184, 122), String=]󰍭  Muted",
         incremental_steps_input: 5,
         action_on_left_click_volume_input: DefaultAction,
-        action_on_right_click_volume_input: CustomAction(["kitty", "pulsemixer"]),
+        action_on_right_click_volume_input: ShowVolumeInputMixer,
         volume_input_padding: 2,
         volume_input_text_size: 13,
         volume_input_text_color: RGB((232, 248, 255)),
@@ -961,4 +961,549 @@ BarConfig
         custom_modules_spacing: 6,
         custom_modules: [],
     ),
+
+
+    // ================= VOLUME MIXER OUTPUT =================
+    volume_output_mixer:
+    (
+    	mixer_window_size: 		(730, 460),
+	mixer_background_color:		RGBA((20, 80, 110, 95)),
+        mixer_background_border_color:  RGBA((168, 230, 207, 40)),
+	mixer_background_border_size:	1.0,
+	mixer_background_border_radius:	(14., 14., 14., 14.),
+	mixer_padding:			16,
+	mixer_section_spacing:		14,
+	mixer_show_only_active_devices: false,
+	// Available options: Up, Down, Left, Right
+	// Up    = [Devices]      Down  = [Applications]   Left  = [Devices][Applications]   Right = [Applications][Devices]
+	//         [Applications]         [Devices]
+	categories_position:            Right,
+
+	scrollbar:
+	(
+		show:                    true,
+            	width:                   6,
+            	margin:                  2,
+            	scroller_width:          6,
+            	border_radius:           (3.0, 3.0, 3.0, 3.0),
+		rail_border_width:       0.0,
+            	rail_border_color:       RGBA((0, 0, 0, 0)),
+		rail_color:              RGBA((0, 0, 0, 0)),
+            	scroller_color:          RGBA((255, 255, 255, 40)),
+            	scroller_hovered_color:  RGBA((255, 255, 255, 60)),
+            	scroller_dragging_color: RGBA((255, 255, 255, 80)),
+            	scroller_border_color:   RGBA((0, 0, 0, 0)),
+            	scroller_border_width:   0.0,
+	),
+
+	device_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		"  Devices",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	30,
+		spacing:		15,
+		header_text_color:	RGB((91, 200, 245)),
+		header_button_style:
+		(
+		        color:              	RGBA((91, 200, 245, 25)),
+            		hovered_color:      	RGBA((91, 200, 245, 45)),
+            		pressed_color:      	RGBA((11, 110, 140, 90)),
+            		text_color:         	RGB((232, 248, 255)),
+            		hovered_text_color: 	RGB((232, 248, 255)),
+            		pressed_text_color: 	RGB((232, 248, 255)),
+            		border_color:       	RGBA((168, 230, 207, 40)),
+            		border_size:        	1.0,
+            		border_radius:      	(14., 14., 14., 14.),
+		)
+	),
+
+	app_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		"  Applications",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	30,
+		spacing:		15,
+		header_text_color:	RGB((91, 200, 245)),
+		header_button_style:
+		(
+		        color:              	RGBA((91, 200, 245, 25)),
+            		hovered_color:      	RGBA((91, 200, 245, 45)),
+            		pressed_color:      	RGBA((11, 110, 140, 90)),
+            		text_color:         	RGB((232, 248, 255)),
+            		hovered_text_color: 	RGB((232, 248, 255)),
+            		pressed_text_color: 	RGB((232, 248, 255)),
+            		border_color:       	RGBA((168, 230, 207, 40)),
+            		border_size:        	1.0,
+            		border_radius:      	(14., 14., 14., 14.),
+		)
+	),
+	
+	device_row:
+	(
+	    device_row_order:			[DeviceButton, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+            show_only_default_device_name: 	false,
+
+            row_height:                 36,
+            row_spacing:                8,
+            name_text_size:             13,
+            name_text_color:            RGB((232, 248, 255)),
+            name_max_chars:             22,
+	    device_name_button_width:   168,
+
+            volume_step:                1,
+            slider_width:               200.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGBA((91, 200, 245, 25)),
+		rail_filled_color:    RGB((91, 200, 245)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((232, 248, 255)),
+		handle_border_color:  RGB((91, 200, 245)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       30,
+            inc_dec_button_height:      26,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((232, 248, 255)),
+            	hovered_text_color: RGB((232, 248, 255)),
+            	pressed_text_color: RGB((232, 248, 255)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          36,
+            mute_button_height:         26,
+            mute_button_style:          
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((232, 248, 255)),
+            	hovered_text_color: RGB((232, 248, 255)),
+            	pressed_text_color: RGB((232, 248, 255)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((168, 230, 207)),
+            	hovered_text_color: RGB((168, 230, 207)),
+            	pressed_text_color: RGB((168, 230, 207)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+
+            default_label:              "⬤",
+            non_default_button_style:
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((232, 248, 255)),
+            	hovered_text_color: RGB((232, 248, 255)),
+            	pressed_text_color: RGB((232, 248, 255)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+            default_button_style:
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((168, 230, 207)),
+            	hovered_text_color: RGB((168, 230, 207)),
+            	pressed_text_color: RGB((168, 230, 207)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+	),
+
+	app_row:
+	(            
+	    app_row_order:			[AppName, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+
+            row_height:                 36,
+            row_spacing:                8,
+            name_text_size:             13,
+            name_text_color:            RGB((232, 248, 255)),
+            name_max_chars:             22,
+            name_button_width:          168,
+
+            volume_step:                1,
+            slider_width:               200.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGBA((91, 200, 245, 25)),
+		rail_filled_color:    RGB((91, 200, 245)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((232, 248, 255)),
+		handle_border_color:  RGB((91, 200, 245)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       30,
+            inc_dec_button_height:      26,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((232, 248, 255)),
+            	hovered_text_color: RGB((232, 248, 255)),
+            	pressed_text_color: RGB((232, 248, 255)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          36,
+            mute_button_height:         26,
+            mute_button_style:          
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((232, 248, 255)),
+            	hovered_text_color: RGB((232, 248, 255)),
+            	pressed_text_color: RGB((232, 248, 255)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((168, 230, 207)),
+            	hovered_text_color: RGB((168, 230, 207)),
+            	pressed_text_color: RGB((168, 230, 207)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+	)
+    ),
+
+
+    // ================= VOLUME MIXER INPUT =================
+    volume_input_mixer:
+    (
+    	mixer_window_size: 		(730, 460),
+	mixer_background_color:		RGBA((20, 80, 110, 95)),
+        mixer_background_border_color:  RGBA((168, 230, 207, 40)),
+	mixer_background_border_size:	1.0,
+	mixer_background_border_radius:	(14., 14., 14., 14.),
+	mixer_padding:			16,
+	mixer_section_spacing:		14,
+	mixer_show_only_active_devices: false,
+	// Available options: Up, Down, Left, Right
+	// Up    = [Devices]      Down  = [Applications]   Left  = [Devices][Applications]   Right = [Applications][Devices]
+	//         [Applications]         [Devices]
+	categories_position:            Right,
+
+	scrollbar:
+	(
+		show:                    true,
+            	width:                   6,
+            	margin:                  2,
+            	scroller_width:          6,
+            	border_radius:           (3.0, 3.0, 3.0, 3.0),
+		rail_border_width:       0.0,
+            	rail_border_color:       RGBA((0, 0, 0, 0)),
+		rail_color:              RGBA((0, 0, 0, 0)),
+            	scroller_color:          RGBA((255, 255, 255, 40)),
+            	scroller_hovered_color:  RGBA((255, 255, 255, 60)),
+            	scroller_dragging_color: RGBA((255, 255, 255, 80)),
+            	scroller_border_color:   RGBA((0, 0, 0, 0)),
+            	scroller_border_width:   0.0,
+	),
+
+	device_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		"  Devices",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	30,
+		spacing:		15,
+		header_text_color:	RGB((91, 200, 245)),
+		header_button_style:
+		(
+		        color:              	RGBA((91, 200, 245, 25)),
+            		hovered_color:      	RGBA((91, 200, 245, 45)),
+            		pressed_color:      	RGBA((11, 110, 140, 90)),
+            		text_color:         	RGB((232, 248, 255)),
+            		hovered_text_color: 	RGB((232, 248, 255)),
+            		pressed_text_color: 	RGB((232, 248, 255)),
+            		border_color:       	RGBA((168, 230, 207, 40)),
+            		border_size:        	1.0,
+            		border_radius:      	(14., 14., 14., 14.),
+		)
+	),
+
+	app_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		"  Applications",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	30,
+		spacing:		15,
+		header_text_color:	RGB((91, 200, 245)),
+		header_button_style:
+		(
+		        color:              	RGBA((91, 200, 245, 25)),
+            		hovered_color:      	RGBA((91, 200, 245, 45)),
+            		pressed_color:      	RGBA((11, 110, 140, 90)),
+            		text_color:         	RGB((232, 248, 255)),
+            		hovered_text_color: 	RGB((232, 248, 255)),
+            		pressed_text_color: 	RGB((232, 248, 255)),
+            		border_color:       	RGBA((168, 230, 207, 40)),
+            		border_size:        	1.0,
+            		border_radius:      	(14., 14., 14., 14.),
+		)
+	),
+	
+	device_row:
+	(
+	    device_row_order:			[DeviceButton, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+            show_only_default_device_name: 	false,
+
+            row_height:                 36,
+            row_spacing:                8,
+            name_text_size:             13,
+            name_text_color:            RGB((232, 248, 255)),
+            name_max_chars:             22,
+	    device_name_button_width:   168,
+
+            volume_step:                1,
+            slider_width:               200.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGBA((91, 200, 245, 25)),
+		rail_filled_color:    RGB((91, 200, 245)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((232, 248, 255)),
+		handle_border_color:  RGB((91, 200, 245)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       30,
+            inc_dec_button_height:      26,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((232, 248, 255)),
+            	hovered_text_color: RGB((232, 248, 255)),
+            	pressed_text_color: RGB((232, 248, 255)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          36,
+            mute_button_height:         26,
+            mute_button_style:          
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((232, 248, 255)),
+            	hovered_text_color: RGB((232, 248, 255)),
+            	pressed_text_color: RGB((232, 248, 255)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((168, 230, 207)),
+            	hovered_text_color: RGB((168, 230, 207)),
+            	pressed_text_color: RGB((168, 230, 207)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+
+            default_label:              "⬤",
+            non_default_button_style:
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((232, 248, 255)),
+            	hovered_text_color: RGB((232, 248, 255)),
+            	pressed_text_color: RGB((232, 248, 255)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+            default_button_style:
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((168, 230, 207)),
+            	hovered_text_color: RGB((168, 230, 207)),
+            	pressed_text_color: RGB((168, 230, 207)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+	),
+
+	app_row:
+	(            
+	    app_row_order:			[AppName, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+
+            row_height:                 36,
+            row_spacing:                8,
+            name_text_size:             13,
+            name_text_color:            RGB((232, 248, 255)),
+            name_max_chars:             22,
+            name_button_width:          168,
+
+            volume_step:                1,
+            slider_width:               200.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGBA((91, 200, 245, 25)),
+		rail_filled_color:    RGB((91, 200, 245)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((232, 248, 255)),
+		handle_border_color:  RGB((91, 200, 245)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       30,
+            inc_dec_button_height:      26,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((232, 248, 255)),
+            	hovered_text_color: RGB((232, 248, 255)),
+            	pressed_text_color: RGB((232, 248, 255)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          36,
+            mute_button_height:         26,
+            mute_button_style:          
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((232, 248, 255)),
+            	hovered_text_color: RGB((232, 248, 255)),
+            	pressed_text_color: RGB((232, 248, 255)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGBA((91, 200, 245, 25)),
+            	hovered_color:      RGBA((91, 200, 245, 45)),
+            	pressed_color:      RGBA((11, 110, 140, 90)),
+            	text_color:         RGB((168, 230, 207)),
+            	hovered_text_color: RGB((168, 230, 207)),
+            	pressed_text_color: RGB((168, 230, 207)),
+            	border_color:       RGBA((168, 230, 207, 40)),
+            	border_size:        1.0,
+            	border_radius:      (14., 14., 14., 14.),
+	    ),
+	)
+    ),
+
 )

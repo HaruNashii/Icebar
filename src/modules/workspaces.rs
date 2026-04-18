@@ -207,7 +207,13 @@ pub fn define_workspaces_text(app: &AppData, id: i32) -> String
         }
         else
         {
-            app.ron_config.workspace.workspace_text.get((id - 1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
+            // Bug J fix: use saturating_sub(1) instead of (id - 1) as usize.
+            // If a compositor reports workspace id = 0 (Sway can do this for
+            // scratch/empty workspaces), the subtraction would produce -1 and
+            // the cast to usize would wrap to usize::MAX, causing an erroneous
+            // huge index. saturating_sub clamps it to 0, matching the safe_id
+            // pattern already used in the selected-text branch above.
+            app.ron_config.workspace.workspace_text.get(id.saturating_sub(1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
         }
     };
 

@@ -28,6 +28,7 @@ use crate::modules::
 use crate::context_menu::ContextMenuConfig;
 use crate::helpers::{string::find_field_colon, color::{ColorType, Gradient}, ron_general::apply_general_settings, style::{SideOption, TextOrientation}};
 use crate::calendar::CalendarWindowConfig;
+use crate::volume_mixer::VolumeMixerConfig;
 
 
 
@@ -59,7 +60,9 @@ pub enum ActionOnClick
     CustomAction(Vec<String>),
     CycleClockTimezones,
     ToggleAltClockAndCycleClockTimezones,
-    ShowCalendar
+    ShowCalendar,
+    ShowVolumeOutputMixer,
+    ShowVolumeInputMixer,
 }
 
 
@@ -230,6 +233,8 @@ pub struct BarConfig
     pub image:                  ImageConfig,
     pub custom_module:          CustomModuleConfig,
     pub calendar_window:        CalendarWindowConfig,
+    pub volume_output_mixer:    VolumeMixerConfig,
+    pub volume_input_mixer:     VolumeMixerConfig,
     pub auto_hide:              Option<AutoHideConfig>
 }
 

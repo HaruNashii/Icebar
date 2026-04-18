@@ -151,16 +151,18 @@ pub fn define_custom_module_style(custom_module: &CustomModule, status: button::
 
 pub fn define_custom_module_text(index: usize, custom_module: &CustomModule, app: &AppData) -> String
 {
+    let effective_limit = if custom_module.output_text_limit_len == 0 { usize::MAX } else { custom_module.output_text_limit_len };
+
     if custom_module.use_output_as_text && !custom_module.all_output_as_text_format.is_empty()
     {
         let output_text = app.modules_data.custom_module_data.cached_command_outputs.get(index).map(String::as_str).unwrap_or("");
-        let output_text = ellipsize(&app.ron_config.general.ellipsis_text, output_text, custom_module.output_text_limit_len);
+        let output_text = ellipsize(&app.ron_config.general.ellipsis_text, output_text, effective_limit);
         if custom_module.dont_show_if_any_output_is_empty && output_text.is_empty() { return String::new() };
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{output}", &output_text).replace('\n', "")
     }
     else if custom_module.use_continous_output_as_text && !custom_module.all_output_as_text_format.is_empty() && !&app.modules_data.custom_module_data.cached_continuous_outputs.is_empty() && (app.modules_data.custom_module_data.cached_continuous_outputs.len() - 1) >= index
     {
-        let output_text = ellipsize(&app.ron_config.general.ellipsis_text, &app.modules_data.custom_module_data.cached_continuous_outputs[index], custom_module.output_text_limit_len);
+        let output_text = ellipsize(&app.ron_config.general.ellipsis_text, &app.modules_data.custom_module_data.cached_continuous_outputs[index], effective_limit);
         if custom_module.dont_show_if_any_output_is_empty && output_text.is_empty() { return String::new() };
         custom_module.all_output_as_text_format.replace("{text}", &custom_module.text).replace("{continous_output}", &output_text).replace('\n', "")
     }

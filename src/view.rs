@@ -14,6 +14,7 @@ use crate::context_menu::context_menu_view;
 use crate::update::Message;
 use crate::{warning::warning_view, MAIN_ID, AppData, WindowInfo, id_info};
 use crate::calendar::calendar_view;
+use crate::volume_mixer::{volume_mixer_view, MixerKind};
 
 
 
@@ -36,15 +37,11 @@ pub fn view(app: &AppData, id: iced::window::Id) -> Element<'_, Message>
 {
     match id_info(app, id) 
     {
-        Some(WindowInfo::ContextMenu) => return context_menu_view(&app.context_menu_data, &app.ron_config),
-        Some(WindowInfo::Calendar)    => return calendar_view(app),
-        Some(WindowInfo::Warning) => 
-        {
-            if app.config_parsed_failed
-            {
-                return warning_view(&app.warning_err);
-            };
-        }
+        Some(WindowInfo::ContextMenu)      => return context_menu_view(&app.context_menu_data, &app.ron_config),
+        Some(WindowInfo::Calendar)         => return calendar_view(app),
+        Some(WindowInfo::VolumeOutputMixer) => return volume_mixer_view(app, MixerKind::Output),
+        Some(WindowInfo::VolumeInputMixer)  => return volume_mixer_view(app, MixerKind::Input),
+        Some(WindowInfo::Warning) if app.config_parsed_failed => { return warning_view(&app.warning_err); },
         _=> {}
     };
 
@@ -91,10 +88,10 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
         {   
             Modules::Tray =>
             {
-                let children: Vec<Element<_>> = app.modules_data.tray_icons.iter().enumerate().map(|(i, (icon, _))|
+                let children: Vec<Element<_>> = app.modules_data.tray_icons.iter().map(|(icon, combined)|
                 {
                     let button_content = define_tray_icon(app, icon);
-                    button(button_content).style(|_: &Theme, status: button::Status| define_tray_style(app, status)).padding(app.ron_config.tray.tray_button_size).on_press(Message::TrayIconClicked(i)).into()
+                    button(button_content).style(|_: &Theme, status: button::Status| define_tray_style(app, status)).padding(app.ron_config.tray.tray_button_size).on_press(Message::TrayIconClicked(combined.clone())).into()
                 }).collect();
              
                 let inner: Element<_> = match axis
@@ -161,8 +158,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                 }
              
                 let text_to_send = define_media_player_metadata_text(app);
-                let left_click_metadata_message: Message  = match &app.ron_config.media_player_metadata.action_on_left_click_media_player_metadata  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
-                let right_click_metadata_message: Message = match &app.ron_config.media_player_metadata.action_on_right_click_media_player_metadata { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
+                let left_click_metadata_message: Message  = match &app.ron_config.media_player_metadata.action_on_left_click_media_player_metadata  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), true, false)) };
+                let right_click_metadata_message: Message = match &app.ron_config.media_player_metadata.action_on_right_click_media_player_metadata { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Media Player Custom Action".to_string(), false, false)) };
                 let colored_formated_metadata = convert_text_to_rich_text_ellipsized::<Message>(&text_to_send, &app.ron_config.general.ellipsis_text, app.ron_config.media_player_metadata.media_player_metadata_text_limit_len);
                 let inner = create_button_container(app, app.ron_config.media_player_metadata.media_player_metadata_padding, (colored_formated_metadata, app.ron_config.media_player_metadata.media_player_metadata_text_size), (Message::IsHoveringMediaPlayerMetaData(true), Message::IsHoveringMediaPlayerMetaData(false)), left_click_metadata_message, right_click_metadata_message, define_media_player_metadata_style);
              
@@ -256,8 +253,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::PowerProfile =>
             {
                 let rich = convert_text_to_rich_text::<Message>(&define_power_profile_rich_text(app));
-                let left_click: Message  = match &app.ron_config.power_profile.action_on_left_click_power_profile  { ActionOnClick::DefaultAction => Message::CyclePowerProfile, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "PowerProfile Custom Action".to_string(), true,  false)) };
-                let right_click: Message = match &app.ron_config.power_profile.action_on_right_click_power_profile { ActionOnClick::DefaultAction => Message::CyclePowerProfile, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "PowerProfile Custom Action".to_string(), false, false)) };
+                let left_click: Message  = match &app.ron_config.power_profile.action_on_left_click_power_profile  { ActionOnClick::DefaultAction => Message::CyclePowerProfile, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "PowerProfile Custom Action".to_string(), true,  false)) };
+                let right_click: Message = match &app.ron_config.power_profile.action_on_right_click_power_profile { ActionOnClick::DefaultAction => Message::CyclePowerProfile, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "PowerProfile Custom Action".to_string(), false, false)) };
                 let inner = create_button_container_without_hover_message(app, app.ron_config.power_profile.power_profile_padding, (rich, app.ron_config.power_profile.power_profile_text_size), left_click, right_click, define_power_profile_style);
 
                 apply_separator
@@ -290,8 +287,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
             Modules::Cpu =>
             {
                 let text_to_send = app.modules_data.cpu_text.clone();
-                let left_click_metadata_message: Message  = match &app.ron_config.cpu.action_on_left_click_cpu  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), true, false)) };
-                let right_click_metadata_message: Message = match &app.ron_config.cpu.action_on_right_click_cpu { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), false, false)) };
+                let left_click_metadata_message: Message  = match &app.ron_config.cpu.action_on_left_click_cpu  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), true, false)) };
+                let right_click_metadata_message: Message = match &app.ron_config.cpu.action_on_right_click_cpu { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Custom Action".to_string(), false, false)) };
                 let colored_formated_metadata = convert_text_to_rich_text::<Message>(&text_to_send);
                 let inner = create_button_container_without_hover_message(app, app.ron_config.cpu.cpu_padding, (colored_formated_metadata, app.ron_config.cpu.cpu_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_style);
              
@@ -312,8 +309,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
             Modules::CpuTemp =>
             {
-                let left_click_metadata_message: Message  = match &app.ron_config.cpu_temp.action_on_left_click_cpu_temp  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), true, false)) };
-                let right_click_metadata_message: Message = match &app.ron_config.cpu_temp.action_on_right_click_cpu_temp { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), false, false)) };
+                let left_click_metadata_message: Message  = match &app.ron_config.cpu_temp.action_on_left_click_cpu_temp  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), true, false)) };
+                let right_click_metadata_message: Message = match &app.ron_config.cpu_temp.action_on_right_click_cpu_temp { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Cpu Temp Custom Action".to_string(), false, false)) };
                 let text_to_send = app.modules_data.cpu_temp_text.clone();
                 let colored_cpu_temp = convert_text_to_rich_text::<Message>(&text_to_send);
                 let inner = create_button_container_without_hover_message(app, app.ron_config.cpu_temp.cpu_temp_padding, (colored_cpu_temp, app.ron_config.cpu_temp.cpu_temp_text_size), left_click_metadata_message, right_click_metadata_message, define_cpu_temp_style);
@@ -335,8 +332,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
             Modules::Network =>
             {
-                let left_click_message: Message  = match &app.ron_config.network.action_on_left_click_network  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::ToggleAltNetwork, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false)) };
-                let right_click_message: Message = match &app.ron_config.network.action_on_right_click_network { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false)) };
+                let left_click_message: Message  = match &app.ron_config.network.action_on_left_click_network  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::ToggleAltNetwork, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), true, false)) };
+                let right_click_message: Message = match &app.ron_config.network.action_on_right_click_network { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Network Custom Action".to_string(), false, false)) };
              
                 let (text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.modules_data.network_data.is_showing_alt_network_module
                 {
@@ -370,8 +367,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
             Modules::VolumeOutput =>
             {
-                let left_click_message: Message  = match &app.ron_config.volume_output.action_on_left_click_volume_output  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false)) };
-                let right_click_message: Message = match &app.ron_config.volume_output.action_on_right_click_volume_output { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false)) };
+                let left_click_message: Message  = match &app.ron_config.volume_output.action_on_left_click_volume_output  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedOutput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), true, false)) };
+                let right_click_message: Message = match &app.ron_config.volume_output.action_on_right_click_volume_output { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Output Custom Action".to_string(), false, false)) };
              
                 let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.modules_data.volume_data.volume_output_is_muted
                 {
@@ -411,8 +408,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
              
             Modules::VolumeInput =>
             {
-                let left_click_message: Message  = match &app.ron_config.volume_input.action_on_left_click_volume_input  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedInput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false)) };
-                let right_click_message: Message = match &app.ron_config.volume_input.action_on_right_click_volume_input { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false)) };
+                let left_click_message: Message  = match &app.ron_config.volume_input.action_on_left_click_volume_input  { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::MuteAudioPressedInput, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), true, false)) };
+                let right_click_message: Message = match &app.ron_config.volume_input.action_on_right_click_volume_input { ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Volume Input Custom Action".to_string(), false, false)) };
              
                 let (text_orientation, text_size, padding, side_separator, side_separator_color, side_separator_width, side_separator_height) = if app.modules_data.volume_data.volume_input_is_muted
                 {
@@ -459,6 +456,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
                     ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
                     ActionOnClick::ShowCalendar => Message::ShowCalendar,
+                    ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer,
+                    ActionOnClick::ShowVolumeInputMixer  => Message::ShowVolumeInputMixer,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), true, false))
                 };
                 let right_click_message: Message = match &app.ron_config.clock.action_on_right_click_clock
@@ -468,6 +467,8 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones,
                     ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones,
                     ActionOnClick::ShowCalendar => Message::ShowCalendar,
+                    ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer,
+                    ActionOnClick::ShowVolumeInputMixer  => Message::ShowVolumeInputMixer,
                     ActionOnClick::CustomAction(custom_action) => Message::CreateCustomModuleCommand((None, custom_action.to_vec(), "Clock Custom Action".to_string(), false, false))
                 };
 
@@ -589,9 +590,9 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                                 .size(custom_module.text_size)
                                 .center()
                             )
-                            .on_right_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false, custom_module.use_output_as_text)))
+                            .on_right_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_right_click.clone(), custom_module.name.clone(), false, custom_module.use_output_as_text || custom_module.use_continous_output_as_text)))
                         )
-                        .on_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true, custom_module.use_output_as_text)))
+                        .on_press(Message::CreateCustomModuleCommand((Some(index), custom_module.command_to_exec_on_left_click.clone(), custom_module.name.clone(), true, custom_module.use_output_as_text || custom_module.use_continous_output_as_text)))
                         .style(|_, status| {define_custom_module_style(custom_module, status)})  
                 ).padding(custom_module.padding).align_y(Alignment::Center);
                 

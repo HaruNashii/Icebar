@@ -57,11 +57,9 @@
 // - Join the contact server: https://discord.gg/CRsz24Ts3a
 //
 // =============================================================================================================================================
-
-
-
 BarConfig
 (
+
 
     // ================= GENERAL =================
     general:
@@ -83,7 +81,7 @@ BarConfig
         force_static_position_context_menu: None,
         left_modules:                       [CustomModule(0), Cpu, CpuTemp, Ram, Disk],
         center_modules:                     [Clock, MediaPlayerMetaData, MediaPlayerButtons],
-        right_modules:                      [PowerProfile, Tray, Network, VolumeOutput, VolumeInput],
+        right_modules:                      [PowerProfile, Tray, Network, VolumeOutput, VolumeInput]
     ),
 
 
@@ -113,7 +111,7 @@ BarConfig
         general_side_separator_color:           Some(HEX("3d3d3d")),
         general_side_separator_width:           Some(1.0),
         general_side_separator_height:          Some(18.0),
-        general_alt_padding:                    None,
+        general_alt_padding:                    Some(0),
         general_alt_text_size:                  None,
         general_alt_text_orientation:           None,
         general_alt_text_color:                 None,
@@ -135,7 +133,7 @@ BarConfig
         general_alt_button_shadow_color:            Some(RGBA((0, 0, 0, 50))),
         general_alt_button_shadow_x:                Some(1.0),
         general_alt_button_shadow_y:                Some(2.0),
-        general_alt_button_shadow_blur:             Some(5.0),
+        general_alt_button_shadow_blur:             Some(5.0)
     ),
 
 
@@ -193,7 +191,7 @@ BarConfig
         alt_clock_button_pressed_color:         RGB((86, 148, 210)),
         alt_clock_border_color:                 HEX("5a8fc7"),
         alt_clock_border_size:                  1.0,
-        alt_clock_border_radius:                (6.0, 6.0, 6.0, 6.0),
+        alt_clock_border_radius:                (6.0, 6.0, 6.0, 6.0)
     ),
 
 
@@ -213,7 +211,7 @@ BarConfig
         output_volume_muted_format:                     "  Muted",
         incremental_steps_output:                       5,
         action_on_left_click_volume_output:             DefaultAction,
-        action_on_right_click_volume_output:            CustomAction(["kitty", "pulsemixer"]),
+        action_on_right_click_volume_output:            ShowVolumeOutputMixer,
         volume_output_padding:                          7,
         volume_output_text_size:                        14,
         volume_output_text_color:                       HEX("ffffff"),
@@ -236,7 +234,7 @@ BarConfig
         volume_output_button_shadow_color:              Some(RGBA((0, 0, 0, 50))),
         volume_output_button_shadow_x:                  0.0,
         volume_output_button_shadow_y:                  1.0,
-        volume_output_button_shadow_blur:               3.0,
+        volume_output_button_shadow_blur:               3.0
     ),
 
 
@@ -265,7 +263,7 @@ BarConfig
         muted_volume_output_button_shadow_color:                Some(RGBA((0, 0, 0, 50))),
         muted_volume_output_button_shadow_x:                    0.0,
         muted_volume_output_button_shadow_y:                    1.0,
-        muted_volume_output_button_shadow_blur:                 3.0,
+        muted_volume_output_button_shadow_blur:                 3.0
     ),
 
 
@@ -285,7 +283,7 @@ BarConfig
         input_volume_muted_format:                      "  Muted",
         incremental_steps_input:                        5,
         action_on_left_click_volume_input:              DefaultAction,
-        action_on_right_click_volume_input:             CustomAction(["kitty", "pulsemixer"]),
+        action_on_right_click_volume_input:             ShowVolumeInputMixer,
         volume_input_padding:                           7,
         volume_input_text_size:                         14,
         volume_input_text_color:                        HEX("ffffff"),
@@ -308,7 +306,7 @@ BarConfig
         volume_input_button_shadow_color:               Some(RGBA((0, 0, 0, 50))),
         volume_input_button_shadow_x:                   0.0,
         volume_input_button_shadow_y:                   1.0,
-        volume_input_button_shadow_blur:                3.0,
+        volume_input_button_shadow_blur:                3.0
     ),
 
 
@@ -337,9 +335,553 @@ BarConfig
         muted_volume_input_button_shadow_color:             Some(RGBA((0, 0, 0, 50))),
         muted_volume_input_button_shadow_x:                 0.0,
         muted_volume_input_button_shadow_y:                 1.0,
-        muted_volume_input_button_shadow_blur:              3.0,
+        muted_volume_input_button_shadow_blur:              3.0
     ),
 
+        // ================= VOLUME MIXER OUTPUT =================
+    volume_output_mixer:
+    (
+    	mixer_window_size: 		(560, 420),
+	mixer_background_color:		RGB((36, 36, 36)),
+        mixer_background_border_color:  HEX("3d3d3d"),
+	mixer_background_border_size:	1.0,
+	mixer_background_border_radius:	(6., 6., 6., 6.),
+	mixer_padding:			12,
+	mixer_section_spacing:		10,
+	mixer_show_only_active_devices: false,
+	// Available options: Up, Down, Left, Right
+	// Up    = [Devices]      Down  = [Applications]   Left  = [Devices][Applications]   Right = [Applications][Devices]
+	//         [Applications]         [Devices]
+	categories_position:            Up,
+
+	scrollbar:
+	(
+		show:                    true,
+            	width:                   6,
+            	margin:                  2,
+            	scroller_width:          6,
+            	border_radius:           (3.0, 3.0, 3.0, 3.0),
+		rail_border_width:       0.0,
+            	rail_border_color:       RGBA((0, 0, 0, 0)),
+		rail_color:              RGBA((0, 0, 0, 0)),
+            	scroller_color:          RGBA((100, 100, 100, 60)),
+            	scroller_hovered_color:  RGBA((130, 130, 130, 80)),
+            	scroller_dragging_color: RGBA((160, 160, 160, 100)),
+            	scroller_border_color:   RGBA((0, 0, 0, 0)),
+            	scroller_border_width:   0.0,
+	),
+
+	device_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		"  Devices",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	28,
+		spacing:		15,
+		header_text_color:	RGB((120, 174, 237)),
+		header_button_style:
+		(
+	    	color:              	RGB((48, 48, 48)),
+            		hovered_color:      	RGB((61, 61, 61)),
+            		pressed_color:      	RGB((28, 28, 28)),
+            		text_color:         	RGB((255, 255, 255)),
+            		hovered_text_color: 	RGB((255, 255, 255)),
+            		pressed_text_color: 	RGB((255, 255, 255)),
+            		border_color:       	HEX("3d3d3d"),
+            		border_size:        	1.0,
+            		border_radius:      	(6., 6., 6., 6.),
+		)
+	),
+
+	app_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		" Applications",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	28,
+		spacing:		15,
+		header_text_color:	RGB((120, 174, 237)),
+		header_button_style:
+		(
+	    	color:              	RGB((48, 48, 48)),
+            		hovered_color:      	RGB((61, 61, 61)),
+            		pressed_color:      	RGB((28, 28, 28)),
+            		text_color:         	RGB((255, 255, 255)),
+            		hovered_text_color: 	RGB((255, 255, 255)),
+            		pressed_text_color: 	RGB((255, 255, 255)),
+            		border_color:       	HEX("3d3d3d"),
+            		border_size:        	1.0,
+            		border_radius:      	(6., 6., 6., 6.),
+		)
+	),
+	
+	device_row:
+	(
+	    // "Fill" is also valid in the device_row_order
+	    device_row_order:			[DeviceButton, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+            show_only_default_device_name: 	false,
+
+            row_height:                 32,
+            row_spacing:                6,
+            name_text_size:             13,
+            name_text_color:            RGB((255, 255, 255)),
+            name_max_chars:             20,
+	    device_name_button_width:   160,
+
+            volume_step:                1,
+            slider_width:               240.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGB((48, 48, 48)),
+		rail_filled_color:    RGB((120, 174, 237)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((255, 255, 255)),
+		handle_border_color:  RGB((120, 174, 237)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       28,
+            inc_dec_button_height:      24,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          32,
+            mute_button_height:         24,
+            mute_button_style:          
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            default_label:              "⬤",
+            non_default_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            default_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+	),
+
+	app_row:
+	(            
+	    // "Fill" is also valid in the app_row_order
+	    app_row_order:			[AppName, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+
+            row_height:                 32,
+            row_spacing:                6,
+            name_text_size:             13,
+            name_text_color:            RGB((255, 255, 255)),
+            name_max_chars:             20,
+            name_button_width:          160,
+
+            volume_step:                1,
+            slider_width:               240.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGB((48, 48, 48)),
+		rail_filled_color:    RGB((120, 174, 237)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((255, 255, 255)),
+		handle_border_color:  RGB((120, 174, 237)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       28,
+            inc_dec_button_height:      24,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          32,
+            mute_button_height:         24,
+            mute_button_style:          
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+	)
+    ),
+        // ================= VOLUME MIXER INPUT =================
+    volume_input_mixer:
+    (
+    	mixer_window_size: 		(560, 420),
+	mixer_background_color:		RGB((36, 36, 36)),
+        mixer_background_border_color:  HEX("3d3d3d"),
+	mixer_background_border_size:	1.0,
+	mixer_background_border_radius:	(6., 6., 6., 6.),
+	mixer_padding:			12,
+	mixer_section_spacing:		10,
+	mixer_show_only_active_devices: false,
+	// Available options: Up, Down, Left, Right
+	// Up    = [Devices]      Down  = [Applications]   Left  = [Devices][Applications]   Right = [Applications][Devices]
+	//         [Applications]         [Devices]
+	categories_position:            Up,
+
+	scrollbar:
+	(
+		show:                    true,
+            	width:                   6,
+            	margin:                  2,
+            	scroller_width:          6,
+            	border_radius:           (3.0, 3.0, 3.0, 3.0),
+		rail_border_width:       0.0,
+            	rail_border_color:       RGBA((0, 0, 0, 0)),
+		rail_color:              RGBA((0, 0, 0, 0)),
+            	scroller_color:          RGBA((100, 100, 100, 60)),
+            	scroller_hovered_color:  RGBA((130, 130, 130, 80)),
+            	scroller_dragging_color: RGBA((160, 160, 160, 100)),
+            	scroller_border_color:   RGBA((0, 0, 0, 0)),
+            	scroller_border_width:   0.0,
+	),
+
+	device_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		"  Devices",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	28,
+		spacing:		15,
+		header_text_color:	RGB((120, 174, 237)),
+		header_button_style:
+		(
+	    	color:              	RGB((48, 48, 48)),
+            		hovered_color:      	RGB((61, 61, 61)),
+            		pressed_color:      	RGB((28, 28, 28)),
+            		text_color:         	RGB((255, 255, 255)),
+            		hovered_text_color: 	RGB((255, 255, 255)),
+            		pressed_text_color: 	RGB((255, 255, 255)),
+            		border_color:       	HEX("3d3d3d"),
+            		border_size:        	1.0,
+            		border_radius:      	(6., 6., 6., 6.),
+		)
+	),
+
+	app_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		" Applications",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	28,
+		spacing:		15,
+		header_text_color:	RGB((120, 174, 237)),
+		header_button_style:
+		(
+	    	color:              	RGB((48, 48, 48)),
+            		hovered_color:      	RGB((61, 61, 61)),
+            		pressed_color:      	RGB((28, 28, 28)),
+            		text_color:         	RGB((255, 255, 255)),
+            		hovered_text_color: 	RGB((255, 255, 255)),
+            		pressed_text_color: 	RGB((255, 255, 255)),
+            		border_color:       	HEX("3d3d3d"),
+            		border_size:        	1.0,
+            		border_radius:      	(6., 6., 6., 6.),
+		)
+	),
+	
+	device_row:
+	(
+	    // "Fill" is also valid in the device_row_order
+	    device_row_order:			[DeviceButton, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+            show_only_default_device_name: 	false,
+
+            row_height:                 32,
+            row_spacing:                6,
+            name_text_size:             13,
+            name_text_color:            RGB((255, 255, 255)),
+            name_max_chars:             20,
+	    device_name_button_width:   160,
+
+            volume_step:                1,
+            slider_width:               240.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGB((48, 48, 48)),
+		rail_filled_color:    RGB((120, 174, 237)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((255, 255, 255)),
+		handle_border_color:  RGB((120, 174, 237)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       28,
+            inc_dec_button_height:      24,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          32,
+            mute_button_height:         24,
+            mute_button_style:          
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            default_label:              "⬤",
+            non_default_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            default_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+	),
+
+	app_row:
+	(            
+	    // "Fill" is also valid in the app_row_order
+	    app_row_order:			[AppName, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+
+            row_height:                 32,
+            row_spacing:                6,
+            name_text_size:             13,
+            name_text_color:            RGB((255, 255, 255)),
+            name_max_chars:             20,
+            name_button_width:          160,
+
+            volume_step:                1,
+            slider_width:               240.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGB((48, 48, 48)),
+		rail_filled_color:    RGB((120, 174, 237)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((255, 255, 255)),
+		handle_border_color:  RGB((120, 174, 237)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       28,
+            inc_dec_button_height:      24,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          32,
+            mute_button_height:         24,
+            mute_button_style:          
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+	)
+    ),
 
     // ================= NETWORK =================
     network:
@@ -383,7 +925,7 @@ BarConfig
         network_button_shadow_color:            Some(RGBA((0, 0, 0, 50))),
         network_button_shadow_x:                0.0,
         network_button_shadow_y:                1.0,
-        network_button_shadow_blur:             3.0,
+        network_button_shadow_blur:             3.0
     ),
 
 
@@ -416,7 +958,7 @@ BarConfig
         alt_network_button_shadow_color:            None,
         alt_network_button_shadow_x:                0.0,
         alt_network_button_shadow_y:                0.0,
-        alt_network_button_shadow_blur:             0.0,
+        alt_network_button_shadow_blur:             0.0
     ),
 
 
@@ -462,7 +1004,7 @@ BarConfig
         workspace_button_shadow_color:              None,
         workspace_button_shadow_x:                  0.0,
         workspace_button_shadow_y:                  0.0,
-        workspace_button_shadow_blur:               0.0,
+        workspace_button_shadow_blur:               0.0
     ),
 
 
@@ -491,8 +1033,9 @@ BarConfig
         tray_button_shadow_color:           Some(RGBA((0, 0, 0, 50))),
         tray_button_shadow_x:               0.0,
         tray_button_shadow_y:               1.0,
-        tray_button_shadow_blur:            3.0,
+        tray_button_shadow_blur:            3.0
     ),
+
 
     // ================= MEDIA PLAYER METADATA =================
     media_player_metadata:
@@ -528,7 +1071,7 @@ BarConfig
         media_player_metadata_button_shadow_color:              Some(RGBA((0, 0, 0, 50))),
         media_player_metadata_button_shadow_x:                  0.0,
         media_player_metadata_button_shadow_y:                  1.0,
-        media_player_metadata_button_shadow_blur:               3.0,
+        media_player_metadata_button_shadow_blur:               3.0
     ),
 
 
@@ -559,7 +1102,7 @@ BarConfig
         media_player_button_shadow_color:               Some(RGBA((0, 0, 0, 50))),
         media_player_button_shadow_x:                   0.0,
         media_player_button_shadow_y:                   1.0,
-        media_player_button_shadow_blur:                3.0,
+        media_player_button_shadow_blur:                3.0
     ),
 
 
@@ -592,7 +1135,7 @@ BarConfig
         cpu_button_shadow_color:            Some(RGBA((0, 0, 0, 50))),
         cpu_button_shadow_x:                0.0,
         cpu_button_shadow_y:                1.0,
-        cpu_button_shadow_blur:             3.0,
+        cpu_button_shadow_blur:             3.0
     ),
 
 
@@ -625,7 +1168,7 @@ BarConfig
         cpu_temp_button_shadow_color:           Some(RGBA((0, 0, 0, 50))),
         cpu_temp_button_shadow_x:               0.0,
         cpu_temp_button_shadow_y:               1.0,
-        cpu_temp_button_shadow_blur:            3.0,
+        cpu_temp_button_shadow_blur:            3.0
     ),
 
 
@@ -656,7 +1199,7 @@ BarConfig
         ram_button_shadow_color:            Some(RGBA((0, 0, 0, 50))),
         ram_button_shadow_x:               0.0,
         ram_button_shadow_y:               1.0,
-        ram_button_shadow_blur:            3.0,
+        ram_button_shadow_blur:            3.0
     ),
 
 
@@ -688,7 +1231,7 @@ BarConfig
         disk_button_shadow_color:           Some(RGBA((0, 0, 0, 50))),
         disk_button_shadow_x:               0.0,
         disk_button_shadow_y:               1.0,
-        disk_button_shadow_blur:            3.0,
+        disk_button_shadow_blur:            3.0
     ),
 
 
@@ -712,7 +1255,7 @@ BarConfig
         context_menu_button_pressed_color:      HEX("1c1c1c"),
         context_menu_border_color:              HEX("3d3d3d"),
         context_menu_border_size:               1.0,
-        context_menu_border_radius:             (6.0, 6.0, 6.0, 6.0),
+        context_menu_border_radius:             (6.0, 6.0, 6.0, 6.0)
     ),
 
 
@@ -746,9 +1289,8 @@ BarConfig
         focused_window_button_shadow_color:             None,
         focused_window_button_shadow_x:                 0.0,
         focused_window_button_shadow_y:                 0.0,
-        focused_window_button_shadow_blur:              0.0,
+        focused_window_button_shadow_blur:              0.0
     ),
-
 
 
     // ================= POWER PROFILE =================
@@ -756,12 +1298,12 @@ BarConfig
     (
         // Text shown for each profile. Supports [Color=...] tags.
         // Left-click (DefaultAction) cycles through: Balanced → Performance → PowerSaver → …
-        power_profile_format_power_saver:   "[Color=(120, 174, 237), String= 󰌪 ] Saver",
-        power_profile_format_balanced:      "[Color=(120, 174, 237), String= 󰈐 ] Balanced",
-        power_profile_format_performance:   "[Color=(120, 174, 237), String= 󱐋 ] Performance",
-        power_profile_update_interval:      5000,
-        action_on_left_click_power_profile:  DefaultAction,
-        action_on_right_click_power_profile: Nothing,
+        power_profile_format_power_saver:   	 "[Color=(120, 174, 237), String= 󰌪 ] Saver",
+        power_profile_format_balanced:      	 "[Color=(120, 174, 237), String= 󰈐 ] Balanced",
+        power_profile_format_performance:   	 "[Color=(120, 174, 237), String= 󱐋 ] Performance",
+        power_profile_update_interval:      	 5000,
+        action_on_left_click_power_profile:  	 DefaultAction,
+        action_on_right_click_power_profile: 	 Nothing,
         power_profile_padding:                   0,
         power_profile_text_size:                 13,
         power_profile_text_color:                HEX("ffffff"),
@@ -784,9 +1326,8 @@ BarConfig
         power_profile_button_shadow_color:           Some(RGBA((0, 0, 0, 50))),
         power_profile_button_shadow_x:               0.0,
         power_profile_button_shadow_y:               1.0,
-        power_profile_button_shadow_blur:            3.0,
+        power_profile_button_shadow_blur:            3.0
     ),
-
 
 
     // ================= IMAGE =================
@@ -850,7 +1391,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_nav_active_button_style:
         (
@@ -862,7 +1403,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
 
         // ── Prev / Next arrow buttons ─────────────────────────────────────
@@ -881,7 +1422,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
 
         // ── Month view ────────────────────────────────────────────────────
@@ -911,7 +1452,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_today_button_style:
         (
@@ -923,7 +1464,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_selected_day_button_style:
         (
@@ -935,7 +1476,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((143, 191, 245)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_overflow_day_button_style:
         (
@@ -947,7 +1488,7 @@ BarConfig
             pressed_text_color:  RGB((120, 120, 120)),
             border_color:        RGBA((61, 61, 61, 40)),
             border_size:         0.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_day_click_action:              HighlightOnly,
 
@@ -970,7 +1511,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_current_month_button_style:
         (
@@ -982,7 +1523,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
 
         // ── Decade view ───────────────────────────────────────────────────
@@ -1002,7 +1543,7 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
         ),
         calendar_current_year_button_style:
         (
@@ -1014,8 +1555,8 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0),
-        ),
+            border_radius:       (6.0, 6.0, 6.0, 6.0)
+        )
     ),
 
 
@@ -1105,7 +1646,7 @@ BarConfig
             //      	continous_command_interval: 500,
             //		continous_command: ["playerctl", "--player=spotify", "metadata", "--format", "{{ artist }} - {{ title }}"]
 	    //), 
-	],
+	]
     ),
 
 
@@ -1124,5 +1665,5 @@ BarConfig
     //    hide_delay_ms:  500,
     //    show_delay_ms:  0,
     //    peek_size:      1,
-    //)),
+    //))
 )

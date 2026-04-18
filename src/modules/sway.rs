@@ -24,6 +24,13 @@ pub fn sway_event_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> 
         {
             let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<Message>();
             let tx_thread = tx.clone();
+
+            // Shutdown channel: _shutdown_guard is kept alive for the duration of the
+            // event-consuming loop. When it is dropped (stream dropped or outer loop
+            // restarts), shutdown_rx.try_recv() inside the thread unblocks and the
+            // event loop breaks, preventing the thread from leaking across reloads.
+            let (shutdown_tx, shutdown_rx) = std::sync::mpsc::channel::<()>();
+
             std::thread::spawn(move ||
             {
                 let subs = [EventType::Workspace, EventType::Window];
@@ -40,6 +47,9 @@ pub fn sway_event_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> 
 
                 for event in events
                 {
+                    // Exit the thread if the stream generator has been dropped.
+                    if shutdown_rx.try_recv().is_ok() { break; }
+
                     match event
                     {
                         Ok(Event::Workspace(_)) =>
@@ -59,6 +69,8 @@ pub fn sway_event_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> 
                     }
                 }
             });
+
+            let _shutdown_guard = shutdown_tx;
             drop(tx);
             while let Some(msg) = rx.recv().await { yield msg; }
 

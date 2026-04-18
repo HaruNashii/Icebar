@@ -208,7 +208,7 @@ BarConfig
         general_side_separator_color:           Some(HEX("3d3d3d")),
         general_side_separator_width:           Some(1.0),
         general_side_separator_height:          Some(18.0),
-        general_alt_padding:                    None,
+        general_alt_padding:                    Some(0),
         general_alt_text_size:                  None,
         general_alt_text_orientation:           None,
         general_alt_text_color:                 None,
@@ -308,7 +308,7 @@ BarConfig
         output_volume_muted_format:                     "  Muted",
         incremental_steps_output:                       5,
         action_on_left_click_volume_output:             DefaultAction,
-        action_on_right_click_volume_output:            CustomAction(["kitty", "pulsemixer"]),
+        action_on_right_click_volume_output:            ShowVolumeOutputMixer,
         volume_output_padding:                          7,
         volume_output_text_size:                        14,
         volume_output_text_color:                       HEX("ffffff"),
@@ -380,7 +380,7 @@ BarConfig
         input_volume_muted_format:                      "  Muted",
         incremental_steps_input:                        5,
         action_on_left_click_volume_input:              DefaultAction,
-        action_on_right_click_volume_input:             CustomAction(["kitty", "pulsemixer"]),
+        action_on_right_click_volume_input:             ShowVolumeInputMixer,
         volume_input_padding:                           7,
         volume_input_text_size:                         14,
         volume_input_text_color:                        HEX("ffffff"),
@@ -435,6 +435,550 @@ BarConfig
         muted_volume_input_button_shadow_blur:              3.0
     ),
 
+        // ================= VOLUME MIXER OUTPUT =================
+    volume_output_mixer:
+    (
+    	mixer_window_size: 		(560, 420),
+	mixer_background_color:		RGB((36, 36, 36)),
+        mixer_background_border_color:  HEX("3d3d3d"),
+	mixer_background_border_size:	1.0,
+	mixer_background_border_radius:	(6., 6., 6., 6.),
+	mixer_padding:			12,
+	mixer_section_spacing:		10,
+	mixer_show_only_active_devices: false,
+	// Available options: Up, Down, Left, Right
+	// Up    = [Devices]      Down  = [Applications]   Left  = [Devices][Applications]   Right = [Applications][Devices]
+	//         [Applications]         [Devices]
+	categories_position:            Up,
+
+	scrollbar:
+	(
+		show:                    true,
+            	width:                   6,
+            	margin:                  2,
+            	scroller_width:          6,
+            	border_radius:           (3.0, 3.0, 3.0, 3.0),
+		rail_border_width:       0.0,
+            	rail_border_color:       RGBA((0, 0, 0, 0)),
+		rail_color:              RGBA((0, 0, 0, 0)),
+            	scroller_color:          RGBA((100, 100, 100, 60)),
+            	scroller_hovered_color:  RGBA((130, 130, 130, 80)),
+            	scroller_dragging_color: RGBA((160, 160, 160, 100)),
+            	scroller_border_color:   RGBA((0, 0, 0, 0)),
+            	scroller_border_width:   0.0,
+	),
+
+	device_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		"  Devices",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	28,
+		spacing:		15,
+		header_text_color:	RGB((120, 174, 237)),
+		header_button_style:
+		(
+	    	color:              	RGB((48, 48, 48)),
+            		hovered_color:      	RGB((61, 61, 61)),
+            		pressed_color:      	RGB((28, 28, 28)),
+            		text_color:         	RGB((255, 255, 255)),
+            		hovered_text_color: 	RGB((255, 255, 255)),
+            		pressed_text_color: 	RGB((255, 255, 255)),
+            		border_color:       	HEX("3d3d3d"),
+            		border_size:        	1.0,
+            		border_radius:      	(6., 6., 6., 6.),
+		)
+	),
+
+	app_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		" Applications",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	28,
+		spacing:		15,
+		header_text_color:	RGB((120, 174, 237)),
+		header_button_style:
+		(
+	    	color:              	RGB((48, 48, 48)),
+            		hovered_color:      	RGB((61, 61, 61)),
+            		pressed_color:      	RGB((28, 28, 28)),
+            		text_color:         	RGB((255, 255, 255)),
+            		hovered_text_color: 	RGB((255, 255, 255)),
+            		pressed_text_color: 	RGB((255, 255, 255)),
+            		border_color:       	HEX("3d3d3d"),
+            		border_size:        	1.0,
+            		border_radius:      	(6., 6., 6., 6.),
+		)
+	),
+	
+	device_row:
+	(
+	    // "Fill" is also valid in the device_row_order
+	    device_row_order:			[DeviceButton, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+            show_only_default_device_name: 	false,
+
+            row_height:                 32,
+            row_spacing:                6,
+            name_text_size:             13,
+            name_text_color:            RGB((255, 255, 255)),
+            name_max_chars:             20,
+	    device_name_button_width:   160,
+
+            volume_step:                1,
+            slider_width:               240.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGB((48, 48, 48)),
+		rail_filled_color:    RGB((120, 174, 237)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((255, 255, 255)),
+		handle_border_color:  RGB((120, 174, 237)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       28,
+            inc_dec_button_height:      24,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          32,
+            mute_button_height:         24,
+            mute_button_style:          
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            default_label:              "⬤",
+            non_default_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            default_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+	),
+
+	app_row:
+	(            
+	    // "Fill" is also valid in the app_row_order
+	    app_row_order:			[AppName, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+
+            row_height:                 32,
+            row_spacing:                6,
+            name_text_size:             13,
+            name_text_color:            RGB((255, 255, 255)),
+            name_max_chars:             20,
+            name_button_width:          160,
+
+            volume_step:                1,
+            slider_width:               240.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGB((48, 48, 48)),
+		rail_filled_color:    RGB((120, 174, 237)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((255, 255, 255)),
+		handle_border_color:  RGB((120, 174, 237)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       28,
+            inc_dec_button_height:      24,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          32,
+            mute_button_height:         24,
+            mute_button_style:          
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+	)
+    ),
+        // ================= VOLUME MIXER INPUT =================
+    volume_input_mixer:
+    (
+    	mixer_window_size: 		(560, 420),
+	mixer_background_color:		RGB((36, 36, 36)),
+        mixer_background_border_color:  HEX("3d3d3d"),
+	mixer_background_border_size:	1.0,
+	mixer_background_border_radius:	(6., 6., 6., 6.),
+	mixer_padding:			12,
+	mixer_section_spacing:		10,
+	mixer_show_only_active_devices: false,
+	// Available options: Up, Down, Left, Right
+	// Up    = [Devices]      Down  = [Applications]   Left  = [Devices][Applications]   Right = [Applications][Devices]
+	//         [Applications]         [Devices]
+	categories_position:            Up,
+
+	scrollbar:
+	(
+		show:                    true,
+            	width:                   6,
+            	margin:                  2,
+            	scroller_width:          6,
+            	border_radius:           (3.0, 3.0, 3.0, 3.0),
+		rail_border_width:       0.0,
+            	rail_border_color:       RGBA((0, 0, 0, 0)),
+		rail_color:              RGBA((0, 0, 0, 0)),
+            	scroller_color:          RGBA((100, 100, 100, 60)),
+            	scroller_hovered_color:  RGBA((130, 130, 130, 80)),
+            	scroller_dragging_color: RGBA((160, 160, 160, 100)),
+            	scroller_border_color:   RGBA((0, 0, 0, 0)),
+            	scroller_border_width:   0.0,
+	),
+
+	device_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		"  Devices",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	28,
+		spacing:		15,
+		header_text_color:	RGB((120, 174, 237)),
+		header_button_style:
+		(
+	    	color:              	RGB((48, 48, 48)),
+            		hovered_color:      	RGB((61, 61, 61)),
+            		pressed_color:      	RGB((28, 28, 28)),
+            		text_color:         	RGB((255, 255, 255)),
+            		hovered_text_color: 	RGB((255, 255, 255)),
+            		pressed_text_color: 	RGB((255, 255, 255)),
+            		border_color:       	HEX("3d3d3d"),
+            		border_size:        	1.0,
+            		border_radius:      	(6., 6., 6., 6.),
+		)
+	),
+
+	app_category: 
+	(
+		show:			true,
+		show_header:		true,
+		start_collapsed: 	false,
+		header_label:		" Applications",
+		header_collapsed_label: "›",
+		header_expanded_label:	"‹",
+		header_text_size:	13,
+		header_arrow_text_size:	13,
+		header_button_height:	28,
+		spacing:		15,
+		header_text_color:	RGB((120, 174, 237)),
+		header_button_style:
+		(
+	    	color:              	RGB((48, 48, 48)),
+            		hovered_color:      	RGB((61, 61, 61)),
+            		pressed_color:      	RGB((28, 28, 28)),
+            		text_color:         	RGB((255, 255, 255)),
+            		hovered_text_color: 	RGB((255, 255, 255)),
+            		pressed_text_color: 	RGB((255, 255, 255)),
+            		border_color:       	HEX("3d3d3d"),
+            		border_size:        	1.0,
+            		border_radius:      	(6., 6., 6., 6.),
+		)
+	),
+	
+	device_row:
+	(
+	    // "Fill" is also valid in the device_row_order
+	    device_row_order:			[DeviceButton, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+            show_only_default_device_name: 	false,
+
+            row_height:                 32,
+            row_spacing:                6,
+            name_text_size:             13,
+            name_text_color:            RGB((255, 255, 255)),
+            name_max_chars:             20,
+	    device_name_button_width:   160,
+
+            volume_step:                1,
+            slider_width:               240.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGB((48, 48, 48)),
+		rail_filled_color:    RGB((120, 174, 237)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((255, 255, 255)),
+		handle_border_color:  RGB((120, 174, 237)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       28,
+            inc_dec_button_height:      24,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          32,
+            mute_button_height:         24,
+            mute_button_style:          
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            default_label:              "⬤",
+            non_default_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            default_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+	),
+
+	app_row:
+	(            
+	    // "Fill" is also valid in the app_row_order
+	    app_row_order:			[AppName, Fill, Slider, DecreaseVolume, IncreaseVolume, Mute],
+
+            row_height:                 32,
+            row_spacing:                6,
+            name_text_size:             13,
+            name_text_color:            RGB((255, 255, 255)),
+            name_max_chars:             20,
+            name_button_width:          160,
+
+            volume_step:                1,
+            slider_width:               240.0,
+            slider_style:               
+	    (
+            	rail_width:           4.0,
+		rail_color:           RGB((48, 48, 48)),
+		rail_filled_color:    RGB((120, 174, 237)),
+		rail_border_radius:   (2., 2., 2., 2.),
+            	handle_border_width:  1.5,
+            	handle_border_radius: (10., 10., 10., 10.),
+		handle_color:         RGB((255, 255, 255)),
+		handle_border_color:  RGB((120, 174, 237)),
+            	handle_shape:         Circle,
+            	handle_circle_r:      7.0,
+            	handle_rect_w:        10.0,
+            	handle_rect_h:        20.0,
+	    ),
+
+            inc_button_label:           "+",
+            dec_button_label:           "−",
+            inc_dec_text_size:          13,
+            inc_dec_button_width:       28,
+            inc_dec_button_height:      24,
+            inc_dec_button_style:       
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+
+            mute_label:                 "󰕾",
+            unmute_label:               "󰖁",
+            mute_text_size:             14,
+            mute_button_width:          32,
+            mute_button_height:         24,
+            mute_button_style:          
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((255, 255, 255)),
+            	hovered_text_color: RGB((255, 255, 255)),
+            	pressed_text_color: RGB((255, 255, 255)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+            muted_button_style:
+	    (
+	    	color:              RGB((48, 48, 48)),
+            	hovered_color:      RGB((61, 61, 61)),
+            	pressed_color:      RGB((28, 28, 28)),
+            	text_color:         RGB((200, 80, 80)),
+            	hovered_text_color: RGB((200, 80, 80)),
+            	pressed_text_color: RGB((200, 80, 80)),
+            	border_color:       HEX("3d3d3d"),
+            	border_size:        1.0,
+            	border_radius:      (6., 6., 6., 6.),
+	    ),
+	)
+    ),
 
     // ================= NETWORK =================
     network:
@@ -851,12 +1395,12 @@ BarConfig
     (
         // Text shown for each profile. Supports [Color=...] tags.
         // Left-click (DefaultAction) cycles through: Balanced → Performance → PowerSaver → …
-        power_profile_format_power_saver:   "[Color=(120, 174, 237), String= 󰌪 ] Saver",
-        power_profile_format_balanced:      "[Color=(120, 174, 237), String= 󰈐 ] Balanced",
-        power_profile_format_performance:   "[Color=(120, 174, 237), String= 󱐋 ] Performance",
-        power_profile_update_interval:      5000,
-        action_on_left_click_power_profile:  DefaultAction,
-        action_on_right_click_power_profile: Nothing,
+        power_profile_format_power_saver:   	 "[Color=(120, 174, 237), String= 󰌪 ] Saver",
+        power_profile_format_balanced:      	 "[Color=(120, 174, 237), String= 󰈐 ] Balanced",
+        power_profile_format_performance:   	 "[Color=(120, 174, 237), String= 󱐋 ] Performance",
+        power_profile_update_interval:      	 5000,
+        action_on_left_click_power_profile:  	 DefaultAction,
+        action_on_right_click_power_profile: 	 Nothing,
         power_profile_padding:                   0,
         power_profile_text_size:                 13,
         power_profile_text_color:                HEX("ffffff"),
@@ -1234,4 +1778,180 @@ BarConfig
         }
     };
     None
+}
+
+
+
+// ============ TESTS ============
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use tempfile::TempDir;
+
+    // ---- helper: create a temp dir with a config.ron file in it ----
+    fn make_dir_with_config(dir: &TempDir) -> String
+    {
+        let path = dir.path().to_str().unwrap().to_string();
+        let file = format!("{}/config.ron", path);
+        std::fs::write(&file, "// dummy config").unwrap();
+        path
+    }
+
+    // ---- check_if_config_file_exists with a non-existent custom path ----
+
+    #[test]
+    fn custom_path_dir_nonexistent_returns_some_warning()
+    {
+        let result = check_if_config_file_exists(Some("/tmp/icebar_nonexistent_dir_xyz_test".to_string()));
+        assert!(result.is_some());
+        let msg = result.unwrap();
+        assert!(msg.contains("Warning!!!"));
+    }
+
+    #[test]
+    fn custom_path_file_nonexistent_returns_some_warning()
+    {
+        let result = check_if_config_file_exists(Some("/tmp/does_not_exist_xyz.ron".to_string()));
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn custom_path_dir_exists_but_no_config_file_returns_some_warning()
+    {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().to_str().unwrap().to_string();
+        // directory exists but no config.ron
+        let result = check_if_config_file_exists(Some(path));
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn custom_path_dir_exists_with_config_file_returns_none()
+    {
+        let dir = TempDir::new().unwrap();
+        let path = make_dir_with_config(&dir);
+        let result = check_if_config_file_exists(Some(path));
+        assert!(result.is_none(), "expected None but got: {:?}", result);
+    }
+
+    #[test]
+    fn custom_path_dot_ron_that_exists_returns_none()
+    {
+        let dir = TempDir::new().unwrap();
+        let file = dir.path().join("myconfig.ron");
+        std::fs::write(&file, "// config").unwrap();
+        let result = check_if_config_file_exists(Some(file.to_str().unwrap().to_string()));
+        assert!(result.is_none(), "expected None got: {:?}", result);
+    }
+
+    #[test]
+    fn custom_path_dot_ron_that_does_not_exist_returns_some_warning()
+    {
+        let dir = TempDir::new().unwrap();
+        let file = dir.path().join("missing.ron");
+        // do NOT create the file
+        let result = check_if_config_file_exists(Some(file.to_str().unwrap().to_string()));
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn custom_path_ron_with_rfind_slash_no_slash_in_name_is_handled()
+    {
+        // a path like "config.ron" (no slash) — rfind('/') returns None
+        // the directory part becomes the whole string, which won't exist
+        let result = check_if_config_file_exists(Some("nonexistent_no_slash.ron".to_string()));
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn custom_path_trailing_slash_constructs_config_file_path()
+    {
+        let dir = TempDir::new().unwrap();
+        let path_with_slash = format!("{}/", dir.path().to_str().unwrap());
+        // No config.ron yet → should warn
+        let result = check_if_config_file_exists(Some(path_with_slash.clone()));
+        assert!(result.is_some());
+        // Now create config.ron → should succeed
+        let file = format!("{}config.ron", path_with_slash);
+        std::fs::write(&file, "").unwrap();
+        let result2 = check_if_config_file_exists(Some(path_with_slash));
+        assert!(result2.is_none());
+    }
+
+    #[test]
+    fn custom_path_without_trailing_slash_constructs_config_file_path()
+    {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().to_str().unwrap().to_string();
+        // Create config.ron
+        std::fs::write(format!("{}/config.ron", path), "").unwrap();
+        let result = check_if_config_file_exists(Some(path));
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn none_path_does_not_panic()
+    {
+        // We can't control ~/.config/icebar, but we just ensure it doesn't panic
+        let _ = check_if_config_file_exists(None);
+    }
+
+    #[test]
+    fn warning_message_mentions_directory_when_dir_missing()
+    {
+        let result = check_if_config_file_exists(Some("/tmp/icebar_really_missing_dir_abc".to_string()));
+        if let Some(msg) = result
+        {
+            // Should mention the directory issue
+            assert!(msg.contains("Warning!!!") || msg.contains("Warning") || msg.contains("directory") || msg.contains("exist"));
+        }
+    }
+
+    #[test]
+    fn warning_message_is_nonempty_when_dir_missing()
+    {
+        let result = check_if_config_file_exists(Some("/tmp/icebar_really_missing_dir_def".to_string()));
+        assert!(result.map(|s| !s.is_empty()).unwrap_or(false));
+    }
+
+    #[test]
+    fn custom_path_ron_full_existing_file_path_succeeds()
+    {
+        let dir = TempDir::new().unwrap();
+        let file = dir.path().join("bar_config.ron");
+        std::fs::write(&file, "// full config content").unwrap();
+        let result = check_if_config_file_exists(Some(file.to_str().unwrap().to_string()));
+        assert!(result.is_none(), "expected None got {:?}", result);
+    }
+
+    #[test]
+    fn two_calls_with_same_existing_dir_both_return_none()
+    {
+        let dir = TempDir::new().unwrap();
+        let path = make_dir_with_config(&dir);
+        let r1 = check_if_config_file_exists(Some(path.clone()));
+        let r2 = check_if_config_file_exists(Some(path));
+        assert!(r1.is_none());
+        assert!(r2.is_none());
+    }
+
+    #[test]
+    fn custom_path_with_deeply_nested_missing_dir_returns_warning()
+    {
+        let result = check_if_config_file_exists(Some("/tmp/a/b/c/d/e/icebar_missing".to_string()));
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn custom_path_ron_file_in_nested_dir_that_exists_returns_none()
+    {
+        let dir = TempDir::new().unwrap();
+        let nested = dir.path().join("sub");
+        std::fs::create_dir(&nested).unwrap();
+        let file = nested.join("config.ron");
+        std::fs::write(&file, "").unwrap();
+        let result = check_if_config_file_exists(Some(file.to_str().unwrap().to_string()));
+        assert!(result.is_none());
+    }
 }

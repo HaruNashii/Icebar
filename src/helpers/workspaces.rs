@@ -119,4 +119,80 @@ mod tests
         let result = build_workspace_list(&[11, 12], Some(10));
         assert_eq!(result, vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
     }
+
+    #[test]
+    fn persistent_255_generates_all_255_entries()
+    {
+        let result = build_workspace_list(&[], Some(255));
+        assert_eq!(result.len(), 255);
+        assert_eq!(result[0], 1);
+        assert_eq!(result[254], 255);
+    }
+
+    #[test]
+    fn negative_real_workspaces_are_included_and_sorted()
+    {
+        let result = build_workspace_list(&[-2, -1, 0, 1], None);
+        assert_eq!(result, vec![-2, -1, 0, 1]);
+    }
+
+    #[test]
+    fn persistent_0_generates_empty_range()
+    {
+        // 1..=0 is empty
+        let result = build_workspace_list(&[], Some(0));
+        // 1..=0 generates nothing
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn real_workspaces_with_zero_workspace_id_included()
+    {
+        let result = build_workspace_list(&[0, 1, 2], None);
+        assert_eq!(result, vec![0, 1, 2]);
+    }
+
+    #[test]
+    fn mixed_negative_and_positive_real_workspaces_sorted()
+    {
+        let result = build_workspace_list(&[3, -1, 0], None);
+        assert_eq!(result, vec![-1, 0, 3]);
+    }
+
+    #[test]
+    fn very_large_workspace_id_included()
+    {
+        let result = build_workspace_list(&[i32::MAX], None);
+        assert_eq!(result, vec![i32::MAX]);
+    }
+
+    #[test]
+    fn persistent_and_real_with_overlap_produces_deduplicated_sorted_list()
+    {
+        let result = build_workspace_list(&[1, 2, 3, 10], Some(5));
+        assert_eq!(result, vec![1, 2, 3, 4, 5, 10]);
+    }
+
+    #[test]
+    fn all_real_same_value_produces_single_entry()
+    {
+        let result = build_workspace_list(&[7, 7, 7, 7], None);
+        assert_eq!(result, vec![7]);
+    }
+
+    #[test]
+    fn real_workspace_id_exactly_at_persistent_boundary_not_duplicated()
+    {
+        // id 5 is both in real AND in persistent range 1..=5
+        let result = build_workspace_list(&[5], Some(5));
+        assert_eq!(result, vec![1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn result_contains_no_duplicates_under_any_input()
+    {
+        let result = build_workspace_list(&[1, 1, 2, 2, 3], Some(3));
+        let mut seen = std::collections::HashSet::new();
+        for id in &result { assert!(seen.insert(id), "duplicate: {}", id); }
+    }
 }

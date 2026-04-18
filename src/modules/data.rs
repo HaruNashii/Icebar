@@ -10,6 +10,7 @@ use iced::widget::image;
 // ============ CRATES ============
 use crate::modules::{clock::ClockData, custom_modules::CustomModuleData, focused_window::FocusedWindowData, image::ImageData, media_player::MediaPlayerData, network::NetworkData, power_profile::PowerProfileData, volume::VolumeData, workspaces::WorkspaceData};
 use crate::calendar::CalendarData;
+use crate::volume_mixer::{VolumeMixerData, MixerState};
 
 
 
@@ -61,7 +62,9 @@ pub struct ModulesData
     pub cpu_text: String,
     pub ram_text: String,
     pub disk_text: String,
-    pub cpu_temp_text: String
+    pub cpu_temp_text: String,
+    pub volume_mixer_data: VolumeMixerData,
+    pub mixer_state: MixerState,
 }
 
 

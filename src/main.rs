@@ -38,6 +38,7 @@ mod update;
 mod view;
 mod ron;
 mod calendar;
+mod volume_mixer;
 
 
 
@@ -57,7 +58,9 @@ pub enum WindowInfo
     MainBar,
     Warning,
     ContextMenu,
-    Calendar
+    Calendar,
+    VolumeOutputMixer,
+    VolumeInputMixer,
 }
 
 #[derive(Clone)]
@@ -124,6 +127,15 @@ pub async fn main() -> Result<(), iced_layershell::Error>
     let anchor_position = define_bar_anchor_position(&ron_config.general.bar_position);
     let monitor_res = get_monitor_res(ron_config.general.display.clone());
     if is_active_module(&active_modules, Modules::Tray) { start_tray(ron_config.tray.tray_attention_icon); }
+    if is_active_module(&active_modules, Modules::NiriWorkspaces) && ron_config.workspace.persistent_workspaces.is_some()
+    {
+        println!("\n=== Niri Workspaces Warning ===");
+        for _ in 0..3
+        {
+            println!("Warning!!!: Persistent Elements Defined But Niri Doesn't Support Persistent Workspaces.");
+        }
+        println!("\n");
+    }
     let ron_config_clone = ron_config.clone();
     let font_name = ron_config.general.font_family;
     let start_mode = match ron_config.general.display
@@ -134,6 +146,7 @@ pub async fn main() -> Result<(), iced_layershell::Error>
 
     let modules_data = ModulesData
     {
+        disk_text: "Loading...".to_string(),
         active_modules: active_modules.clone(),
         clock_data: ClockData
         {
@@ -159,7 +172,6 @@ pub async fn main() -> Result<(), iced_layershell::Error>
         {
             current_profile: read_power_profile().unwrap_or_default()
         },
-        disk_text: "Loading...".to_string(),
         ..Default::default()
     };
 

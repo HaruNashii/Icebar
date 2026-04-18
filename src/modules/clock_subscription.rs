@@ -20,15 +20,19 @@ pub fn clock_subscription(granularity_ms: u64) -> iced::Subscription<Message> { 
 
 pub fn clock_stream(granularity_ms: &u64) -> Pin<Box<dyn futures::Stream<Item = Message> + Send>>
 {
-    let granularity_ms = *granularity_ms;
+    let granularity_ms = (*granularity_ms).max(1);
     Box::pin(async_stream::stream!
     {
         loop
         {
+            // Bug I fix: use the full milliseconds since epoch, not subsec_millis().
+            // subsec_millis() only returns the 0-999 sub-second portion, so for any
+            // granularity >= 1000 ms the modulo was always 0 and the clock fired at
+            // an arbitrary phase instead of aligning to wall-clock boundaries.
             let now_ms = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap_or(Duration::ZERO)
-                .subsec_millis() as u64;
+                .as_millis() as u64;
 
             let elapsed_in_window = now_ms % granularity_ms;
             let sleep_ms = granularity_ms - elapsed_in_window;

@@ -393,4 +393,125 @@ mod tests
         assert_eq!(d.percent,  0.0);
     }
 
+
+    // ---- Additional compute_ram_data / RamData tests ----
+
+    #[test]
+    fn compute_ram_data_used_mb_correct()
+    {
+        // total_kb=2048, available_kb=1024 → used_kb=1024 → used_mb=1
+        let d = compute_ram_data(2048, 1024);
+        assert_eq!(d.used_mb, 1);
+    }
+
+    #[test]
+    fn compute_ram_data_total_mb_correct()
+    {
+        let d = compute_ram_data(4096, 0);
+        assert_eq!(d.total_mb, 4);
+    }
+
+    #[test]
+    fn compute_ram_data_100_percent_when_all_used()
+    {
+        let d = compute_ram_data(1000, 0);
+        assert!((d.percent - 100.0).abs() < 0.1);
+    }
+
+    #[test]
+    fn compute_ram_data_0_percent_when_nothing_used()
+    {
+        let d = compute_ram_data(1000, 1000);
+        assert_eq!(d.percent, 0.0);
+    }
+
+    #[test]
+    fn compute_ram_data_percent_is_finite()
+    {
+        let d = compute_ram_data(10_000_000, 5_000_000);
+        assert!(d.percent.is_finite());
+    }
+
+    #[test]
+    fn compute_ram_data_percent_in_0_100_range_for_various_inputs()
+    {
+        for (t, a) in [(0u64, 0u64), (1024, 0), (1024, 512), (1024, 1024), (1024, 2048)]
+        {
+            let d = compute_ram_data(t, a);
+            assert!(d.percent >= 0.0 && d.percent <= 100.0,
+                "percent={} for total={} avail={}", d.percent, t, a);
+        }
+    }
+
+    // ---- RamConfig defaults ----
+
+    #[test]
+    fn ram_config_default_format_contains_placeholders()
+    {
+        let fmt = RamConfig::default().ram_format;
+        assert!(fmt.contains("{used}") || fmt.contains("{total}") || fmt.contains("{percent}"));
+    }
+
+    #[test]
+    fn ram_config_default_update_interval_is_positive()
+    {
+        assert!(RamConfig::default().ram_update_interval > 0);
+    }
+
+    #[test]
+    fn ram_config_default_text_size_is_positive()
+    {
+        assert!(RamConfig::default().ram_text_size > 0);
+    }
+
+    #[test]
+    fn ram_config_default_gradient_is_none()
+    {
+        assert!(RamConfig::default().ram_button_gradient_color.is_none());
+    }
+
+    #[test]
+    fn ram_config_default_shadow_color_is_none()
+    {
+        assert!(RamConfig::default().ram_button_shadow_color.is_none());
+    }
+
+    #[test]
+    fn ram_config_default_side_separator_is_none()
+    {
+        assert!(RamConfig::default().ram_side_separator.is_none());
+    }
+
+    #[test]
+    fn ram_config_default_border_radius_all_equal()
+    {
+        let r = RamConfig::default().ram_border_radius;
+        assert_eq!(r[0], r[1]);
+        assert_eq!(r[1], r[2]);
+        assert_eq!(r[2], r[3]);
+    }
+
+    // ---- read_ram_data live system checks ----
+
+    #[test]
+    fn read_ram_data_total_mb_is_nonzero()
+    {
+        let d = read_ram_data().unwrap();
+        assert!(d.total_mb > 0);
+    }
+
+    #[test]
+    fn read_ram_data_used_does_not_exceed_total_mb()
+    {
+        let d = read_ram_data().unwrap();
+        assert!(d.used_mb <= d.total_mb);
+    }
+
+    #[test]
+    fn read_ram_data_called_twice_gives_consistent_total()
+    {
+        let a = read_ram_data().unwrap();
+        let b = read_ram_data().unwrap();
+        assert_eq!(a.total_mb, b.total_mb);
+    }
 }

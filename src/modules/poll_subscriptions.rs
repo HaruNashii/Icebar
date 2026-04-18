@@ -7,7 +7,7 @@ use crate::modules::cpu::{read_cpu_snapshot, compute_cpu_usage, CpuSnapshot};
 use crate::modules::ram::read_ram_data;
 use crate::modules::disk::read_disk_data;
 use crate::modules::cpu_temp::read_cpu_temp;
-use crate::modules::network::read_rx_tx;
+use crate::modules::network::{read_rx_tx, active_iface_from_proc};
 
 
 
@@ -228,15 +228,16 @@ pub fn cpu_temp_subscription(cfg: &CpuTempPollConfig) -> Pin<Box<dyn futures::St
 
 
 
+// Bug D fix: iface is no longer stored in the config.  The subscription discovers
+// the active interface itself on every tick via active_iface_from_proc(), so it
+// works correctly at startup (before NetworkManager has emitted its first update)
+// and after config reloads (when the old iface snapshot would be stale).
 #[derive(Clone, Hash, PartialEq, Eq)]
-pub struct NetworkSpeedPollConfig
-{
-    pub iface: String
-}
+pub struct NetworkSpeedPollConfig;
 
 pub fn network_speed_subscription(cfg: &NetworkSpeedPollConfig) -> Pin<Box<dyn futures::Stream<Item = Message> + Send>>
 {
-    let cfg = cfg.clone();
+    let _cfg = cfg.clone();
     Box::pin(async_stream::stream!
     {
         let mut prev: Option<(u64, u64, std::time::Instant)> = None;
@@ -248,10 +249,14 @@ pub fn network_speed_subscription(cfg: &NetworkSpeedPollConfig) -> Pin<Box<dyn f
         {
             tokio::time::sleep(interval).await;
 
-            let iface = cfg.iface.clone();
-            if iface.is_empty() { continue; }
+            // Discover the active iface fresh every iteration so we are never
+            // blocked by an empty snapshot captured at startup or reload time.
+            let result = tokio::task::spawn_blocking(||
+            {
+                let iface = active_iface_from_proc()?;
+                read_rx_tx(&iface)
+            }).await.ok().flatten();
 
-            let result = tokio::task::spawn_blocking(move || read_rx_tx(&iface)).await.ok().flatten();
             if let Some((rx, tx)) = result
             {
                 let now = std::time::Instant::now();

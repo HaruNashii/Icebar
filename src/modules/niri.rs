@@ -105,6 +105,10 @@ pub fn niri_event_subscription() -> Pin<Box<dyn futures::Stream<Item = crate::up
 
             let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<crate::update::Message>();
 
+            // The thread below exits when tx.send() returns Err, which happens as soon
+            // as rx is dropped (i.e. when this stream generator is dropped or the outer
+            // loop restarts). The blocking read_next() call may delay the exit by one
+            // event, but no new threads will be spawned until the old one has finished.
             std::thread::spawn(move ||
             {
                 let mut read_next = socket.read_events();

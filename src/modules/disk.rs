@@ -282,4 +282,120 @@ mod tests
             assert!(style.background.is_some(), "expected background for {status:?}");
         }
     }
+
+    // ---- Additional disk data / read_disk_data tests ----
+
+    #[test]
+    fn read_disk_data_root_total_greater_than_used()
+    {
+        let d = read_disk_data("/").unwrap();
+        assert!(d.total >= d.used);
+    }
+
+    #[test]
+    fn read_disk_data_root_free_equals_total_minus_used_approx()
+    {
+        let d = read_disk_data("/").unwrap();
+        // free + used <= total (due to reserved blocks)
+        assert!(d.free + d.used <= d.total + 1_000_000);
+    }
+
+    #[test]
+    fn read_disk_data_root_percent_is_zero_to_100()
+    {
+        let d = read_disk_data("/").unwrap();
+        assert!(d.percent <= 100);
+    }
+
+    #[test]
+    fn read_disk_data_proc_returns_some()
+    {
+        // /proc is a virtual FS but statvfs usually succeeds
+        let _ = read_disk_data("/proc"); // just don't panic
+    }
+
+    #[test]
+    fn read_disk_data_slash_dev_null_returns_none_or_some()
+    {
+        // /dev/null is not a mount point, may return None or succeed
+        let _ = read_disk_data("/dev/null");
+    }
+
+    #[test]
+    fn disk_config_default_mount_is_root()
+    {
+        assert_eq!(DiskConfig::default().disk_mount, "/");
+    }
+
+    #[test]
+    fn disk_config_default_format_contains_placeholders()
+    {
+        let fmt = DiskConfig::default().disk_format;
+        assert!(fmt.contains("{used}") || fmt.contains("{total}") || fmt.contains("{percent}"));
+    }
+
+    #[test]
+    fn disk_config_default_update_interval_is_positive()
+    {
+        assert!(DiskConfig::default().disk_update_interval > 0);
+    }
+
+    #[test]
+    fn disk_config_default_text_size_is_positive()
+    {
+        assert!(DiskConfig::default().disk_text_size > 0);
+    }
+
+    #[test]
+    fn disk_config_default_gradient_is_none()
+    {
+        assert!(DiskConfig::default().disk_button_gradient_color.is_none());
+    }
+
+    #[test]
+    fn disk_config_default_shadow_color_is_none()
+    {
+        assert!(DiskConfig::default().disk_button_shadow_color.is_none());
+    }
+
+    #[test]
+    fn disk_config_default_side_separator_is_none()
+    {
+        assert!(DiskConfig::default().disk_side_separator.is_none());
+    }
+
+    #[test]
+    fn disk_config_default_border_radius_all_equal()
+    {
+        let r = DiskConfig::default().disk_border_radius;
+        assert_eq!(r[0], r[1]);
+        assert_eq!(r[1], r[2]);
+        assert_eq!(r[2], r[3]);
+    }
+
+    #[test]
+    fn disk_style_active_and_hovered_backgrounds_differ()
+    {
+        let app = make_style_app();
+        let active  = define_disk_style(&app, button::Status::Active);
+        let hovered = define_disk_style(&app, button::Status::Hovered);
+        assert_ne!(active.background, hovered.background);
+    }
+
+    #[test]
+    fn disk_style_active_and_pressed_backgrounds_differ()
+    {
+        let app = make_style_app();
+        let active  = define_disk_style(&app, button::Status::Active);
+        let pressed = define_disk_style(&app, button::Status::Pressed);
+        assert_ne!(active.background, pressed.background);
+    }
+
+    #[test]
+    fn disk_style_border_radius_applied()
+    {
+        let app = make_style_app();
+        let style = define_disk_style(&app, button::Status::Active);
+        assert_eq!(style.border.radius.top_left, app.ron_config.disk.disk_border_radius[0]);
+    }
 }

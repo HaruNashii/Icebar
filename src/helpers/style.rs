@@ -491,4 +491,96 @@ mod tests
         assert_eq!(orient_text("", &TextOrientation::Horizontal), "");
         assert_eq!(orient_text("", &TextOrientation::Vertical),   "");
     }
+
+    // ---- Additional orient_text tests ----
+
+    #[test]
+    fn orient_text_horizontal_preserves_spaces()
+    {
+        assert_eq!(orient_text("a b c", &TextOrientation::Horizontal), "a b c");
+    }
+
+    #[test]
+    fn orient_text_vertical_single_char()
+    {
+        assert_eq!(orient_text("X", &TextOrientation::Vertical), "X");
+    }
+
+    #[test]
+    fn orient_text_vertical_two_chars_joined_by_newline()
+    {
+        assert_eq!(orient_text("AB", &TextOrientation::Vertical), "A\nB");
+    }
+
+    #[test]
+    fn orient_text_vertical_space_becomes_narrow_space_on_new_line()
+    {
+        let result = orient_text("a b", &TextOrientation::Vertical);
+        // space character maps to " " (non-breaking or narrow space) + newline
+        assert!(result.contains('\n'));
+    }
+
+    #[test]
+    fn orient_text_vertical_trims_trailing_newline()
+    {
+        let result = orient_text("A ", &TextOrientation::Vertical);
+        assert!(!result.ends_with('\n'));
+    }
+
+    #[test]
+    fn orient_text_horizontal_unicode_string_unchanged()
+    {
+        let input = "héllo wörld";
+        assert_eq!(orient_text(input, &TextOrientation::Horizontal), input);
+    }
+
+    // ---- match_color_or_gradient: no-gradient path ----
+
+    #[test]
+    fn match_color_or_gradient_none_returns_solid_color_background()
+    {
+        use crate::helpers::color::ColorType;
+        use iced::Background;
+        let bg = match_color_or_gradient(None, ColorType::RGB([255, 0, 0]));
+        assert!(matches!(bg, Some(Background::Color(_))));
+    }
+
+    #[test]
+    fn match_color_or_gradient_none_color_matches_input()
+    {
+        use crate::helpers::color::ColorType;
+        use iced::{Background, Color};
+        let bg = match_color_or_gradient(None, ColorType::RGB([100, 150, 200])).unwrap();
+        if let Background::Color(c) = bg
+        {
+            let expected = Color::from_rgb8(100, 150, 200);
+            assert!((c.r - expected.r).abs() < 0.01);
+            assert!((c.g - expected.g).abs() < 0.01);
+            assert!((c.b - expected.b).abs() < 0.01);
+        }
+        else { panic!("expected Color background"); }
+    }
+
+    #[test]
+    fn match_color_or_gradient_with_gradient_returns_gradient_background()
+    {
+        use crate::helpers::color::{ColorType, Gradient};
+        use iced::Background;
+        let g = Gradient::Gradient((45.0, vec![
+            (0.0, ColorType::RGB([0,   0,   0  ])),
+            (1.0, ColorType::RGB([255, 255, 255])),
+        ]));
+        let bg = match_color_or_gradient(Some(g), ColorType::RGB([0, 0, 0]));
+        assert!(matches!(bg, Some(Background::Gradient(_))));
+    }
+
+    #[test]
+    fn match_color_or_gradient_with_empty_gradient_stops_still_returns_gradient()
+    {
+        use crate::helpers::color::{ColorType, Gradient};
+        use iced::Background;
+        let g = Gradient::Gradient((0.0, vec![]));
+        let bg = match_color_or_gradient(Some(g), ColorType::RGB([0, 0, 0]));
+        assert!(matches!(bg, Some(Background::Gradient(_))));
+    }
 }

@@ -16,16 +16,14 @@ static WARNING_ONCE: Once = Once::new();
 
 
 // ============ CRATES ============
+use crate::modules::{power_profile::{read_power_profile, cycle_power_profile}, plasma, image::preload_image, clock::cycle_clock_timezones, clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction};
+use crate::volume_mixer::{MixerKind, MixerState, create_output_mixer_window, create_input_mixer_window, task_set_device_volume, task_toggle_device_mute, task_set_default_device, task_set_app_volume, task_toggle_app_mute};
+use crate::helpers::{string::format_volume, misc::{is_active_module, validate_bar_data, define_bar_anchor_position}, workspaces::build_workspace_list, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res};
 use crate::modules::focused_window::{read_focused_window_hypr, read_focused_window_sway, read_focused_window_niri, };
-use crate::helpers::string::format_volume;
-use crate::modules::power_profile::{read_power_profile, cycle_power_profile};
-use crate::modules::{plasma, image::preload_image, clock::cycle_clock_timezones};
-use crate::{helpers::{misc::define_bar_anchor_position, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res}, modules::{clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction }};
-use crate::helpers::{misc::{is_active_module, validate_bar_data}, workspaces::build_workspace_list };
-use crate::context_menu::{create_context_menu, get_context_menu_size};
-use crate::ron::read_ron_config;
-use crate::{warning::create_warning, MAIN_ID, AppData, WindowInfo};
 use crate::calendar::{CalendarView, DayClickAction, create_calendar_window};
+use crate::context_menu::{create_context_menu, get_context_menu_size};
+use crate::{warning::create_warning, MAIN_ID, AppData, WindowInfo};
+use crate::ron::read_ron_config;
 
 
 
@@ -48,7 +46,7 @@ pub enum Message
     ContinuousCommandFinished(usize, String),
     ToggleAltClockAndCycleClockTimeZones,
     IsHoveringMediaPlayerMetaData(bool),
-    TrayIconClicked(usize),
+    TrayIconClicked(String),
     MouseWheelScrolled(ScrollDelta),
     CommandFinished(usize, String),
     WorkspaceButtonPressed(i32),
@@ -83,6 +81,22 @@ pub enum Message
     CalendarDaySelected(u32),
     CalendarMonthSelected(u32),
     CalendarYearSelected(i32),
+
+    // Volume mixer
+    ShowVolumeOutputMixer,
+    ShowVolumeInputMixer,
+    CloseVolumeOutputMixer,
+    CloseVolumeInputMixer,
+    MixerStateUpdated(MixerState),
+    SetDeviceVolume(MixerKind, u32, u8),
+    ToggleDeviceMute(MixerKind, u32),
+    SetDefaultDevice(MixerKind, String),
+    SetAppVolume(MixerKind, u32, u8),
+    ToggleAppMute(MixerKind, u32),
+    ToggleOutputDeviceCategory,
+    ToggleInputDeviceCategory,
+    ToggleOutputAppCategory,
+    ToggleInputAppCategory,
 
     Tick,
     VolumeUpdated(f32, bool, f32, bool),
@@ -170,11 +184,21 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             if app.modules_data.calendar_data.is_open
             {
                 let [cw, ch] = app.ron_config.calendar_window.calendar_window_size;
-                app.modules_data.calendar_data.cursor_inside =
-                    position.x >= 0.0 && position.y >= 0.0
-                    && position.x <= cw as f32 && position.y <= ch as f32;
+                app.modules_data.calendar_data.cursor_inside = position.x >= 0.0 && position.y >= 0.0 && position.x <= cw as f32 && position.y <= ch as f32;
             }
             app.modules_data.calendar_data.mouse_pos = (position.x as i32, position.y as i32);
+
+            if app.modules_data.volume_mixer_data.output_mixer_open
+            {
+                let [mw, mh] = app.ron_config.volume_output_mixer.mixer_window_size;
+                app.modules_data.volume_mixer_data.output_cursor_inside = position.x >= 0.0 && position.y >= 0.0 && position.x <= mw as f32 && position.y <= mh as f32;
+            }
+            if app.modules_data.volume_mixer_data.input_mixer_open
+            {
+                let [mw, mh] = app.ron_config.volume_input_mixer.mixer_window_size;
+                app.modules_data.volume_mixer_data.input_cursor_inside = position.x >= 0.0 && position.y >= 0.0 && position.x <= mw as f32 && position.y <= mh as f32;
+            }
+            app.modules_data.volume_mixer_data.mouse_pos = (position.x as i32, position.y as i32);
         }
 
         Message::MouseButtonClicked =>
@@ -202,6 +226,24 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 tasks.extend(ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
             }
 
+            let has_output_mixer = app.ids.values().any(|v| *v == WindowInfo::VolumeOutputMixer);
+            if has_output_mixer && !app.modules_data.volume_mixer_data.output_cursor_inside
+            {
+                app.modules_data.volume_mixer_data.output_mixer_open = false;
+                let ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::VolumeOutputMixer).map(|(id, _)| *id).collect();
+                for id in &ids_to_close { app.ids.remove(id); }
+                tasks.extend(ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            }
+
+            let has_input_mixer = app.ids.values().any(|v| *v == WindowInfo::VolumeInputMixer);
+            if has_input_mixer && !app.modules_data.volume_mixer_data.input_cursor_inside
+            {
+                app.modules_data.volume_mixer_data.input_mixer_open = false;
+                let ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::VolumeInputMixer).map(|(id, _)| *id).collect();
+                for id in &ids_to_close { app.ids.remove(id); }
+                tasks.extend(ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            }
+
             if !tasks.is_empty() { return Task::batch(tasks); }
         }
 
@@ -210,6 +252,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             app.context_menu_data.context_menu_is_open = false;
             let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
             for id in &window_ids_to_close { app.ids.remove(id);  }
+            // Bug 1 fix: if cursor already left the bar while this popup was open, restart the hide timer now.
+            maybe_restart_hide_timer(app);
             return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
         }
 
@@ -218,11 +262,35 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             app.modules_data.calendar_data.is_open = false;
             let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::Calendar).map(|(id, _)| *id).collect();
             for id in &window_ids_to_close { app.ids.remove(id); }
+            // Bug 1 fix: if cursor already left the bar while this popup was open, restart the hide timer now.
+            maybe_restart_hide_timer(app);
             return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+        }
+
+        Message::CloseVolumeOutputMixer =>
+        {
+            app.modules_data.volume_mixer_data.output_mixer_open = false;
+            let ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::VolumeOutputMixer).map(|(id, _)| *id).collect();
+            for id in &ids { app.ids.remove(id); }
+            // Bug 1 fix: if cursor already left the bar while this popup was open, restart the hide timer now.
+            maybe_restart_hide_timer(app);
+            return Task::batch(ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+        }
+
+        Message::CloseVolumeInputMixer =>
+        {
+            app.modules_data.volume_mixer_data.input_mixer_open = false;
+            let ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::VolumeInputMixer).map(|(id, _)| *id).collect();
+            for id in &ids { app.ids.remove(id); }
+            // Bug 1 fix: if cursor already left the bar while this popup was open, restart the hide timer now.
+            maybe_restart_hide_timer(app);
+            return Task::batch(ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
         }
 
         Message::CloseContextMenuAndCalendar =>
         {
+            // Bug 2 fix: collect tasks unconditionally and always return Task::batch so we
+            // never fall through to Task::none() when there actually was work to do.
             let mut tasks: Vec<Task<Message>> = Vec::new();
 
             app.context_menu_data.context_menu_is_open = false;
@@ -235,7 +303,21 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             for id in &calendar_ids { app.ids.remove(id); }
             tasks.extend(calendar_ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
 
-            if !tasks.is_empty() { return Task::batch(tasks); }
+            app.modules_data.volume_mixer_data.output_mixer_open = false;
+            let out_mixer_ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::VolumeOutputMixer).map(|(id, _)| *id).collect();
+            for id in &out_mixer_ids { app.ids.remove(id); }
+            tasks.extend(out_mixer_ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+
+            app.modules_data.volume_mixer_data.input_mixer_open = false;
+            let in_mixer_ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::VolumeInputMixer).map(|(id, _)| *id).collect();
+            for id in &in_mixer_ids { app.ids.remove(id); }
+            tasks.extend(in_mixer_ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+
+            // Bug 1 fix: all popups are now closed — kick off hide timer if cursor is off bar.
+            maybe_restart_hide_timer(app);
+
+            // Bug 2 fix: always return so we never fall through even when tasks is empty.
+            return Task::batch(tasks);
         }
 
 
@@ -470,7 +552,6 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             modules_data.network_data.network_icons = new_config.network.network_level_format.clone();
             modules_data.custom_module_data.custom_module_last_run = vec![Instant::now() - Duration::from_secs(3600); new_config.custom_module.custom_modules.len()];
             modules_data.image_data.preloaded_images_handle = preloaded_images;
-
             let old_config_parse_status = app.config_parsed_failed;
 
 
@@ -493,8 +574,11 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
             let bar_data_validated = validate_bar_data(app);
             let mut bar_size = bar_data_validated.bar_size;
-            if bar_size.0 == 0 { bar_size.0 = monitor_res.0; };
-            if bar_size.1 == 0 { bar_size.1 = monitor_res.1; };
+            // Bug 5 fix: use app.monitor_size which was set during the *app = AppData{...}
+            // rebuild above.  The local `monitor_res` variable is the same value but using
+            // the field keeps this correct if the rebuild order ever changes.
+            if bar_size.0 == 0 { bar_size.0 = app.monitor_size.0; };
+            if bar_size.1 == 0 { bar_size.1 = app.monitor_size.1; };
 
             let config_parsed_failed_final = app.config_parsed_failed;
 
@@ -618,7 +702,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                     {
                         app.modules_data.custom_module_data.custom_module_last_run.resize(index + 1, Instant::now() - Duration::from_secs(3600));
                     }
-                    if app.modules_data.custom_module_data.custom_module_last_run[index].elapsed() < Duration::from_millis(module.continous_command_interval) { continue; }
+                    if app.modules_data.custom_module_data.custom_module_last_run[index].elapsed() < Duration::from_millis(module.continous_command_interval.max(1)) { continue; }
                     app.modules_data.custom_module_data.custom_module_last_run[index] = Instant::now();
         
                     if let Some((program, args)) = module.continous_command.split_first()
@@ -631,7 +715,13 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                         (
                             async move 
                             {
-                                let out = tokio::process::Command::new(program).args(args).output().await.ok();
+                                // Bug D fix: 10-second timeout prevents a hanging command from
+                                // blocking the slot indefinitely and causing runaway task accumulation.
+                                let result = tokio::time::timeout(
+                                    Duration::from_secs(10),
+                                    tokio::process::Command::new(program).args(args).output()
+                                ).await;
+                                let out = result.ok().and_then(|r| r.ok());
                                 out.map
                                 (|o| { 
                                     if o.stdout.is_empty() && display_err 
@@ -676,7 +766,11 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                     return Task::perform
                     (async move 
                         {
-                                let output = tokio::process::Command::new(program).args(args).output().await.ok();
+                                let result = tokio::time::timeout(
+                                    std::time::Duration::from_secs(10),
+                                    tokio::process::Command::new(program).args(args).output()
+                                ).await;
+                                let output = result.ok().and_then(|r| r.ok());
                                 if custom_name.is_empty() { println!("Custom Module Output:\n{:?}", output); } else { println!( "'{custom_name}' Command Was Running!!!, The Output Was:\n{:?}", output); }
                                 output.map(|o| String::from_utf8_lossy(&o.stdout).to_string()).unwrap_or_default()
                         },
@@ -758,27 +852,23 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         }
 
 
-        Message::TrayIconClicked(idx) =>
+        Message::TrayIconClicked(combined) =>
         {
             println!("TrayIcon Clicked");
-            if let Some((_, combined)) = app.modules_data.tray_icons.get(idx)
+            let parts: Vec<&str> = combined.split('|').collect();
+            if parts.len() != 2 { return Task::none(); }
+            let service = parts[0].to_string();
+            let path = parts[1].to_string();
+            return Task::perform(async move { load_tray_menu(service, path).await }, |result| match result 
             {
-                let parts: Vec<&str> = combined.split('|').collect();
-                if parts.len() != 2 { return Task::none(); }
-                let service = parts[0].to_string();
-                let path = parts[1].to_string();
-                return Task::perform(async move { load_tray_menu(service, path).await }, |result| match result 
-                {
-                        Ok((s, p, i)) => Message::MenuLoaded(s, p, i),
-                        Err(e) => 
-                        {
-                            eprintln!("Failed to load tray menu: {e}");
-                            Message::Nothing 
-                        }
+                    Ok((s, p, i)) => Message::MenuLoaded(s, p, i),
+                    Err(e) => 
+                    {
+                        eprintln!("Failed to load tray menu: {e}");
+                        Message::Nothing 
                     }
-                );
-            }
-            return Task::none();
+                }
+            );
         }
 
 
@@ -816,6 +906,104 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             app.modules_data.calendar_data.is_open       = true;
             app.modules_data.calendar_data.cursor_inside = false;
             return create_calendar_window(app);
+        }
+
+        Message::ShowVolumeOutputMixer =>
+        {
+            let already_open = app.ids.values().any(|v| *v == WindowInfo::VolumeOutputMixer);
+            if already_open
+            {
+                app.modules_data.volume_mixer_data.output_mixer_open = false;
+                let ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::VolumeOutputMixer).map(|(id, _)| *id).collect();
+                for id in &ids { app.ids.remove(id); }
+                return Task::batch(ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            }
+            // Re-initialise category open/close state from config so start_collapsed is respected.
+            let vmd = crate::volume_mixer::VolumeMixerData::from_config(
+                &app.ron_config.volume_output_mixer,
+                &app.ron_config.volume_input_mixer,
+            );
+            app.modules_data.volume_mixer_data.output_device_cat_open = vmd.output_device_cat_open;
+            app.modules_data.volume_mixer_data.output_app_cat_open    = vmd.output_app_cat_open;
+            app.modules_data.volume_mixer_data.output_mixer_open    = true;
+            app.modules_data.volume_mixer_data.output_cursor_inside = false;
+            return create_output_mixer_window(app);
+        }
+
+        Message::ShowVolumeInputMixer =>
+        {
+            let already_open = app.ids.values().any(|v| *v == WindowInfo::VolumeInputMixer);
+            if already_open
+            {
+                app.modules_data.volume_mixer_data.input_mixer_open = false;
+                let ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::VolumeInputMixer).map(|(id, _)| *id).collect();
+                for id in &ids { app.ids.remove(id); }
+                return Task::batch(ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            }
+            // Re-initialise category open/close state from config so start_collapsed is respected.
+            let vmd = crate::volume_mixer::VolumeMixerData::from_config(
+                &app.ron_config.volume_output_mixer,
+                &app.ron_config.volume_input_mixer,
+            );
+            app.modules_data.volume_mixer_data.input_device_cat_open = vmd.input_device_cat_open;
+            app.modules_data.volume_mixer_data.input_app_cat_open    = vmd.input_app_cat_open;
+            app.modules_data.volume_mixer_data.input_mixer_open    = true;
+            app.modules_data.volume_mixer_data.input_cursor_inside = false;
+            return create_input_mixer_window(app);
+        }
+
+        Message::MixerStateUpdated(new_state) =>
+        {
+            app.modules_data.mixer_state = new_state;
+        }
+
+        Message::SetDeviceVolume(kind, index, pct) =>
+        {
+            return task_set_device_volume(kind, index, pct);
+        }
+
+        Message::ToggleDeviceMute(kind, index) =>
+        {
+            return task_toggle_device_mute(kind, index);
+        }
+
+        Message::SetDefaultDevice(kind, name) =>
+        {
+            return task_set_default_device(kind, name);
+        }
+
+        Message::SetAppVolume(kind, index, pct) =>
+        {
+            return task_set_app_volume(kind, index, pct);
+        }
+
+        Message::ToggleAppMute(kind, index) =>
+        {
+            return task_toggle_app_mute(kind, index);
+        }
+
+        Message::ToggleOutputDeviceCategory =>
+        {
+            let current = app.modules_data.volume_mixer_data.output_device_cat_open;
+            app.modules_data.volume_mixer_data.output_device_cat_open = !current;
+        }
+
+        Message::ToggleInputDeviceCategory =>
+        {
+            let current = app.modules_data.volume_mixer_data.input_device_cat_open;
+            app.modules_data.volume_mixer_data.input_device_cat_open = !current;
+        }
+
+        Message::ToggleOutputAppCategory =>
+        {
+            let current = app.modules_data.volume_mixer_data.output_app_cat_open;
+            app.modules_data.volume_mixer_data.output_app_cat_open = !current;
+        }
+
+        Message::ToggleInputAppCategory =>
+        {
+            let current = app.modules_data.volume_mixer_data.input_app_cat_open;
+            app.modules_data.volume_mixer_data.input_app_cat_open = !current;
         }
 
         Message::CalendarPrev =>
@@ -953,7 +1141,9 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             app.show_timer    = None; // cancel any pending show
 
             let popup_open = app.context_menu_data.context_menu_is_open
-                || app.modules_data.calendar_data.is_open;
+                || app.modules_data.calendar_data.is_open
+                || app.modules_data.volume_mixer_data.output_mixer_open
+                || app.modules_data.volume_mixer_data.input_mixer_open;
 
             if app.ron_config.auto_hide.is_some() && app.bar_visible && !popup_open
             {
@@ -1000,6 +1190,28 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
 
 
 // ============ AUTO-HIDE HELPERS ============
+
+/// Bug 1 fix: Called after a popup is closed.  If the cursor is no longer on the bar
+/// and auto-hide is configured and no other popups are open, we start the hide timer
+/// right away.  Without this the bar stays visible forever because `BarLeave` was
+/// already delivered (and silently skipped) while the popup was blocking the hide.
+fn maybe_restart_hide_timer(app: &mut AppData)
+{
+    if app.cursor_on_bar { return; }
+    if app.ron_config.auto_hide.is_none() { return; }
+    if !app.bar_visible { return; }
+
+    let any_popup_still_open = app.context_menu_data.context_menu_is_open
+        || app.modules_data.calendar_data.is_open
+        || app.modules_data.volume_mixer_data.output_mixer_open
+        || app.modules_data.volume_mixer_data.input_mixer_open;
+
+    if !any_popup_still_open && app.hide_timer.is_none()
+    {
+        app.hide_timer = Some(Instant::now());
+    }
+}
+
 fn hidden_exclusive_zone(peek: i32) -> i32 { peek.max(0) }
 
 

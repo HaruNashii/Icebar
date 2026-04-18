@@ -1,6 +1,9 @@
 // ============ IMPORTS ============
 use iced::{Task, Element, widget::container, Alignment, Theme, widget::button};
 use serde::{Deserialize, Serialize};
+use std::pin::Pin;
+
+
 
 
 
@@ -16,7 +19,14 @@ use crate::AppData;
 
 
 
-// ============ CONFIG ============
+// ============ CONST/STATIC ============
+const STATUS_PREFIX: &str = "__STATUS__:";
+
+
+
+
+
+// ============ ENUM/STRUCTS, ETC... ============
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct MediaPlayerMetadataConfig
@@ -161,11 +171,6 @@ impl Default for MediaPlayerButtonConfig
     }
 }
 
-
-
-
-
-// ============ ENUM/STRUCT, ETC ============
 #[derive(Default, Debug, Clone)]
 pub struct MediaPlayerData
 {
@@ -190,8 +195,17 @@ pub enum MediaPlayerAction
 // ============ FUNCTIONS ============
 pub async fn get_player_data_with_format(player: &str, format: &str) -> MediaPlayerData
 {
-    let result_metadata_output = tokio::process::Command::new("playerctl").arg(format!("--player={}", player)).arg("metadata").arg("--format").arg(format).output().await;
-    let result_status_output = tokio::process::Command::new("playerctl").arg(format!("--player={}", player)).arg("status").output().await;
+    const PLAYERCTL_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
+
+    let result_metadata_output = tokio::time::timeout(
+        PLAYERCTL_TIMEOUT,
+        tokio::process::Command::new("playerctl").arg(format!("--player={}", player)).arg("metadata").arg("--format").arg(format).output()
+    ).await.unwrap_or_else(|_| { eprintln!("[icebar] playerctl metadata timed out"); Err(std::io::Error::other("timeout")) });
+
+    let result_status_output = tokio::time::timeout(
+        PLAYERCTL_TIMEOUT,
+        tokio::process::Command::new("playerctl").arg(format!("--player={}", player)).arg("status").output()
+    ).await.unwrap_or_else(|_| { eprintln!("[icebar] playerctl status timed out"); Err(std::io::Error::other("timeout")) });
 
     let metadata_string = if let Ok(metadata_output) = result_metadata_output
     {
@@ -243,7 +257,7 @@ pub fn media_player_action(player: &str, action: MediaPlayerAction) -> Task<crat
         let mut cmd = tokio::process::Command::new("playerctl");
         cmd.arg(format!("--player={}", player)).arg(arg);
         if let Some(extra) = extra_arg { cmd.arg(extra); }
-        let _ = cmd.output().await;
+        let _ = tokio::time::timeout(std::time::Duration::from_secs(5), cmd.output()).await;
     },|_| Message::Nothing)
 }
 
@@ -283,11 +297,20 @@ pub fn define_media_player_buttons_style(app: &AppData, status: button::Status) 
 
 pub fn define_media_player_metadata_text(app: &AppData) -> String
 {
-    let mut metadata = &app.modules_data.media_player_data.metadata;
-    if !app.ron_config.media_player_metadata.dont_show_metadata_if_empty && app.modules_data.media_player_data.metadata.is_empty()
+    let metadata = &app.modules_data.media_player_data.metadata;
+
+    if app.modules_data.media_player_data.metadata.is_empty()
     {
-        metadata = &app.ron_config.media_player_metadata.text_when_metadata_is_empty;
+        if app.ron_config.media_player_metadata.dont_show_metadata_if_empty
+        {
+            return String::new();
+        }
+        return orient_text(
+            &app.ron_config.media_player_metadata.text_when_metadata_is_empty,
+            &app.ron_config.media_player_metadata.media_player_metadata_text_orientation,
+        );
     }
+
     orient_text(metadata, &app.ron_config.media_player_metadata.media_player_metadata_text_orientation)
 }
 
@@ -353,6 +376,81 @@ pub fn create_media_button<'a>(app: &'a AppData, padding: u16, label: String, me
         {
             define_media_player_buttons_style(app, status)
         }).on_press(message)).align_y(Alignment::Center).padding(padding).into()
+}
+
+
+
+pub fn media_player_subscription(player: String, format: String) -> Pin<Box<dyn futures::Stream<Item = crate::update::Message> + Send>>
+{
+    Box::pin(async_stream::stream!
+    {
+        let init = get_player_data_with_format(&player, &format).await;
+        yield crate::update::Message::MediaPlayerDataFetched(init);
+
+        loop
+        {
+            let combined_format = format!("{}{}\t{}", STATUS_PREFIX, "{{status}}", format);
+            let player_arg = format!("--player={}", player);
+
+            let child = tokio::process::Command::new("playerctl")
+                .args([&player_arg, "--follow", "metadata", "--format", &combined_format])
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::null())
+                .spawn();
+
+            let mut child = match child
+            {
+                Ok(c) => c,
+                Err(e) =>
+                {
+                    eprintln!("[icebar] media_player_subscription: spawn error: {e}");
+                    tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+                    continue;
+                }
+            };
+
+            let stdout = match child.stdout.take()
+            {
+                Some(s) => s,
+                None =>
+                {
+                    child.kill().await.ok();
+                    tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+                    continue;
+                }
+            };
+
+            use tokio::io::{AsyncBufReadExt, BufReader};
+            let mut lines = BufReader::new(stdout).lines();
+
+            while let Ok(Some(line)) = lines.next_line().await
+            {
+                if let Some(rest) = line.strip_prefix(STATUS_PREFIX)
+                {
+                    let (status_str, metadata_str) = if let Some(idx) = rest.find('\t')
+                    {
+                        (&rest[..idx], &rest[idx + 1..])
+                    }
+                    else
+                    {
+                        (rest, "")
+                    };
+
+                    yield crate::update::Message::MediaPlayerDataFetched(MediaPlayerData
+                    {
+                        is_hovering_media_player_meta_data: false,
+                        metadata: metadata_str.to_owned(),
+                        status:   status_str.to_owned()
+                    });
+                }
+            }
+
+            child.kill().await.ok();
+            let _ = child.wait().await;
+            eprintln!("[icebar] media_player_subscription: playerctl exited — retrying in 3s");
+            tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+        }
+    })
 }
 
 
@@ -572,84 +670,113 @@ mod tests
         let result = define_media_player_metadata_text(&app);
         assert_eq!(result, "");
     }
-}
 
 
+    // ---- define_button_data ----
 
-
-
-// ============ MEDIA PLAYER EVENT SUBSCRIPTION ============
-use std::pin::Pin;
-
-const STATUS_PREFIX: &str = "__STATUS__:";
-
-pub fn media_player_subscription(player: String, format: String) -> Pin<Box<dyn futures::Stream<Item = crate::update::Message> + Send>>
-{
-    Box::pin(async_stream::stream!
+    #[test]
+    fn define_button_data_returns_three_entries()
     {
-        let init = get_player_data_with_format(&player, &format).await;
-        yield crate::update::Message::MediaPlayerDataFetched(init);
+        let data = define_button_data("prev".into(), "play".into(), "next".into());
+        assert_eq!(data.len(), 3);
+    }
 
-        loop
+    #[test]
+    fn define_button_data_first_entry_is_previous()
+    {
+        let data = define_button_data("PREV".into(), "PLAY".into(), "NEXT".into());
+        assert_eq!(data[0].0, "PREV");
+        assert!(matches!(data[0].1, Message::MediaPlayerClickPrev));
+    }
+
+    #[test]
+    fn define_button_data_second_entry_is_play_pause()
+    {
+        let data = define_button_data("p".into(), "pp".into(), "n".into());
+        assert_eq!(data[1].0, "pp");
+        assert!(matches!(data[1].1, Message::MediaPlayerClickPlayPause));
+    }
+
+    #[test]
+    fn define_button_data_third_entry_is_next()
+    {
+        let data = define_button_data("p".into(), "pp".into(), "NEXT".into());
+        assert_eq!(data[2].0, "NEXT");
+        assert!(matches!(data[2].1, Message::MediaPlayerClickNext));
+    }
+
+    // ---- define_media_player_buttons_text ----
+
+    #[test]
+    fn buttons_text_playing_returns_pause_format()
+    {
+        let mut app = make_app("track", "Playing");
+        app.ron_config.media_player_button.media_player_buttons_format = ["<<".into(), "||".into(), ">".into(), ">>".into()];
+        let (_, play_pause, _) = define_media_player_buttons_text(&app);
+        assert_eq!(play_pause, "||");
+    }
+
+    #[test]
+    fn buttons_text_not_playing_returns_play_format()
+    {
+        let mut app = make_app("track", "Stopped");
+        app.ron_config.media_player_button.media_player_buttons_format = ["<<".into(), "||".into(), ">".into(), ">>".into()];
+        let (_, play_pause, _) = define_media_player_buttons_text(&app);
+        assert_eq!(play_pause, ">");
+    }
+
+    #[test]
+    fn buttons_text_prev_and_next_always_same_regardless_of_status()
+    {
+        for status in ["Playing", "Stopped", "Paused"]
         {
-            let combined_format = format!("{}{}\t{}", STATUS_PREFIX, "{{status}}", format);
-            let player_arg = format!("--player={}", player);
-
-            let child = tokio::process::Command::new("playerctl")
-                .args([&player_arg, "--follow", "metadata", "--format", &combined_format])
-                .stdout(std::process::Stdio::piped())
-                .stderr(std::process::Stdio::null())
-                .spawn();
-
-            let mut child = match child
-            {
-                Ok(c) => c,
-                Err(e) =>
-                {
-                    eprintln!("[icebar] media_player_subscription: spawn error: {e}");
-                    tokio::time::sleep(std::time::Duration::from_secs(3)).await;
-                    continue;
-                }
-            };
-
-            let stdout = match child.stdout.take()
-            {
-                Some(s) => s,
-                None =>
-                {
-                    tokio::time::sleep(std::time::Duration::from_secs(3)).await;
-                    continue;
-                }
-            };
-
-            use tokio::io::{AsyncBufReadExt, BufReader};
-            let mut lines = BufReader::new(stdout).lines();
-
-            while let Ok(Some(line)) = lines.next_line().await
-            {
-                if let Some(rest) = line.strip_prefix(STATUS_PREFIX)
-                {
-                    let (status_str, metadata_str) = if let Some(idx) = rest.find('\t')
-                    {
-                        (&rest[..idx], &rest[idx + 1..])
-                    }
-                    else
-                    {
-                        (rest, "")
-                    };
-
-                    yield crate::update::Message::MediaPlayerDataFetched(MediaPlayerData
-                    {
-                        is_hovering_media_player_meta_data: false,
-                        metadata: metadata_str.to_owned(),
-                        status:   status_str.to_owned()
-                    });
-                }
-            }
-
-            let _ = child.wait().await;
-            eprintln!("[icebar] media_player_subscription: playerctl exited — retrying in 3s");
-            tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+            let mut app = make_app("x", status);
+            app.ron_config.media_player_button.media_player_buttons_format = ["<<".into(), "||".into(), ">".into(), ">>".into()];
+            let (prev, _, next) = define_media_player_buttons_text(&app);
+            assert_eq!(prev, "<<");
+            assert_eq!(next, ">>");
         }
-    })
+    }
+
+    // ---- define_media_player_metadata_text ----
+
+    #[test]
+    fn metadata_text_empty_metadata_with_dont_show_false_returns_placeholder()
+    {
+        let app = make_app("", "Stopped"); // dont_show=false by default in make_app
+        let result = define_media_player_metadata_text(&app);
+        assert_eq!(result, "No Media");
+    }
+
+    #[test]
+    fn metadata_text_nonempty_metadata_returns_metadata_itself()
+    {
+        let app = make_app("Artist - Song", "Playing");
+        let result = define_media_player_metadata_text(&app);
+        assert_eq!(result, "Artist - Song");
+    }
+
+    #[test]
+    fn metadata_text_empty_metadata_with_dont_show_true_returns_empty()
+    {
+        let mut app = make_app("", "Stopped");
+        app.ron_config.media_player_metadata.dont_show_metadata_if_empty = true;
+        assert_eq!(define_media_player_metadata_text(&app), "");
+    }
+
+    // ---- Config defaults ----
+
+    #[test]
+    fn media_player_metadata_config_default_text_size_is_positive()
+    {
+        assert!(MediaPlayerMetadataConfig::default().media_player_metadata_text_size > 0);
+    }
+
+    #[test]
+    fn media_player_button_config_default_has_four_format_entries()
+    {
+        use crate::modules::media_player::MediaPlayerButtonConfig;
+        assert_eq!(MediaPlayerButtonConfig::default().media_player_buttons_format.len(), 4);
+    }
 }
+

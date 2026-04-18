@@ -332,5 +332,129 @@ mod tests
         let snap = CpuSnapshot::default();
         assert_eq!(compute_cpu_usage(&snap, &snap), 0.0);
     }
- 
+
+    // ---- Additional compute_cpu_usage edge cases ----
+
+    #[test]
+    fn compute_cpu_usage_exactly_25_percent()
+    {
+        let prev = CpuSnapshot { total: 0,   idle: 0   };
+        let curr = CpuSnapshot { total: 400, idle: 300 };
+        assert!((compute_cpu_usage(&prev, &curr) - 25.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn compute_cpu_usage_exactly_99_percent()
+    {
+        let prev = CpuSnapshot { total: 0,    idle: 0   };
+        let curr = CpuSnapshot { total: 100,  idle: 1   };
+        assert!((compute_cpu_usage(&prev, &curr) - 99.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn compute_cpu_usage_prev_equals_curr_returns_zero()
+    {
+        let snap = CpuSnapshot { total: 5000, idle: 3000 };
+        assert_eq!(compute_cpu_usage(&snap, &snap), 0.0);
+    }
+
+    #[test]
+    fn compute_cpu_usage_result_at_most_100()
+    {
+        // Even if idle somehow decreases, result should not exceed 100.0
+        for (pt, pi, ct, ci) in [(0u64, 0u64, 100u64, 0u64), (0, 0, 1, 0), (100, 50, 200, 50)]
+        {
+            let prev = CpuSnapshot { total: pt, idle: pi };
+            let curr = CpuSnapshot { total: ct, idle: ci };
+            assert!(compute_cpu_usage(&prev, &curr) <= 100.0);
+        }
+    }
+
+    #[test]
+    fn compute_cpu_usage_result_is_finite()
+    {
+        let prev = CpuSnapshot { total: 0, idle: 0 };
+        let curr = CpuSnapshot { total: 1000, idle: 200 };
+        let usage = compute_cpu_usage(&prev, &curr);
+        assert!(usage.is_finite());
+    }
+
+    // ---- read_cpu_snapshot properties ----
+
+    #[test]
+    fn read_cpu_snapshot_idle_never_exceeds_total()
+    {
+        let snap = read_cpu_snapshot().unwrap();
+        assert!(snap.idle <= snap.total);
+    }
+
+    #[test]
+    fn read_cpu_snapshot_multiple_calls_are_monotonically_nondecreasing()
+    {
+        let a = read_cpu_snapshot().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        let b = read_cpu_snapshot().unwrap();
+        assert!(b.total >= a.total);
+    }
+
+    // ---- CpuSnapshot Debug ----
+
+    #[test]
+    fn cpu_snapshot_debug_shows_fields()
+    {
+        let s = CpuSnapshot { total: 999, idle: 123 };
+        let d = format!("{:?}", s);
+        assert!(d.contains("999"));
+        assert!(d.contains("123"));
+    }
+
+    // ---- CpuConfig defaults ----
+
+    #[test]
+    fn cpu_config_default_format_contains_usage_placeholder()
+    {
+        assert!(CpuConfig::default().cpu_format.contains("{usage}"));
+    }
+
+    #[test]
+    fn cpu_config_default_update_interval_is_positive()
+    {
+        assert!(CpuConfig::default().cpu_update_interval > 0);
+    }
+
+    #[test]
+    fn cpu_config_default_text_size_is_positive()
+    {
+        assert!(CpuConfig::default().cpu_text_size > 0);
+    }
+
+    #[test]
+    fn cpu_config_default_border_radius_all_equal()
+    {
+        let r = CpuConfig::default().cpu_border_radius;
+        assert_eq!(r[0], r[1]);
+        assert_eq!(r[1], r[2]);
+        assert_eq!(r[2], r[3]);
+    }
+
+    #[test]
+    fn cpu_config_default_shadow_color_is_none()
+    {
+        assert!(CpuConfig::default().cpu_button_shadow_color.is_none());
+    }
+
+    #[test]
+    fn cpu_config_default_side_separator_is_none()
+    {
+        assert!(CpuConfig::default().cpu_side_separator.is_none());
+    }
+
+    #[test]
+    fn cpu_config_default_gradient_is_none()
+    {
+        assert!(CpuConfig::default().cpu_button_gradient_color.is_none());
+        assert!(CpuConfig::default().cpu_button_hovered_gradient_color.is_none());
+        assert!(CpuConfig::default().cpu_button_pressed_gradient_color.is_none());
+    }
+
 }

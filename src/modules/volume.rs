@@ -345,7 +345,11 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
         let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<()>();
         let state_cb  = Arc::clone(&state);
         let tx_clone  = tx.clone();
- 
+
+        // Bug C fix: shutdown channel so the PulseAudio thread exits cleanly when
+        // this subscription is dropped (e.g. on config reload), preventing thread leaks.
+        let (shutdown_tx, shutdown_rx) = std::sync::mpsc::channel::<()>();
+
         std::thread::spawn(move ||
         {
             let mut mainloop = match Mainloop::new()
@@ -423,9 +427,22 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
             }
 
             mainloop.unlock();
-            loop { std::thread::sleep(std::time::Duration::from_secs(60)); }
+
+            // Bug C fix: block until the subscription is dropped (shutdown_tx dropped → recv() returns Err).
+            // This replaces the old infinite sleep loop that leaked the thread on every config reload.
+            let _ = shutdown_rx.recv();
+
+            // Clean disconnect before the thread exits.
+            mainloop.lock();
+            context.lock().unwrap().disconnect();
+            mainloop.unlock();
+            mainloop.stop();
         });
- 
+
+        // Keep shutdown_tx alive for the full lifetime of the stream generator.
+        // It is dropped automatically when the stream is dropped, waking the thread above.
+        let _shutdown_guard = shutdown_tx;
+
         while rx.recv().await.is_some()
         {
             let s = state.lock().unwrap().clone();
@@ -483,7 +500,10 @@ pub fn volume(volume_modifier: VolumeAction) -> Task<crate::update::Message>
     };
     Task::perform(async move 
     {
-        let _ = tokio::process::Command::new("wpctl").args([args.0, args.1, &args.2]).output().await;
+        let _ = tokio::time::timeout(
+            std::time::Duration::from_secs(5),
+            tokio::process::Command::new("wpctl").args([args.0, args.1, &args.2]).output()
+        ).await;
     },|_| Message::Nothing,)
 }
  
@@ -695,5 +715,95 @@ mod tests
         let app   = make_input_app(true);
         let style = define_volume_input_style(&app, button::Status::Hovered);
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(100, 0, 100))));
+    }
+
+    // ---- Additional volume text tests ----
+
+    #[test]
+    fn volume_text_unicode_horizontal_unchanged()
+    {
+        assert_eq!(define_volume_text("🔇 muted", &TextOrientation::Horizontal), "🔇 muted");
+    }
+
+    #[test]
+    fn volume_text_single_char_vertical_is_unchanged()
+    {
+        assert_eq!(define_volume_text("X", &TextOrientation::Vertical), "X");
+    }
+
+    #[test]
+    fn volume_text_vertical_does_not_end_with_newline()
+    {
+        let result = define_volume_text("AB", &TextOrientation::Vertical);
+        assert!(!result.ends_with('\n'));
+    }
+
+    // ---- Volume config defaults ----
+
+    #[test]
+    fn volume_input_config_default_text_size_is_positive()
+    {
+        use crate::modules::volume::VolumeInputConfig;
+        assert!(VolumeInputConfig::default().volume_input_text_size > 0);
+    }
+
+    #[test]
+    fn volume_output_config_default_gradient_is_none()
+    {
+        use crate::modules::volume::VolumeOutputConfig;
+        assert!(VolumeOutputConfig::default().volume_output_button_gradient_color.is_none());
+    }
+
+    #[test]
+    fn volume_output_config_default_shadow_color_is_none()
+    {
+        use crate::modules::volume::VolumeOutputConfig;
+        assert!(VolumeOutputConfig::default().volume_output_button_shadow_color.is_none());
+    }
+
+    #[test]
+    fn volume_output_muted_config_default_gradient_is_none()
+    {
+        use crate::modules::volume::MutedVolumeOutputConfig;
+        assert!(MutedVolumeOutputConfig::default().muted_volume_output_button_gradient_color.is_none());
+    }
+
+    // ---- Output style: all statuses have background ----
+
+    #[test]
+    fn volume_output_all_statuses_have_background_when_unmuted()
+    {
+        let app = make_output_app(false);
+        for status in [button::Status::Active, button::Status::Hovered, button::Status::Pressed, button::Status::Disabled]
+        {
+            assert!(define_volume_output_style(&app, status).background.is_some());
+        }
+    }
+
+    #[test]
+    fn volume_output_all_statuses_have_background_when_muted()
+    {
+        let app = make_output_app(true);
+        for status in [button::Status::Active, button::Status::Hovered, button::Status::Pressed, button::Status::Disabled]
+        {
+            assert!(define_volume_output_style(&app, status).background.is_some());
+        }
+    }
+
+    #[test]
+    fn volume_output_muted_and_unmuted_active_styles_differ()
+    {
+        let muted   = define_volume_output_style(&make_output_app(true),  button::Status::Active);
+        let unmuted = define_volume_output_style(&make_output_app(false), button::Status::Active);
+        assert_ne!(muted.background, unmuted.background);
+    }
+
+    #[test]
+    fn volume_output_hovered_and_active_differ_when_unmuted()
+    {
+        let app = make_output_app(false);
+        let active  = define_volume_output_style(&app, button::Status::Active);
+        let hovered = define_volume_output_style(&app, button::Status::Hovered);
+        assert_ne!(active.background, hovered.background);
     }
 }

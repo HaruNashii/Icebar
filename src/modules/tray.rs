@@ -34,6 +34,11 @@ static TRAY_STATE: LazyLock<Mutex<TrayState>> = LazyLock::new(|| Mutex::new(Tray
     registered: HashSet::new(),
     owner_map:  HashMap::new(),
 }));
+// Bug C fix: store the live attention-icon setting so that config reloads can update
+// it without tearing down and restarting the watcher.  The watcher reads this atomic
+// on every icon event, so the new value takes effect for the next icon fetch.
+static TRAY_ATTENTION_ICON_ENABLED: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(true);
 
 
 
@@ -75,7 +80,8 @@ pub struct StatusNotifierWatcher
 {
     pub sender: Sender<TrayEvent>,
     pub connection: Connection,
-    pub attention_icon_enabled: bool,
+    // Bug C fix: attention_icon_enabled is no longer stored here; callers read
+    // TRAY_ATTENTION_ICON_ENABLED so that config reloads take effect immediately.
 }
 
 #[derive(Debug, Clone)]
@@ -171,6 +177,10 @@ pub fn tray_stream(_: &TraySubscription) -> Pin<Box<dyn Stream<Item = Message> +
 
 pub fn start_tray(attention_icon_enabled: bool) 
 {
+    // Bug C fix: always update the atomic so that config reloads propagate the new
+    // setting to the already-running watcher without needing to restart it.
+    TRAY_ATTENTION_ICON_ENABLED.store(attention_icon_enabled, std::sync::atomic::Ordering::Relaxed);
+
     if TRAY_RECEIVER.lock().unwrap_or_else(|p| p.into_inner()).is_some() 
     {
         println!("\n=== TRAY ===");
@@ -206,7 +216,7 @@ pub fn start_tray(attention_icon_enabled: bool)
     
     tokio::spawn(async move 
     {
-        if let Err(e) = start_watcher(tx, attention_icon_enabled).await { eprintln!("Watcher failed: {e}"); }
+        if let Err(e) = start_watcher(tx).await { eprintln!("Watcher failed: {e}"); }
     });
 }
 
@@ -248,11 +258,11 @@ impl StatusNotifierWatcher
         {
             let _ = self.sender.send(icon).await;
         }
-        if let Some(attn) = fetch_attention_icon(&self.connection, &combined, self.attention_icon_enabled).await
+        if let Some(attn) = fetch_attention_icon(&self.connection, &combined, TRAY_ATTENTION_ICON_ENABLED.load(std::sync::atomic::Ordering::Relaxed)).await
         {
             let _ = self.sender.send(attn).await;
         }
-        spawn_item_watcher(combined.clone(), self.sender.clone(), self.attention_icon_enabled);
+        spawn_item_watcher(combined.clone(), self.sender.clone());
     }
 
     #[zbus(property)]
@@ -276,7 +286,7 @@ impl StatusNotifierWatcher
 
 
 
-pub async fn start_watcher(sender: Sender<TrayEvent>, attention_icon_enabled: bool) -> zbus::Result<()> 
+pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()> 
 {
     let connection = Connection::session().await?;
 
@@ -305,11 +315,11 @@ pub async fn start_watcher(sender: Sender<TrayEvent>, attention_icon_enabled: bo
             {
                 let _ = sender.send(icon).await;
             }
-            if let Some(attn) = fetch_attention_icon(&connection, &combined, attention_icon_enabled).await
+            if let Some(attn) = fetch_attention_icon(&connection, &combined, TRAY_ATTENTION_ICON_ENABLED.load(std::sync::atomic::Ordering::Relaxed)).await
             {
                 let _ = sender.send(attn).await;
             }
-            spawn_item_watcher(combined.clone(), sender.clone(), attention_icon_enabled);
+            spawn_item_watcher(combined.clone(), sender.clone());
         }
 
         // Listen for new registrations
@@ -333,11 +343,11 @@ pub async fn start_watcher(sender: Sender<TrayEvent>, attention_icon_enabled: bo
                             {
                                 let _ = sender.send(icon).await;
                             }
-                            if let Some(attn) = fetch_attention_icon(&connection, &combined, attention_icon_enabled).await
+                            if let Some(attn) = fetch_attention_icon(&connection, &combined, TRAY_ATTENTION_ICON_ENABLED.load(std::sync::atomic::Ordering::Relaxed)).await
                             {
                                 let _ = sender.send(attn).await;
                             }
-                            spawn_item_watcher(combined.clone(), sender.clone(), attention_icon_enabled);
+                            spawn_item_watcher(combined.clone(), sender.clone());
                         }
                     }
                     Some(msg) = unregister_stream.next() => 
@@ -356,7 +366,7 @@ pub async fn start_watcher(sender: Sender<TrayEvent>, attention_icon_enabled: bo
     }
 
     connection.request_name("org.kde.StatusNotifierWatcher").await?;
-    connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender: sender.clone(), connection: connection.clone(), attention_icon_enabled }).await?;
+    connection.object_server().at("/StatusNotifierWatcher", StatusNotifierWatcher { sender: sender.clone(), connection: connection.clone() }).await?;
     let ctxt = SignalEmitter::new(&connection, "/StatusNotifierWatcher")?;
     StatusNotifierWatcher::status_notifier_host_registered(&ctxt).await?;
     println!("\n=== StatusNotifier ===");
@@ -465,7 +475,7 @@ fn extract_layout_node(id: i32, props: &HashMap<String, zbus::zvariant::OwnedVal
 /// `NewAttentionIcon` the task sends `TrayEvent::AttentionIcon`; when the
 /// status returns to `Active` or `Passive` it sends `TrayEvent::IconRestored`
 /// so the caller can switch back to the normal icon.
-pub fn spawn_item_watcher(combined: String, sender: Sender<TrayEvent>, attention_icon_enabled: bool)
+pub fn spawn_item_watcher(combined: String, sender: Sender<TrayEvent>)
 {
     tokio::spawn(async move
     {
@@ -510,7 +520,7 @@ pub fn spawn_item_watcher(combined: String, sender: Sender<TrayEvent>, attention
                     let status = msg.body().deserialize::<(String,)>().map(|(s,)| s).unwrap_or_default();
                     println!("\n=== Tray status changed ===\n{combined}: {status}");
 
-                    if status == "NeedsAttention" && attention_icon_enabled
+                    if status == "NeedsAttention" && TRAY_ATTENTION_ICON_ENABLED.load(std::sync::atomic::Ordering::Relaxed)
                     {
                         if let Some(attn) = fetch_attention_icon(&conn, &combined, true).await
                         {
@@ -527,7 +537,7 @@ pub fn spawn_item_watcher(combined: String, sender: Sender<TrayEvent>, attention
                 // ── App signalled that its attention icon changed ──────────
                 Some(_) = attn_stream.next() =>
                 {
-                    if !attention_icon_enabled { continue; }
+                    if !TRAY_ATTENTION_ICON_ENABLED.load(std::sync::atomic::Ordering::Relaxed) { continue; }
                     // Only use it if the item is actually in NeedsAttention
                     if let Some(attn) = fetch_attention_icon(&conn, &combined, true).await
                     {

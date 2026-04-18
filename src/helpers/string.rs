@@ -83,6 +83,13 @@ pub fn format_volume(vol: f32, muted: bool, unique_format: Option<String>, forma
  
 
 
+// NOTE(memory): intern_string uses Box::leak to produce 'static str references.
+// The global HashSet deduplicates correctly, so at most one allocation per unique
+// string value is ever leaked — this is bounded to the number of distinct font
+// names ever seen across the process lifetime (typically 1–3). On config reload,
+// previously leaked strings for already-seen names are reused via the HashSet
+// lookup, so repeated reloads with the same font names do not accumulate.
+// A future improvement would use Arc<str> instead of Box::leak to allow cleanup.
 pub fn intern_string(s: String) -> &'static str
 {
     let mut guard = INTERNED_STRINGS.lock().unwrap_or_else(|p| p.into_inner());
@@ -184,7 +191,17 @@ fn ellipsize_segments(segments: Vec<Segment>, ellipsis: &str, limit: usize) -> V
     }
 
     let ellipsis_len = ellipsis.chars().count();
-    let mut budget    = limit.saturating_sub(ellipsis_len);
+
+    // Edge case: ellipsis alone is longer than the limit — return just the
+    // truncated ellipsis itself rather than an empty vec, which would display nothing.
+    if ellipsis_len >= limit
+    {
+        let truncated_ellipsis: String = ellipsis.chars().take(limit).collect();
+        let color = segments.first().map(|s| s.color).unwrap_or_default();
+        return vec![Segment { text: truncated_ellipsis, color }];
+    }
+
+    let mut budget    = limit - ellipsis_len;
     let mut result    = Vec::new();
     let mut truncated = false;
 
@@ -694,5 +711,279 @@ mod tests
             input.push_str(&format!("[Color=({i},{i},{i}),String=tag{i}][Tuning=1]"));
         }
         let _ = convert_text_to_rich_text::<()>(&input);
+    }
+
+    // ============ normalize_item ============
+
+    #[test]
+    fn normalize_item_with_pipe_returns_unchanged()
+    {
+        assert_eq!(normalize_item("org.kde.StatusNotifier|/path"), "org.kde.StatusNotifier|/path");
+    }
+
+    #[test]
+    fn normalize_item_with_slash_but_no_pipe_adds_pipe()
+    {
+        let result = normalize_item("org.kde.StatusNotifier/StatusNotifierItem");
+        assert_eq!(result, "org.kde.StatusNotifier|/StatusNotifierItem");
+    }
+
+    #[test]
+    fn normalize_item_without_slash_or_pipe_appends_default_path()
+    {
+        let result = normalize_item("org.kde.StatusNotifier");
+        assert_eq!(result, "org.kde.StatusNotifier|/StatusNotifierItem");
+    }
+
+    #[test]
+    fn normalize_item_empty_string_appends_default_path()
+    {
+        let result = normalize_item("");
+        assert_eq!(result, "|/StatusNotifierItem");
+    }
+
+    #[test]
+    fn normalize_item_slash_at_start_treated_as_slash()
+    {
+        let result = normalize_item("/something");
+        // finds '/' at position 0 — splits at 0: svc="", path="/something"
+        assert_eq!(result, "|/something");
+    }
+
+    #[test]
+    fn normalize_item_multiple_pipes_keeps_as_is()
+    {
+        let result = normalize_item("a|b|c");
+        assert_eq!(result, "a|b|c");
+    }
+
+    #[test]
+    fn normalize_item_slash_and_pipe_both_present_returns_unchanged()
+    {
+        // contains '|' so returns as-is, even if also has '/'
+        let result = normalize_item("a/b|c");
+        assert_eq!(result, "a/b|c");
+    }
+
+    // ============ find_field_colon ============
+
+    #[test]
+    fn find_field_colon_simple_key_value_returns_colon_position()
+    {
+        let result = find_field_colon("key: value");
+        assert_eq!(result, Some(3));
+    }
+
+    #[test]
+    fn find_field_colon_no_colon_returns_none()
+    {
+        assert!(find_field_colon("no colon here").is_none());
+    }
+
+    #[test]
+    fn find_field_colon_colon_inside_string_is_ignored()
+    {
+        let result = find_field_colon(r#""key:inner": value"#);
+        // colon at position 13 (after the closing quote)
+        assert!(result.is_some());
+        let pos = result.unwrap();
+        let (_, after) = r#""key:inner": value"#.split_at(pos);
+        assert!(after.starts_with(':'));
+    }
+
+    #[test]
+    fn find_field_colon_escaped_quote_inside_string_does_not_break_state()
+    {
+        let result = find_field_colon(r#""es\"caped": val"#);
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn find_field_colon_empty_string_returns_none()
+    {
+        assert!(find_field_colon("").is_none());
+    }
+
+    #[test]
+    fn find_field_colon_colon_at_start_returns_zero()
+    {
+        assert_eq!(find_field_colon(":value"), Some(0));
+    }
+
+    #[test]
+    fn find_field_colon_multiple_colons_returns_first_outside_string()
+    {
+        let result = find_field_colon("a:b:c");
+        assert_eq!(result, Some(1));
+    }
+
+    #[test]
+    fn find_field_colon_all_inside_string_returns_none()
+    {
+        let result = find_field_colon(r#""a:b:c""#);
+        assert!(result.is_none());
+    }
+
+    // ============ format_volume ============
+
+    #[test]
+    fn format_volume_muted_returns_muted_format_and_true()
+    {
+        let formats = std::array::from_fn(|_| "{}%".to_string());
+        let (text, muted) = format_volume(0.5, true, None, &formats, "MUTED");
+        assert_eq!(text, "MUTED");
+        assert!(muted);
+    }
+
+    #[test]
+    fn format_volume_not_muted_uses_apply_format()
+    {
+        let formats = std::array::from_fn(|_| "vol:{}".to_string());
+        let (text, muted) = format_volume(0.5, false, None, &formats, "MUTED");
+        assert!(!muted);
+        assert!(text.contains("50"));
+    }
+
+    #[test]
+    fn format_volume_unique_format_overrides_formats_array()
+    {
+        let formats = std::array::from_fn(|_| "WRONG".to_string());
+        let (text, muted) = format_volume(0.75, false, Some("UNIQUE:{}".to_string()), &formats, "MUTED");
+        assert_eq!(text, "UNIQUE:75");
+        assert!(!muted);
+    }
+
+    #[test]
+    fn format_volume_muted_with_unique_format_still_returns_muted()
+    {
+        let formats = std::array::from_fn(|_| "x".to_string());
+        let (text, is_muted) = format_volume(0.5, true, Some("UNIQUE:{}".to_string()), &formats, "SILENT");
+        assert_eq!(text, "SILENT");
+        assert!(is_muted);
+    }
+
+    #[test]
+    fn format_volume_zero_volume_not_muted_returns_correct_percent()
+    {
+        let mut formats: [String; 6] = std::array::from_fn(|_| "?".to_string());
+        formats[0] = "{}%".to_string();
+        let (text, _) = format_volume(0.0, false, None, &formats, "MUTED");
+        assert_eq!(text, "0%");
+    }
+
+    #[test]
+    fn format_volume_100_percent_volume()
+    {
+        let mut formats: [String; 6] = std::array::from_fn(|_| "?".to_string());
+        formats[4] = "{}%".to_string();
+        let (text, _) = format_volume(1.0, false, None, &formats, "MUTED");
+        assert_eq!(text, "100%");
+    }
+
+    // ============ apply_format ============
+
+    #[test]
+    fn apply_format_0_percent_uses_first_bucket()
+    {
+        let mut formats: [String; 6] = std::array::from_fn(|_| "?".to_string());
+        formats[0] = "zero:{}".to_string();
+        assert_eq!(apply_format(0.0, &formats), "zero:0");
+    }
+
+    #[test]
+    fn apply_format_24_percent_uses_second_bucket()
+    {
+        let mut formats: [String; 6] = std::array::from_fn(|_| "?".to_string());
+        formats[1] = "low:{}".to_string();
+        assert_eq!(apply_format(0.24, &formats), "low:24");
+    }
+
+    #[test]
+    fn apply_format_50_percent_uses_third_bucket()
+    {
+        let mut formats: [String; 6] = std::array::from_fn(|_| "?".to_string());
+        formats[2] = "mid:{}".to_string();
+        assert_eq!(apply_format(0.49, &formats), "mid:49");
+    }
+
+    #[test]
+    fn apply_format_90_percent_uses_fourth_bucket()
+    {
+        let mut formats: [String; 6] = std::array::from_fn(|_| "?".to_string());
+        formats[3] = "high:{}".to_string();
+        assert_eq!(apply_format(0.9, &formats), "high:90");
+    }
+
+    #[test]
+    fn apply_format_100_percent_uses_fifth_bucket()
+    {
+        let mut formats: [String; 6] = std::array::from_fn(|_| "?".to_string());
+        formats[4] = "full:{}".to_string();
+        assert_eq!(apply_format(1.0, &formats), "full:100");
+    }
+
+    #[test]
+    fn apply_format_over_100_percent_uses_sixth_bucket()
+    {
+        let mut formats: [String; 6] = std::array::from_fn(|_| "?".to_string());
+        formats[5] = "over:{}".to_string();
+        assert_eq!(apply_format(1.5, &formats), "over:150");
+    }
+
+    #[test]
+    fn apply_format_placeholder_replaced_with_integer_percent()
+    {
+        let formats: [String; 6] = std::array::from_fn(|_| "{} percent".to_string());
+        let result = apply_format(0.5, &formats);
+        assert_eq!(result, "50 percent");
+    }
+
+    #[test]
+    fn apply_format_no_placeholder_returns_format_string_unchanged()
+    {
+        let formats: [String; 6] = std::array::from_fn(|_| "NO_PLACEHOLDER".to_string());
+        assert_eq!(apply_format(0.5, &formats), "NO_PLACEHOLDER");
+    }
+
+    #[test]
+    fn apply_format_rounding_0_995_rounds_to_100()
+    {
+        let formats: [String; 6] = std::array::from_fn(|_| "{}".to_string());
+        let result = apply_format(0.995, &formats);
+        assert_eq!(result, "100");
+    }
+
+    // ============ intern_string ============
+
+    #[test]
+    fn intern_string_same_value_returns_same_pointer()
+    {
+        let a = intern_string("hello_intern_test".to_string());
+        let b = intern_string("hello_intern_test".to_string());
+        assert_eq!(a, b);
+        assert!(std::ptr::eq(a, b));
+    }
+
+    #[test]
+    fn intern_string_different_values_differ()
+    {
+        let a = intern_string("intern_a_unique_xyz".to_string());
+        let b = intern_string("intern_b_unique_xyz".to_string());
+        assert_ne!(a, b);
+    }
+
+    #[test]
+    fn intern_string_empty_string_is_internable()
+    {
+        let a = intern_string(String::new());
+        let b = intern_string(String::new());
+        assert!(std::ptr::eq(a, b));
+    }
+
+    #[test]
+    fn intern_string_result_is_static_str()
+    {
+        let s: &'static str = intern_string("static_lifetime_test".to_string());
+        assert_eq!(s, "static_lifetime_test");
     }
 }
