@@ -94,6 +94,7 @@ pub struct GeneralConfig
     pub center_modules:                   Vec<Modules>,
     pub right_modules:                    Vec<Modules>
 }
+
 impl Default for GeneralConfig
 {
     fn default() -> Self
@@ -122,8 +123,6 @@ impl Default for GeneralConfig
         }
     }
 }
-
-
 
 #[derive(Default, Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
@@ -179,11 +178,6 @@ pub struct GeneralStyleConfig
     pub general_alt_button_shadow_blur:             Option<f32>
 }
 
-
-
-
-
-// ============ AUTO-HIDE CONFIG ============
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct AutoHideConfig
@@ -245,7 +239,6 @@ pub struct BarConfig
 // ============ FUNCTIONS ============
 pub fn read_ron_config(different_config_path: Option<String>) -> RonReturn
 {
-
     println!("\n=== READING CONFIG FILE ===");
     let path = if let Some(user_config_path) = different_config_path
     {
@@ -475,7 +468,8 @@ fn recover_struct(field_name: &str, inner_fields: Vec<(String, String)>) -> Opti
 
 fn extract_outer_body(content: &str) -> String
 {
-    let start = {
+    let start = 
+    {
         let mut found = None;
         let mut byte_pos = 0usize;
         for line in content.lines()
