@@ -11,6 +11,7 @@ use std::sync::LazyLock;
 
 
 
+
 // ============ CRATES ============
 use crate::helpers::{color::{ColorType, Gradient}, icons::{fetch_icon, fetch_attention_icon}, string::normalize_item, style::{SideOption, UserStyle, set_style}};
 use crate::update::Message;
@@ -34,9 +35,6 @@ static TRAY_STATE: LazyLock<Mutex<TrayState>> = LazyLock::new(|| Mutex::new(Tray
     registered: HashSet::new(),
     owner_map:  HashMap::new(),
 }));
-// Bug C fix: store the live attention-icon setting so that config reloads can update
-// it without tearing down and restarting the watcher.  The watcher reads this atomic
-// on every icon event, so the new value takes effect for the next icon fetch.
 static TRAY_ATTENTION_ICON_ENABLED: std::sync::atomic::AtomicBool =
     std::sync::atomic::AtomicBool::new(true);
 
@@ -48,7 +46,7 @@ static TRAY_ATTENTION_ICON_ENABLED: std::sync::atomic::AtomicBool =
 struct TrayState
 {
     registered: HashSet<String>,
-    owner_map:  HashMap<String, String>,
+    owner_map:  HashMap<String, String>
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -73,15 +71,13 @@ pub enum TrayEvent
         height: u32,
         width: u32,
     },
-    IconRestored(String),
+    IconRestored(String)
 }
 
 pub struct StatusNotifierWatcher 
 {
     pub sender: Sender<TrayEvent>,
-    pub connection: Connection,
-    // Bug C fix: attention_icon_enabled is no longer stored here; callers read
-    // TRAY_ATTENTION_ICON_ENABLED so that config reloads take effect immediately.
+    pub connection: Connection
 }
 
 #[derive(Debug, Clone)]
@@ -89,10 +85,8 @@ pub struct MenuItem
 {
     pub _visible: bool,
     pub label: String,
-    pub id: i32,
+    pub id: i32
 }
-
-
 
 
 
@@ -125,7 +119,7 @@ pub struct TrayConfig
     pub tray_button_shadow_x:              f32,
     pub tray_button_shadow_y:              f32,
     pub tray_button_shadow_blur:           f32,
-    pub tray_attention_icon:               bool,
+    pub tray_attention_icon:               bool
 }
 
 impl Default for TrayConfig
@@ -156,10 +150,14 @@ impl Default for TrayConfig
             tray_button_shadow_x:              0.0,
             tray_button_shadow_y:              0.0,
             tray_button_shadow_blur:           0.0,
-            tray_attention_icon:               true,
+            tray_attention_icon:               true
         }
     }
 }
+
+
+
+
 
 // ============ FUNCTIONS ============
 pub fn tray_stream(_: &TraySubscription) -> Pin<Box<dyn Stream<Item = Message> + Send>>
@@ -169,7 +167,7 @@ pub fn tray_stream(_: &TraySubscription) -> Pin<Box<dyn Stream<Item = Message> +
     match maybe_rx
     {
         Some(rx) => Box::pin(tokio_stream::wrappers::ReceiverStream::new(rx).map(Message::TrayEvent)),
-        None => Box::pin(futures::stream::pending()),
+        None => Box::pin(futures::stream::pending())
     }
 }
 
@@ -177,8 +175,6 @@ pub fn tray_stream(_: &TraySubscription) -> Pin<Box<dyn Stream<Item = Message> +
 
 pub fn start_tray(attention_icon_enabled: bool) 
 {
-    // Bug C fix: always update the atomic so that config reloads propagate the new
-    // setting to the already-running watcher without needing to restart it.
     TRAY_ATTENTION_ICON_ENABLED.store(attention_icon_enabled, std::sync::atomic::Ordering::Relaxed);
 
     if TRAY_RECEIVER.lock().unwrap_or_else(|p| p.into_inner()).is_some() 
@@ -297,14 +293,11 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
     {
         println!("StatusNotifierWatcher already owned (likely Plasma). Registering as host instead.");
 
-        // Register ourselves as a StatusNotifierHost so apps know a host exists
         let host_name = "org.kde.StatusNotifierHost-icebar";
         connection.request_name(host_name).await?;
 
-        // Subscribe to item registration signals from the existing watcher
         let watcher = zbus::Proxy::new(&connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher", "org.kde.StatusNotifierWatcher").await?;
 
-        // Fetch already-registered items
         let items: Vec<String> = watcher.get_property("RegisteredStatusNotifierItems").await.unwrap_or_default();
         for item in items
         {
@@ -322,7 +315,6 @@ pub async fn start_watcher(sender: Sender<TrayEvent>) -> zbus::Result<()>
             spawn_item_watcher(combined.clone(), sender.clone());
         }
 
-        // Listen for new registrations
         let mut stream = watcher.receive_signal("StatusNotifierItemRegistered").await?;
         let mut unregister_stream = watcher.receive_signal("StatusNotifierItemUnregistered").await?;
         let tx2 = sender.clone();
@@ -435,7 +427,7 @@ fn extract_layout_node(id: i32, props: &HashMap<String, zbus::zvariant::OwnedVal
         match &**props.get(key)? 
         {
             Value::Str(s) => Some(s.to_string()),
-            _ => None,
+            _ => None
         }
     };
     
@@ -444,7 +436,7 @@ fn extract_layout_node(id: i32, props: &HashMap<String, zbus::zvariant::OwnedVal
         match &**props.get(key)? 
         {
             Value::Bool(b) => Some(*b),
-            _ => None,
+            _ => None
         }
     };
 
@@ -470,11 +462,6 @@ fn extract_layout_node(id: i32, props: &HashMap<String, zbus::zvariant::OwnedVal
 
 
 
-/// Spawns a background task that watches a single tray item for status and
-/// icon-change signals. When the item emits `NewStatus("NeedsAttention")` or
-/// `NewAttentionIcon` the task sends `TrayEvent::AttentionIcon`; when the
-/// status returns to `Active` or `Passive` it sends `TrayEvent::IconRestored`
-/// so the caller can switch back to the normal icon.
 pub fn spawn_item_watcher(combined: String, sender: Sender<TrayEvent>)
 {
     tokio::spawn(async move
@@ -492,8 +479,6 @@ pub fn spawn_item_watcher(combined: String, sender: Sender<TrayEvent>)
             Err(e) => { eprintln!("spawn_item_watcher: proxy error for {combined}: {e}"); return; }
         };
 
-        // Subscribe to both signals before entering the loop so we don't miss
-        // a rapid status change that happens right after registration.
         let mut status_stream = match proxy.receive_signal("NewStatus").await
         {
             Ok(s) => s,
@@ -514,7 +499,6 @@ pub fn spawn_item_watcher(combined: String, sender: Sender<TrayEvent>)
         {
             tokio::select!
             {
-                // ── Status changed ────────────────────────────────────────
                 Some(msg) = status_stream.next() =>
                 {
                     let status = msg.body().deserialize::<(String,)>().map(|(s,)| s).unwrap_or_default();
@@ -529,27 +513,21 @@ pub fn spawn_item_watcher(combined: String, sender: Sender<TrayEvent>)
                     }
                     else
                     {
-                        // Status went back to Active/Passive — restore normal icon
                         let _ = sender.send(TrayEvent::IconRestored(combined.clone())).await;
                     }
                 }
 
-                // ── App signalled that its attention icon changed ──────────
                 Some(_) = attn_stream.next() =>
                 {
                     if !TRAY_ATTENTION_ICON_ENABLED.load(std::sync::atomic::Ordering::Relaxed) { continue; }
-                    // Only use it if the item is actually in NeedsAttention
                     if let Some(attn) = fetch_attention_icon(&conn, &combined, true).await
                     {
                         let _ = sender.send(attn).await;
                     }
                 }
 
-                // ── Normal icon changed ───────────────────────────────────
                 Some(_) = icon_stream.next() =>
                 {
-                    // Re-fetch the normal icon and send IconRestored so
-                    // update.rs can re-load it via fetch_icon.
                     let _ = sender.send(TrayEvent::IconRestored(combined.clone())).await;
                 }
             }
@@ -633,7 +611,6 @@ mod tests
     use zbus::zvariant::{OwnedValue, Value};
     use iced::{widget::button, Background, Color};
  
-    // ---- extract_nodes ------------------------------------------------------
 
     fn str_val(s: &str) -> OwnedValue { OwnedValue::try_from(Value::Str(s.into())).unwrap() }
     fn bool_val(b: bool) -> OwnedValue { OwnedValue::try_from(Value::Bool(b)).unwrap() }
@@ -685,7 +662,6 @@ mod tests
     #[test]
     fn extract_layout_root_id_zero_skipped()
     {
-        // id=0 is the invisible root node, must never appear in results
         let mut out = Vec::new();
         extract_layout_node(0, &make_props("Root", true, true, "default"), &[], &mut out);
         assert!(out.is_empty());
@@ -727,7 +703,6 @@ mod tests
     }
 
  
-    // ---- define_tray_style --------------------------------------------------
  
     fn make_tray_app() -> AppData
     {

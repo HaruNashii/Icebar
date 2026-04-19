@@ -9,6 +9,11 @@ use iced::{Task, widget::button};
 
  
  
+
+
+
+
+
 // ============ CRATES ============
 use crate::helpers::{color::{ColorType, Gradient}, style::{TextOrientation, UserStyle, orient_text, set_style, SideOption}};
 use crate::ron::ActionOnClick;
@@ -346,8 +351,6 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
         let state_cb  = Arc::clone(&state);
         let tx_clone  = tx.clone();
 
-        // Bug C fix: shutdown channel so the PulseAudio thread exits cleanly when
-        // this subscription is dropped (e.g. on config reload), preventing thread leaks.
         let (shutdown_tx, shutdown_rx) = std::sync::mpsc::channel::<()>();
 
         std::thread::spawn(move ||
@@ -428,19 +431,14 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
 
             mainloop.unlock();
 
-            // Bug C fix: block until the subscription is dropped (shutdown_tx dropped → recv() returns Err).
-            // This replaces the old infinite sleep loop that leaked the thread on every config reload.
             let _ = shutdown_rx.recv();
 
-            // Clean disconnect before the thread exits.
             mainloop.lock();
             context.lock().unwrap().disconnect();
             mainloop.unlock();
             mainloop.stop();
         });
 
-        // Keep shutdown_tx alive for the full lifetime of the stream generator.
-        // It is dropped automatically when the stream is dropped, waking the thread above.
         let _shutdown_guard = shutdown_tx;
 
         while rx.recv().await.is_some()
@@ -717,7 +715,6 @@ mod tests
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(100, 0, 100))));
     }
 
-    // ---- Additional volume text tests ----
 
     #[test]
     fn volume_text_unicode_horizontal_unchanged()
@@ -738,7 +735,6 @@ mod tests
         assert!(!result.ends_with('\n'));
     }
 
-    // ---- Volume config defaults ----
 
     #[test]
     fn volume_input_config_default_text_size_is_positive()
@@ -768,7 +764,6 @@ mod tests
         assert!(MutedVolumeOutputConfig::default().muted_volume_output_button_gradient_color.is_none());
     }
 
-    // ---- Output style: all statuses have background ----
 
     #[test]
     fn volume_output_all_statuses_have_background_when_unmuted()

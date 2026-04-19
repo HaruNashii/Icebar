@@ -283,7 +283,6 @@ mod tests
         }
     }
 
-    // ---- Additional disk data / read_disk_data tests ----
 
     #[test]
     fn read_disk_data_root_total_greater_than_used()
@@ -296,7 +295,6 @@ mod tests
     fn read_disk_data_root_free_equals_total_minus_used_approx()
     {
         let d = read_disk_data("/").unwrap();
-        // free + used <= total (due to reserved blocks)
         assert!(d.free + d.used <= d.total + 1_000_000);
     }
 
@@ -310,14 +308,12 @@ mod tests
     #[test]
     fn read_disk_data_proc_returns_some()
     {
-        // /proc is a virtual FS but statvfs usually succeeds
-        let _ = read_disk_data("/proc"); // just don't panic
+        let _ = read_disk_data("/proc");
     }
 
     #[test]
     fn read_disk_data_slash_dev_null_returns_none_or_some()
     {
-        // /dev/null is not a mount point, may return None or succeed
         let _ = read_disk_data("/dev/null");
     }
 

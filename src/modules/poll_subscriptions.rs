@@ -1,6 +1,12 @@
-// ============ SMART POLLING SUBSCRIPTIONS ============
+// ============ IMPORTS ============
 use std::pin::Pin;
 use std::time::Duration;
+
+
+
+
+
+// ============ CRATES ============
 use crate::update::Message;
 use crate::helpers::style::{orient_text, TextOrientation};
 use crate::modules::cpu::{read_cpu_snapshot, compute_cpu_usage, CpuSnapshot};
@@ -11,6 +17,9 @@ use crate::modules::network::{read_rx_tx, active_iface_from_proc};
 
 
 
+
+
+// ============ FUNCTIONS ============
 fn format_cpu(usage: f32, fmt: &str, orientation: &TextOrientation) -> String
 {
     orient_text(&fmt.replace("{usage}", &format!("{:.0}", usage)), orientation)
@@ -228,10 +237,6 @@ pub fn cpu_temp_subscription(cfg: &CpuTempPollConfig) -> Pin<Box<dyn futures::St
 
 
 
-// Bug D fix: iface is no longer stored in the config.  The subscription discovers
-// the active interface itself on every tick via active_iface_from_proc(), so it
-// works correctly at startup (before NetworkManager has emitted its first update)
-// and after config reloads (when the old iface snapshot would be stale).
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct NetworkSpeedPollConfig;
 
@@ -249,8 +254,6 @@ pub fn network_speed_subscription(cfg: &NetworkSpeedPollConfig) -> Pin<Box<dyn f
         {
             tokio::time::sleep(interval).await;
 
-            // Discover the active iface fresh every iteration so we are never
-            // blocked by an empty snapshot captured at startup or reload time.
             let result = tokio::task::spawn_blocking(||
             {
                 let iface = active_iface_from_proc()?;

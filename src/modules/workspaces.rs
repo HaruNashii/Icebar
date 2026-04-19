@@ -207,12 +207,6 @@ pub fn define_workspaces_text(app: &AppData, id: i32) -> String
         }
         else
         {
-            // Bug J fix: use saturating_sub(1) instead of (id - 1) as usize.
-            // If a compositor reports workspace id = 0 (Sway can do this for
-            // scratch/empty workspaces), the subtraction would produce -1 and
-            // the cast to usize would wrap to usize::MAX, causing an erroneous
-            // huge index. saturating_sub clamps it to 0, matching the safe_id
-            // pattern already used in the selected-text branch above.
             app.ron_config.workspace.workspace_text.get(id.saturating_sub(1) as usize).cloned().unwrap_or_else(|| id.to_string()) 
         }
     };
@@ -319,7 +313,7 @@ mod tests
     #[test]
     fn workspace_text_all_three_workspaces_correct()
     {
-        let app = make_app(99); // nothing is selected
+        let app = make_app(99);
         assert_eq!(define_workspaces_text(&app, 1), "ws1");
         assert_eq!(define_workspaces_text(&app, 2), "ws2");
         assert_eq!(define_workspaces_text(&app, 3), "ws3");
@@ -335,7 +329,7 @@ mod tests
  
     fn make_style_app(current: i32) -> AppData
     {
-        let mut app = make_app(current);   // re-uses the existing make_app helper
+        let mut app = make_app(current);
         app.ron_config.workspace.workspace_button_color = ColorType::RGB([0, 0, 200]);
         app.ron_config.workspace.workspace_button_selected_color = ColorType::RGB([255, 0, 0]);
         app.ron_config.workspace.workspace_button_hovered_color = ColorType::RGB([0, 200, 0]);

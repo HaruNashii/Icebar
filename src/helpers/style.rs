@@ -492,7 +492,6 @@ mod tests
         assert_eq!(orient_text("", &TextOrientation::Vertical),   "");
     }
 
-    // ---- Additional orient_text tests ----
 
     #[test]
     fn orient_text_horizontal_preserves_spaces()
@@ -516,7 +515,6 @@ mod tests
     fn orient_text_vertical_space_becomes_narrow_space_on_new_line()
     {
         let result = orient_text("a b", &TextOrientation::Vertical);
-        // space character maps to " " (non-breaking or narrow space) + newline
         assert!(result.contains('\n'));
     }
 
@@ -534,7 +532,6 @@ mod tests
         assert_eq!(orient_text(input, &TextOrientation::Horizontal), input);
     }
 
-    // ---- match_color_or_gradient: no-gradient path ----
 
     #[test]
     fn match_color_or_gradient_none_returns_solid_color_background()

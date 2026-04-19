@@ -62,7 +62,7 @@ pub enum ActionOnClick
     ToggleAltClockAndCycleClockTimezones,
     ShowCalendar,
     ShowVolumeOutputMixer,
-    ShowVolumeInputMixer,
+    ShowVolumeInputMixer
 }
 
 
@@ -486,7 +486,7 @@ fn extract_outer_body(content: &str) -> String
                     found = Some(byte_pos + rel);
                     break;
             }
-            byte_pos += line.len() + 1; // +1 for '\n'
+            byte_pos += line.len() + 1;
         }
         found.unwrap_or(0)
     };

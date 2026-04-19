@@ -139,9 +139,7 @@ mod tests
     #[test]
     fn persistent_0_generates_empty_range()
     {
-        // 1..=0 is empty
         let result = build_workspace_list(&[], Some(0));
-        // 1..=0 generates nothing
         assert!(result.is_empty());
     }
 
@@ -183,7 +181,6 @@ mod tests
     #[test]
     fn real_workspace_id_exactly_at_persistent_boundary_not_duplicated()
     {
-        // id 5 is both in real AND in persistent range 1..=5
         let result = build_workspace_list(&[5], Some(5));
         assert_eq!(result, vec![1, 2, 3, 4, 5]);
     }

@@ -207,7 +207,7 @@ mod tests
     fn compute_cpu_usage_clamped_to_100()
     {
         let prev = CpuSnapshot { total: 1000, idle: 900 };
-        let curr = CpuSnapshot { total: 1100, idle: 800 }; // idle decreased
+        let curr = CpuSnapshot { total: 1100, idle: 800 };
         assert!(compute_cpu_usage(&prev, &curr) <= 100.0);
     }
 
@@ -333,7 +333,6 @@ mod tests
         assert_eq!(compute_cpu_usage(&snap, &snap), 0.0);
     }
 
-    // ---- Additional compute_cpu_usage edge cases ----
 
     #[test]
     fn compute_cpu_usage_exactly_25_percent()
@@ -361,7 +360,6 @@ mod tests
     #[test]
     fn compute_cpu_usage_result_at_most_100()
     {
-        // Even if idle somehow decreases, result should not exceed 100.0
         for (pt, pi, ct, ci) in [(0u64, 0u64, 100u64, 0u64), (0, 0, 1, 0), (100, 50, 200, 50)]
         {
             let prev = CpuSnapshot { total: pt, idle: pi };
@@ -379,7 +377,6 @@ mod tests
         assert!(usage.is_finite());
     }
 
-    // ---- read_cpu_snapshot properties ----
 
     #[test]
     fn read_cpu_snapshot_idle_never_exceeds_total()
@@ -397,7 +394,6 @@ mod tests
         assert!(b.total >= a.total);
     }
 
-    // ---- CpuSnapshot Debug ----
 
     #[test]
     fn cpu_snapshot_debug_shows_fields()
@@ -408,7 +404,6 @@ mod tests
         assert!(d.contains("123"));
     }
 
-    // ---- CpuConfig defaults ----
 
     #[test]
     fn cpu_config_default_format_contains_usage_placeholder()

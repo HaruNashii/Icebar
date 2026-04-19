@@ -83,13 +83,6 @@ pub fn format_volume(vol: f32, muted: bool, unique_format: Option<String>, forma
  
 
 
-// NOTE(memory): intern_string uses Box::leak to produce 'static str references.
-// The global HashSet deduplicates correctly, so at most one allocation per unique
-// string value is ever leaked — this is bounded to the number of distinct font
-// names ever seen across the process lifetime (typically 1–3). On config reload,
-// previously leaked strings for already-seen names are reused via the HashSet
-// lookup, so repeated reloads with the same font names do not accumulate.
-// A future improvement would use Arc<str> instead of Box::leak to allow cleanup.
 pub fn intern_string(s: String) -> &'static str
 {
     let mut guard = INTERNED_STRINGS.lock().unwrap_or_else(|p| p.into_inner());
@@ -192,8 +185,6 @@ fn ellipsize_segments(segments: Vec<Segment>, ellipsis: &str, limit: usize) -> V
 
     let ellipsis_len = ellipsis.chars().count();
 
-    // Edge case: ellipsis alone is longer than the limit — return just the
-    // truncated ellipsis itself rather than an empty vec, which would display nothing.
     if ellipsis_len >= limit
     {
         let truncated_ellipsis: String = ellipsis.chars().take(limit).collect();
@@ -337,7 +328,6 @@ pub fn ellipsize(ellipsis: &String, text: &str, limit: usize) -> String
 
 
 
-// ============ TESTS ============
 // ============ TESTS ============
 #[cfg(test)]
 mod tests
@@ -746,7 +736,6 @@ mod tests
     fn normalize_item_slash_at_start_treated_as_slash()
     {
         let result = normalize_item("/something");
-        // finds '/' at position 0 — splits at 0: svc="", path="/something"
         assert_eq!(result, "|/something");
     }
 
@@ -760,7 +749,6 @@ mod tests
     #[test]
     fn normalize_item_slash_and_pipe_both_present_returns_unchanged()
     {
-        // contains '|' so returns as-is, even if also has '/'
         let result = normalize_item("a/b|c");
         assert_eq!(result, "a/b|c");
     }
@@ -784,7 +772,6 @@ mod tests
     fn find_field_colon_colon_inside_string_is_ignored()
     {
         let result = find_field_colon(r#""key:inner": value"#);
-        // colon at position 13 (after the closing quote)
         assert!(result.is_some());
         let pos = result.unwrap();
         let (_, after) = r#""key:inner": value"#.split_at(pos);

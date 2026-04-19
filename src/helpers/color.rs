@@ -103,13 +103,14 @@ fn hex_to_iced_color(bytes: &[u8; 9]) -> Option<iced::Color>
 
 
 
+
+
 // ============ TESTS ============
 #[cfg(test)]
 mod tests
 {
     use super::*;
 
-    // ---- ColorType::default ----
 
     #[test]
     fn color_type_default_is_white_rgb()
@@ -117,7 +118,6 @@ mod tests
         assert_eq!(ColorType::default(), ColorType::RGB([255, 255, 255]));
     }
 
-    // ---- hex_color: basic construction ----
 
     #[test]
     fn hex_color_6_digit_with_hash_produces_hex_variant()
@@ -154,7 +154,6 @@ mod tests
     #[test]
     fn hex_color_exactly_9_bytes_is_accepted()
     {
-        // 9-char string: "#ff0000ff" is 9 bytes — should succeed
         let c = hex_color("#ff0000f");
         assert!(matches!(c, ColorType::HEX(_)));
     }
@@ -162,14 +161,14 @@ mod tests
     #[test]
     fn hex_color_string_longer_than_9_bytes_falls_back_to_white()
     {
-        let c = hex_color("#ff0000ffX"); // 10 bytes
+        let c = hex_color("#ff0000ffX");
         assert_eq!(c, ColorType::RGB([255, 255, 255]));
     }
 
     #[test]
     fn hex_color_10_byte_string_falls_back_to_white()
     {
-        let c = hex_color("0123456789"); // 10 bytes
+        let c = hex_color("0123456789");
         assert_eq!(c, ColorType::RGB([255, 255, 255]));
     }
 
@@ -186,7 +185,6 @@ mod tests
         else { panic!("expected HEX variant"); }
     }
 
-    // ---- ColorType::to_iced_color for RGB ----
 
     #[test]
     fn rgb_black_converts_correctly()
@@ -233,12 +231,10 @@ mod tests
     #[test]
     fn rgb_truncates_values_over_255_via_as_cast()
     {
-        // 256 as u8 = 0
         let c = ColorType::RGB([256, 256, 256]).to_iced_color();
         assert_eq!(c, iced::Color::from_rgb8(0, 0, 0));
     }
 
-    // ---- ColorType::to_iced_color for RGBA ----
 
     #[test]
     fn rgba_full_opacity_converts_correctly()
@@ -270,7 +266,6 @@ mod tests
         assert!((c.a - 1.0).abs() < 0.01);
     }
 
-    // ---- ColorType::to_iced_color for HEX ----
 
     #[test]
     fn hex_6_digit_red_converts_to_red()
@@ -316,7 +311,6 @@ mod tests
     #[test]
     fn hex_5_digit_string_falls_back_to_white()
     {
-        // Neither 6 nor 8 digits → hex_to_iced_color returns None → WHITE
         let c = hex_color("#abcd").to_iced_color();
         assert_eq!(c, iced::Color::WHITE);
     }
@@ -335,7 +329,6 @@ mod tests
         assert_eq!(c, iced::Color::WHITE);
     }
 
-    // ---- ColorType equality ----
 
     #[test]
     fn same_rgb_colors_are_equal()
@@ -367,7 +360,6 @@ mod tests
         assert_ne!(ColorType::RGBA([0, 0, 0, 50]), ColorType::RGBA([0, 0, 0, 100]));
     }
 
-    // ---- Clone / Copy behaviour ----
 
     #[test]
     fn color_type_is_copy()
@@ -384,7 +376,6 @@ mod tests
         assert_eq!(original.clone(), original);
     }
 
-    // ---- Gradient construction ----
 
     #[test]
     fn gradient_wraps_f32_and_vec()
@@ -408,7 +399,6 @@ mod tests
         assert_eq!(g.clone(), g);
     }
 
-    // ---- Serialization round-trips (ron) ----
 
     #[test]
     fn color_type_rgb_serializes_and_deserializes()
@@ -431,13 +421,11 @@ mod tests
     #[test]
     fn color_type_hex_deserializes_from_ron_hex_string()
     {
-        // RON represents HEX as HEX("…")
         let ron_str = r#"HEX("ff0000")"#;
         let c: ColorType = ron::from_str(ron_str).unwrap();
         assert!(matches!(c, ColorType::HEX(_)));
     }
 
-    // ---- to_iced_color idempotency ----
 
     #[test]
     fn rgb_to_iced_color_called_twice_is_same()
@@ -489,8 +477,7 @@ mod tests
     #[test]
     fn hex_color_string_length_9_no_hash_is_accepted()
     {
-        // 9 chars, no '#', exactly at the limit
-        let s = "123456789"; // 9 bytes, won't parse as valid hex but tests the length guard
+        let s = "123456789";
         let c = hex_color(s);
         assert!(matches!(c, ColorType::HEX(_)));
     }

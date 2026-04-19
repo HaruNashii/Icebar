@@ -32,7 +32,6 @@ pub struct ClockData
 #[serde(default)]
 pub struct ClockConfig
 {
-    // ================= (CONFIG) =================
     pub clock_timezones: Option<Vec<String>>,
     pub clock_update_interval: u64,
     pub clock_format: String,
@@ -41,7 +40,6 @@ pub struct ClockConfig
     pub action_on_right_click_clock: ActionOnClick, 
 
 
-    // ================= (SIDE SEPARATOR) =================
     pub clock_side_separator: Option<SideOption>,
     pub clock_side_separator_color: ColorType,
     pub clock_side_separator_width: f32,
@@ -52,7 +50,6 @@ pub struct ClockConfig
     pub alt_clock_side_separator_height: f32,
 
 
-    // ================= (GRADIENT) =================
     pub clock_button_gradient_color: Option<Gradient>,
     pub clock_button_hovered_gradient_color: Option<Gradient>,
     pub clock_button_pressed_gradient_color: Option<Gradient>,
@@ -61,7 +58,6 @@ pub struct ClockConfig
     pub alt_clock_button_pressed_gradient_color: Option<Gradient>,
 
 
-    // ================= (SHADOW) =================
     pub clock_button_shadow_color: Option<ColorType>,
     pub clock_button_shadow_x: f32,
     pub clock_button_shadow_y: f32,
@@ -72,7 +68,6 @@ pub struct ClockConfig
     pub alt_clock_button_shadow_blur: f32,
 
 
-    // ================= (STYLE) =================
     pub clock_padding: u16,
     pub clock_text_size: u32,
     pub clock_text_color: ColorType,

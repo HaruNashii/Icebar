@@ -285,14 +285,14 @@ mod tests
     #[test]
     fn compute_ram_data_total_mb_is_total_kb_divided_by_1024()
     {
-        let d = compute_ram_data(1024 * 1024, 0); // 1 GB
+        let d = compute_ram_data(1024 * 1024, 0);
         assert_eq!(d.total_mb, 1024);
     }
  
     #[test]
     fn compute_ram_data_used_mb_is_used_kb_divided_by_1024()
     {
-        let d = compute_ram_data(2048, 1024); // used_kb = 1024
+        let d = compute_ram_data(2048, 1024);
         assert_eq!(d.used_mb, 1);
     }
  
@@ -394,12 +394,10 @@ mod tests
     }
 
 
-    // ---- Additional compute_ram_data / RamData tests ----
 
     #[test]
     fn compute_ram_data_used_mb_correct()
     {
-        // total_kb=2048, available_kb=1024 → used_kb=1024 → used_mb=1
         let d = compute_ram_data(2048, 1024);
         assert_eq!(d.used_mb, 1);
     }
@@ -443,7 +441,6 @@ mod tests
         }
     }
 
-    // ---- RamConfig defaults ----
 
     #[test]
     fn ram_config_default_format_contains_placeholders()
@@ -491,7 +488,6 @@ mod tests
         assert_eq!(r[2], r[3]);
     }
 
-    // ---- read_ram_data live system checks ----
 
     #[test]
     fn read_ram_data_total_mb_is_nonzero()

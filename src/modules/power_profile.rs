@@ -322,7 +322,6 @@ mod tests
         assert_eq!(PowerProfileData::default().current_profile, PowerProfile::Balanced);
     }
 
-    // ---- Additional PowerProfile tests ----
 
     #[test]
     fn power_profile_all_variants_have_nonempty_as_str()
@@ -356,8 +355,6 @@ mod tests
     #[test]
     fn power_profile_from_str_case_matters()
     {
-        // "POWER-SAVER" is not matched (from_str is exact match after trim)
-        // if unknown → Balanced
         let result = PowerProfile::from_str("POWER-SAVER");
         assert_eq!(result, PowerProfile::Balanced);
     }
@@ -393,7 +390,6 @@ mod tests
     #[test]
     fn from_str_trims_and_parses_power_saver_with_surrounding_whitespace()
     {
-        // from_str already trims (based on the existing trim test), verify again
         assert_eq!(PowerProfile::from_str("  power-saver  "), PowerProfile::PowerSaver);
     }
 

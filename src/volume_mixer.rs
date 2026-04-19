@@ -19,6 +19,7 @@ use crate::update::Message;
 
 
 
+
 // ============ ENUMS / STRUCTS ============
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 pub enum MixerKind 
@@ -35,7 +36,7 @@ pub struct AudioDevice
     pub description: String,
     pub volume:     f32,   
     pub muted:      bool,
-    pub is_default: bool,
+    pub is_default: bool
 }
 
 #[derive(Debug, Clone)]
@@ -45,17 +46,16 @@ pub struct AppStream
     pub name:        String,  
     pub volume:      f32,
     pub muted:       bool,
-    pub sink_index:  u32,     
+    pub sink_index:  u32
 }
 
-/// Full mixer state pushed as a single Message
 #[derive(Debug, Clone, Default)]
 pub struct MixerState
 {
     pub output_devices: Vec<AudioDevice>,
     pub input_devices:  Vec<AudioDevice>,
     pub output_streams: Vec<AppStream>,
-    pub input_streams:  Vec<AppStream>,
+    pub input_streams:  Vec<AppStream>
 }
 
 #[derive(Clone, Debug)]
@@ -69,7 +69,7 @@ pub struct VolumeMixerData
     pub input_device_cat_open:      bool,
     pub output_app_cat_open:        bool,
     pub input_app_cat_open:         bool,
-    pub mouse_pos:                  (i32, i32),
+    pub mouse_pos:                  (i32, i32)
 }
 
 impl Default for VolumeMixerData
@@ -86,14 +86,13 @@ impl Default for VolumeMixerData
             input_device_cat_open:  true,
             output_app_cat_open:    true,
             input_app_cat_open:     true,
-            mouse_pos:              (0, 0),
+            mouse_pos:              (0, 0)
         }
     }
 }
 
 impl VolumeMixerData
 {
-    /// Initialise category open/close state from each mixer's `start_collapsed` config.
     pub fn from_config(output_cfg: &VolumeMixerConfig, input_cfg: &VolumeMixerConfig) -> Self
     {
         Self
@@ -119,7 +118,7 @@ pub struct MixerButtonStyle
     pub pressed_text_color:  ColorType,
     pub border_color:        ColorType,
     pub border_size:         f32,
-    pub border_radius:       [f32; 4],
+    pub border_radius:       [f32; 4]
 }
 
 impl Default for MixerButtonStyle
@@ -136,7 +135,7 @@ impl Default for MixerButtonStyle
             pressed_text_color: ColorType::RGB([255, 255, 255]),
             border_color:       ColorType::RGB([61, 61, 61]),
             border_size:        1.0,
-            border_radius:      [6., 6., 6., 6.],
+            border_radius:      [6., 6., 6., 6.]
         }
     }
 }
@@ -183,7 +182,7 @@ pub struct MixerSliderStyle
     pub handle_shape:        SliderHandleShape,
     pub handle_circle_r:     f32,
     pub handle_rect_w:       f32,
-    pub handle_rect_h:       f32,
+    pub handle_rect_h:       f32
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
@@ -206,7 +205,7 @@ impl Default for MixerSliderStyle
             handle_shape:         SliderHandleShape::Circle,
             handle_circle_r:      8.0,
             handle_rect_w:        10.0,
-            handle_rect_h:        20.0,
+            handle_rect_h:        20.0
         }
     }
 }
@@ -226,7 +225,7 @@ pub struct MixerCategoryConfig
     pub header_collapsed_label:    String,   
     pub header_expanded_label:     String,   
     pub header_arrow_text_size:    u32,
-    pub spacing:                   u16,
+    pub spacing:                   u16
 }
 
 impl MixerCategoryConfig
@@ -246,7 +245,7 @@ impl MixerCategoryConfig
             header_button_height:   24,
             spacing:                15,
             header_text_color:      ColorType::RGB([255, 255, 255]),
-            header_button_style:    MixerButtonStyle::default(),
+            header_button_style:    MixerButtonStyle::default()
         }
     }
 
@@ -265,7 +264,7 @@ impl MixerCategoryConfig
             header_text_color:      ColorType::RGB([255, 255, 255]),
             spacing:                15,
             header_button_height:   24,
-            header_button_style:    MixerButtonStyle::default(),
+            header_button_style:    MixerButtonStyle::default()
         }
     }
 }
@@ -275,24 +274,16 @@ impl Default for MixerCategoryConfig
     fn default() -> Self { Self::default_device() }
 }
 
-/// Controls the layout order of the Device and App categories inside the mixer window.
-///
-/// - `Up`    → Device on top,   App below  (default, vertical stack)
-/// - `Down`  → App on top,      Device below (vertical stack, reversed)
-/// - `Left`  → Device | App     (horizontal, Device on the left)
-/// - `Right` → App | Device     (horizontal, App on the left)
 #[derive(Clone, Debug, Deserialize, Serialize, Default, PartialEq, Eq)]
 pub enum CategoryPosition
 {
     #[default]
-    Up,    // [Device] then [App]  — vertical
-    Down,  // [App]    then [Device] — vertical reversed
-    Left,  // [Device][App] — horizontal, Device first
-    Right, // [App][Device] — horizontal, App first
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
-/// Elements that can appear in a device row, in any order.
-/// `Fill` inserts a `Space::new(Length::Fill)` to push subsequent items to the right.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub enum DeviceRowElement
 {
@@ -301,7 +292,7 @@ pub enum DeviceRowElement
     Mute,
     IncreaseVolume,
     DecreaseVolume,
-    Fill,
+    Fill
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -339,7 +330,7 @@ pub struct MixerDeviceRowConfig
     pub default_label:             String,
     pub non_default_button_style:  MixerButtonStyle,
     pub default_button_style:      MixerButtonStyle,
-    pub device_name_button_width:  u32,
+    pub device_name_button_width:  u32
 }
 
 impl Default for MixerDeviceRowConfig
@@ -386,13 +377,11 @@ impl Default for MixerDeviceRowConfig
             default_label:              "⬤".to_string(),
             non_default_button_style:   MixerButtonStyle::default(),
             default_button_style:       MixerButtonStyle::default(),
-            device_name_button_width:   160,
+            device_name_button_width:   160
         }
     }
 }
 
-/// Elements that can appear in an app stream row, in any order.
-/// `Fill` inserts a `Space::new(Length::Fill)` to push subsequent items to the right.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub enum AppRowElement
 {
@@ -401,7 +390,7 @@ pub enum AppRowElement
     Mute,
     IncreaseVolume,
     DecreaseVolume,
-    Fill,
+    Fill
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -435,7 +424,7 @@ pub struct MixerAppRowConfig
     pub mute_button_style:     MixerButtonStyle,
     pub muted_button_style:    MixerButtonStyle,
 
-    pub name_button_width:     u32,
+    pub name_button_width:     u32
 }
 
 impl Default for MixerAppRowConfig
@@ -478,7 +467,7 @@ impl Default for MixerAppRowConfig
             mute_button_style:          MixerButtonStyle::default(),
             muted_button_style:         MixerButtonStyle::default(),
 
-            name_button_width:          160,
+            name_button_width:          160
         }
     }
 }
@@ -499,7 +488,7 @@ pub struct MixerScrollbarConfig
     pub scroller_hovered_color:  ColorType,
     pub scroller_dragging_color: ColorType,
     pub scroller_border_color:   ColorType,
-    pub scroller_border_width:   f32,
+    pub scroller_border_width:   f32
 }
 
 impl Default for MixerScrollbarConfig
@@ -520,7 +509,7 @@ impl Default for MixerScrollbarConfig
             scroller_hovered_color:  ColorType::RGBA([130, 130, 130, 80]),
             scroller_dragging_color: ColorType::RGBA([160, 160, 160, 100]),
             scroller_border_color:   ColorType::RGBA([0, 0, 0, 0]),
-            scroller_border_width:   0.0,
+            scroller_border_width:   0.0
         }
     }
 }
@@ -545,7 +534,7 @@ pub struct VolumeMixerConfig
     pub device_category:                MixerCategoryConfig,
     pub app_category:                   MixerCategoryConfig,
     pub device_row:                     MixerDeviceRowConfig,
-    pub app_row:                        MixerAppRowConfig,
+    pub app_row:                        MixerAppRowConfig
 }
 
 impl Default for VolumeMixerConfig
@@ -568,7 +557,7 @@ impl Default for VolumeMixerConfig
             device_category: MixerCategoryConfig::default_device(),
             app_category:    MixerCategoryConfig::default_app(),
             device_row:      MixerDeviceRowConfig::default(),
-            app_row:         MixerAppRowConfig::default(),
+            app_row:         MixerAppRowConfig::default()
         }
     }
 }
@@ -585,7 +574,7 @@ struct PulseStateInternal
     sinks_done:    bool,
     sources_done:  bool,
     sink_in_done:  bool,
-    src_out_done:  bool,
+    src_out_done:  bool
 }
 
 
@@ -602,9 +591,6 @@ pub fn volume_mixer_subscription() -> Pin<Box<dyn futures::Stream<Item = Message
         let state_cb  = Arc::clone(&state);
         let tx_clone  = tx.clone();
 
-        // Bug 6 fix: use a one-shot shutdown channel so the background thread exits cleanly
-        // when this stream is dropped (e.g. on subscription restart after config reload).
-        // The sender is kept alive for the lifetime of the stream; dropping it signals the thread.
         let (shutdown_tx, shutdown_rx) = std::sync::mpsc::channel::<()>();
 
         std::thread::spawn(move ||
@@ -640,14 +626,12 @@ pub fn volume_mixer_subscription() -> Pin<Box<dyn futures::Stream<Item = Message
                 mainloop.lock();
             }
 
-            // --- Initial fetch ---
             {
                 let s = Arc::clone(&state_cb);
                 let t = tx_clone.clone();
                 fetch_all(Arc::clone(&context), Arc::clone(&s), t);
             }
 
-            // --- Subscribe to changes ---
             {
                 let ctx = Arc::clone(&context);
                 let s   = Arc::clone(&state_cb);
@@ -680,19 +664,14 @@ pub fn volume_mixer_subscription() -> Pin<Box<dyn futures::Stream<Item = Message
 
             mainloop.unlock();
 
-            // Bug 6 fix: block until the stream is dropped (shutdown_tx dropped → recv() returns Err).
-            // This replaces the old infinite sleep loop that leaked the thread on every restart.
             let _ = shutdown_rx.recv();
 
-            // Clean disconnect before the thread exits.
             mainloop.lock();
             context.lock().unwrap().disconnect();
             mainloop.unlock();
             mainloop.stop();
         });
 
-        // Keep shutdown_tx alive for the full lifetime of the stream generator.
-        // It is dropped automatically when the stream is dropped, waking the thread above.
         let _shutdown_guard = shutdown_tx;
 
         while rx.recv().await.is_some()
@@ -705,7 +684,7 @@ pub fn volume_mixer_subscription() -> Pin<Box<dyn futures::Stream<Item = Message
                     output_devices:      s.output_devices,
                     input_devices:       s.input_devices,
                     output_streams:      s.output_streams,
-                    input_streams:       s.input_streams,
+                    input_streams:       s.input_streams
                 };
                 yield Message::MixerStateUpdated(mixer_state);
             }
@@ -726,8 +705,6 @@ fn fetch_all(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, tx
         s.src_out_done = false;
     }
 
-    // Fetch server info first so default_sink_name / default_source_name are populated
-    // before the sink/source list callbacks try to read them.
     let state_srv = Arc::clone(&state);
     let ctx2 = Arc::clone(&ctx);
     let tx2  = tx.clone();
@@ -741,7 +718,6 @@ fn fetch_all(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, tx
             s.default_sink_name   = def_sink;
             s.default_source_name = def_source;
         }
-        // Now that the defaults are known, kick off the rest of the fetches.
         fetch_sinks(          Arc::clone(&ctx2), Arc::clone(&state_srv), tx2.clone());
         fetch_sources(        Arc::clone(&ctx2), Arc::clone(&state_srv), tx2.clone());
         fetch_sink_inputs(    Arc::clone(&ctx2), Arc::clone(&state_srv), tx2.clone());
@@ -773,7 +749,6 @@ fn fetch_sinks(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, 
             {
                 let name = info.name.as_deref().unwrap_or("").to_string();
                 let desc = info.description.as_deref().unwrap_or(&name).to_string();
-                // default_sink_name is already populated by fetch_all before this runs
                 let default_name = state2.lock().unwrap().default_sink_name.clone();
                 devs.push(AudioDevice
                 {
@@ -814,7 +789,6 @@ fn fetch_sources(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>
         {
             ListResult::Item(info) =>
             {
-                // Skip monitor sources (they are virtual sources representing sink outputs)
                 if info.name.as_deref().unwrap_or("").ends_with(".monitor") { return; }
                 let name = info.name.as_deref().unwrap_or("").to_string();
                 let desc = info.description.as_deref().unwrap_or(&name).to_string();
@@ -897,7 +871,6 @@ fn fetch_source_outputs(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInt
         {
             ListResult::Item(info) =>
             {
-                // Skip internal PulseAudio/PipeWire monitors
                 let app_name = info.proplist.get_str("application.name").unwrap_or_default();
                 if app_name == "PulseAudio Volume Control"
                     || app_name.starts_with("peak detect")
@@ -905,7 +878,6 @@ fn fetch_source_outputs(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInt
                 {
                     return;
                 }
-                // Reuse app_name already fetched above; fall back to media.name or index
                 let name = if !app_name.is_empty()
                 {
                     app_name
@@ -939,8 +911,8 @@ fn fetch_source_outputs(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInt
 
 
 
-// ============ CONTROL ACTIONS ============
 
+// ============ CONTROL ACTIONS ============
 pub async fn set_device_volume_cmd(kind: MixerKind, index: u32, volume_pct: u8)
 {
     let type_str = match kind { MixerKind::Output => "sink", MixerKind::Input => "source" };
@@ -993,6 +965,7 @@ pub async fn toggle_app_mute_cmd(kind: MixerKind, index: u32)
 
 
 
+
 // ============ TASK HELPERS ============
 pub fn task_set_device_volume(kind: MixerKind, index: u32, volume_pct: u8) -> Task<Message>
 {
@@ -1018,6 +991,7 @@ pub fn task_toggle_app_mute(kind: MixerKind, index: u32) -> Task<Message>
 {
     Task::perform(toggle_app_mute_cmd(kind, index), |_| Message::Nothing)
 }
+
 
 
 
@@ -1082,7 +1056,7 @@ fn bar_anchor(pos: &BarPosition) -> Anchor
         BarPosition::Down  => Anchor::Bottom | Anchor::Left,
         BarPosition::Up    => Anchor::Top    | Anchor::Left,
         BarPosition::Left  => Anchor::Left   | Anchor::Top,
-        BarPosition::Right => Anchor::Right  | Anchor::Top,
+        BarPosition::Right => Anchor::Right  | Anchor::Top
     }
 }
 
@@ -1093,7 +1067,7 @@ pub fn volume_mixer_view<'a>(app: &'a AppData, kind: MixerKind) -> Element<'a, M
     let cfg = match kind
     {
         MixerKind::Output => &app.ron_config.volume_output_mixer,
-        MixerKind::Input  => &app.ron_config.volume_input_mixer,
+        MixerKind::Input  => &app.ron_config.volume_input_mixer
     };
 
     let mixer_data = &app.modules_data.volume_mixer_data;
@@ -1135,22 +1109,20 @@ pub fn volume_mixer_view<'a>(app: &'a AppData, kind: MixerKind) -> Element<'a, M
     let streams: Vec<&AppStream> = match kind
     {
         MixerKind::Output => state.output_streams.iter().collect(),
-        MixerKind::Input  => state.input_streams.iter().collect(),
+        MixerKind::Input  => state.input_streams.iter().collect()
     };
 
-    // ---- Build device category ----
     let dev_cat_cfg = &cfg.device_category;
     let dev_row_cfg = &cfg.device_row;
     let (dev_cat_open, app_cat_open) = match kind
     {
         MixerKind::Output => (mixer_data.output_device_cat_open, mixer_data.output_app_cat_open),
-        MixerKind::Input  => (mixer_data.input_device_cat_open,  mixer_data.input_app_cat_open),
+        MixerKind::Input  => (mixer_data.input_device_cat_open,  mixer_data.input_app_cat_open)
     };
 
     let mut top_sections:    Vec<Element<'_, Message>> = Vec::new();
     let mut bottom_sections: Vec<Element<'_, Message>> = Vec::new();
 
-    // --- Device category ---
     if dev_cat_cfg.show
     {
         if dev_cat_cfg.show_header
@@ -1165,7 +1137,7 @@ pub fn volume_mixer_view<'a>(app: &'a AppData, kind: MixerKind) -> Element<'a, M
             let toggle_msg = match kind
             {
                 MixerKind::Output => Message::ToggleOutputDeviceCategory,
-                MixerKind::Input  => Message::ToggleInputDeviceCategory,
+                MixerKind::Input  => Message::ToggleInputDeviceCategory
             };
 
             let header_btn = button
@@ -1200,7 +1172,6 @@ pub fn volume_mixer_view<'a>(app: &'a AppData, kind: MixerKind) -> Element<'a, M
         }
     }
 
-    // --- App category ---
     let app_cat_cfg = &cfg.app_category;
     let app_row_cfg = &cfg.app_row;
 
@@ -1218,7 +1189,7 @@ pub fn volume_mixer_view<'a>(app: &'a AppData, kind: MixerKind) -> Element<'a, M
             let toggle_msg = match kind
             {
                 MixerKind::Output => Message::ToggleOutputAppCategory,
-                MixerKind::Input  => Message::ToggleInputAppCategory,
+                MixerKind::Input  => Message::ToggleInputAppCategory
             };
 
             let header_btn = button
@@ -1264,7 +1235,6 @@ pub fn volume_mixer_view<'a>(app: &'a AppData, kind: MixerKind) -> Element<'a, M
         }
     }
 
-    // Each category uses its own spacing; the two blocks are separated by mixer_section_spacing.
     let dev_col = column(top_sections)
         .spacing(dev_cat_cfg.spacing as f32)
         .width(Length::Fill);
@@ -1277,7 +1247,6 @@ pub fn volume_mixer_view<'a>(app: &'a AppData, kind: MixerKind) -> Element<'a, M
 
     let inner: Element<'_, Message> = match cfg.categories_position
     {
-        // Default: Device on top, App below — vertical stack
         CategoryPosition::Up =>
         {
             column![dev_col, app_col]
@@ -1285,7 +1254,6 @@ pub fn volume_mixer_view<'a>(app: &'a AppData, kind: MixerKind) -> Element<'a, M
                 .width(Length::Fill)
                 .into()
         }
-        // Reversed: App on top, Device below — vertical stack
         CategoryPosition::Down =>
         {
             column![app_col, dev_col]
@@ -1293,7 +1261,6 @@ pub fn volume_mixer_view<'a>(app: &'a AppData, kind: MixerKind) -> Element<'a, M
                 .width(Length::Fill)
                 .into()
         }
-        // Side by side: [Device | App]
         CategoryPosition::Left =>
         {
             row![dev_col, app_col]
@@ -1302,7 +1269,6 @@ pub fn volume_mixer_view<'a>(app: &'a AppData, kind: MixerKind) -> Element<'a, M
                 .height(Length::Fill)
                 .into()
         }
-        // Side by side reversed: [App | Device]
         CategoryPosition::Right =>
         {
             row![app_col, dev_col]
@@ -1422,7 +1388,7 @@ fn build_device_row<'a>(dev: &AudioDevice, kind: MixerKind, cfg: &'a MixerDevice
                     match kind
                     {
                         MixerKind::Output => Message::SetDeviceVolume(MixerKind::Output, idx, v),
-                        MixerKind::Input  => Message::SetDeviceVolume(MixerKind::Input,  idx, v),
+                        MixerKind::Input  => Message::SetDeviceVolume(MixerKind::Input,  idx, v)
                     }
                 })
                 .width(slider_w)
@@ -1442,7 +1408,7 @@ fn build_device_row<'a>(dev: &AudioDevice, kind: MixerKind, cfg: &'a MixerDevice
                 let dec_msg = match kind
                 {
                     MixerKind::Output => Message::SetDeviceVolume(MixerKind::Output, idx, vol_pct.saturating_sub(step)),
-                    MixerKind::Input  => Message::SetDeviceVolume(MixerKind::Input,  idx, vol_pct.saturating_sub(step)),
+                    MixerKind::Input  => Message::SetDeviceVolume(MixerKind::Input,  idx, vol_pct.saturating_sub(step))
                 };
                 let dec_btn = button(convert_text_to_rich_text::<Message>(&cfg.dec_button_label).size(ts))
                     .width(bw)
@@ -1463,7 +1429,7 @@ fn build_device_row<'a>(dev: &AudioDevice, kind: MixerKind, cfg: &'a MixerDevice
                 let inc_msg = match kind
                 {
                     MixerKind::Output => Message::SetDeviceVolume(MixerKind::Output, idx, (vol_pct as u16 + step as u16).min(150) as u8),
-                    MixerKind::Input  => Message::SetDeviceVolume(MixerKind::Input,  idx, (vol_pct as u16 + step as u16).min(150) as u8),
+                    MixerKind::Input  => Message::SetDeviceVolume(MixerKind::Input,  idx, (vol_pct as u16 + step as u16).min(150) as u8)
                 };
                 let inc_btn = button(convert_text_to_rich_text::<Message>(&cfg.inc_button_label).size(ts))
                     .width(bw)
@@ -1486,7 +1452,7 @@ fn build_device_row<'a>(dev: &AudioDevice, kind: MixerKind, cfg: &'a MixerDevice
                 let mute_msg = match kind
                 {
                     MixerKind::Output => Message::ToggleDeviceMute(MixerKind::Output, idx),
-                    MixerKind::Input  => Message::ToggleDeviceMute(MixerKind::Input,  idx),
+                    MixerKind::Input  => Message::ToggleDeviceMute(MixerKind::Input,  idx)
                 };
                 let mute_btn = button(convert_text_to_rich_text::<Message>(&label).size(ts))
                     .width(bw)
@@ -1542,7 +1508,7 @@ fn build_app_row<'a>(stream: &AppStream, kind: MixerKind, cfg: &'a MixerAppRowCo
                     match kind
                     {
                         MixerKind::Output => Message::SetAppVolume(MixerKind::Output, idx, v),
-                        MixerKind::Input  => Message::SetAppVolume(MixerKind::Input,  idx, v),
+                        MixerKind::Input  => Message::SetAppVolume(MixerKind::Input,  idx, v)
                     }
                 })
                 .width(slider_w)
@@ -1561,7 +1527,7 @@ fn build_app_row<'a>(stream: &AppStream, kind: MixerKind, cfg: &'a MixerAppRowCo
                 let dec_msg = match kind
                 {
                     MixerKind::Output => Message::SetAppVolume(MixerKind::Output, idx, vol_pct.saturating_sub(step)),
-                    MixerKind::Input  => Message::SetAppVolume(MixerKind::Input,  idx, vol_pct.saturating_sub(step)),
+                    MixerKind::Input  => Message::SetAppVolume(MixerKind::Input,  idx, vol_pct.saturating_sub(step))
                 };
                 let dec_btn = button(convert_text_to_rich_text::<Message>(&cfg.dec_button_label).size(ts))
                     .width(bw)
@@ -1582,7 +1548,7 @@ fn build_app_row<'a>(stream: &AppStream, kind: MixerKind, cfg: &'a MixerAppRowCo
                 let inc_msg = match kind
                 {
                     MixerKind::Output => Message::SetAppVolume(MixerKind::Output, idx, (vol_pct as u16 + step as u16).min(150) as u8),
-                    MixerKind::Input  => Message::SetAppVolume(MixerKind::Input,  idx, (vol_pct as u16 + step as u16).min(150) as u8),
+                    MixerKind::Input  => Message::SetAppVolume(MixerKind::Input,  idx, (vol_pct as u16 + step as u16).min(150) as u8)
                 };
                 let inc_btn = button(convert_text_to_rich_text::<Message>(&cfg.inc_button_label).size(ts))
                     .width(bw)
@@ -1605,7 +1571,7 @@ fn build_app_row<'a>(stream: &AppStream, kind: MixerKind, cfg: &'a MixerAppRowCo
                 let mute_msg = match kind
                 {
                     MixerKind::Output => Message::ToggleAppMute(MixerKind::Output, idx),
-                    MixerKind::Input  => Message::ToggleAppMute(MixerKind::Input,  idx),
+                    MixerKind::Input  => Message::ToggleAppMute(MixerKind::Input,  idx)
                 };
                 let mute_btn = button(convert_text_to_rich_text::<Message>(&label).size(ts))
                     .width(bw)
@@ -1669,7 +1635,7 @@ fn make_slider_style(s: &MixerSliderStyle, _status: iced::widget::slider::Status
                 bottom_right: handle_brad[2],
                 bottom_left:  handle_brad[3],
             },
-        },
+        }
     };
 
     iced::widget::slider::Style
@@ -1701,7 +1667,7 @@ fn make_slider_style(s: &MixerSliderStyle, _status: iced::widget::slider::Status
             background:   iced::Background::Color(handle_col),
             border_color: handle_bord,
             border_width: handle_bw,
-        },
+        }
     }
 }
 
@@ -1714,7 +1680,7 @@ fn make_scrollbar_style(cfg: &MixerScrollbarConfig, theme: &Theme, status: scrol
         top_left:     cfg.border_radius[0],
         top_right:    cfg.border_radius[1],
         bottom_right: cfg.border_radius[2],
-        bottom_left:  cfg.border_radius[3],
+        bottom_left:  cfg.border_radius[3]
     };
 
     let rail_bg   = cfg.rail_color.to_iced_color();
@@ -1736,7 +1702,7 @@ fn make_scrollbar_style(cfg: &MixerScrollbarConfig, theme: &Theme, status: scrol
         {
             cfg.scroller_hovered_color.to_iced_color()
         }
-        _ => cfg.scroller_color.to_iced_color(),
+        _ => cfg.scroller_color.to_iced_color()
     };
 
     let scroller_bord_color = cfg.scroller_border_color.to_iced_color();
@@ -1760,7 +1726,7 @@ fn make_scrollbar_style(cfg: &MixerScrollbarConfig, theme: &Theme, status: scrol
                 width:  scroller_bw,
                 radius: brad,
             },
-        },
+        }
     };
 
     let base = scrollable::default(theme, status);

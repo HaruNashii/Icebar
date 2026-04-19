@@ -21,7 +21,6 @@ use crate::AppData;
 
 
 // ============ STATIC ============
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct NetworkConfig
@@ -286,11 +285,6 @@ pub fn read_rx_tx(interface: &str) -> Option<(u64, u64)>
 
 
 
-// Bug D fix: discover the active network interface from /proc/net/route
-// (the kernel routing table) without requiring an async D-Bus round-trip.
-// The default-gateway row is the one whose Destination field is "00000000".
-// This is the same interface NetworkManager reports as the primary device,
-// so it matches what the rest of the network module uses.
 pub fn active_iface_from_proc() -> Option<String>
 {
     use std::io::{BufRead, BufReader};
@@ -423,20 +417,14 @@ pub fn define_network_text(app: &AppData) -> String
         _ => &app.modules_data.network_data.network_icons[3]
     };
 
-    // Fix #3: connection_type values:
-    //   1 = ethernet, 2 = wifi, 3 = other/unknown VPN, 4 = no connection
-    // Previously both "unknown VPN" and "no connection" used 3 and mapped to the
-    // same icon, making them visually indistinguishable.
     let connection_type = match &app.modules_data.network_data.connection_type
     {
         1 => &app.modules_data.network_data.connection_type_icons[0],
         2 => &app.modules_data.network_data.connection_type_icons[1],
         3 => &app.modules_data.network_data.connection_type_icons[2],
-        _ => &app.modules_data.network_data.connection_type_icons[2] // 4 = no connection, also uses [2]
+        _ => &app.modules_data.network_data.connection_type_icons[2]
     };
     
-    // Fix #4: bind the temporary Strings to named variables before borrowing them,
-    // so the borrows outlive the match expression.
     let speed_unknown = "?".to_string();
     let speed_numeric = app.modules_data.network_data.network_speed.to_string().replace([' ', '\n'], "");
     let network_speed = match &app.modules_data.network_data.network_speed
@@ -627,14 +615,12 @@ mod tests
     fn network_text_level_5_and_above_uses_last_icon()
     {
         let app = make_app(99, 1, 50, "");
-        // 99 matches none of 4/3/2, so falls to _ => icons[3]
         assert!(define_network_text(&app).contains("L0"));
     }
 
     #[test]
     fn network_text_connection_type_4_uses_unknown_icon()
     {
-        // 4 = no connection, also maps to [2]
         let app = make_app(4, 4, 50, "");
         assert!(define_network_text(&app).contains("?"));
     }
@@ -644,7 +630,6 @@ mod tests
     {
         let app = make_app(4, 1, 50, "");
         let text = define_network_text(&app);
-        // Format: "{level}|{connection_type}|{speed}|{id}"
         assert!(text.ends_with('|') || text.contains("||") || text.contains("|"));
     }
 
@@ -679,7 +664,6 @@ mod tests
     #[test]
     fn read_rx_tx_returns_some_for_lo_interface()
     {
-        // loopback is always present on Linux
         let result = read_rx_tx("lo");
         assert!(result.is_some(), "/proc/net/dev should have 'lo'");
     }
@@ -695,7 +679,6 @@ mod tests
     fn read_rx_tx_loopback_rx_and_tx_are_nonnegative()
     {
         let (rx, tx) = read_rx_tx("lo").unwrap();
-        // rx and tx are u64, so always >= 0; just check they can be read
         let _ = rx;
         let _ = tx;
     }
@@ -703,11 +686,10 @@ mod tests
     #[test]
     fn active_iface_from_proc_returns_none_or_valid_string()
     {
-        // In a container with no default gateway this may return None — both are valid
         match active_iface_from_proc()
         {
             Some(iface) => assert!(!iface.is_empty()),
-            None => {} // OK in sandboxed environments
+            None => {}
         }
     }
 

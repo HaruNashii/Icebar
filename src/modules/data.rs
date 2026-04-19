@@ -64,7 +64,7 @@ pub struct ModulesData
     pub disk_text: String,
     pub cpu_temp_text: String,
     pub volume_mixer_data: VolumeMixerData,
-    pub mixer_state: MixerState,
+    pub mixer_state: MixerState
 }
 
 

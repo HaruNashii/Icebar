@@ -5,6 +5,7 @@ use iced::event;
 
 
 
+
 // ============ CRATES ============
 use crate::helpers::config_watcher::config_file_watcher;
 use crate::AppData;
@@ -29,6 +30,7 @@ use crate::volume_mixer::volume_mixer_subscription;
 
 
 
+
 // ============ FUNCTIONS ============
 pub fn subscription(app: &AppData) -> iced::Subscription<Message>
 {
@@ -38,17 +40,12 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
 
     let needs_cursor = app.modules_data.active_modules.contains(&Modules::Tray)
         || app.ron_config.auto_hide.is_some()
-        // Clock
         || app.modules_data.active_modules.contains(&Modules::Clock) && (has_mixer_action(&app.ron_config.clock.action_on_left_click_clock)
         || has_mixer_action(&app.ron_config.clock.action_on_right_click_clock))
-        // Volume output
         || has_mixer_action(&app.ron_config.volume_output.action_on_left_click_volume_output)
         || has_mixer_action(&app.ron_config.volume_output.action_on_right_click_volume_output)
-        // Volume input
         || has_mixer_action(&app.ron_config.volume_input.action_on_left_click_volume_input)
         || has_mixer_action(&app.ron_config.volume_input.action_on_right_click_volume_input)
-        // Bug 4 fix: also cover network, cpu, cpu_temp, media player, and power_profile
-        // which all have configurable click actions that can open popups.
         || app.modules_data.active_modules.contains(&Modules::Network) && (has_mixer_action(&app.ron_config.network.action_on_left_click_network)
         || has_mixer_action(&app.ron_config.network.action_on_right_click_network))
         || app.modules_data.active_modules.contains(&Modules::Cpu) && (has_mixer_action(&app.ron_config.cpu.action_on_left_click_cpu)
@@ -147,8 +144,6 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             Modules::Network =>
             {
                 subs.push(network_subscription(app.ron_config.network.network_disconnected_text.clone()));
-                // Bug D fix: NetworkSpeedPollConfig no longer carries iface; the
-                // subscription discovers the active interface itself each tick.
                 subs.push(iced::Subscription::run_with(NetworkSpeedPollConfig, network_speed_subscription));
             }
 

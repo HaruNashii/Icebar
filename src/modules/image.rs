@@ -451,7 +451,7 @@ mod tests
 
         assert_eq!(result.len(), 1);
         let entry = result[0].as_ref().unwrap();
-        assert_eq!(entry.1, 0); // index matches
+        assert_eq!(entry.1, 0);
         assert!(matches!(entry.0, PreloadedImage::Static(_)));
     }
 

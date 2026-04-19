@@ -7,8 +7,6 @@ use std::pin::Pin;
 
 
 
-
-
 // ============ CRATES ============
 use crate::helpers::{color::{ColorType, Gradient}, string::{convert_text_to_rich_text}, style::{UserStyle, orient_text, set_style, TextOrientation, SideOption}};
 use crate::ron::ActionOnClick;
@@ -587,7 +585,7 @@ mod tests
         let text = define_media_player_metadata_text(&app);
         let result  = ellipsize(&"...".to_string(), &text, 20);
         assert!(result.ends_with("..."));
-        assert!(result.chars().count() <= 23); // 20 + "...".len()
+        assert!(result.chars().count() <= 23);
     }
  
     #[test]
@@ -672,7 +670,6 @@ mod tests
     }
 
 
-    // ---- define_button_data ----
 
     #[test]
     fn define_button_data_returns_three_entries()
@@ -705,7 +702,6 @@ mod tests
         assert!(matches!(data[2].1, Message::MediaPlayerClickNext));
     }
 
-    // ---- define_media_player_buttons_text ----
 
     #[test]
     fn buttons_text_playing_returns_pause_format()
@@ -738,12 +734,11 @@ mod tests
         }
     }
 
-    // ---- define_media_player_metadata_text ----
 
     #[test]
     fn metadata_text_empty_metadata_with_dont_show_false_returns_placeholder()
     {
-        let app = make_app("", "Stopped"); // dont_show=false by default in make_app
+        let app = make_app("", "Stopped");
         let result = define_media_player_metadata_text(&app);
         assert_eq!(result, "No Media");
     }
@@ -764,7 +759,6 @@ mod tests
         assert_eq!(define_media_player_metadata_text(&app), "");
     }
 
-    // ---- Config defaults ----
 
     #[test]
     fn media_player_metadata_config_default_text_size_is_positive()
@@ -779,4 +773,3 @@ mod tests
         assert_eq!(MediaPlayerButtonConfig::default().media_player_buttons_format.len(), 4);
     }
 }
-

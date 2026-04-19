@@ -60,7 +60,7 @@ pub enum WindowInfo
     ContextMenu,
     Calendar,
     VolumeOutputMixer,
-    VolumeInputMixer,
+    VolumeInputMixer
 }
 
 #[derive(Clone)]

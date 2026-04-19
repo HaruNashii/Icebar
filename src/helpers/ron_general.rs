@@ -21,7 +21,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_output.volume_output_padding                              = v;
         ron_config.volume_input.volume_input_padding                                = v;
         ron_config.disk.disk_padding                                                = v;
-        ron_config.power_profile.power_profile_padding                              = v; // Bug K fix
+        ron_config.power_profile.power_profile_padding                              = v;
     }
 
     if let Some(v) = ron_config.general_style.general_text_size
@@ -38,7 +38,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_text_size                              = v;
         ron_config.workspace.workspace_text_size                                    = v;
         ron_config.disk.disk_text_size                                              = v;
-        ron_config.power_profile.power_profile_text_size                            = v; // Bug K fix
+        ron_config.power_profile.power_profile_text_size                            = v; 
     }
 
     if let Some(v) = ron_config.general_style.general_text_orientation
@@ -55,7 +55,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_text_orientation                       = v;
         ron_config.workspace.workspace_text_orientation                             = v;
         ron_config.disk.disk_text_orientation                                       = v;
-        ron_config.power_profile.power_profile_text_orientation                     = v; // Bug K fix
+        ron_config.power_profile.power_profile_text_orientation                     = v;
     }
 
     if let Some(v) = ron_config.general_style.general_text_color
@@ -72,7 +72,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_text_color                             = v;
         ron_config.workspace.workspace_text_color                                   = v;
         ron_config.disk.disk_text_color                                             = v;
-        ron_config.power_profile.power_profile_text_color                           = v; // Bug K fix
+        ron_config.power_profile.power_profile_text_color                           = v;
     }
 
     if let Some(v) = ron_config.general_style.general_button_color
@@ -90,7 +90,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_button_color            = v;
         ron_config.workspace.workspace_button_color               = v;
         ron_config.disk.disk_button_color                    = v;
-        ron_config.power_profile.power_profile_button_color          = v; // Bug K fix
+        ron_config.power_profile.power_profile_button_color          = v; 
     }
 
     if let Some(v) = ron_config.general_style.general_button_hovered_color
@@ -108,7 +108,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_button_hovered_color            = v;
         ron_config.workspace.workspace_button_hovered_color               = v;
         ron_config.disk.disk_button_hovered_color                    = v;
-        ron_config.power_profile.power_profile_button_hovered_color          = v; // Bug K fix
+        ron_config.power_profile.power_profile_button_hovered_color          = v;
     }
 
     if let Some(v) = ron_config.general_style.general_button_hovered_text_color
@@ -126,7 +126,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_button_hovered_text_color           = v;
         ron_config.workspace.workspace_button_hovered_text_color              = v;
         ron_config.disk.disk_button_hovered_text_color                   = v;
-        ron_config.power_profile.power_profile_button_hovered_text_color         = v; // Bug K fix
+        ron_config.power_profile.power_profile_button_hovered_text_color         = v;
     }
 
     if let Some(v) = ron_config.general_style.general_button_pressed_text_color
@@ -144,7 +144,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_button_pressed_text_color           = v;
         ron_config.workspace.workspace_button_pressed_text_color              = v;
         ron_config.disk.disk_button_pressed_text_color                   = v;
-        ron_config.power_profile.power_profile_button_pressed_text_color         = v; // Bug K fix
+        ron_config.power_profile.power_profile_button_pressed_text_color         = v;
     }
 
     if let Some(v) = ron_config.general_style.general_button_pressed_color
@@ -162,7 +162,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_button_pressed_color            = v;
         ron_config.workspace.workspace_button_pressed_color               = v;
         ron_config.disk.disk_button_pressed_color                    = v;
-        ron_config.power_profile.power_profile_button_pressed_color          = v; // Bug K fix
+        ron_config.power_profile.power_profile_button_pressed_color          = v;
     }
 
     if let Some(v) = ron_config.general_style.general_border_color
@@ -180,7 +180,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_border_color           = v;
         ron_config.workspace.workspace_border_color              = v;
         ron_config.disk.disk_border_color                   = v;
-        ron_config.power_profile.power_profile_border_color         = v; // Bug K fix
+        ron_config.power_profile.power_profile_border_color         = v; 
     }
 
     if let Some(v) = ron_config.general_style.general_border_size
@@ -198,7 +198,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_border_size             = v;
         ron_config.workspace.workspace_border_size                = v;
         ron_config.disk.disk_border_size                     = v;
-        ron_config.power_profile.power_profile_border_size           = v; // Bug K fix
+        ron_config.power_profile.power_profile_border_size           = v;
     }
 
     if let Some(v) = ron_config.general_style.general_border_radius
@@ -216,7 +216,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_border_radius           = v;
         ron_config.workspace.workspace_border_radius              = v;
         ron_config.disk.disk_border_radius                    = v;
-        ron_config.power_profile.power_profile_border_radius         = v; // Bug K fix
+        ron_config.power_profile.power_profile_border_radius         = v;
     }
 
     if let Some(v) = ron_config.general_style.general_side_separator
@@ -234,7 +234,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_side_separator              = Some(v);
         ron_config.workspace.workspace_side_separator                 = Some(v);
         ron_config.disk.disk_side_separator                       = Some(v);
-        ron_config.power_profile.power_profile_side_separator            = Some(v); // Bug K fix
+        ron_config.power_profile.power_profile_side_separator            = Some(v);
     }
 
     if let Some(v) = ron_config.general_style.general_side_separator_color
@@ -252,7 +252,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_side_separator_color            = v;
         ron_config.workspace.workspace_side_separator_color               = v;
         ron_config.disk.disk_side_separator_color                     = v;
-        ron_config.power_profile.power_profile_side_separator_color          = v; // Bug K fix
+        ron_config.power_profile.power_profile_side_separator_color          = v;
     }
 
     if let Some(v) = ron_config.general_style.general_side_separator_width
@@ -270,7 +270,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_side_separator_width            = v;
         ron_config.workspace.workspace_side_separator_width               = v;
         ron_config.disk.disk_side_separator_width                     = v;
-        ron_config.power_profile.power_profile_side_separator_width          = v; // Bug K fix
+        ron_config.power_profile.power_profile_side_separator_width          = v;
     }
 
     if let Some(v) = ron_config.general_style.general_side_separator_height
@@ -288,7 +288,7 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_side_separator_height           = v;
         ron_config.workspace.workspace_side_separator_height              = v;
         ron_config.disk.disk_side_separator_height                    = v;
-        ron_config.power_profile.power_profile_side_separator_height         = v; // Bug K fix
+        ron_config.power_profile.power_profile_side_separator_height         = v;
     }
 
 
@@ -407,93 +407,93 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
 
     if let Some(v) = ron_config.general_style.general_alt_side_separator_width
     {
-        ron_config.clock.alt_clock_side_separator_width           = v;
-        ron_config.alt_network.alt_network_side_separator_width         = v; 
-        ron_config.muted_volume_output.muted_volume_output_side_separator_width = v;
-        ron_config.muted_volume_input.muted_volume_input_side_separator_width  = v;
+        ron_config.clock.alt_clock_side_separator_width                             = v;
+        ron_config.alt_network.alt_network_side_separator_width                     = v; 
+        ron_config.muted_volume_output.muted_volume_output_side_separator_width     = v;
+        ron_config.muted_volume_input.muted_volume_input_side_separator_width       = v;
     }
 
     if let Some(v) = ron_config.general_style.general_alt_side_separator_height
     {
-        ron_config.clock.alt_clock_side_separator_height              = v;
-        ron_config.alt_network.alt_network_side_separator_height            = v; 
+        ron_config.clock.alt_clock_side_separator_height                            = v;
+        ron_config.alt_network.alt_network_side_separator_height                    = v; 
         ron_config.muted_volume_output.muted_volume_output_side_separator_height    = v;
-        ron_config.muted_volume_input.muted_volume_input_side_separator_height     = v;
+        ron_config.muted_volume_input.muted_volume_input_side_separator_height      = v;
     }
 
     if let Some(v) = &ron_config.general_style.general_button_gradient_color
     {
-        ron_config.disk.disk_button_gradient_color                                  = Some(v.clone());
-        ron_config.tray.tray_button_gradient_color                                  = Some(v.clone());
-        ron_config.focused_window.focused_window_button_gradient_color                        = Some(v.clone());
-        ron_config.cpu.cpu_button_gradient_color                                   = Some(v.clone());
+        ron_config.disk.disk_button_gradient_color                                      = Some(v.clone());
+        ron_config.tray.tray_button_gradient_color                                      = Some(v.clone());
+        ron_config.focused_window.focused_window_button_gradient_color                  = Some(v.clone());
+        ron_config.cpu.cpu_button_gradient_color                                        = Some(v.clone());
         ron_config.cpu_temp.cpu_temp_button_gradient_color                              = Some(v.clone());
-        ron_config.media_player_metadata.media_player_metadata_button_gradient_color                 = Some(v.clone());
-        ron_config.media_player_button.media_player_button_gradient_color                          = Some(v.clone());
-        ron_config.network.network_button_gradient_color                               = Some(v.clone());
-        ron_config.ram.ram_button_gradient_color                                   = Some(v.clone());
-        ron_config.volume_output.volume_output_button_gradient_color                         = Some(v.clone());
-        ron_config.clock.clock_button_gradient_color                                 = Some(v.clone());
-        ron_config.volume_input.volume_input_button_gradient_color                          = Some(v.clone());
-        ron_config.workspace.workspace_button_gradient_color                             = Some(v.clone());
+        ron_config.media_player_metadata.media_player_metadata_button_gradient_color    = Some(v.clone());
+        ron_config.media_player_button.media_player_button_gradient_color               = Some(v.clone());
+        ron_config.network.network_button_gradient_color                                = Some(v.clone());
+        ron_config.ram.ram_button_gradient_color                                        = Some(v.clone());
+        ron_config.volume_output.volume_output_button_gradient_color                    = Some(v.clone());
+        ron_config.clock.clock_button_gradient_color                                    = Some(v.clone());
+        ron_config.volume_input.volume_input_button_gradient_color                      = Some(v.clone());
+        ron_config.workspace.workspace_button_gradient_color                            = Some(v.clone());
     }
 
     if let Some(v) = &ron_config.general_style.general_button_hovered_gradient_color
     {
-        ron_config.cpu.cpu_button_hovered_gradient_color                           = Some(v.clone());
-        ron_config.disk.disk_button_hovered_gradient_color                          = Some(v.clone());
-        ron_config.cpu_temp.cpu_temp_button_hovered_gradient_color                      = Some(v.clone());
-        ron_config.tray.tray_button_hovered_gradient_color                          = Some(v.clone());
-        ron_config.media_player_button.media_player_button_hovered_gradient_color                  = Some(v.clone());
-        ron_config.media_player_metadata.media_player_metadata_button_hovered_gradient_color         = Some(v.clone());
-        ron_config.ram.ram_button_hovered_gradient_color                           = Some(v.clone());
-        ron_config.focused_window.focused_window_button_hovered_gradient_color                = Some(v.clone());
-        ron_config.clock.clock_button_hovered_gradient_color                         = Some(v.clone());
-        ron_config.network.network_button_hovered_gradient_color                       = Some(v.clone());
-        ron_config.volume_input.volume_input_button_hovered_gradient_color                  = Some(v.clone());
-        ron_config.workspace.workspace_button_hovered_gradient_color                     = Some(v.clone());
-        ron_config.volume_output.volume_output_button_hovered_gradient_color                 = Some(v.clone());
+        ron_config.cpu.cpu_button_hovered_gradient_color                                        = Some(v.clone());
+        ron_config.disk.disk_button_hovered_gradient_color                                      = Some(v.clone());
+        ron_config.cpu_temp.cpu_temp_button_hovered_gradient_color                              = Some(v.clone());
+        ron_config.tray.tray_button_hovered_gradient_color                                      = Some(v.clone());
+        ron_config.media_player_button.media_player_button_hovered_gradient_color               = Some(v.clone());
+        ron_config.media_player_metadata.media_player_metadata_button_hovered_gradient_color    = Some(v.clone());
+        ron_config.ram.ram_button_hovered_gradient_color                                        = Some(v.clone());
+        ron_config.focused_window.focused_window_button_hovered_gradient_color                  = Some(v.clone());
+        ron_config.clock.clock_button_hovered_gradient_color                                    = Some(v.clone());
+        ron_config.network.network_button_hovered_gradient_color                                = Some(v.clone());
+        ron_config.volume_input.volume_input_button_hovered_gradient_color                      = Some(v.clone());
+        ron_config.workspace.workspace_button_hovered_gradient_color                            = Some(v.clone());
+        ron_config.volume_output.volume_output_button_hovered_gradient_color                    = Some(v.clone());
     }
 
     if let Some(v) = &ron_config.general_style.general_button_pressed_gradient_color
     {
-        ron_config.cpu_temp.cpu_temp_button_pressed_gradient_color                      = Some(v.clone());
-        ron_config.disk.disk_button_pressed_gradient_color                          = Some(v.clone());
-        ron_config.focused_window.focused_window_button_pressed_gradient_color                = Some(v.clone());
-        ron_config.tray.tray_button_pressed_gradient_color                          = Some(v.clone());
-        ron_config.ram.ram_button_pressed_gradient_color                           = Some(v.clone());
-        ron_config.cpu.cpu_button_pressed_gradient_color                           = Some(v.clone());
-        ron_config.media_player_metadata.media_player_metadata_button_pressed_gradient_color         = Some(v.clone());
-        ron_config.media_player_button.media_player_button_pressed_gradient_color                  = Some(v.clone());
-        ron_config.network.network_button_pressed_gradient_color                       = Some(v.clone());
-        ron_config.clock.clock_button_pressed_gradient_color                         = Some(v.clone());
-        ron_config.volume_output.volume_output_button_pressed_gradient_color                 = Some(v.clone());
-        ron_config.volume_input.volume_input_button_pressed_gradient_color                  = Some(v.clone());
-        ron_config.workspace.workspace_button_pressed_gradient_color                     = Some(v.clone());
+        ron_config.cpu_temp.cpu_temp_button_pressed_gradient_color                              = Some(v.clone());
+        ron_config.disk.disk_button_pressed_gradient_color                                      = Some(v.clone());
+        ron_config.focused_window.focused_window_button_pressed_gradient_color                  = Some(v.clone());
+        ron_config.tray.tray_button_pressed_gradient_color                                      = Some(v.clone());
+        ron_config.ram.ram_button_pressed_gradient_color                                        = Some(v.clone());
+        ron_config.cpu.cpu_button_pressed_gradient_color                                        = Some(v.clone());
+        ron_config.media_player_metadata.media_player_metadata_button_pressed_gradient_color    = Some(v.clone());
+        ron_config.media_player_button.media_player_button_pressed_gradient_color               = Some(v.clone());
+        ron_config.network.network_button_pressed_gradient_color                                = Some(v.clone());
+        ron_config.clock.clock_button_pressed_gradient_color                                    = Some(v.clone());
+        ron_config.volume_output.volume_output_button_pressed_gradient_color                    = Some(v.clone());
+        ron_config.volume_input.volume_input_button_pressed_gradient_color                      = Some(v.clone());
+        ron_config.workspace.workspace_button_pressed_gradient_color                            = Some(v.clone());
     }
 
     if let Some(v) = &ron_config.general_style.general_alt_button_gradient_color
     {
-        ron_config.muted_volume_input.muted_volume_input_button_gradient_color                    = Some(v.clone());
-        ron_config.muted_volume_output.muted_volume_output_button_gradient_color                   = Some(v.clone());
-        ron_config.alt_network.alt_network_button_gradient_color                           = Some(v.clone());
-        ron_config.clock.alt_clock_button_gradient_color                             = Some(v.clone());
+        ron_config.muted_volume_input.muted_volume_input_button_gradient_color          = Some(v.clone());
+        ron_config.muted_volume_output.muted_volume_output_button_gradient_color        = Some(v.clone());
+        ron_config.alt_network.alt_network_button_gradient_color                        = Some(v.clone());
+        ron_config.clock.alt_clock_button_gradient_color                                = Some(v.clone());
     }
 
     if let Some(v) = &ron_config.general_style.general_alt_button_hovered_gradient_color
     {
-        ron_config.muted_volume_input.muted_volume_input_button_hovered_gradient_color            = Some(v.clone());
-        ron_config.muted_volume_output.muted_volume_output_button_hovered_gradient_color           = Some(v.clone());
-        ron_config.alt_network.alt_network_button_hovered_gradient_color                   = Some(v.clone());
-        ron_config.clock.alt_clock_button_hovered_gradient_color                     = Some(v.clone());
+        ron_config.muted_volume_input.muted_volume_input_button_hovered_gradient_color          = Some(v.clone());
+        ron_config.muted_volume_output.muted_volume_output_button_hovered_gradient_color        = Some(v.clone());
+        ron_config.alt_network.alt_network_button_hovered_gradient_color                        = Some(v.clone());
+        ron_config.clock.alt_clock_button_hovered_gradient_color                                = Some(v.clone());
     }
 
     if let Some(v) = &ron_config.general_style.general_alt_button_pressed_gradient_color
     {
         ron_config.muted_volume_output.muted_volume_output_button_pressed_gradient_color           = Some(v.clone());
-        ron_config.muted_volume_input.muted_volume_input_button_pressed_gradient_color            = Some(v.clone());
-        ron_config.alt_network.alt_network_button_pressed_gradient_color                         = Some(v.clone());
-        ron_config.clock.alt_clock_button_pressed_gradient_color                                = Some(v.clone());
+        ron_config.muted_volume_input.muted_volume_input_button_pressed_gradient_color             = Some(v.clone());
+        ron_config.alt_network.alt_network_button_pressed_gradient_color                           = Some(v.clone());
+        ron_config.clock.alt_clock_button_pressed_gradient_color                                   = Some(v.clone());
     }
 
     if let Some(v) = &ron_config.general_style.general_alt_button_shadow_color

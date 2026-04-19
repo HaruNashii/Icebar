@@ -25,10 +25,6 @@ pub fn clock_stream(granularity_ms: &u64) -> Pin<Box<dyn futures::Stream<Item = 
     {
         loop
         {
-            // Bug I fix: use the full milliseconds since epoch, not subsec_millis().
-            // subsec_millis() only returns the 0-999 sub-second portion, so for any
-            // granularity >= 1000 ms the modulo was always 0 and the clock fired at
-            // an arbitrary phase instead of aligning to wall-clock boundaries.
             let now_ms = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap_or(Duration::ZERO)
