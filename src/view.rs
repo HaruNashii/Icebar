@@ -8,7 +8,7 @@ use iced_gif::gif;
 
 // ============ CRATES ============
 use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_style, cpu_temp::define_cpu_temp_style, focused_window::{define_focused_window_style, define_focused_window_text}, ram::define_ram_style, volume::define_volume_text}};
-use crate::modules::{image::{PreloadedImage, define_image_style}, disk::define_disk_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, power_profile::{define_power_profile_rich_text, define_power_profile_style}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
+use crate::modules::{image::{PreloadedImage, define_image_style}, disk::define_disk_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, group_of_modules::group_container_style, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, power_profile::{define_power_profile_rich_text, define_power_profile_style}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::context_menu::context_menu_view;
 use crate::update::Message;
@@ -79,7 +79,12 @@ fn main_bar_view(app: &AppData) -> Element<'_, Message>
 
 
 
-fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: Axis) -> Element<'a, Message> 
+fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: Axis) -> Element<'a, Message>
+{
+    build_modules_with_spacing(list_of_modules, app, axis, app.ron_config.general.spacing_between_all_modules)
+}
+
+fn build_modules_with_spacing<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: Axis, spacing: u32) -> Element<'a, Message> 
 {
     let mut children = Vec::new();
     for item in list_of_modules
@@ -609,14 +614,36 @@ fn build_modules<'a>(list_of_modules: &'a Vec<Modules>, app: &'a AppData, axis: 
                     custom_module.separator_height
                 )
             }
+
+
+
+            Modules::Group(borrowed_index) =>
+            {
+                let index = *borrowed_index;
+                if index >= app.ron_config.group_of_modules.groups.len() { continue; }
+                let group = &app.ron_config.group_of_modules.groups[index];
+                let inner_elements = build_modules_with_spacing(&group.modules, app, axis, group.spacing_inside);
+
+                let group_element: Element<_> = container(inner_elements)
+                    .padding(group.padding)
+                    .align_y(Alignment::Center)
+                    .style(group_container_style(group))
+                    .into();
+
+                match axis
+                {
+                    Axis::Horizontal => row![group_element].align_y(Alignment::Center).into(),
+                    Axis::Vertical   => column![group_element].align_x(Alignment::Center).into()
+                }
+            }
         };
         children.push(element);
     }
 
     match axis 
     {
-        Axis::Horizontal => row(children).align_y(Alignment::Center).spacing(app.ron_config.general.spacing_between_all_modules).into(),
-        Axis::Vertical => column(children).align_x(Alignment::Center).spacing(app.ron_config.general.spacing_between_all_modules).into()
+        Axis::Horizontal => row(children).align_y(Alignment::Center).spacing(spacing).into(),
+        Axis::Vertical => column(children).align_x(Alignment::Center).spacing(spacing).into()
     }
 }
 

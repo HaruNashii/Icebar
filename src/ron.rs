@@ -23,7 +23,8 @@ use crate::modules::
     workspaces::WorkspaceConfig,
     image::ImageConfig,
     custom_modules::CustomModuleConfig,
-    data::Modules
+    data::Modules,
+    group_of_modules::GroupOfModulesGroupsConfig
 };
 use crate::context_menu::ContextMenuConfig;
 use crate::helpers::{string::find_field_colon, color::{ColorType, Gradient}, ron_general::apply_general_settings, style::{SideOption, TextOrientation}};
@@ -226,6 +227,7 @@ pub struct BarConfig
     pub context_menu:           ContextMenuConfig,
     pub image:                  ImageConfig,
     pub custom_module:          CustomModuleConfig,
+    pub group_of_modules:       GroupOfModulesGroupsConfig,
     pub calendar_window:        CalendarWindowConfig,
     pub volume_output_mixer:    VolumeMixerConfig,
     pub volume_input_mixer:     VolumeMixerConfig,
@@ -333,6 +335,31 @@ pub fn read_ron_config(different_config_path: Option<String>) -> RonReturn
             if let Modules::CustomModule(_) = item
             {
                 active_modules.insert(item.to_owned());
+            }
+            if let Modules::Group(group_index) = item
+            {
+                active_modules.insert(item.to_owned());
+                if let Some(group) = bar_config.group_of_modules.groups.get(*group_index)
+                {
+                    for inner_item in &group.modules
+                    {
+                        if let Modules::Image(_) = inner_item
+                        {
+                            active_modules.insert(inner_item.to_owned());
+                        }
+                        if let Modules::CustomModule(_) = inner_item
+                        {
+                            active_modules.insert(inner_item.to_owned());
+                        }
+                        for module in &all_possible_default_modules
+                        {
+                            if *inner_item == *module
+                            {
+                                active_modules.insert(module.to_owned());
+                            }
+                        }
+                    }
+                }
             }
             for module in &all_possible_default_modules
             {

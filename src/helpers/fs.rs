@@ -139,6 +139,9 @@ pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Opt
 //   workspace: ( persistent_workspaces: Some(5), ... )
 //   image: ( images_spacing: 5, images: [ (...), (...) ] )
 //   custom_module: ( custom_modules_spacing: 10, custom_modules: [ (...) ] )
+//   group_of_modules: groups each hold their own modules list, spacing_inside (between inner modules),
+//                     spacing (around the group itself), padding, background_color, border_color,
+//                     border_size and border_radius. Reference a group in module lists as "Group(index)".
 //
 // =============================================================================================================================================
 // - The "general_style" fields overwrite every respective per-module option.
@@ -1746,6 +1749,31 @@ BarConfig
 	]
     ),
 
+
+    // ================= GROUP OF MODULES =================
+    // group_of_modules lets you visually group multiple modules inside a styled container.
+    // Each group has its own background, border, padding, and spacing controls:
+    //   - spacing_inside: space between the modules *inside* the group container
+    //   - padding:        inner padding around the group's content
+    //   - background_color, border_color, border_size, border_radius: styling
+    // Reference a group in any module list as "Group(index)" where the index matches
+    // its position in the groups array (first = 0, second = 1, etc.).
+    //
+    //group_of_modules: 
+    //(
+    //    groups: 
+    //    [
+    //    	(
+    //            	modules: [HyprWorkspaces],
+    //             	spacing_inside: 5,
+    //             	padding: 5,
+    //             	background_color: HEX("303030"),
+    //             	border_color: HEX("3d3d3d"),
+    //             	border_size: 1.0,
+    //             	border_radius: (6., 6., 6., 6.)
+    //    	)
+    //    ]
+    //),
 
     // ================= AUTO-HIDE =================
     // The bar hides itself after the cursor leaves and slides back when

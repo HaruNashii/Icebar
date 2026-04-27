@@ -22,6 +22,8 @@ pub enum Modules
 {
     Image(usize),
     CustomModule(usize),
+    #[serde(alias = "GroupOfModules")]
+    Group(usize),
     PlasmaWorkspaces,
     PowerProfile,
     HyprWorkspaces,
