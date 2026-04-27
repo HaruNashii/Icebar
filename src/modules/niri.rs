@@ -1,5 +1,7 @@
 // ============ IMPORTS ============
 use std::pin::Pin;
+use std::io::{BufRead, BufReader};
+use std::os::unix::net::UnixStream;
 use niri_ipc::{Action, Request, Response, Workspace, WorkspaceReferenceArg, socket::Socket};
 
 
@@ -83,54 +85,114 @@ pub fn niri_event_subscription() -> Pin<Box<dyn futures::Stream<Item = crate::up
 
         loop
         {
-            let result = tokio::task::spawn_blocking(||
-            {
-                let mut socket = Socket::connect().ok()?;
-                match socket.send(Request::EventStream)
-                {
-                    Ok(_)  => Some(socket),
-                    Err(_) => None
-                }
-            }).await;
-
-            let socket = match result
-            {
-                Ok(Some(s)) => s,
-                _ =>
-                {
-                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-                    continue;
-                }
-            };
-
             let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<crate::update::Message>();
+            let tx_thread = tx.clone();
 
             std::thread::spawn(move ||
             {
-                let mut read_next = socket.read_events();
-                while let Ok(event) = read_next()
+                let socket_path = match std::env::var("NIRI_SOCKET")
                 {
-                    use niri_ipc::Event;
-                    let msg = match event
+                    Ok(p)  => p,
+                    Err(e) =>
                     {
-                        Event::WorkspacesChanged { .. }
-                        | Event::WorkspaceActivated { .. }
-                        | Event::WorkspaceActiveWindowChanged { .. } =>
+                        eprintln!("[icebar] NIRI_SOCKET not set: {e}");
+                        return;
+                    }
+                };
+
+                let stream = match UnixStream::connect(&socket_path)
+                {
+                    Ok(s)  => s,
+                    Err(e) =>
+                    {
+                        eprintln!("[icebar] niri socket connect failed: {e}");
+                        return;
+                    }
+                };
+
+                let request = match serde_json::to_string(&Request::EventStream)
+                {
+                    Ok(r)  => r,
+                    Err(e) =>
+                    {
+                        eprintln!("[icebar] niri request serialize failed: {e}");
+                        return;
+                    }
+                };
+
+                use std::io::Write;
+                if let Err(e) = (&stream).write_all(format!("{request}\n").as_bytes())
+                {
+                    eprintln!("[icebar] niri event stream request failed: {e}");
+                    return;
+                }
+
+                let reader = BufReader::new(&stream);
+                let mut lines = reader.lines();
+
+                if let Some(first) = lines.next()
+                {
+                    match first
+                    {
+                        Ok(_)  => {}
+                        Err(e) =>
+                        {
+                            eprintln!("[icebar] niri event stream handshake failed: {e}");
+                            return;
+                        }
+                    }
+                }
+
+                for line_result in lines
+                {
+                    let line = match line_result
+                    {
+                        Ok(l)  => l,
+                        Err(e) =>
+                        {
+                            eprintln!("[icebar] niri socket read error: {e}");
+                            break;
+                        }
+                    };
+
+                    let value: serde_json::Value = match serde_json::from_str(&line)
+                    {
+                        Ok(v)  => v,
+                        Err(e) =>
+                        {
+                            eprintln!("[icebar] niri event parse error: {e}");
+                            continue;
+                        }
+                    };
+
+                    let event_key = match value.as_object().and_then(|o| o.keys().next())
+                    {
+                        Some(k) => k.as_str(),
+                        None    => continue
+                    };
+
+                    let msg = match event_key
+                    {
+                        "WorkspacesChanged"
+                        | "WorkspaceActivated"
+                        | "WorkspaceActiveWindowChanged" =>
                             Some(crate::update::Message::UpdateNiriWorkspaces),
 
-                        Event::WindowFocusChanged { .. }
-                        | Event::WindowsChanged { .. }
-                        | Event::WindowOpenedOrChanged { .. }
-                        | Event::WindowClosed { .. } =>
+                        "WindowFocusChanged"
+                        | "WindowsChanged"
+                        | "WindowOpenedOrChanged"
+                        | "WindowClosed" =>
                             Some(crate::update::Message::UpdateFocusedWindowNiri),
 
                         _ => None
                     };
+
                     if let Some(m) = msg
-                        && tx.send(m).is_err() { break; }
+                        && tx_thread.send(m).is_err() { break; }
                 }
             });
 
+            drop(tx);
             while let Some(msg) = rx.recv().await
             {
                 yield msg;
