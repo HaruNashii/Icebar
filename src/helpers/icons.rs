@@ -15,17 +15,19 @@ use crate::TrayEvent;
 
 
 // ============ FUNCTIONS ============
-pub async fn fetch_icon(conn: &Connection, combined: &str) -> zbus::Result<TrayEvent> 
+pub async fn fetch_icon(conn: &Connection, combined: &str) -> zbus::Result<TrayEvent>
 {
     let (service, path) = combined.split_once('|').unwrap_or((combined, "/StatusNotifierItem"));
     let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
-    if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("IconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().max_by_key(|(w, h, _)| w * h)
+    if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("IconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().filter(|(w, h, data)| *w > 0 && *h > 0 && *w <= 4096 && *h <= 4096 && (*w as u64).saturating_mul(*h as u64).saturating_mul(4) == data.len() as u64).max_by_key(|(w, h, _)| (*w as i64).saturating_mul(*h as i64))
     {
         let rgba_data = data.chunks_exact(4).flat_map(|p| [p[1], p[2], p[3], p[0]]).collect::<Vec<u8>>();
-        return Ok(TrayEvent::Icon {combined: combined.to_string(), data: rgba_data, width: w as u32, height: h as u32});
+        return Ok(TrayEvent::Icon { combined: combined.to_string(), data: rgba_data, width: w as u32, height: h as u32 });
     }
+
     let theme_path = proxy.get_property::<String>("IconThemePath").await.ok();
-    let try_name = |name: String| {load_icon_with_theme_path(&name, theme_path.as_deref())};
+    let try_name = |name: String| { load_icon_with_theme_path(&name, theme_path.as_deref()) };
+
     if let Ok(name) = proxy.get_property::<String>("IconName").await
     {
         let result = try_name(name.clone()).or_else(||
@@ -38,6 +40,7 @@ pub async fn fetch_icon(conn: &Connection, combined: &str) -> zbus::Result<TrayE
             return Ok(TrayEvent::Icon { combined: combined.to_string(), data: d, width: w, height: h });
         }
     }
+
     if let Ok(name) = proxy.get_property::<String>("AttentionIconName").await
     {
         let result = try_name(name.clone()).or_else(||
@@ -50,7 +53,8 @@ pub async fn fetch_icon(conn: &Connection, combined: &str) -> zbus::Result<TrayE
             return Ok(TrayEvent::Icon { combined: combined.to_string(), data: d, width: w, height: h });
         }
     }
-    if let Ok(title) = proxy.get_property::<String>("Title").await && let Some(icon) = load_icon_from_desktop(&title) 
+
+    if let Ok(title) = proxy.get_property::<String>("Title").await && let Some(icon) = load_icon_from_desktop(&title)
     {
         let (d, w, h) = icon;
         return Ok(TrayEvent::Icon { combined: combined.to_string(), data: d, width: w, height: h });
@@ -69,14 +73,14 @@ pub async fn fetch_attention_icon(conn: &Connection, combined: &str, attention_i
 
     let (service, path) = combined.split_once('|').unwrap_or((combined, "/StatusNotifierItem"));
     let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await.ok()?;
-
     let status = proxy.get_property::<String>("Status").await.ok()?;
+
     if status != "NeedsAttention"
     {
         return None;
     }
 
-    if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("AttentionIconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().max_by_key(|(w, h, _)| w * h)
+    if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("AttentionIconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().filter(|(w, h, data)| *w > 0 && *h > 0 && *w <= 4096 && *h <= 4096 && (*w as u64).saturating_mul(*h as u64).saturating_mul(4) == data.len() as u64).max_by_key(|(w, h, _)| (*w as i64).saturating_mul(*h as i64))
     {
         let rgba_data = data.chunks_exact(4).flat_map(|p| [p[1], p[2], p[3], p[0]]).collect::<Vec<u8>>();
         return Some(TrayEvent::AttentionIcon { combined: combined.to_string(), data: rgba_data, width: w as u32, height: h as u32 });
@@ -92,12 +96,12 @@ pub async fn fetch_attention_icon(conn: &Connection, combined: &str, attention_i
             let base = name.strip_suffix("-symbolic").unwrap_or(&name);
             if base != name { try_name(base.to_string()) } else { None }
         });
+
         if let Some((d, w, h)) = result
         {
             return Some(TrayEvent::AttentionIcon { combined: combined.to_string(), data: d, width: w, height: h });
         }
     }
-
     None
 }
 
@@ -137,12 +141,10 @@ pub fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
         PathBuf::from("/usr/share/applications"),
         PathBuf::from("/usr/local/share/applications"),
         home::home_dir().map(|h| h.join(".local/share/applications")).unwrap_or_default(),
-
         home::home_dir().map(|h| h.join(".local/share/flatpak/exports/share/applications")).unwrap_or_default(),
         PathBuf::from("/var/lib/flatpak/exports/share/applications"),
-
         PathBuf::from("/run/host/usr/share/applications"),
-        PathBuf::from("/run/host/usr/local/share/applications"),
+        PathBuf::from("/run/host/usr/local/share/applications")
     ];
 
     if let Some(home_path) = home::home_dir()
@@ -151,7 +153,7 @@ pub fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
         let flatpak_app_dirs = vec!
         [
             format!("{home}/.local/share/flatpak/app"),
-            format!("/var/lib/flatpak/app"),
+            format!("/var/lib/flatpak/app")
         ];
         for base in flatpak_app_dirs
         {
@@ -176,7 +178,6 @@ pub fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
                 let path = entry.path();
                 if !path.is_file() { continue; }
                 if path.extension().and_then(|e| e.to_str()) != Some("desktop") { continue; }
-
                 if let Ok(content) = fs::read_to_string(&path)
                 {
                     let lower_content = content.to_lowercase();
@@ -197,13 +198,13 @@ pub fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
             }
         }
     }
-
     println!("No matching .desktop icon found for {name}");
     None
 }
 
 
-pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option<(Vec<u8>, u32, u32)> 
+
+pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option<(Vec<u8>, u32, u32)>
 {
     println!("Trying to load icon: {name} with theme_path: {:?}", theme_path);
     if let Some(base) = theme_path && !base.is_empty()
@@ -217,19 +218,20 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
         {
             normal_base
         };
-        
-        for ext in ["svg","png"]
-        { let candidate = base.join(format!("{name}.{ext}"));
+
+        for ext in ["svg", "png"]
+        {
+            let candidate = base.join(format!("{name}.{ext}"));
             if let Some(icon) = try_load_icon(&candidate)
             {
                 println!("Loaded icon from app theme root: {:?}", candidate);
                 return Some(icon);
             }
         }
-        
-        for size in ["scalable","512x512","256x256","128x128","96x96","72x72","64x64","48x48","36x36","32x32","24x24","22x22","16x16"]
+
+        for size in ["scalable", "512x512", "256x256", "128x128", "96x96", "72x72", "64x64", "48x48", "36x36", "32x32", "24x24", "22x22", "16x16"]
         {
-            for ext in ["svg","png"]
+            for ext in ["svg", "png"]
             {
                 let candidate = base.join(size).join("apps").join(format!("{name}.{ext}"));
                 if let Some(icon) = try_load_icon(&candidate)
@@ -249,7 +251,8 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
 
     let host_user = std::env::var("USER").unwrap_or_default();
     let home = home::home_dir().expect("Failed to get home directory").display().to_string();
-    let flatpak_candidates = 
+
+    let flatpak_candidates =
     [
         format!("{home}/.local/share/flatpak/exports/share/icons/hicolor/scalable/apps/{name}.svg"),
         format!("{home}/.local/share/flatpak/exports/share/icons/hicolor/48x48/apps/{name}.png"),
@@ -258,8 +261,7 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
         format!("/run/host/home/{host_user}/.local/share/flatpak/exports/share/icons/hicolor/scalable/apps/{name}.svg"),
         format!("/run/host/home/{host_user}/.local/share/flatpak/exports/share/icons/hicolor/48x48/apps/{name}.png"),
         format!("/run/host/var/lib/flatpak/exports/share/icons/hicolor/scalable/apps/{name}.svg"),
-        format!("/run/host/var/lib/flatpak/exports/share/icons/hicolor/48x48/apps/{name}.png"),
-
+        format!("/run/host/var/lib/flatpak/exports/share/icons/hicolor/48x48/apps/{name}.png")
     ];
 
     for path_str in flatpak_candidates.iter()
@@ -273,6 +275,7 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
     }
 
     let symbolic_candidate = PathBuf::from("/usr/share/icons/hicolor/scalable/apps").join(format!("{name}.svg"));
+
     if let Some(icon) = try_load_icon(&symbolic_candidate)
     {
         println!("Loaded symbolic fallback icon: {:?}", symbolic_candidate);
@@ -287,14 +290,14 @@ pub fn load_icon_with_theme_path(name: &str, theme_path: Option<&str>) -> Option
 
 pub fn load_icon_from_theme(name: &str) -> Option<(Vec<u8>, u32, u32)>
 {
-    let exts = ["png","svg","xpm"];
+    let exts = ["png", "svg", "xpm"];
     let mut roots = vec!
     [
         PathBuf::from("/usr/share/icons"),
         PathBuf::from("/usr/local/share/icons"),
         PathBuf::from("/usr/share/pixmaps"),
         PathBuf::from("/run/host/usr/share/icons"),
-        PathBuf::from("/run/host/usr/share/pixmaps"),
+        PathBuf::from("/run/host/usr/share/pixmaps")
     ];
 
     if let Some(home) = home::home_dir()
@@ -323,6 +326,7 @@ pub fn search_icon_recursive(dir: &Path, name: &str, exts: &[&str]) -> Option<Pa
         for entry in entries.flatten()
         {
             let path = entry.path();
+
             if path.is_dir() && let Some(found) = search_icon_recursive(&path, name, exts)
             {
                 return Some(found);
@@ -333,6 +337,7 @@ pub fn search_icon_recursive(dir: &Path, name: &str, exts: &[&str]) -> Option<Pa
             }
         }
     }
+
     None
 }
 
@@ -360,6 +365,8 @@ mod tests
         assert_eq!(result.unwrap(), icon_path);
     }
  
+ 
+ 
     #[test]
     fn search_icon_finds_svg_in_flat_dir()
     {
@@ -370,6 +377,8 @@ mod tests
         let result = search_icon_recursive(dir.path(), "myapp", &["png", "svg"]);
         assert!(result.is_some());
     }
+ 
+ 
  
     #[test]
     fn search_icon_finds_file_in_subdirectory()
@@ -385,6 +394,8 @@ mod tests
         assert_eq!(result.unwrap(), icon_path);
     }
  
+ 
+ 
     #[test]
     fn search_icon_returns_none_when_not_found()
     {
@@ -392,6 +403,8 @@ mod tests
         let result = search_icon_recursive(dir.path(), "ghost_app", &["png", "svg"]);
         assert!(result.is_none());
     }
+ 
+ 
  
     #[test]
     fn search_icon_does_not_match_wrong_extension()
@@ -403,6 +416,8 @@ mod tests
         assert!(result.is_none());
     }
  
+ 
+ 
     #[test]
     fn search_icon_does_not_match_partial_name()
     {
@@ -413,6 +428,8 @@ mod tests
         assert!(result.is_none());
     }
  
+ 
+ 
     #[test]
     fn search_icon_empty_directory_returns_none()
     {
@@ -420,6 +437,8 @@ mod tests
         let result = search_icon_recursive(dir.path(), "anything", &["png"]);
         assert!(result.is_none());
     }
+ 
+ 
  
     #[test]
     fn search_icon_nonexistent_directory_returns_none()
