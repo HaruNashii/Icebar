@@ -120,15 +120,16 @@ fn build_modules_with_spacing<'a>(list_of_modules: &'a Vec<Modules>, app: &'a Ap
             {
                 let workspace_buttons = app.modules_data.workspace_data.visible_workspaces.iter().map(|i|
                 {
-                    let non_color_workspace_text = define_workspaces_text(app, *i);
-                    let size = define_workspaces_size(app, *i);
+                    let workspace_id = *i;
+                    let non_color_workspace_text = define_workspaces_text(app, workspace_id);
+                    let size = define_workspaces_size(app, workspace_id);
                     let workspace_text = convert_text_to_rich_text(&non_color_workspace_text);
                     button(workspace_text.wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace.workspace_text_size).center())
                     .padding(app.ron_config.workspace.workspace_padding)
-                    .style(move |_: &Theme, status: button::Status| define_workspaces_style(app, status, i))
+                    .style(move |_: &Theme, status: button::Status| define_workspaces_style(app, status, &workspace_id))
                     .width(size.0)
                     .height(size.1)
-                    .on_press(Message::WorkspaceButtonPressed(*i))
+                    .on_press(Message::WorkspaceButtonPressed(workspace_id))
                     .into()
                 });
              
