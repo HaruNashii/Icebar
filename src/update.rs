@@ -490,7 +490,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 }
             });
 
-            return Task::perform(tokio::task::spawn_blocking(|| { (niri::current_workspace(), niri::workspace_count()) }), |result|
+            return Task::perform(tokio::task::spawn_blocking(niri::current_workspace_and_count), |result|
             {
                 let (current, counts) = result.unwrap_or((0, vec![]));
                 Message::NiriWorkspacesFetched(current, build_workspace_list(&counts, None))

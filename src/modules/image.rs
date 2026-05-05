@@ -221,13 +221,10 @@ pub fn define_image_style(image: &Image, status: button::Status) -> iced::widget
 {
     let text_holder = ColorType::RGB([255, 255, 255]);
 
-    let hovered =       image.button_hovered_color; 
-    let pressed =       image.button_pressed_color; 
-    let normal =        image.button_color; 
-    let border_size =   image.border_size; 
-    let border_color =  image.border_color; 
+    let border_size =   image.border_size;
+    let border_color =  image.border_color;
     let border_radius = image.border_radius;
-    set_style(UserStyle { status, hovered, hovered_text: text_holder, pressed_text: text_holder, pressed, normal, normal_text: text_holder, border_color, border_size, border_radius, normal_gradient: None, hovered_gradient: None, pressed_gradient: None, shadow_color: None, shadow_x: 0.0, shadow_y: 0.0, shadow_blur: 0.0 })
+    set_style(UserStyle { status, hovered_text: text_holder, pressed_text: text_holder, normal_text: text_holder, border_color, border_size, border_radius, normal_background: crate::helpers::style::match_color_or_gradient(None, image.button_color), hovered_background: crate::helpers::style::match_color_or_gradient(None, image.button_hovered_color), pressed_background: crate::helpers::style::match_color_or_gradient(None, image.button_pressed_color), shadow_color: None, shadow_x: 0.0, shadow_y: 0.0, shadow_blur: 0.0 })
 }
 
 
@@ -241,6 +238,20 @@ mod tests
     use super::*;
     use iced::{Background, Color};
     use iced::widget::button;
+
+    fn make_image(normal: [u32;3], hovered: [u32;3], pressed: [u32;3]) -> Image
+    {
+        Image
+        {
+            button_color:         ColorType::RGB(normal),
+            button_hovered_color: ColorType::RGB(hovered),
+            button_pressed_color: ColorType::RGB(pressed),
+            border_color:         ColorType::RGB([1, 2, 3]),
+            border_size:          2.0,
+            border_radius:        [4.0, 4.0, 4.0, 4.0],
+            ..Default::default()
+        }
+    }
 
 
     #[test]
@@ -470,20 +481,6 @@ mod tests
     }
 
 
-    fn make_image(normal: [u32;3], hovered: [u32;3], pressed: [u32;3]) -> Image
-    {
-        Image
-        {
-            button_color:         ColorType::RGB(normal),
-            button_hovered_color: ColorType::RGB(hovered),
-            button_pressed_color: ColorType::RGB(pressed),
-            border_color:         ColorType::RGB([1, 2, 3]),
-            border_size:          2.0,
-            border_radius:        [4.0, 4.0, 4.0, 4.0],
-            ..Default::default()
-        }
-    }
-
     #[test]
     fn define_image_style_active_uses_normal_color()
     {
@@ -555,7 +552,7 @@ mod tests
     #[test]
     fn define_image_style_active_and_hovered_backgrounds_differ()
     {
-        let img = make_image([10, 20, 30], [50, 60, 70], [80, 90, 100]);
+        let img     = make_image([10, 20, 30], [50, 60, 70], [80, 90, 100]);
         let active  = define_image_style(&img, button::Status::Active);
         let hovered = define_image_style(&img, button::Status::Hovered);
         assert_ne!(active.background, hovered.background);

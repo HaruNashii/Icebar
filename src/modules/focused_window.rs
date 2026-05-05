@@ -7,7 +7,7 @@ use iced::widget::button;
 
 
 // ============ CRATES ============
-use crate::helpers::style::{UserStyle, orient_text, set_style};
+use crate::helpers::style::orient_text;
 use crate::AppData;
 
 
@@ -177,26 +177,60 @@ pub fn define_focused_window_text(app: &AppData) -> String
 
 pub fn define_focused_window_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    set_style(UserStyle
+    use crate::helpers::style::match_color_or_gradient;
+    let cfg = &app.ron_config.focused_window;
+
+    // Pre-resolve gradients to iced::Background here, while we still hold `app`.
+    // This drops the `Vec`-containing `Gradient` before entering `set_style`,
+    // preventing a use-after-free when the closure outlives the borrow.
+    let normal_bg  = match_color_or_gradient(cfg.focused_window_button_gradient_color.as_ref(),         cfg.focused_window_button_color);
+    let hovered_bg = match_color_or_gradient(cfg.focused_window_button_hovered_gradient_color.as_ref(), cfg.focused_window_button_hovered_color);
+    let pressed_bg = match_color_or_gradient(cfg.focused_window_button_pressed_gradient_color.as_ref(), cfg.focused_window_button_pressed_color);
+
+    let mut style = iced::widget::button::Style
     {
-        status,
-        normal:            app.ron_config.focused_window.focused_window_button_color,
-        normal_text:       app.ron_config.focused_window.focused_window_text_color,
-        hovered:           app.ron_config.focused_window.focused_window_button_hovered_color,
-        hovered_text:      app.ron_config.focused_window.focused_window_button_hovered_text_color,
-        pressed_text:      app.ron_config.focused_window.focused_window_button_pressed_text_color,
-        pressed:           app.ron_config.focused_window.focused_window_button_pressed_color,
-        border_color: app.ron_config.focused_window.focused_window_border_color,
-        border_size:       app.ron_config.focused_window.focused_window_border_size,
-        border_radius:     app.ron_config.focused_window.focused_window_border_radius,
-        normal_gradient:   app.ron_config.focused_window.focused_window_button_gradient_color.clone(),
-        hovered_gradient:  app.ron_config.focused_window.focused_window_button_hovered_gradient_color.clone(),
-        pressed_gradient:  app.ron_config.focused_window.focused_window_button_pressed_gradient_color.clone(),
-        shadow_color: app.ron_config.focused_window.focused_window_button_shadow_color,
-        shadow_x:     app.ron_config.focused_window.focused_window_button_shadow_x,
-        shadow_y:     app.ron_config.focused_window.focused_window_button_shadow_y,
-        shadow_blur:  app.ron_config.focused_window.focused_window_button_shadow_blur
-    })
+        border: iced::Border
+        {
+            color:  cfg.focused_window_border_color.to_iced_color(),
+            width:  cfg.focused_window_border_size,
+            radius: iced::border::Radius
+            {
+                top_left:     cfg.focused_window_border_radius[0],
+                top_right:    cfg.focused_window_border_radius[1],
+                bottom_left:  cfg.focused_window_border_radius[2],
+                bottom_right: cfg.focused_window_border_radius[3],
+            }
+        },
+        ..Default::default()
+    };
+
+    if let Some(shadow_color) = cfg.focused_window_button_shadow_color
+    {
+        style.shadow.color        = shadow_color.to_iced_color();
+        style.shadow.offset       = iced::Vector::new(cfg.focused_window_button_shadow_x, cfg.focused_window_button_shadow_y);
+        style.shadow.blur_radius  = cfg.focused_window_button_shadow_blur;
+    }
+
+    match status
+    {
+        button::Status::Hovered =>
+        {
+            style.background = hovered_bg;
+            style.text_color = cfg.focused_window_button_hovered_text_color.to_iced_color();
+        }
+        button::Status::Pressed =>
+        {
+            style.background = pressed_bg;
+            style.text_color = cfg.focused_window_button_pressed_text_color.to_iced_color();
+        }
+        _ =>
+        {
+            style.background = normal_bg;
+            style.text_color = cfg.focused_window_text_color.to_iced_color();
+        }
+    }
+
+    style
 }
 
 

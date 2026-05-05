@@ -123,12 +123,30 @@ pub enum UserWorkspaceAction
     MovePrev
 }
 
+#[derive(Clone)]
+pub struct WorkspaceStyle
+{
+    pub hovered_text:       crate::helpers::color::ColorType,
+    pub pressed_text:       crate::helpers::color::ColorType,
+    pub normal_text:        crate::helpers::color::ColorType,
+    pub border_size:        f32,
+    pub border_color:       crate::helpers::color::ColorType,
+    pub border_radius:      [f32; 4],
+    pub normal_background:  Option<iced::Background>,
+    pub hovered_background: Option<iced::Background>,
+    pub pressed_background: Option<iced::Background>,
+    pub shadow_color:       Option<crate::helpers::color::ColorType>,
+    pub shadow_x:           f32,
+    pub shadow_y:           f32,
+    pub shadow_blur:        f32
+}
+
 
 
 
 
 // ============ CRATES ============
-use crate::helpers::style::{UserStyle, orient_text, set_style};
+use crate::helpers::style::{UserStyle, orient_text, set_style, match_color_or_gradient};
 use crate::AppData;
 
 
@@ -136,31 +154,53 @@ use crate::AppData;
 
 
 // ============ FUNCTIONS ============
-pub fn define_workspaces_style(app: &AppData, status: button::Status, i: &i32) -> iced::widget::button::Style
+pub fn build_workspace_style(app: &AppData, workspace_id: i32) -> WorkspaceStyle
 {
-    let hovered = app.ron_config.workspace.workspace_button_hovered_color;
-    let hovered_text = app.ron_config.workspace.workspace_button_hovered_text_color;
-    let pressed_text = app.ron_config.workspace.workspace_button_pressed_text_color;
-    let pressed = app.ron_config.workspace.workspace_button_pressed_color;
+    let is_selected = app.modules_data.workspace_data.current_workspace == workspace_id;
+    let cfg         = &app.ron_config.workspace;
 
-    let normal = if app.modules_data.workspace_data.current_workspace == *i 
-    { app.ron_config.workspace.workspace_button_selected_color }
-    else 
-    { app.ron_config.workspace.workspace_button_color };
+    let normal_color = if is_selected { cfg.workspace_button_selected_color } else { cfg.workspace_button_color };
+    let normal_grad  = if is_selected { cfg.workspace_button_selected_gradient_color.clone() } else { cfg.workspace_button_gradient_color.clone() };
 
-    let normal_text = if app.modules_data.workspace_data.current_workspace == *i 
-    { app.ron_config.workspace.workspace_selected_text_color }
-    else
-    { app.ron_config.workspace.workspace_text_color };
+    WorkspaceStyle
+    {
+        hovered_text:       cfg.workspace_button_hovered_text_color,
+        pressed_text:       cfg.workspace_button_pressed_text_color,
+        normal_text:        if is_selected { cfg.workspace_selected_text_color } else { cfg.workspace_text_color },
+        border_size:        cfg.workspace_border_size,
+        border_color:       cfg.workspace_border_color,
+        border_radius:      cfg.workspace_border_radius,
+        normal_background:  match_color_or_gradient(normal_grad.as_ref(),                                         normal_color),
+        hovered_background: match_color_or_gradient(cfg.workspace_button_hovered_gradient_color.as_ref(), cfg.workspace_button_hovered_color),
+        pressed_background: match_color_or_gradient(cfg.workspace_button_pressed_gradient_color.as_ref(), cfg.workspace_button_pressed_color),
+        shadow_color:       cfg.workspace_button_shadow_color,
+        shadow_x:           cfg.workspace_button_shadow_x,
+        shadow_y:           cfg.workspace_button_shadow_y,
+        shadow_blur:        cfg.workspace_button_shadow_blur
+    }
+}
 
-    let border_size = app.ron_config.workspace.workspace_border_size;
-    let border_color = app.ron_config.workspace.workspace_border_color;
-    let border_radius = app.ron_config.workspace.workspace_border_radius;
-    let normal_gradient = if app.modules_data.workspace_data.current_workspace == *i
-    { app.ron_config.workspace.workspace_button_selected_gradient_color.clone() }
-    else
-    { app.ron_config.workspace.workspace_button_gradient_color.clone() };
-    set_style(UserStyle {status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient, hovered_gradient: app.ron_config.workspace.workspace_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.workspace.workspace_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.workspace.workspace_button_shadow_color, shadow_x: app.ron_config.workspace.workspace_button_shadow_x, shadow_y: app.ron_config.workspace.workspace_button_shadow_y, shadow_blur: app.ron_config.workspace.workspace_button_shadow_blur})
+
+
+pub fn define_workspaces_style(ws: WorkspaceStyle, status: button::Status) -> iced::widget::button::Style
+{
+    set_style(UserStyle
+    {
+        status,
+        hovered_text:       ws.hovered_text,
+        pressed_text:       ws.pressed_text,
+        normal_text:        ws.normal_text,
+        border_color:       ws.border_color,
+        border_size:        ws.border_size,
+        border_radius:      ws.border_radius,
+        normal_background:  ws.normal_background,
+        hovered_background: ws.hovered_background,
+        pressed_background: ws.pressed_background,
+        shadow_color:       ws.shadow_color,
+        shadow_x:           ws.shadow_x,
+        shadow_y:           ws.shadow_y,
+        shadow_blur:        ws.shadow_blur
+    })
 }
 
 
@@ -340,14 +380,14 @@ mod tests
     #[test]
     fn workspace_style_current_workspace_uses_selected_color()
     {
-        let style = define_workspaces_style(&make_style_app(2), button::Status::Active, &2);
+        let style = define_workspaces_style(build_workspace_style(&make_style_app(2), 2), button::Status::Active);
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(255, 0, 0))));
     }
  
     #[test]
     fn workspace_style_non_current_uses_normal_color()
     {
-        let style = define_workspaces_style(&make_style_app(1), button::Status::Active, &3);
+        let style = define_workspaces_style(build_workspace_style(&make_style_app(1), 3), button::Status::Active);
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(0, 0, 200))));
     }
  
@@ -355,22 +395,22 @@ mod tests
     fn workspace_style_selected_and_non_selected_differ()
     {
         let app      = make_style_app(1);
-        let selected = define_workspaces_style(&app, button::Status::Active, &1);
-        let other    = define_workspaces_style(&app, button::Status::Active, &2);
+        let selected = define_workspaces_style(build_workspace_style(&app, 1), button::Status::Active);
+        let other    = define_workspaces_style(build_workspace_style(&app, 2), button::Status::Active);
         assert_ne!(selected.background, other.background);
     }
  
     #[test]
     fn workspace_style_hovered_uses_hovered_color()
     {
-        let style = define_workspaces_style(&make_style_app(1), button::Status::Hovered, &2);
+        let style = define_workspaces_style(build_workspace_style(&make_style_app(1), 2), button::Status::Hovered);
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(0, 200, 0))));
     }
  
     #[test]
     fn workspace_style_pressed_uses_pressed_color()
     {
-        let style = define_workspaces_style(&make_style_app(1), button::Status::Pressed, &2);
+        let style = define_workspaces_style(build_workspace_style(&make_style_app(1), 2), button::Status::Pressed);
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(0, 100, 0))));
     }
 }

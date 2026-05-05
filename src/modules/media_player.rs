@@ -8,7 +8,7 @@ use std::pin::Pin;
 
 
 // ============ CRATES ============
-use crate::helpers::{color::{ColorType, Gradient}, string::{convert_text_to_rich_text}, style::{UserStyle, orient_text, set_style, TextOrientation, SideOption}};
+use crate::helpers::{color::{ColorType, Gradient}, string::{convert_text_to_rich_text}, style::{UserStyle, orient_text, set_style, TextOrientation, SideOption, match_color_or_gradient}};
 use crate::ron::ActionOnClick;
 use crate::update::Message;
 use crate::AppData;
@@ -263,32 +263,28 @@ pub fn media_player_action(player: &str, action: MediaPlayerAction) -> Task<crat
 
 pub fn define_media_player_metadata_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered =              app.ron_config.media_player_metadata.media_player_metadata_button_hovered_color;
-    let hovered_text =         app.ron_config.media_player_metadata.media_player_metadata_button_hovered_text_color;
-    let pressed_text =         app.ron_config.media_player_metadata.media_player_metadata_button_pressed_text_color;
-    let pressed =              app.ron_config.media_player_metadata.media_player_metadata_button_pressed_color;
-    let normal =               app.ron_config.media_player_metadata.media_player_metadata_button_color;
-    let normal_text =          app.ron_config.media_player_metadata.media_player_metadata_text_color;
-    let border_size =              app.ron_config.media_player_metadata.media_player_metadata_border_size;
-    let border_color =    app.ron_config.media_player_metadata.media_player_metadata_border_color;
-    let border_radius =       app.ron_config.media_player_metadata.media_player_metadata_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_metadata.media_player_metadata_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.media_player_metadata.media_player_metadata_button_shadow_color, shadow_x: app.ron_config.media_player_metadata.media_player_metadata_button_shadow_x, shadow_y: app.ron_config.media_player_metadata.media_player_metadata_button_shadow_y, shadow_blur: app.ron_config.media_player_metadata.media_player_metadata_button_shadow_blur })
+    let cfg          = &app.ron_config.media_player_metadata;
+    let hovered_text = cfg.media_player_metadata_button_hovered_text_color;
+    let pressed_text = cfg.media_player_metadata_button_pressed_text_color;
+    let normal_text  = cfg.media_player_metadata_text_color;
+    let border_size  = cfg.media_player_metadata_border_size;
+    let border_color = cfg.media_player_metadata_border_color;
+    let border_radius = cfg.media_player_metadata_border_radius;
+    set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.media_player_metadata_button_gradient_color.as_ref(), cfg.media_player_metadata_button_color), hovered_background: match_color_or_gradient(cfg.media_player_metadata_button_hovered_gradient_color.as_ref(), cfg.media_player_metadata_button_hovered_color), pressed_background: match_color_or_gradient(cfg.media_player_metadata_button_pressed_gradient_color.as_ref(), cfg.media_player_metadata_button_pressed_color), shadow_color: cfg.media_player_metadata_button_shadow_color, shadow_x: cfg.media_player_metadata_button_shadow_x, shadow_y: cfg.media_player_metadata_button_shadow_y, shadow_blur: cfg.media_player_metadata_button_shadow_blur })
 }
 
 
 
 pub fn define_media_player_buttons_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered =              app.ron_config.media_player_button.media_player_button_hovered_color;
-    let hovered_text =         app.ron_config.media_player_button.media_player_button_hovered_text_color;
-    let pressed_text =         app.ron_config.media_player_button.media_player_button_pressed_text_color;
-    let pressed =              app.ron_config.media_player_button.media_player_button_pressed_color;
-    let normal =               app.ron_config.media_player_button.media_player_button_color;
-    let normal_text =          app.ron_config.media_player_button.media_player_button_text_color;
-    let border_size =              app.ron_config.media_player_button.media_player_button_border_size;
-    let border_color =    app.ron_config.media_player_button.media_player_button_border_color;
-    let border_radius =       app.ron_config.media_player_button.media_player_button_border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.media_player_button.media_player_button_gradient_color.clone(), hovered_gradient: app.ron_config.media_player_button.media_player_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.media_player_button.media_player_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.media_player_button.media_player_button_shadow_color, shadow_x: app.ron_config.media_player_button.media_player_button_shadow_x, shadow_y: app.ron_config.media_player_button.media_player_button_shadow_y, shadow_blur: app.ron_config.media_player_button.media_player_button_shadow_blur })
+    let cfg          = &app.ron_config.media_player_button;
+    let hovered_text = cfg.media_player_button_hovered_text_color;
+    let pressed_text = cfg.media_player_button_pressed_text_color;
+    let normal_text  = cfg.media_player_button_text_color;
+    let border_size  = cfg.media_player_button_border_size;
+    let border_color = cfg.media_player_button_border_color;
+    let border_radius = cfg.media_player_button_border_radius;
+    set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.media_player_button_gradient_color.as_ref(), cfg.media_player_button_color), hovered_background: match_color_or_gradient(cfg.media_player_button_hovered_gradient_color.as_ref(), cfg.media_player_button_hovered_color), pressed_background: match_color_or_gradient(cfg.media_player_button_pressed_gradient_color.as_ref(), cfg.media_player_button_pressed_color), shadow_color: cfg.media_player_button_shadow_color, shadow_x: cfg.media_player_button_shadow_x, shadow_y: cfg.media_player_button_shadow_y, shadow_blur: cfg.media_player_button_shadow_blur })
 }
 
 

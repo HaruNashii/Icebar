@@ -117,8 +117,7 @@ pub fn id_info(app: &AppData, id: iced::window::Id) -> Option<WindowInfo> { app.
 
 
 
-#[tokio::main]
-pub async fn main() -> Result<(), iced_layershell::Error>
+pub fn main() -> Result<(), iced_layershell::Error>
 {
     let args = Cli::parse();
     check_if_config_file_exists(args.config.clone());

@@ -149,16 +149,13 @@ pub fn context_menu_view<'a>(data: &'a ContextMenuData, ron_config: &'a BarConfi
         let color_to_send = _ctx_text_color;
         button(text(text_to_send).color(color_to_send).align_y(Alignment::Center).align_y(Alignment::Center).font(data.default_font).size(ron_config.context_menu.context_menu_text_size).width(Length::Fill).height(Length::Fill).center()).width(width).height(heigth).on_press(Message::TrayAction(data.service.to_string(), data.path.to_string(), item.id, item.label.to_string())).style(|_: &Theme, status: button::Status|
         {
-            let hovered =       ron_config.context_menu.context_menu_button_hovered_color;
             let hovered_text =  ron_config.context_menu.context_menu_button_hovered_text_color;
             let pressed_text =  ron_config.context_menu.context_menu_button_pressed_text_color;
-            let pressed =       ron_config.context_menu.context_menu_button_pressed_color;
-            let normal =        ron_config.context_menu.context_menu_button_color;
             let normal_text =   ron_config.context_menu.context_menu_text_color;
             let border_color =  ron_config.context_menu.context_menu_border_color;
             let border_size =   ron_config.context_menu.context_menu_border_size;
             let border_radius = ron_config.context_menu.context_menu_border_radius;
-            set_style(crate::UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: None, hovered_gradient: None, pressed_gradient: None, shadow_color: None, shadow_blur: 0., shadow_x: 0., shadow_y: 0. })
+            set_style(crate::UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: crate::helpers::style::match_color_or_gradient(None, ron_config.context_menu.context_menu_button_color), hovered_background: crate::helpers::style::match_color_or_gradient(None, ron_config.context_menu.context_menu_button_hovered_color), pressed_background: crate::helpers::style::match_color_or_gradient(None, ron_config.context_menu.context_menu_button_pressed_color), shadow_color: None, shadow_blur: 0., shadow_x: 0., shadow_y: 0. })
         }).into()
     }).collect();
 

@@ -8,7 +8,7 @@ use std::time::Instant;
 
 
 // ============ CRATES ============
-use crate::helpers::{color::{Gradient, ColorType}, string::ellipsize, style::{SideOption, TextOrientation, UserStyle, set_style}};
+use crate::helpers::{color::{Gradient, ColorType}, string::ellipsize, style::{SideOption, TextOrientation, UserStyle, set_style, match_color_or_gradient}};
 use crate::AppData;
 
 
@@ -135,16 +135,13 @@ impl Default for CustomModule
 
 pub fn define_custom_module_style(custom_module: &CustomModule, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered = custom_module.button_hovered_color; 
-    let hovered_text = custom_module.button_hovered_text_color; 
-    let pressed_text = custom_module.button_pressed_text_color; 
-    let pressed = custom_module.button_pressed_color; 
-    let normal = custom_module.button_color; 
-    let normal_text = custom_module.text_color; 
-    let border_size = custom_module.border_size; 
-    let border_color = custom_module.border_color; 
+    let hovered_text = custom_module.button_hovered_text_color;
+    let pressed_text = custom_module.button_pressed_text_color;
+    let normal_text  = custom_module.text_color;
+    let border_size  = custom_module.border_size;
+    let border_color = custom_module.border_color;
     let border_radius = custom_module.border_radius;
-    set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: custom_module.button_gradient_color.clone(), hovered_gradient: custom_module.button_hovered_gradient_color.clone(), pressed_gradient: custom_module.button_pressed_gradient_color.clone(), shadow_color: custom_module.button_shadow_color, shadow_x: custom_module.button_shadow_x, shadow_y: custom_module.button_shadow_y, shadow_blur: custom_module.button_shadow_blur })
+    set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(custom_module.button_gradient_color.as_ref(), custom_module.button_color), hovered_background: match_color_or_gradient(custom_module.button_hovered_gradient_color.as_ref(), custom_module.button_hovered_color), pressed_background: match_color_or_gradient(custom_module.button_pressed_gradient_color.as_ref(), custom_module.button_pressed_color), shadow_color: custom_module.button_shadow_color, shadow_x: custom_module.button_shadow_x, shadow_y: custom_module.button_shadow_y, shadow_blur: custom_module.button_shadow_blur })
 }
 
 

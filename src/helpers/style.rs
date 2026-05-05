@@ -25,23 +25,20 @@ pub enum TextOrientation
 
 pub struct UserStyle
 {
-    pub normal_gradient: Option<Gradient>,
-    pub hovered_gradient: Option<Gradient>,
-    pub pressed_gradient: Option<Gradient>,
-    pub status: iced::widget::button::Status,
-    pub border_color: ColorType,
-    pub hovered_text: ColorType,
-    pub border_radius: [f32;4],
-    pub normal_text: ColorType,
-    pub pressed_text: ColorType,
-    pub hovered: ColorType,
-    pub border_size: f32,
-    pub pressed: ColorType,
-    pub normal: ColorType,
-    pub shadow_color: Option<ColorType>,
-    pub shadow_x: f32,
-    pub shadow_y: f32,
-    pub shadow_blur: f32
+    pub normal_background:  Option<iced::Background>,
+    pub hovered_background: Option<iced::Background>,
+    pub pressed_background: Option<iced::Background>,
+    pub status:             iced::widget::button::Status,
+    pub border_color:       ColorType,
+    pub hovered_text:       ColorType,
+    pub border_radius:      [f32; 4],
+    pub normal_text:        ColorType,
+    pub pressed_text:       ColorType,
+    pub border_size:        f32,
+    pub shadow_color:       Option<ColorType>,
+    pub shadow_x:           f32,
+    pub shadow_y:           f32,
+    pub shadow_blur:        f32
 }
 
 #[derive(Default, Copy, Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -70,14 +67,14 @@ pub fn style(_: &AppData, _: &iced::Theme) -> Style
 }
 
 
-pub fn match_color_or_gradient(gradient: Option<Gradient>, color: ColorType) -> Option<iced::Background>
+pub fn match_color_or_gradient(gradient: Option<&Gradient>, color: ColorType) -> Option<iced::Background>
 {
     match gradient
     {
         Some(Gradient::Gradient(received_gradient)) =>
         {
             let mut gradient = Linear::new(Degrees(received_gradient.0));
-            for entry in received_gradient.1
+            for entry in &received_gradient.1
             {
                 gradient = gradient.add_stop(entry.0, entry.1.to_iced_color());
             }
@@ -94,8 +91,8 @@ pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
     {
         border: Border
         {
-            color: user_style.border_color.to_iced_color(),
-            width: user_style.border_size,
+            color:  user_style.border_color.to_iced_color(),
+            width:  user_style.border_size,
             radius: Radius { top_left: user_style.border_radius[0], top_right: user_style.border_radius[1], bottom_left: user_style.border_radius[2], bottom_right: user_style.border_radius[3]}
         },
         ..Default::default()
@@ -103,8 +100,8 @@ pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
 
     if let Some(shadow_color) = user_style.shadow_color 
     {
-        style.shadow.color = shadow_color.to_iced_color();
-        style.shadow.offset = Vector::new(user_style.shadow_x, user_style.shadow_y);
+        style.shadow.color       = shadow_color.to_iced_color();
+        style.shadow.offset      = Vector::new(user_style.shadow_x, user_style.shadow_y);
         style.shadow.blur_radius = user_style.shadow_blur;
     };
 
@@ -112,17 +109,17 @@ pub fn set_style(user_style: UserStyle) -> iced::widget::button::Style
     {
         button::Status::Hovered =>
         {
-            style.background = match_color_or_gradient(user_style.hovered_gradient, user_style.hovered);
+            style.background = user_style.hovered_background;
             style.text_color = user_style.hovered_text.to_iced_color();
         }
         button::Status::Pressed =>
         {
-            style.background = match_color_or_gradient(user_style.pressed_gradient, user_style.pressed);
+            style.background = user_style.pressed_background;
             style.text_color = user_style.pressed_text.to_iced_color();
         }
         _ =>
         {
-            style.background = match_color_or_gradient(user_style.normal_gradient, user_style.normal);
+            style.background = user_style.normal_background;
             style.text_color = user_style.normal_text.to_iced_color();
         }
     }
@@ -246,22 +243,19 @@ mod tests
         UserStyle
         {
             status,
-            normal: ColorType::RGB([10, 20, 30]),
-            normal_text: ColorType::RGB([200, 210, 220]),
-            hovered: ColorType::RGB([50, 60, 70]),
-            hovered_text: ColorType::RGB([255, 255, 255]),
-            pressed_text: ColorType::RGB([255, 255, 255]),
-            pressed: ColorType::RGB([80, 90, 100]),
-            border_color: ColorType::RGB([1, 2, 3]),
-            border_size:       2.5,
-            border_radius:     [1.0, 2.0, 3.0, 4.0],
-            hovered_gradient: None, 
-            normal_gradient: None, 
-            pressed_gradient: None,
-            shadow_color: None,
-            shadow_x: 0.0,
-            shadow_y: 0.0,
-            shadow_blur: 0.0
+            normal_text:         ColorType::RGB([200, 210, 220]),
+            hovered_text:        ColorType::RGB([255, 255, 255]),
+            pressed_text:        ColorType::RGB([255, 255, 255]),
+            border_color:        ColorType::RGB([1, 2, 3]),
+            border_size:         2.5,
+            border_radius:       [1.0, 2.0, 3.0, 4.0],
+            normal_background:   match_color_or_gradient(None, ColorType::RGB([10, 20, 30])),
+            hovered_background:  match_color_or_gradient(None, ColorType::RGB([50, 60, 70])),
+            pressed_background:  match_color_or_gradient(None, ColorType::RGB([80, 90, 100])),
+            shadow_color:        None,
+            shadow_x:            0.0,
+            shadow_y:            0.0,
+            shadow_blur:         0.0
         }
     }
  
@@ -359,22 +353,19 @@ mod tests
         set_style(UserStyle
         {
             status,
-            normal: ColorType::RGB([10, 20, 30]),
-            normal_text: ColorType::RGB([200, 210, 220]),
-            hovered: ColorType::RGB([50, 60, 70]),
-            hovered_text: ColorType::RGB([255, 255, 255]),
-            pressed_text: ColorType::RGB([255, 255, 255]),
-            pressed: ColorType::RGB([80, 90, 100]),
-            border_color: ColorType::RGB([1, 2, 3]),
-            border_size:       2.0,
-            border_radius:     [1.0, 2.0, 3.0, 4.0],
-            hovered_gradient: None, 
-            normal_gradient: None, 
-            pressed_gradient: None,
-            shadow_color: None,
-            shadow_x: 0.0,
-            shadow_y: 0.0,
-            shadow_blur: 0.0
+            normal_text:        ColorType::RGB([200, 210, 220]),
+            hovered_text:       ColorType::RGB([255, 255, 255]),
+            pressed_text:       ColorType::RGB([255, 255, 255]),
+            border_color:       ColorType::RGB([1, 2, 3]),
+            border_size:        2.0,
+            border_radius:      [1.0, 2.0, 3.0, 4.0],
+            normal_background:  match_color_or_gradient(None, ColorType::RGB([10, 20, 30])),
+            hovered_background: match_color_or_gradient(None, ColorType::RGB([50, 60, 70])),
+            pressed_background: match_color_or_gradient(None, ColorType::RGB([80, 90, 100])),
+            shadow_color:       None,
+            shadow_x:           0.0,
+            shadow_y:           0.0,
+            shadow_blur:        0.0
         })
     }
  
@@ -567,7 +558,7 @@ mod tests
             (0.0, ColorType::RGB([0,   0,   0  ])),
             (1.0, ColorType::RGB([255, 255, 255])),
         ]));
-        let bg = match_color_or_gradient(Some(g), ColorType::RGB([0, 0, 0]));
+        let bg = match_color_or_gradient(Some(&g), ColorType::RGB([0, 0, 0]));
         assert!(matches!(bg, Some(Background::Gradient(_))));
     }
 
@@ -577,7 +568,7 @@ mod tests
         use crate::helpers::color::{ColorType, Gradient};
         use iced::Background;
         let g = Gradient::Gradient((0.0, vec![]));
-        let bg = match_color_or_gradient(Some(g), ColorType::RGB([0, 0, 0]));
+        let bg = match_color_or_gradient(Some(&g), ColorType::RGB([0, 0, 0]));
         assert!(matches!(bg, Some(Background::Gradient(_))));
     }
 }

@@ -9,7 +9,7 @@ use std::process::Command;
 
 // ============ CRATES ============
 use crate::helpers::color::{ColorType, Gradient};
-use crate::helpers::style::{SideOption, TextOrientation, UserStyle, orient_text, set_style};
+use crate::helpers::style::{SideOption, TextOrientation, UserStyle, orient_text, set_style, match_color_or_gradient};
 use crate::ron::ActionOnClick;
 use crate::AppData;
 
@@ -193,22 +193,19 @@ pub fn define_power_profile_style(app: &AppData, status: button::Status) -> iced
     set_style(UserStyle
     {
         status,
-        hovered:          cfg.power_profile_button_hovered_color,
-        hovered_text:     cfg.power_profile_button_hovered_text_color,
-        pressed_text:     cfg.power_profile_button_pressed_text_color,
-        pressed:          cfg.power_profile_button_pressed_color,
-        normal:           cfg.power_profile_button_color,
-        normal_text:      cfg.power_profile_text_color,
-        border_color:     cfg.power_profile_border_color,
-        border_size:      cfg.power_profile_border_size,
-        border_radius:    cfg.power_profile_border_radius,
-        hovered_gradient: cfg.power_profile_button_hovered_gradient_color.clone(),
-        normal_gradient:  cfg.power_profile_button_gradient_color.clone(),
-        pressed_gradient: cfg.power_profile_button_pressed_gradient_color.clone(),
-        shadow_color:     cfg.power_profile_button_shadow_color,
-        shadow_x:         cfg.power_profile_button_shadow_x,
-        shadow_y:         cfg.power_profile_button_shadow_y,
-        shadow_blur:      cfg.power_profile_button_shadow_blur
+        hovered_text:       cfg.power_profile_button_hovered_text_color,
+        pressed_text:       cfg.power_profile_button_pressed_text_color,
+        normal_text:        cfg.power_profile_text_color,
+        border_color:       cfg.power_profile_border_color,
+        border_size:        cfg.power_profile_border_size,
+        border_radius:      cfg.power_profile_border_radius,
+        normal_background:  match_color_or_gradient(cfg.power_profile_button_gradient_color.as_ref(),         cfg.power_profile_button_color),
+        hovered_background: match_color_or_gradient(cfg.power_profile_button_hovered_gradient_color.as_ref(), cfg.power_profile_button_hovered_color),
+        pressed_background: match_color_or_gradient(cfg.power_profile_button_pressed_gradient_color.as_ref(), cfg.power_profile_button_pressed_color),
+        shadow_color:       cfg.power_profile_button_shadow_color,
+        shadow_x:           cfg.power_profile_button_shadow_x,
+        shadow_y:           cfg.power_profile_button_shadow_y,
+        shadow_blur:        cfg.power_profile_button_shadow_blur
     })
 }
 

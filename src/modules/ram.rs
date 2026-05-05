@@ -7,6 +7,7 @@ use iced::widget::button;
 
 // ============ CRATES ============
 use crate::helpers::style::{UserStyle, set_style};
+use crate::helpers::style::match_color_or_gradient;
 use crate::AppData;
 
 
@@ -146,25 +147,23 @@ fn parse_kb(line: &str) -> Option<u64>
 
 pub fn define_ram_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
+    let cfg = &app.ron_config.ram;
     set_style(UserStyle
     {
         status,
-        normal:            app.ron_config.ram.ram_button_color,
-        normal_text:       app.ron_config.ram.ram_text_color,
-        hovered:           app.ron_config.ram.ram_button_hovered_color,
-        hovered_text:      app.ron_config.ram.ram_button_hovered_text_color,
-        pressed_text:      app.ron_config.ram.ram_button_pressed_text_color,
-        pressed:           app.ron_config.ram.ram_button_pressed_color,
-        border_color: app.ron_config.ram.ram_border_color,
-        border_size:       app.ron_config.ram.ram_border_size,
-        border_radius:     app.ron_config.ram.ram_border_radius,
-        hovered_gradient: app.ron_config.ram.ram_button_hovered_gradient_color.clone(),
-        normal_gradient: app.ron_config.ram.ram_button_gradient_color.clone(),
-        pressed_gradient: app.ron_config.ram.ram_button_pressed_gradient_color.clone(),
-        shadow_color: app.ron_config.ram.ram_button_shadow_color,
-        shadow_x:     app.ron_config.ram.ram_button_shadow_x,
-        shadow_y:     app.ron_config.ram.ram_button_shadow_y,
-        shadow_blur:  app.ron_config.ram.ram_button_shadow_blur
+        normal_text:        cfg.ram_text_color,
+        hovered_text:       cfg.ram_button_hovered_text_color,
+        pressed_text:       cfg.ram_button_pressed_text_color,
+        border_color:       cfg.ram_border_color,
+        border_size:        cfg.ram_border_size,
+        border_radius:      cfg.ram_border_radius,
+        normal_background:  match_color_or_gradient(cfg.ram_button_gradient_color.as_ref(),         cfg.ram_button_color),
+        hovered_background: match_color_or_gradient(cfg.ram_button_hovered_gradient_color.as_ref(), cfg.ram_button_hovered_color),
+        pressed_background: match_color_or_gradient(cfg.ram_button_pressed_gradient_color.as_ref(), cfg.ram_button_pressed_color),
+        shadow_color:       cfg.ram_button_shadow_color,
+        shadow_x:           cfg.ram_button_shadow_x,
+        shadow_y:           cfg.ram_button_shadow_y,
+        shadow_blur:        cfg.ram_button_shadow_blur
     })
 }
 

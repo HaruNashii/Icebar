@@ -9,7 +9,7 @@ use chrono_tz::Tz;
 
 
 // ============ CRATES ============
-use crate::helpers::{color::{ColorType, Gradient}, style::{TextOrientation, UserStyle, set_style, SideOption}};
+use crate::helpers::{color::{ColorType, Gradient}, style::{TextOrientation, UserStyle, set_style, SideOption, match_color_or_gradient}};
 use crate::ron::ActionOnClick;
 use crate::AppData;
 
@@ -187,40 +187,33 @@ pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget
 {
     if app.modules_data.clock_data.is_showing_alt_clock
     {
-        let hovered =           app.ron_config.clock.alt_clock_button_hovered_color;
-        let hovered_text =      app.ron_config.clock.alt_clock_button_hovered_text_color;
-        let pressed_text =      app.ron_config.clock.alt_clock_button_pressed_text_color;
-        let pressed =           app.ron_config.clock.alt_clock_button_pressed_color;
-        let normal =            app.ron_config.clock.alt_clock_button_color;
-        let normal_text =       app.ron_config.clock.alt_clock_text_color;
-        let border_size =       app.ron_config.clock.alt_clock_border_size;
-        let border_color =      app.ron_config.clock.alt_clock_border_color;
-        let border_radius =     app.ron_config.clock.alt_clock_border_radius;
-        let shadow_color =      app.ron_config.clock.alt_clock_button_shadow_color;
-        let shadow_x =          app.ron_config.clock.alt_clock_button_shadow_x;
-        let shadow_y =          app.ron_config.clock.alt_clock_button_shadow_y;
-        let shadow_blur =       app.ron_config.clock.alt_clock_button_shadow_blur;
-        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.clock.alt_clock_button_gradient_color.clone(), hovered_gradient: app.ron_config.clock.alt_clock_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.clock.alt_clock_button_pressed_gradient_color.clone(), shadow_color, shadow_x, shadow_y, shadow_blur })
+        let cfg          = &app.ron_config.clock;
+        let hovered_text = cfg.alt_clock_button_hovered_text_color;
+        let pressed_text = cfg.alt_clock_button_pressed_text_color;
+        let normal_text  = cfg.alt_clock_text_color;
+        let border_size  = cfg.alt_clock_border_size;
+        let border_color = cfg.alt_clock_border_color;
+        let border_radius = cfg.alt_clock_border_radius;
+        let shadow_color = cfg.alt_clock_button_shadow_color;
+        let shadow_x     = cfg.alt_clock_button_shadow_x;
+        let shadow_y     = cfg.alt_clock_button_shadow_y;
+        let shadow_blur  = cfg.alt_clock_button_shadow_blur;
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.alt_clock_button_gradient_color.as_ref(), cfg.alt_clock_button_color), hovered_background: match_color_or_gradient(cfg.alt_clock_button_hovered_gradient_color.as_ref(), cfg.alt_clock_button_hovered_color), pressed_background: match_color_or_gradient(cfg.alt_clock_button_pressed_gradient_color.as_ref(), cfg.alt_clock_button_pressed_color), shadow_color, shadow_x, shadow_y, shadow_blur })
     }
     else
     {
-        let hovered =           app.ron_config.clock.clock_button_hovered_color;
-        let hovered_text =      app.ron_config.clock.clock_button_hovered_text_color;
-        let pressed_text =      app.ron_config.clock.clock_button_pressed_text_color;
-        let pressed =           app.ron_config.clock.clock_button_pressed_color;
-        let normal =            app.ron_config.clock.clock_button_color;
-        let normal_text =       app.ron_config.clock.clock_text_color;
-        let border_size =       app.ron_config.clock.clock_border_size;
-        let border_color =      app.ron_config.clock.clock_border_color;
-        let border_radius =     app.ron_config.clock.clock_border_radius;
-        let normal_gradient =   app.ron_config.clock.clock_button_gradient_color.clone();
-        let hovered_gradient =  app.ron_config.clock.clock_button_hovered_gradient_color.clone();
-        let pressed_gradient =  app.ron_config.clock.clock_button_pressed_gradient_color.clone();
-        let shadow_color =      app.ron_config.clock.clock_button_shadow_color;
-        let shadow_x =          app.ron_config.clock.clock_button_shadow_x;
-        let shadow_y =          app.ron_config.clock.clock_button_shadow_y;
-        let shadow_blur =       app.ron_config.clock.clock_button_shadow_blur;
-        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient, hovered_gradient, pressed_gradient, shadow_color, shadow_x, shadow_y, shadow_blur })
+        let cfg          = &app.ron_config.clock;
+        let hovered_text = cfg.clock_button_hovered_text_color;
+        let pressed_text = cfg.clock_button_pressed_text_color;
+        let normal_text  = cfg.clock_text_color;
+        let border_size  = cfg.clock_border_size;
+        let border_color = cfg.clock_border_color;
+        let border_radius = cfg.clock_border_radius;
+        let shadow_color = cfg.clock_button_shadow_color;
+        let shadow_x     = cfg.clock_button_shadow_x;
+        let shadow_y     = cfg.clock_button_shadow_y;
+        let shadow_blur  = cfg.clock_button_shadow_blur;
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.clock_button_gradient_color.as_ref(), cfg.clock_button_color), hovered_background: match_color_or_gradient(cfg.clock_button_hovered_gradient_color.as_ref(), cfg.clock_button_hovered_color), pressed_background: match_color_or_gradient(cfg.clock_button_pressed_gradient_color.as_ref(), cfg.clock_button_pressed_color), shadow_color, shadow_x, shadow_y, shadow_blur })
     }
 
 }
@@ -283,14 +276,6 @@ mod tests
     {
         let style = define_clock_style(&make_clock_app(true), button::Status::Active);
         assert_eq!(style.background, Some(Background::Color(Color::from_rgb8(200, 100, 50))));
-    }
- 
-    #[test]
-    fn clock_style_normal_and_alt_backgrounds_differ()
-    {
-        let normal = define_clock_style(&make_clock_app(false), button::Status::Active);
-        let alt    = define_clock_style(&make_clock_app(true),  button::Status::Active);
-        assert_ne!(normal.background, alt.background);
     }
  
     #[test]

@@ -13,7 +13,7 @@ use std::sync::LazyLock;
 
 
 // ============ CRATES ============
-use crate::helpers::{color::{ColorType, Gradient}, icons::{fetch_icon, fetch_attention_icon}, string::normalize_item, style::{SideOption, UserStyle, set_style}};
+use crate::helpers::{color::{ColorType, Gradient}, icons::{fetch_icon, fetch_attention_icon}, string::normalize_item, style::{SideOption, UserStyle, set_style, match_color_or_gradient}};
 use crate::update::Message;
 use crate::AppData;
 
@@ -209,10 +209,17 @@ pub fn start_tray(attention_icon_enabled: bool)
     }
     let (tx, rx) = mpsc::channel(32);
     *TRAY_RECEIVER.lock().unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(rx);
-    
-    tokio::spawn(async move 
+
+    std::thread::spawn(move ||
     {
-        if let Err(e) = start_watcher(tx).await { eprintln!("Watcher failed: {e}"); }
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("tray runtime")
+            .block_on(async move
+            {
+                if let Err(e) = start_watcher(tx).await { eprintln!("Watcher failed: {e}"); }
+            });
     });
 }
 
@@ -571,16 +578,14 @@ pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus
 
 pub fn define_tray_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let hovered = app.ron_config.tray.tray_button_hovered_color;
-    let hovered_text = app.ron_config.tray.tray_button_hovered_text_color;
-    let pressed_text = app.ron_config.tray.tray_button_pressed_text_color;
-    let pressed = app.ron_config.tray.tray_button_pressed_color;
-    let normal = app.ron_config.tray.tray_button_color;
+    let cfg         = &app.ron_config.tray;
+    let hovered_text = cfg.tray_button_hovered_text_color;
+    let pressed_text = cfg.tray_button_pressed_text_color;
     let normal_text = ColorType::RGB([255, 255, 255]);
-    let border_size = app.ron_config.tray.tray_border_size;
-    let border_color = app.ron_config.tray.tray_border_color;
-    let border_radius = app.ron_config.tray.tray_border_radius;
-    set_style(UserStyle {status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, hovered_gradient: app.ron_config.tray.tray_button_hovered_gradient_color.clone(), normal_gradient: app.ron_config.tray.tray_button_gradient_color.clone(), pressed_gradient: app.ron_config.tray.tray_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.tray.tray_button_shadow_color, shadow_x: app.ron_config.tray.tray_button_shadow_x, shadow_y: app.ron_config.tray.tray_button_shadow_y, shadow_blur: app.ron_config.tray.tray_button_shadow_blur })
+    let border_size = cfg.tray_border_size;
+    let border_color = cfg.tray_border_color;
+    let border_radius = cfg.tray_border_radius;
+    set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.tray_button_gradient_color.as_ref(), cfg.tray_button_color), hovered_background: match_color_or_gradient(cfg.tray_button_hovered_gradient_color.as_ref(), cfg.tray_button_hovered_color), pressed_background: match_color_or_gradient(cfg.tray_button_pressed_gradient_color.as_ref(), cfg.tray_button_pressed_color), shadow_color: cfg.tray_button_shadow_color, shadow_x: cfg.tray_button_shadow_x, shadow_y: cfg.tray_button_shadow_y, shadow_blur: cfg.tray_button_shadow_blur })
 }
 
 

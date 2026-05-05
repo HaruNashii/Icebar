@@ -153,7 +153,7 @@ fn parse_to_segments(text: &str) -> Vec<Segment>
                 }
                 Tag::Tuning(n) =>
                 {
-                    let hair_spaces = "\u{200A}".repeat(n as usize);
+                    let hair_spaces = "\u{200A}".repeat(n.min(100) as usize);
                     segments.push(Segment { text: hair_spaces, color: None });
                 }
             }

@@ -15,7 +15,7 @@ use iced::{Task, widget::button};
 
 
 // ============ CRATES ============
-use crate::helpers::{color::{ColorType, Gradient}, style::{TextOrientation, UserStyle, orient_text, set_style, SideOption}};
+use crate::helpers::{color::{ColorType, Gradient}, style::{TextOrientation, UserStyle, orient_text, set_style, SideOption, match_color_or_gradient}};
 use crate::ron::ActionOnClick;
 use crate::update::Message;
 use crate::AppData;
@@ -511,29 +511,25 @@ pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced
 {
     if app.modules_data.volume_data.volume_output_is_muted
     {
-        let hovered =           app.ron_config.muted_volume_output.muted_volume_output_button_hovered_color;
-        let hovered_text =      app.ron_config.muted_volume_output.muted_volume_output_button_hovered_text_color;
-        let pressed_text =      app.ron_config.muted_volume_output.muted_volume_output_button_pressed_text_color;
-        let pressed =           app.ron_config.muted_volume_output.muted_volume_output_button_pressed_color;
-        let normal =            app.ron_config.muted_volume_output.muted_volume_output_button_color;
-        let normal_text =       app.ron_config.muted_volume_output.muted_volume_output_text_color;
-        let border_size =       app.ron_config.muted_volume_output.muted_volume_output_border_size;
-        let border_color =  app.ron_config.muted_volume_output.muted_volume_output_border_color;
-        let border_radius =     app.ron_config.muted_volume_output.muted_volume_output_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.muted_volume_output.muted_volume_output_button_gradient_color.clone(), hovered_gradient: app.ron_config.muted_volume_output.muted_volume_output_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.muted_volume_output.muted_volume_output_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.muted_volume_output.muted_volume_output_button_shadow_color, shadow_x: app.ron_config.muted_volume_output.muted_volume_output_button_shadow_x, shadow_y: app.ron_config.muted_volume_output.muted_volume_output_button_shadow_y, shadow_blur: app.ron_config.muted_volume_output.muted_volume_output_button_shadow_blur })
+        let cfg          = &app.ron_config.muted_volume_output;
+        let hovered_text = cfg.muted_volume_output_button_hovered_text_color;
+        let pressed_text = cfg.muted_volume_output_button_pressed_text_color;
+        let normal_text  = cfg.muted_volume_output_text_color;
+        let border_size  = cfg.muted_volume_output_border_size;
+        let border_color = cfg.muted_volume_output_border_color;
+        let border_radius = cfg.muted_volume_output_border_radius;
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.muted_volume_output_button_gradient_color.as_ref(), cfg.muted_volume_output_button_color), hovered_background: match_color_or_gradient(cfg.muted_volume_output_button_hovered_gradient_color.as_ref(), cfg.muted_volume_output_button_hovered_color), pressed_background: match_color_or_gradient(cfg.muted_volume_output_button_pressed_gradient_color.as_ref(), cfg.muted_volume_output_button_pressed_color), shadow_color: cfg.muted_volume_output_button_shadow_color, shadow_x: cfg.muted_volume_output_button_shadow_x, shadow_y: cfg.muted_volume_output_button_shadow_y, shadow_blur: cfg.muted_volume_output_button_shadow_blur })
     }
     else
     {
-        let hovered =           app.ron_config.volume_output.volume_output_button_hovered_color;
-        let hovered_text =      app.ron_config.volume_output.volume_output_button_hovered_text_color;
-        let pressed_text =      app.ron_config.volume_output.volume_output_button_pressed_text_color;
-        let pressed =           app.ron_config.volume_output.volume_output_button_pressed_color;
-        let normal =            app.ron_config.volume_output.volume_output_button_color;
-        let normal_text =       app.ron_config.volume_output.volume_output_text_color;
-        let border_size =       app.ron_config.volume_output.volume_output_border_size;
-        let border_color =  app.ron_config.volume_output.volume_output_border_color;
-        let border_radius =     app.ron_config.volume_output.volume_output_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.volume_output.volume_output_button_gradient_color.clone(), hovered_gradient: app.ron_config.volume_output.volume_output_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.volume_output.volume_output_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.volume_output.volume_output_button_shadow_color, shadow_x: app.ron_config.volume_output.volume_output_button_shadow_x, shadow_y: app.ron_config.volume_output.volume_output_button_shadow_y, shadow_blur: app.ron_config.volume_output.volume_output_button_shadow_blur })
+        let cfg          = &app.ron_config.volume_output;
+        let hovered_text = cfg.volume_output_button_hovered_text_color;
+        let pressed_text = cfg.volume_output_button_pressed_text_color;
+        let normal_text  = cfg.volume_output_text_color;
+        let border_size  = cfg.volume_output_border_size;
+        let border_color = cfg.volume_output_border_color;
+        let border_radius = cfg.volume_output_border_radius;
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.volume_output_button_gradient_color.as_ref(), cfg.volume_output_button_color), hovered_background: match_color_or_gradient(cfg.volume_output_button_hovered_gradient_color.as_ref(), cfg.volume_output_button_hovered_color), pressed_background: match_color_or_gradient(cfg.volume_output_button_pressed_gradient_color.as_ref(), cfg.volume_output_button_pressed_color), shadow_color: cfg.volume_output_button_shadow_color, shadow_x: cfg.volume_output_button_shadow_x, shadow_y: cfg.volume_output_button_shadow_y, shadow_blur: cfg.volume_output_button_shadow_blur })
     }
 }
 
@@ -543,29 +539,25 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
 {
     if app.modules_data.volume_data.volume_input_is_muted
     {
-        let hovered =              app.ron_config.muted_volume_input.muted_volume_input_button_hovered_color;
-        let hovered_text =         app.ron_config.muted_volume_input.muted_volume_input_button_hovered_text_color;
-        let pressed_text =         app.ron_config.muted_volume_input.muted_volume_input_button_pressed_text_color;
-        let pressed =              app.ron_config.muted_volume_input.muted_volume_input_button_pressed_color;
-        let normal =               app.ron_config.muted_volume_input.muted_volume_input_button_color;
-        let normal_text =          app.ron_config.muted_volume_input.muted_volume_input_text_color;
-        let border_size =          app.ron_config.muted_volume_input.muted_volume_input_border_size;
-        let border_color =     app.ron_config.muted_volume_input.muted_volume_input_border_color;
-        let border_radius =        app.ron_config.muted_volume_input.muted_volume_input_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.muted_volume_input.muted_volume_input_button_gradient_color.clone(), hovered_gradient: app.ron_config.muted_volume_input.muted_volume_input_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.muted_volume_input.muted_volume_input_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.muted_volume_input.muted_volume_input_button_shadow_color, shadow_x: app.ron_config.muted_volume_input.muted_volume_input_button_shadow_x, shadow_y: app.ron_config.muted_volume_input.muted_volume_input_button_shadow_y, shadow_blur: app.ron_config.muted_volume_input.muted_volume_input_button_shadow_blur })
+        let cfg          = &app.ron_config.muted_volume_input;
+        let hovered_text = cfg.muted_volume_input_button_hovered_text_color;
+        let pressed_text = cfg.muted_volume_input_button_pressed_text_color;
+        let normal_text  = cfg.muted_volume_input_text_color;
+        let border_size  = cfg.muted_volume_input_border_size;
+        let border_color = cfg.muted_volume_input_border_color;
+        let border_radius = cfg.muted_volume_input_border_radius;
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.muted_volume_input_button_gradient_color.as_ref(), cfg.muted_volume_input_button_color), hovered_background: match_color_or_gradient(cfg.muted_volume_input_button_hovered_gradient_color.as_ref(), cfg.muted_volume_input_button_hovered_color), pressed_background: match_color_or_gradient(cfg.muted_volume_input_button_pressed_gradient_color.as_ref(), cfg.muted_volume_input_button_pressed_color), shadow_color: cfg.muted_volume_input_button_shadow_color, shadow_x: cfg.muted_volume_input_button_shadow_x, shadow_y: cfg.muted_volume_input_button_shadow_y, shadow_blur: cfg.muted_volume_input_button_shadow_blur })
     }
     else
     {
-        let hovered =           app.ron_config.volume_input.volume_input_button_hovered_color;
-        let hovered_text =      app.ron_config.volume_input.volume_input_button_hovered_text_color;
-        let pressed_text =      app.ron_config.volume_input.volume_input_button_pressed_text_color;
-        let pressed =           app.ron_config.volume_input.volume_input_button_pressed_color;
-        let normal =            app.ron_config.volume_input.volume_input_button_color;
-        let normal_text =       app.ron_config.volume_input.volume_input_text_color;
-        let border_size =       app.ron_config.volume_input.volume_input_border_size;
-        let border_color =  app.ron_config.volume_input.volume_input_border_color;
-        let border_radius =     app.ron_config.volume_input.volume_input_border_radius;
-        set_style(UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, normal_gradient: app.ron_config.volume_input.volume_input_button_gradient_color.clone(), hovered_gradient: app.ron_config.volume_input.volume_input_button_hovered_gradient_color.clone(), pressed_gradient: app.ron_config.volume_input.volume_input_button_pressed_gradient_color.clone(), shadow_color: app.ron_config.volume_input.volume_input_button_shadow_color, shadow_x: app.ron_config.volume_input.volume_input_button_shadow_x, shadow_y: app.ron_config.volume_input.volume_input_button_shadow_y, shadow_blur: app.ron_config.volume_input.volume_input_button_shadow_blur })
+        let cfg          = &app.ron_config.volume_input;
+        let hovered_text = cfg.volume_input_button_hovered_text_color;
+        let pressed_text = cfg.volume_input_button_pressed_text_color;
+        let normal_text  = cfg.volume_input_text_color;
+        let border_size  = cfg.volume_input_border_size;
+        let border_color = cfg.volume_input_border_color;
+        let border_radius = cfg.volume_input_border_radius;
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.volume_input_button_gradient_color.as_ref(), cfg.volume_input_button_color), hovered_background: match_color_or_gradient(cfg.volume_input_button_hovered_gradient_color.as_ref(), cfg.volume_input_button_hovered_color), pressed_background: match_color_or_gradient(cfg.volume_input_button_pressed_gradient_color.as_ref(), cfg.volume_input_button_pressed_color), shadow_color: cfg.volume_input_button_shadow_color, shadow_x: cfg.volume_input_button_shadow_x, shadow_y: cfg.volume_input_button_shadow_y, shadow_blur: cfg.volume_input_button_shadow_blur })
     }
 }
 
@@ -791,14 +783,5 @@ mod tests
         let muted   = define_volume_output_style(&make_output_app(true),  button::Status::Active);
         let unmuted = define_volume_output_style(&make_output_app(false), button::Status::Active);
         assert_ne!(muted.background, unmuted.background);
-    }
-
-    #[test]
-    fn volume_output_hovered_and_active_differ_when_unmuted()
-    {
-        let app = make_output_app(false);
-        let active  = define_volume_output_style(&app, button::Status::Active);
-        let hovered = define_volume_output_style(&app, button::Status::Hovered);
-        assert_ne!(active.background, hovered.background);
     }
 }

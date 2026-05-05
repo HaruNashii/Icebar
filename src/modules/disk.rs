@@ -8,6 +8,7 @@ use std::mem;
 
 // ============ CRATES ============
 use crate::helpers::style::{UserStyle, set_style};
+use crate::helpers::style::match_color_or_gradient;
 use crate::AppData;
 
 
@@ -135,25 +136,23 @@ pub fn read_disk_data(mount: &str) -> Option<DiskData>
 
 pub fn define_disk_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
+    let cfg = &app.ron_config.disk;
     set_style(UserStyle
     {
         status,
-        normal:            app.ron_config.disk.disk_button_color,
-        normal_text:       app.ron_config.disk.disk_text_color,
-        hovered:           app.ron_config.disk.disk_button_hovered_color,
-        hovered_text:      app.ron_config.disk.disk_button_hovered_text_color,
-        pressed_text:      app.ron_config.disk.disk_button_pressed_text_color,
-        pressed:           app.ron_config.disk.disk_button_pressed_color,
-        border_color:      app.ron_config.disk.disk_border_color,
-        border_size:       app.ron_config.disk.disk_border_size,
-        border_radius:     app.ron_config.disk.disk_border_radius,
-        normal_gradient:   app.ron_config.disk.disk_button_gradient_color.clone(),
-        hovered_gradient:  app.ron_config.disk.disk_button_hovered_gradient_color.clone(),
-        pressed_gradient:  app.ron_config.disk.disk_button_pressed_gradient_color.clone(),
-        shadow_color: app.ron_config.disk.disk_button_shadow_color,
-        shadow_x:     app.ron_config.disk.disk_button_shadow_x,
-        shadow_y:     app.ron_config.disk.disk_button_shadow_y,
-        shadow_blur:  app.ron_config.disk.disk_button_shadow_blur
+        normal_text:        cfg.disk_text_color,
+        hovered_text:       cfg.disk_button_hovered_text_color,
+        pressed_text:       cfg.disk_button_pressed_text_color,
+        border_color:       cfg.disk_border_color,
+        border_size:        cfg.disk_border_size,
+        border_radius:      cfg.disk_border_radius,
+        normal_background:  match_color_or_gradient(cfg.disk_button_gradient_color.as_ref(),         cfg.disk_button_color),
+        hovered_background: match_color_or_gradient(cfg.disk_button_hovered_gradient_color.as_ref(), cfg.disk_button_hovered_color),
+        pressed_background: match_color_or_gradient(cfg.disk_button_pressed_gradient_color.as_ref(), cfg.disk_button_pressed_color),
+        shadow_color:       cfg.disk_button_shadow_color,
+        shadow_x:           cfg.disk_button_shadow_x,
+        shadow_y:           cfg.disk_button_shadow_y,
+        shadow_blur:        cfg.disk_button_shadow_blur
     })
 }
 

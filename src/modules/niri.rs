@@ -6,39 +6,20 @@ use niri_ipc::{Action, Request, Response, Workspace, WorkspaceReferenceArg, sock
 
 
 
-
-
 // ============ CRATES ============
 use crate::modules::workspaces::UserWorkspaceAction;
 
 
 
-
-
 // ============ FUNCTIONS ============
-pub fn workspace_count() -> Vec<i32>
+pub fn current_workspace_and_count() -> (i32, Vec<i32>)
 {
     let workspaces = niri_ipc_workspaces_setup();
+    let current = workspaces.iter().find(|w| w.is_focused).map(|w| w.idx as i32).unwrap_or(0);
     let mut idxs: Vec<i32> = workspaces.iter().map(|w| w.idx as i32).collect();
     idxs.sort_unstable();
     idxs.dedup();
-    idxs
-}
-
-
-
-pub fn current_workspace() -> i32
-{
-    let workspaces = niri_ipc_workspaces_setup();
-    let result_focused_idx = workspaces.iter().find(|w| w.is_focused).map(|w| w.idx);
-    if let Some(focused_idx) = result_focused_idx
-    {
-        focused_idx as i32
-    }
-    else
-    {
-        0
-    }
+    (current, idxs)
 }
 
 
@@ -87,6 +68,8 @@ pub fn niri_event_subscription() -> Pin<Box<dyn futures::Stream<Item = crate::up
         {
             let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<crate::update::Message>();
             let tx_thread = tx.clone();
+            let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+            let stop_thread = stop.clone();
 
             std::thread::spawn(move ||
             {
@@ -145,6 +128,8 @@ pub fn niri_event_subscription() -> Pin<Box<dyn futures::Stream<Item = crate::up
 
                 for line_result in lines
                 {
+                    if stop_thread.load(std::sync::atomic::Ordering::Relaxed) { break; }
+
                     let line = match line_result
                     {
                         Ok(l)  => l,
@@ -198,6 +183,7 @@ pub fn niri_event_subscription() -> Pin<Box<dyn futures::Stream<Item = crate::up
                 yield msg;
             }
 
+            stop.store(true, std::sync::atomic::Ordering::Relaxed);
             eprintln!("[icebar] niri event stream ended — reconnecting in 2s");
             tokio::time::sleep(std::time::Duration::from_secs(2)).await;
         }

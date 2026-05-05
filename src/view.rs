@@ -8,7 +8,7 @@ use iced_gif::gif;
 
 // ============ CRATES ============
 use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_style, cpu_temp::define_cpu_temp_style, focused_window::{define_focused_window_style, define_focused_window_text}, ram::define_ram_style, volume::define_volume_text}};
-use crate::modules::{image::{PreloadedImage, define_image_style}, disk::define_disk_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, group_of_modules::group_container_style, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, power_profile::{define_power_profile_rich_text, define_power_profile_style}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{define_workspaces_size, define_workspaces_style, define_workspaces_text}};
+use crate::modules::{image::{PreloadedImage, define_image_style}, disk::define_disk_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, group_of_modules::group_container_style, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, power_profile::{define_power_profile_rich_text, define_power_profile_style}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{build_workspace_style, define_workspaces_size, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
 use crate::context_menu::context_menu_view;
 use crate::update::Message;
@@ -123,10 +123,11 @@ fn build_modules_with_spacing<'a>(list_of_modules: &'a Vec<Modules>, app: &'a Ap
                     let workspace_id = *i;
                     let non_color_workspace_text = define_workspaces_text(app, workspace_id);
                     let size = define_workspaces_size(app, workspace_id);
+                    let ws = build_workspace_style(app, workspace_id);
                     let workspace_text = convert_text_to_rich_text(&non_color_workspace_text);
                     button(workspace_text.wrapping(iced::widget::text::Wrapping::Word).font(app.default_font).size(app.ron_config.workspace.workspace_text_size).center())
                     .padding(app.ron_config.workspace.workspace_padding)
-                    .style(move |_: &Theme, status: button::Status| define_workspaces_style(app, status, &workspace_id))
+                    .style(move |_: &Theme, status: button::Status| define_workspaces_style(ws.clone(), status))
                     .width(size.0)
                     .height(size.1)
                     .on_press(Message::WorkspaceButtonPressed(workspace_id))

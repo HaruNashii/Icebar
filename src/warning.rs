@@ -62,16 +62,13 @@ pub fn warning_view<'a>(err: &'a String) -> Element<'a, Message>
         .on_press(Message::CloseWarning)
         .style(|_: &Theme, status: button::Status|
         {
-            let hovered =       ColorType::RGB([225, 255, 5]);
             let hovered_text =  ColorType::RGB([255, 255, 255]);
             let pressed_text =  ColorType::RGB([255, 255, 255]);
-            let pressed =       ColorType::RGB([125, 155, 5]);
-            let normal =        ColorType::RGB([225, 50, 50]);
             let normal_text =   ColorType::RGB([255, 255, 255]);
             let border_color =  ColorType::RGB([225, 255, 5]);
             let border_size =   1.0;
             let border_radius = [0., 0., 0., 0.];
-            set_style(crate::UserStyle { status, hovered, hovered_text, pressed_text, pressed, normal, normal_text, border_color, border_size, border_radius, hovered_gradient: None, normal_gradient: None, pressed_gradient: None, shadow_color: None, shadow_blur: 0., shadow_x: 0., shadow_y: 0. })
+            set_style(crate::UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: crate::helpers::style::match_color_or_gradient(None, ColorType::RGB([225, 50, 50])), hovered_background: crate::helpers::style::match_color_or_gradient(None, ColorType::RGB([225, 255, 5])), pressed_background: crate::helpers::style::match_color_or_gradient(None, ColorType::RGB([125, 155, 5])), shadow_color: None, shadow_blur: 0., shadow_x: 0., shadow_y: 0. })
         })
     ).into();
 
