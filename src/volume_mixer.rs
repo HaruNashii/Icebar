@@ -6,7 +6,7 @@ use std::{pin::Pin, sync::{Arc, Mutex}};
 use serde::{Deserialize, Serialize};
 
 
-
+ 
 
 
 // ============ CRATES ============
@@ -15,7 +15,6 @@ use crate::context_menu::smart_popup_position;
 use crate::{AppData, WindowInfo};
 use crate::ron::BarPosition;
 use crate::update::Message;
-
 
 
 
@@ -577,7 +576,6 @@ struct PulseStateInternal
 
 
 
-
 // ============ FUNCTIONS ============
 pub fn volume_mixer_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Send>>
 {
@@ -705,7 +703,8 @@ fn fetch_all(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, tx
     let state_srv = Arc::clone(&state);
     let ctx2 = Arc::clone(&ctx);
     let tx2  = tx.clone();
-    let insp = ctx.lock().unwrap().introspect();
+    let ctx_guard = ctx.lock().unwrap();
+    let insp = ctx_guard.introspect();
     insp.get_server_info(move |info|
     {
         let def_sink   = info.default_sink_name.as_deref().unwrap_or("").to_string();
@@ -737,7 +736,8 @@ fn fetch_sinks(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, 
     let state2 = Arc::clone(&state);
     let tx2 = tx.clone();
 
-    let insp = ctx.lock().unwrap().introspect();
+    let ctx_guard = ctx.lock().unwrap();
+    let insp = ctx_guard.introspect();
     insp.get_sink_info_list(move |list|
     {
         match list
@@ -779,7 +779,8 @@ fn fetch_sources(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>
     let state2 = Arc::clone(&state);
     let tx2 = tx.clone();
 
-    let insp = ctx.lock().unwrap().introspect();
+    let ctx_guard = ctx.lock().unwrap();
+    let insp = ctx_guard.introspect();
     insp.get_source_info_list(move |list|
     {
         match list
@@ -822,7 +823,8 @@ fn fetch_sink_inputs(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateIntern
     let state2 = Arc::clone(&state);
     let tx2 = tx.clone();
 
-    let insp = ctx.lock().unwrap().introspect();
+    let ctx_guard = ctx.lock().unwrap();
+    let insp = ctx_guard.introspect();
     insp.get_sink_input_info_list(move |list|
     {
         match list
@@ -861,7 +863,8 @@ fn fetch_source_outputs(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInt
     let state2 = Arc::clone(&state);
     let tx2 = tx.clone();
 
-    let insp = ctx.lock().unwrap().introspect();
+    let ctx_guard = ctx.lock().unwrap();
+    let insp = ctx_guard.introspect();
     insp.get_source_output_info_list(move |list|
     {
         match list
@@ -904,7 +907,6 @@ fn fetch_source_outputs(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInt
         }
     });
 }
-
 
 
 
@@ -962,7 +964,6 @@ pub async fn toggle_app_mute_cmd(kind: MixerKind, index: u32)
 
 
 
-
 // ============ TASK HELPERS ============
 pub fn task_set_device_volume(kind: MixerKind, index: u32, volume_pct: u8) -> Task<Message>
 {
@@ -988,7 +989,6 @@ pub fn task_toggle_app_mute(kind: MixerKind, index: u32) -> Task<Message>
 {
     Task::perform(toggle_app_mute_cmd(kind, index), |_| Message::Nothing)
 }
-
 
 
 

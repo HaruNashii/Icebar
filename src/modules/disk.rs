@@ -117,8 +117,8 @@ pub fn read_disk_data(mount: &str) -> Option<DiskData>
 
     let total   = stat.f_blocks * block;
     let free    = stat.f_bavail * block;
-    let used    = total - free;
-    let percent = (used as f64 / total as f64 * 100.0).round() as u64;
+    let used    = total.saturating_sub(free);
+    let percent = if total == 0 { 0 } else { (used as f64 / total as f64 * 100.0).round() as u64 };
 
     Some
     (

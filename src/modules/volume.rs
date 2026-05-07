@@ -7,9 +7,9 @@ use iced::{Task, widget::button};
  
 
 
- 
- 
 
+ 
+ 
 
 
 
@@ -23,7 +23,6 @@ use crate::AppData;
 
  
  
-
 
 
 
@@ -339,7 +338,6 @@ pub enum VolumeAction
 }
  
 
-
  
  
 pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Send>>
@@ -398,9 +396,10 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
             }
 
             {
-                let s = Arc::clone(&state_cb);
-                let t = tx_clone.clone();
-                let introspector = context.lock().unwrap().introspect();
+                let s           = Arc::clone(&state_cb);
+                let t           = tx_clone.clone();
+                let ctx_guard   = context.lock().unwrap();
+                let introspector = ctx_guard.introspect();
                 fetch_sink(&introspector, Arc::clone(&s), t.clone());
                 fetch_source(&introspector, Arc::clone(&s), t.clone());
             }
@@ -418,7 +417,8 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
                 context.lock().unwrap().set_subscribe_callback(Some(Box::new(
                     move |facility, _op, _index|
                     {
-                        let introspector = ctx.lock().unwrap().introspect();
+                        let ctx_guard    = ctx.lock().unwrap();
+                        let introspector = ctx_guard.introspect();
                         match facility
                         {
                             Some(Facility::Sink)   => fetch_sink(&introspector, Arc::clone(&s), t.clone()),
@@ -564,7 +564,6 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
 
 
 pub fn define_volume_text(text: &str, text_orientation: &TextOrientation) -> String { orient_text(text, text_orientation) }
-
 
 
 
