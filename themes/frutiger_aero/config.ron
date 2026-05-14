@@ -590,6 +590,23 @@ BarConfig
         context_menu_border_color: RGBA((91, 200, 245, 55)),
         context_menu_border_size: 1.0,
         context_menu_border_radius: (12.0, 12.0, 12.0, 12.0),
+        context_menu_button_gradient_color: Some(Gradient((180.0,
+	[
+            (0.0,  RGBA((255, 255, 255, 52))),
+            (0.42, RGBA((91,  200, 245, 38))),
+            (1.0,  RGBA((11,  110, 140, 65))),
+        ]))),
+        context_menu_button_hovered_gradient_color: Some(Gradient((180.0,
+	[
+            (0.0,  RGBA((255, 255, 255, 72))),
+            (0.42, RGBA((91,  200, 245, 60))),
+            (1.0,  RGBA((11,  110, 140, 82))),
+        ]))),
+        context_menu_button_pressed_gradient_color: Some(Gradient((180.0,
+	[
+            (0.0,  RGBA((11,  110, 140, 82))),
+            (1.0,  RGBA((41,  168, 171, 65))),
+        ]))),
     ),
 
 
@@ -788,6 +805,9 @@ BarConfig
             border_color:        RGBA((168, 230, 207, 60)),
             border_size:         1.0,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 62))), (0.42, RGBA((91, 200, 245, 50))), (1.0, RGBA((11, 110, 140, 72)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
         ),
         calendar_nav_active_button_style:
         (
@@ -800,6 +820,9 @@ BarConfig
             border_color:        RGBA((168, 230, 207, 80)),
             border_size:         1.0,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 60))), (0.5, RGBA((41, 168, 171, 55))), (1.0, RGBA((11, 110, 140, 75)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 70))), (0.42, RGBA((91, 200, 245, 62))), (1.0, RGBA((11, 110, 140, 82)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 65)))]))),
         ),
 
         // ── Prev / Next arrow buttons ─────────────────────────────────────
@@ -819,6 +842,9 @@ BarConfig
             border_color:        RGBA((168, 230, 207, 60)),
             border_size:         1.0,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 62))), (0.42, RGBA((91, 200, 245, 50))), (1.0, RGBA((11, 110, 140, 72)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
         ),
 
         // ── Month view ────────────────────────────────────────────────────
@@ -849,6 +875,9 @@ BarConfig
             border_color:        RGBA((168, 230, 207, 60)),
             border_size:         1.0,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 62))), (0.42, RGBA((91, 200, 245, 50))), (1.0, RGBA((11, 110, 140, 72)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
         ),
         calendar_today_button_style:
         (
@@ -861,6 +890,9 @@ BarConfig
             border_color:        RGBA((168, 230, 207, 80)),
             border_size:         1.5,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 60))), (0.5, RGBA((41, 168, 171, 55))), (1.0, RGBA((11, 110, 140, 75)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 70))), (0.42, RGBA((91, 200, 245, 62))), (1.0, RGBA((11, 110, 140, 82)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 65)))]))),
         ),
         calendar_selected_day_button_style:
         (
@@ -873,6 +905,9 @@ BarConfig
             border_color:        RGBA((200, 240, 255, 70)),
             border_size:         1.5,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 80))), (0.38, RGBA((91, 200, 245, 72))), (1.0, RGBA((11, 110, 140, 88)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 90))), (0.38, RGBA((120, 220, 255, 80))), (1.0, RGBA((41, 168, 171, 75)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((41, 168, 171, 75))), (1.0, RGBA((11, 110, 140, 70)))]))),
         ),
         calendar_overflow_day_button_style:
         (
@@ -885,6 +920,9 @@ BarConfig
             border_color:        RGBA((100, 180, 210, 30)),
             border_size:         0.5,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 15))), (1.0, RGBA((14, 55, 85, 35)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 22))), (1.0, RGBA((91, 200, 245, 18)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((10, 40, 65, 40))), (1.0, RGBA((14, 55, 85, 35)))]))),
         ),
         calendar_day_click_action:              HighlightOnly,
 
@@ -908,6 +946,9 @@ BarConfig
             border_color:        RGBA((168, 230, 207, 60)),
             border_size:         1.0,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 62))), (0.42, RGBA((91, 200, 245, 50))), (1.0, RGBA((11, 110, 140, 72)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
         ),
         calendar_current_month_button_style:
         (
@@ -920,6 +961,9 @@ BarConfig
             border_color:        RGBA((168, 230, 207, 80)),
             border_size:         1.5,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 60))), (0.5, RGBA((41, 168, 171, 55))), (1.0, RGBA((11, 110, 140, 75)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 70))), (0.42, RGBA((91, 200, 245, 62))), (1.0, RGBA((11, 110, 140, 82)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 65)))]))),
         ),
 
         // ── Decade view ───────────────────────────────────────────────────
@@ -940,6 +984,9 @@ BarConfig
             border_color:        RGBA((168, 230, 207, 60)),
             border_size:         1.0,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 62))), (0.42, RGBA((91, 200, 245, 50))), (1.0, RGBA((11, 110, 140, 72)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
         ),
         calendar_current_year_button_style:
         (
@@ -952,6 +999,9 @@ BarConfig
             border_color:        RGBA((168, 230, 207, 80)),
             border_size:         1.5,
             border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 60))), (0.5, RGBA((41, 168, 171, 55))), (1.0, RGBA((11, 110, 140, 75)))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 70))), (0.42, RGBA((91, 200, 245, 62))), (1.0, RGBA((11, 110, 140, 82)))]))),
+            pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 65)))]))),
         ),
     ),
 
@@ -1020,6 +1070,9 @@ BarConfig
             		border_color:       	RGBA((168, 230, 207, 40)),
             		border_size:        	1.0,
             		border_radius:      	(14., 14., 14., 14.),
+		        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+		        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+		        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 		)
 	),
 
@@ -1047,6 +1100,9 @@ BarConfig
             		border_color:       	RGBA((168, 230, 207, 40)),
             		border_size:        	1.0,
             		border_radius:      	(14., 14., 14., 14.),
+		        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+		        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+		        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 		)
 	),
 	
@@ -1096,6 +1152,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 	    ),
 
             mute_label:                 "󰕾",
@@ -1114,6 +1173,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 	    ),
             muted_button_style:
 	    (
@@ -1126,6 +1188,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 45))), (0.5, RGBA((41, 168, 171, 35))), (1.0, RGBA((11, 110, 140, 55)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 65))), (0.5, RGBA((41, 168, 171, 52))), (1.0, RGBA((11, 110, 140, 72)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
 	    ),
 
             default_label:              "⬤",
@@ -1140,6 +1205,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 	    ),
             default_button_style:
 	    (
@@ -1152,6 +1220,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 45))), (0.5, RGBA((41, 168, 171, 35))), (1.0, RGBA((11, 110, 140, 55)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 65))), (0.5, RGBA((41, 168, 171, 52))), (1.0, RGBA((11, 110, 140, 72)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
 	    ),
 	),
 
@@ -1200,6 +1271,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 	    ),
 
             mute_label:                 "󰕾",
@@ -1218,6 +1292,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 	    ),
             muted_button_style:
 	    (
@@ -1230,6 +1307,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 45))), (0.5, RGBA((41, 168, 171, 35))), (1.0, RGBA((11, 110, 140, 55)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 65))), (0.5, RGBA((41, 168, 171, 52))), (1.0, RGBA((11, 110, 140, 72)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
 	    ),
 	)
     ),
@@ -1292,6 +1372,9 @@ BarConfig
             		border_color:       	RGBA((168, 230, 207, 40)),
             		border_size:        	1.0,
             		border_radius:      	(14., 14., 14., 14.),
+		        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+		        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+		        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 		)
 	),
 
@@ -1319,6 +1402,9 @@ BarConfig
             		border_color:       	RGBA((168, 230, 207, 40)),
             		border_size:        	1.0,
             		border_radius:      	(14., 14., 14., 14.),
+		        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+		        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+		        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 		)
 	),
 	
@@ -1368,6 +1454,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 	    ),
 
             mute_label:                 "󰕾",
@@ -1386,6 +1475,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 	    ),
             muted_button_style:
 	    (
@@ -1398,6 +1490,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 45))), (0.5, RGBA((41, 168, 171, 35))), (1.0, RGBA((11, 110, 140, 55)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 65))), (0.5, RGBA((41, 168, 171, 52))), (1.0, RGBA((11, 110, 140, 72)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
 	    ),
 
             default_label:              "⬤",
@@ -1412,6 +1507,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 	    ),
             default_button_style:
 	    (
@@ -1424,6 +1522,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 45))), (0.5, RGBA((41, 168, 171, 35))), (1.0, RGBA((11, 110, 140, 55)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 65))), (0.5, RGBA((41, 168, 171, 52))), (1.0, RGBA((11, 110, 140, 72)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
 	    ),
 	),
 
@@ -1472,6 +1573,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 	    ),
 
             mute_label:                 "󰕾",
@@ -1490,6 +1594,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 40))), (0.42, RGBA((91, 200, 245, 28))), (1.0, RGBA((11, 110, 140, 50)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((255, 255, 255, 60))), (0.42, RGBA((91, 200, 245, 48))), (1.0, RGBA((11, 110, 140, 70)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 82))), (1.0, RGBA((41, 168, 171, 65)))]))),
 	    ),
             muted_button_style:
 	    (
@@ -1502,6 +1609,9 @@ BarConfig
             	border_color:       RGBA((168, 230, 207, 40)),
             	border_size:        1.0,
             	border_radius:      (14., 14., 14., 14.),
+	        gradient_color:         Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 45))), (0.5, RGBA((41, 168, 171, 35))), (1.0, RGBA((11, 110, 140, 55)))]))),
+	        hovered_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((168, 230, 207, 65))), (0.5, RGBA((41, 168, 171, 52))), (1.0, RGBA((11, 110, 140, 72)))]))),
+	        pressed_gradient_color: Some(Gradient((180.0, [(0.0, RGBA((11, 110, 140, 80))), (1.0, RGBA((41, 168, 171, 62)))]))),
 	    ),
 	)
     ),

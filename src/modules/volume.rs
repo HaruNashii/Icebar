@@ -362,9 +362,9 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
 
             mainloop.lock();
 
-            let context = match Context::new(&mainloop, "icebar-volume")
+            let mut context = match Context::new(&mainloop, "icebar-volume")
             {
-                Some(c) => Arc::new(Mutex::new(c)),
+                Some(c) => Box::new(c),
                 None    =>
                 {
                     mainloop.unlock();
@@ -372,7 +372,7 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
                 }
             };
 
-            if context.lock().unwrap().connect(None, ContextFlagSet::NOFLAGS, None).is_err()
+            if context.connect(None, ContextFlagSet::NOFLAGS, None).is_err()
             {
                 mainloop.unlock();
                 return;
@@ -380,7 +380,7 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
 
             loop
             {
-                match context.lock().unwrap().get_state()
+                match context.get_state()
                 {
                     libpulse_binding::context::State::Ready => break,
                     libpulse_binding::context::State::Failed | libpulse_binding::context::State::Terminated =>
@@ -396,45 +396,54 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
             }
 
             {
-                let s           = Arc::clone(&state_cb);
-                let t           = tx_clone.clone();
-                let ctx_guard   = context.lock().unwrap();
-                let introspector = ctx_guard.introspect();
-                fetch_sink(&introspector, Arc::clone(&s), t.clone());
-                fetch_source(&introspector, Arc::clone(&s), t.clone());
+                let introspector = context.introspect();
+                fetch_sink(&introspector, Arc::clone(&state_cb), tx_clone.clone());
+                fetch_source(&introspector, Arc::clone(&state_cb), tx_clone.clone());
             }
 
-            {
-                let ctx = Arc::clone(&context);
-                let s   = Arc::clone(&state_cb);
-                let t   = tx_clone.clone();
+            let (event_tx, event_rx) = std::sync::mpsc::channel::<Option<Facility>>();
 
-                context.lock().unwrap().subscribe(
-                    InterestMaskSet::SINK | InterestMaskSet::SOURCE,
-                    |_| {}
-                );
+            context.subscribe(
+                InterestMaskSet::SINK | InterestMaskSet::SOURCE,
+                |_| {}
+            );
 
-                context.lock().unwrap().set_subscribe_callback(Some(Box::new(
-                    move |facility, _op, _index|
-                    {
-                        let ctx_guard    = ctx.lock().unwrap();
-                        let introspector = ctx_guard.introspect();
-                        match facility
-                        {
-                            Some(Facility::Sink)   => fetch_sink(&introspector, Arc::clone(&s), t.clone()),
-                            Some(Facility::Source) => fetch_source(&introspector, Arc::clone(&s), t.clone()),
-                            _ => {}
-                        }
-                    }
-                )));
-            }
+            // Callback captures only the sender — zero aliasing of context.
+            context.set_subscribe_callback(Some(Box::new(
+                move |facility, _op, _index|
+                {
+                    let _ = event_tx.send(facility);
+                }
+            )));
 
             mainloop.unlock();
 
-            let _ = shutdown_rx.recv();
+            loop
+            {
+                match event_rx.recv_timeout(std::time::Duration::from_millis(200))
+                {
+                    Ok(facility) =>
+                    {
+                        mainloop.lock();
+                        let introspector = context.introspect();
+                        match facility
+                        {
+                            Some(Facility::Sink)   => fetch_sink(&introspector, Arc::clone(&state_cb), tx_clone.clone()),
+                            Some(Facility::Source) => fetch_source(&introspector, Arc::clone(&state_cb), tx_clone.clone()),
+                            _ => {}
+                        }
+                        mainloop.unlock();
+                    }
+                    Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
+                    Err(std::sync::mpsc::RecvTimeoutError::Timeout) =>
+                    {
+                        if shutdown_rx.try_recv().is_ok() { break; }
+                    }
+                }
+            }
 
             mainloop.lock();
-            context.lock().unwrap().disconnect();
+            context.disconnect();
             mainloop.unlock();
             mainloop.stop();
         });

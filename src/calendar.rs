@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 
 // ============ CRATES ============
-use crate::helpers::{color::ColorType, style::{UserStyle, set_style}};
+use crate::helpers::{color::{ColorType, Gradient}, style::{UserStyle, set_style}};
 use crate::context_menu::smart_popup_position;
 use crate::{AppData, WindowInfo};
 use crate::ron::BarPosition;
@@ -96,7 +96,10 @@ pub struct CalendarButtonStyle
     pub pressed_text_color:     ColorType,
     pub border_color:           ColorType,
     pub border_size:            f32,
-    pub border_radius:          [f32; 4]
+    pub border_radius:          [f32; 4],
+    pub gradient_color:         Option<Gradient>,
+    pub hovered_gradient_color: Option<Gradient>,
+    pub pressed_gradient_color: Option<Gradient>
 }
 
 impl Default for CalendarButtonStyle
@@ -113,7 +116,10 @@ impl Default for CalendarButtonStyle
             pressed_text_color:  ColorType::RGB([255, 255, 255]),
             border_color:        ColorType::RGB([80, 70, 100]),
             border_size:         1.0,
-            border_radius:       [4., 4., 4., 4.]
+            border_radius:       [4., 4., 4., 4.],
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         }
     }
 }
@@ -131,9 +137,9 @@ impl CalendarButtonStyle
             border_color:   self.border_color,
             border_size:    self.border_size,
             border_radius:  self.border_radius,
-            normal_background:  crate::helpers::style::match_color_or_gradient(None, self.color),
-            hovered_background: crate::helpers::style::match_color_or_gradient(None, self.hovered_color),
-            pressed_background: crate::helpers::style::match_color_or_gradient(None, self.pressed_color),
+            normal_background:  crate::helpers::style::match_color_or_gradient(self.gradient_color.as_ref(),         self.color),
+            hovered_background: crate::helpers::style::match_color_or_gradient(self.hovered_gradient_color.as_ref(), self.hovered_color),
+            pressed_background: crate::helpers::style::match_color_or_gradient(self.pressed_gradient_color.as_ref(), self.pressed_color),
             shadow_color:      None,
             shadow_x:          0.,
             shadow_y:          0.,
@@ -238,7 +244,10 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([255, 255, 255]),
                 border_color:       ColorType::RGB([80, 65, 100]),
                 border_size:        1.0,
-                border_radius:      [4., 4., 4., 4.]
+                border_radius:      [4., 4., 4., 4.],
+                gradient_color:         None,
+                hovered_gradient_color: None,
+                pressed_gradient_color: None
             },
             calendar_nav_active_button_style:   CalendarButtonStyle
             {
@@ -250,7 +259,10 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([235, 235, 255]),
                 border_color:       ColorType::RGB([160, 100, 200]),
                 border_size:        1.0,
-                border_radius:      [4., 4., 4., 4.]
+                border_radius:      [4., 4., 4., 4.],
+                gradient_color:         None,
+                hovered_gradient_color: None,
+                pressed_gradient_color: None
             },
             calendar_month_spacing_y:           0,
             calendar_year_spacing_y:            0,
@@ -288,7 +300,10 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([255, 255, 255]),
                 border_color:       ColorType::RGB([140, 100, 200]),
                 border_size:        1.5,
-                border_radius:      [4., 4., 4., 4.]
+                border_radius:      [4., 4., 4., 4.],
+                gradient_color:         None,
+                hovered_gradient_color: None,
+                pressed_gradient_color: None
             },
             calendar_selected_day_button_style: CalendarButtonStyle
             {
@@ -300,7 +315,10 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([235, 220, 255]),
                 border_color:       ColorType::RGB([200, 140, 255]),
                 border_size:        1.5,
-                border_radius:      [4., 4., 4., 4.]
+                border_radius:      [4., 4., 4., 4.],
+                gradient_color:         None,
+                hovered_gradient_color: None,
+                pressed_gradient_color: None
             },
             calendar_overflow_day_button_style: CalendarButtonStyle
             {
@@ -312,7 +330,10 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([120, 110, 140]),
                 border_color:       ColorType::RGBA([70, 60, 90, 40]),
                 border_size:        0.5,
-                border_radius:      [4., 4., 4., 4.]
+                border_radius:      [4., 4., 4., 4.],
+                gradient_color:         None,
+                hovered_gradient_color: None,
+                pressed_gradient_color: None
             },
             calendar_day_click_action:          DayClickAction::HighlightOnly,
             calendar_month_cell_width:          70,
@@ -337,7 +358,10 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([235, 220, 255]),
                 border_color:       ColorType::RGB([180, 120, 230]),
                 border_size:        1.5,
-                border_radius:      [4., 4., 4., 4.]
+                border_radius:      [4., 4., 4., 4.],
+                gradient_color:         None,
+                hovered_gradient_color: None,
+                pressed_gradient_color: None
             },
             calendar_year_cell_width:           60,
             calendar_year_cell_height:          38,
@@ -355,7 +379,10 @@ impl Default for CalendarWindowConfig
                 pressed_text_color: ColorType::RGB([235, 220, 255]),
                 border_color:       ColorType::RGB([180, 120, 230]),
                 border_size:        1.5,
-                border_radius:      [4., 4., 4., 4.]
+                border_radius:      [4., 4., 4., 4.],
+                gradient_color:         None,
+                hovered_gradient_color: None,
+                pressed_gradient_color: None
             }
         }
     }

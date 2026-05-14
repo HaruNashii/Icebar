@@ -495,6 +495,9 @@ BarConfig
             		border_color:       	HEX("3d3d3d"),
             		border_size:        	1.0,
             		border_radius:      	(6., 6., 6., 6.),
+            		gradient_color:         None,
+            		hovered_gradient_color: None,
+            		pressed_gradient_color: None
 		)
 	),
 
@@ -522,6 +525,9 @@ BarConfig
             		border_color:       	HEX("3d3d3d"),
             		border_size:        	1.0,
             		border_radius:      	(6., 6., 6., 6.),
+            		gradient_color:         None,
+            		hovered_gradient_color: None,
+            		pressed_gradient_color: None
 		)
 	),
 	
@@ -572,6 +578,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
 
             mute_label:                 "󰕾",
@@ -590,6 +599,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
             muted_button_style:
 	    (
@@ -602,6 +614,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
 
             default_label:              "⬤",
@@ -616,6 +631,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
             default_button_style:
 	    (
@@ -628,6 +646,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
 	),
 
@@ -677,6 +698,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
 
             mute_label:                 "󰕾",
@@ -695,6 +719,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
             muted_button_style:
 	    (
@@ -707,6 +734,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
 	)
     ),
@@ -767,6 +797,9 @@ BarConfig
             		border_color:       	HEX("3d3d3d"),
             		border_size:        	1.0,
             		border_radius:      	(6., 6., 6., 6.),
+            		gradient_color:         None,
+            		hovered_gradient_color: None,
+            		pressed_gradient_color: None
 		)
 	),
 
@@ -794,6 +827,9 @@ BarConfig
             		border_color:       	HEX("3d3d3d"),
             		border_size:        	1.0,
             		border_radius:      	(6., 6., 6., 6.),
+            		gradient_color:         None,
+            		hovered_gradient_color: None,
+            		pressed_gradient_color: None
 		)
 	),
 	
@@ -844,6 +880,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
 
             mute_label:                 "󰕾",
@@ -862,6 +901,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
             muted_button_style:
 	    (
@@ -874,6 +916,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
 
             default_label:              "⬤",
@@ -888,6 +933,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
             default_button_style:
 	    (
@@ -900,6 +948,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
 	),
 
@@ -949,6 +1000,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
 
             mute_label:                 "󰕾",
@@ -967,6 +1021,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
             muted_button_style:
 	    (
@@ -979,6 +1036,9 @@ BarConfig
             	border_color:       HEX("3d3d3d"),
             	border_size:        1.0,
             	border_radius:      (6., 6., 6., 6.),
+            	gradient_color:         None,
+            	hovered_gradient_color: None,
+            	pressed_gradient_color: None
 	    ),
 	)
     ),
@@ -1277,6 +1337,8 @@ BarConfig
     (
         ram_format:             "[Color=(120, 174, 237), String=RAM]  {used}MB / {percent}%",
         ram_update_interval:    1000,
+        action_on_left_click_ram:       DefaultAction,
+        action_on_right_click_ram:      DefaultAction,
         ram_padding:                    7,
         ram_text_size:                  13,
         ram_text_color:                 HEX("ffffff"),
@@ -1309,6 +1371,8 @@ BarConfig
         disk_format:            "[Color=(120, 174, 237), String=DISK]  {used}GB / {percent}%",
         disk_mount:             "/",
         disk_update_interval:   10000,
+        action_on_left_click_disk:      DefaultAction,
+        action_on_right_click_disk:     DefaultAction,
         disk_padding:                   7,
         disk_text_size:                 13,
         disk_text_color:                HEX("ffffff"),
@@ -1355,7 +1419,10 @@ BarConfig
         context_menu_button_pressed_color:      HEX("1c1c1c"),
         context_menu_border_color:              HEX("3d3d3d"),
         context_menu_border_size:               1.0,
-        context_menu_border_radius:             (6.0, 6.0, 6.0, 6.0)
+        context_menu_border_radius:             (6.0, 6.0, 6.0, 6.0),
+        context_menu_button_gradient_color:         None,
+        context_menu_button_hovered_gradient_color: None,
+        context_menu_button_pressed_gradient_color: None
     ),
 
 
@@ -1367,6 +1434,8 @@ BarConfig
         dont_show_focused_window_if_empty:          true,
         text_when_focused_window_is_empty:          "Desktop",
         focused_window_text_limit_len:              30,
+        action_on_left_click_focused_window:        DefaultAction,
+        action_on_right_click_focused_window:       DefaultAction,
         focused_window_padding:                     7,
         focused_window_text_size:                   13,
         focused_window_text_color:                  HEX("c0bfbc"),
@@ -1491,7 +1560,10 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         ),
         calendar_nav_active_button_style:
         (
@@ -1503,7 +1575,10 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         ),
 
         // ── Prev / Next arrow buttons ─────────────────────────────────────
@@ -1522,7 +1597,10 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         ),
 
         // ── Month view ────────────────────────────────────────────────────
@@ -1552,7 +1630,10 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         ),
         calendar_today_button_style:
         (
@@ -1564,7 +1645,10 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         ),
         calendar_selected_day_button_style:
         (
@@ -1576,7 +1660,10 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((143, 191, 245)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         ),
         calendar_overflow_day_button_style:
         (
@@ -1588,7 +1675,10 @@ BarConfig
             pressed_text_color:  RGB((120, 120, 120)),
             border_color:        RGBA((61, 61, 61, 40)),
             border_size:         0.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         ),
         calendar_day_click_action:              HighlightOnly,
 
@@ -1611,7 +1701,10 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         ),
         calendar_current_month_button_style:
         (
@@ -1623,7 +1716,10 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         ),
 
         // ── Decade view ───────────────────────────────────────────────────
@@ -1643,7 +1739,10 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        HEX("3d3d3d"),
             border_size:         1.0,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         ),
         calendar_current_year_button_style:
         (
@@ -1655,7 +1754,10 @@ BarConfig
             pressed_text_color:  HEX("ffffff"),
             border_color:        RGB((90, 143, 199)),
             border_size:         1.5,
-            border_radius:       (6.0, 6.0, 6.0, 6.0)
+            border_radius:       (6.0, 6.0, 6.0, 6.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         )
     ),
 

@@ -228,7 +228,9 @@ fn build_modules_with_spacing<'a>(list_of_modules: &'a Vec<Modules>, app: &'a Ap
                     ),
                     app.ron_config.focused_window.focused_window_text_size
                 );
-                let inner = create_button_container_without_hover_message(app, app.ron_config.focused_window.focused_window_padding, text_data, Message::Nothing, Message::Nothing, define_focused_window_style);
+                let left_click: Message  = match &app.ron_config.focused_window.action_on_left_click_focused_window  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "FocusedWindow Custom Action".to_string(), true,  false)) };
+                let right_click: Message = match &app.ron_config.focused_window.action_on_right_click_focused_window { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "FocusedWindow Custom Action".to_string(), false, false)) };
+                let inner = create_button_container_without_hover_message(app, app.ron_config.focused_window.focused_window_padding, text_data, left_click, right_click, define_focused_window_style);
              
                 apply_separator
                 (
@@ -244,7 +246,9 @@ fn build_modules_with_spacing<'a>(list_of_modules: &'a Vec<Modules>, app: &'a Ap
             Modules::Disk =>
             {
                 let text_data = (convert_text_to_rich_text::<Message>(&app.modules_data.disk_text), app.ron_config.disk.disk_text_size);
-                let inner = create_button_container_without_hover_message(app, app.ron_config.disk.disk_padding, text_data, Message::Nothing, Message::Nothing, define_disk_style);
+                let left_click: Message  = match &app.ron_config.disk.action_on_left_click_disk  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "Disk Custom Action".to_string(), true,  false)) };
+                let right_click: Message = match &app.ron_config.disk.action_on_right_click_disk { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "Disk Custom Action".to_string(), false, false)) };
+                let inner = create_button_container_without_hover_message(app, app.ron_config.disk.disk_padding, text_data, left_click, right_click, define_disk_style);
              
                 apply_separator
                 (
@@ -278,7 +282,9 @@ fn build_modules_with_spacing<'a>(list_of_modules: &'a Vec<Modules>, app: &'a Ap
             Modules::Ram =>
             {
                 let text_data = (convert_text_to_rich_text::<Message>(&app.modules_data.ram_text), app.ron_config.ram.ram_text_size);
-                let inner = create_button_container_without_hover_message(app, app.ron_config.ram.ram_padding, text_data, Message::Nothing, Message::Nothing, define_ram_style);
+                let left_click: Message  = match &app.ron_config.ram.action_on_left_click_ram  { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "Ram Custom Action".to_string(), true,  false)) };
+                let right_click: Message = match &app.ron_config.ram.action_on_right_click_ram { ActionOnClick::ToggleAltClockAndCycleClockTimezones => Message::ToggleAltClockAndCycleClockTimeZones, ActionOnClick::CycleClockTimezones => Message::CycleClockTimeZones, ActionOnClick::Nothing => Message::Nothing, ActionOnClick::DefaultAction => Message::Nothing, ActionOnClick::ShowCalendar => Message::ShowCalendar, ActionOnClick::ShowVolumeOutputMixer => Message::ShowVolumeOutputMixer, ActionOnClick::ShowVolumeInputMixer => Message::ShowVolumeInputMixer, ActionOnClick::CustomAction(a) => Message::CreateCustomModuleCommand((None, a.to_vec(), "Ram Custom Action".to_string(), false, false)) };
+                let inner = create_button_container_without_hover_message(app, app.ron_config.ram.ram_padding, text_data, left_click, right_click, define_ram_style);
              
                 apply_separator
                 (

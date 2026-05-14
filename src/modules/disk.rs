@@ -9,6 +9,7 @@ use std::mem;
 // ============ CRATES ============
 use crate::helpers::style::{UserStyle, set_style};
 use crate::helpers::style::match_color_or_gradient;
+use crate::ron::ActionOnClick;
 use crate::AppData;
 
 
@@ -27,6 +28,8 @@ pub struct DiskConfig
     pub disk_format:                        String,
     pub disk_mount:                         String,
     pub disk_update_interval:               u64,
+    pub action_on_left_click_disk:          ActionOnClick,
+    pub action_on_right_click_disk:         ActionOnClick,
     pub disk_padding:                       u16,
     pub disk_text_size:                     u32,
     pub disk_text_color:                    ColorType,
@@ -61,6 +64,8 @@ impl Default for DiskConfig
             disk_format:                        "{used}GB / {total}GB {percent}%".into(),
             disk_mount:                         "/".into(),
             disk_update_interval:               3000,
+            action_on_left_click_disk:          ActionOnClick::DefaultAction,
+            action_on_right_click_disk:         ActionOnClick::DefaultAction,
             disk_padding:                       0,
             disk_text_size:                     12,
             disk_text_color:                    ColorType::RGB([220, 220, 220]),

@@ -8,6 +8,7 @@ use iced::widget::button;
 // ============ CRATES ============
 use crate::helpers::style::{UserStyle, set_style};
 use crate::helpers::style::match_color_or_gradient;
+use crate::ron::ActionOnClick;
 use crate::AppData;
 
 
@@ -25,6 +26,8 @@ pub struct RamConfig
 {
     pub ram_format:                        String,
     pub ram_update_interval:               u64,
+    pub action_on_left_click_ram:          ActionOnClick,
+    pub action_on_right_click_ram:         ActionOnClick,
     pub ram_padding:                       u16,
     pub ram_text_size:                     u32,
     pub ram_text_color:                    ColorType,
@@ -58,6 +61,8 @@ impl Default for RamConfig
         {
             ram_format:                        " {used}MB / {total}MB {percent}%".into(),
             ram_update_interval:               1050,
+            action_on_left_click_ram:          ActionOnClick::DefaultAction,
+            action_on_right_click_ram:         ActionOnClick::DefaultAction,
             ram_padding:                       0,
             ram_text_size:                     12,
             ram_text_color:                    ColorType::RGB([220, 220, 220]),

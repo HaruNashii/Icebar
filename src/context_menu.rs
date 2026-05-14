@@ -8,7 +8,7 @@ use serde::{Serialize, Deserialize};
 
 
 // ============ CRATES ============
-use crate::helpers::{color::ColorType, style::{TextOrientation, orient_text, set_style}};
+use crate::helpers::{color::{ColorType, Gradient}, style::{TextOrientation, orient_text, set_style}};
 use crate::ron::{BarConfig, BarPosition};
 use crate::modules::tray::MenuItem;
 use crate::{AppData, WindowInfo};
@@ -40,7 +40,10 @@ pub struct ContextMenuConfig
     pub context_menu_button_pressed_color:       ColorType,
     pub context_menu_border_color:               ColorType,
     pub context_menu_border_size:                f32,
-    pub context_menu_border_radius:              [f32; 4]
+    pub context_menu_border_radius:              [f32; 4],
+    pub context_menu_button_gradient_color:         Option<Gradient>,
+    pub context_menu_button_hovered_gradient_color: Option<Gradient>,
+    pub context_menu_button_pressed_gradient_color: Option<Gradient>
 }
 
 impl Default for ContextMenuConfig
@@ -66,7 +69,10 @@ impl Default for ContextMenuConfig
             context_menu_button_pressed_color:       ColorType::RGB([85, 30, 55]),
             context_menu_border_color:               ColorType::RGB([130, 90, 140]),
             context_menu_border_size:                1.0,
-            context_menu_border_radius:              [3.0, 3.0, 3.0, 3.0]
+            context_menu_border_radius:              [3.0, 3.0, 3.0, 3.0],
+            context_menu_button_gradient_color:         None,
+            context_menu_button_hovered_gradient_color: None,
+            context_menu_button_pressed_gradient_color: None
         }
     }
 }
@@ -155,7 +161,7 @@ pub fn context_menu_view<'a>(data: &'a ContextMenuData, ron_config: &'a BarConfi
             let border_color =  ron_config.context_menu.context_menu_border_color;
             let border_size =   ron_config.context_menu.context_menu_border_size;
             let border_radius = ron_config.context_menu.context_menu_border_radius;
-            set_style(crate::UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: crate::helpers::style::match_color_or_gradient(None, ron_config.context_menu.context_menu_button_color), hovered_background: crate::helpers::style::match_color_or_gradient(None, ron_config.context_menu.context_menu_button_hovered_color), pressed_background: crate::helpers::style::match_color_or_gradient(None, ron_config.context_menu.context_menu_button_pressed_color), shadow_color: None, shadow_blur: 0., shadow_x: 0., shadow_y: 0. })
+            set_style(crate::UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: crate::helpers::style::match_color_or_gradient(ron_config.context_menu.context_menu_button_gradient_color.as_ref(), ron_config.context_menu.context_menu_button_color), hovered_background: crate::helpers::style::match_color_or_gradient(ron_config.context_menu.context_menu_button_hovered_gradient_color.as_ref(), ron_config.context_menu.context_menu_button_hovered_color), pressed_background: crate::helpers::style::match_color_or_gradient(ron_config.context_menu.context_menu_button_pressed_gradient_color.as_ref(), ron_config.context_menu.context_menu_button_pressed_color), shadow_color: None, shadow_blur: 0., shadow_x: 0., shadow_y: 0. })
         }).into()
     }).collect();
 

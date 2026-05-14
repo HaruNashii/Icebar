@@ -8,6 +8,7 @@ use iced::widget::button;
 
 // ============ CRATES ============
 use crate::helpers::style::orient_text;
+use crate::ron::ActionOnClick;
 use crate::AppData;
 
 
@@ -28,6 +29,8 @@ pub struct FocusedWindowConfig
     pub dont_show_focused_window_if_empty:            bool,
     pub text_when_focused_window_is_empty:            String,
     pub focused_window_text_limit_len:                usize,
+    pub action_on_left_click_focused_window:          ActionOnClick,
+    pub action_on_right_click_focused_window:         ActionOnClick,
     pub focused_window_padding:                       u16,
     pub focused_window_text_size:                     u32,
     pub focused_window_text_color:                    ColorType,
@@ -64,6 +67,8 @@ impl Default for FocusedWindowConfig
             dont_show_focused_window_if_empty:            false,
             text_when_focused_window_is_empty:            "No Window Focused".into(),
             focused_window_text_limit_len:                25,
+            action_on_left_click_focused_window:          ActionOnClick::DefaultAction,
+            action_on_right_click_focused_window:         ActionOnClick::DefaultAction,
             focused_window_padding:                       0,
             focused_window_text_size:                     12,
             focused_window_text_color:                    ColorType::RGB([220, 220, 220]),

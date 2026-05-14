@@ -6,11 +6,13 @@ use std::{pin::Pin, sync::{Arc, Mutex}};
 use serde::{Deserialize, Serialize};
 
 
+
+
  
 
 
 // ============ CRATES ============
-use crate::helpers::{color::ColorType, style::{UserStyle, set_style}, string::convert_text_to_rich_text};
+use crate::helpers::{color::{ColorType, Gradient}, style::{UserStyle, set_style}, string::convert_text_to_rich_text};
 use crate::context_menu::smart_popup_position;
 use crate::{AppData, WindowInfo};
 use crate::ron::BarPosition;
@@ -117,7 +119,10 @@ pub struct MixerButtonStyle
     pub pressed_text_color:  ColorType,
     pub border_color:        ColorType,
     pub border_size:         f32,
-    pub border_radius:       [f32; 4]
+    pub border_radius:       [f32; 4],
+    pub gradient_color:         Option<Gradient>,
+    pub hovered_gradient_color: Option<Gradient>,
+    pub pressed_gradient_color: Option<Gradient>
 }
 
 impl Default for MixerButtonStyle
@@ -134,7 +139,10 @@ impl Default for MixerButtonStyle
             pressed_text_color: ColorType::RGB([255, 255, 255]),
             border_color:       ColorType::RGB([61, 61, 61]),
             border_size:        1.0,
-            border_radius:      [6., 6., 6., 6.]
+            border_radius:      [6., 6., 6., 6.],
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None
         }
     }
 }
@@ -152,9 +160,9 @@ impl MixerButtonStyle
             border_color:    self.border_color,
             border_size:     self.border_size,
             border_radius:   self.border_radius,
-            normal_background:  crate::helpers::style::match_color_or_gradient(None, self.color),
-            hovered_background: crate::helpers::style::match_color_or_gradient(None, self.hovered_color),
-            pressed_background: crate::helpers::style::match_color_or_gradient(None, self.pressed_color),
+            normal_background:  crate::helpers::style::match_color_or_gradient(self.gradient_color.as_ref(),         self.color),
+            hovered_background: crate::helpers::style::match_color_or_gradient(self.hovered_gradient_color.as_ref(), self.hovered_color),
+            pressed_background: crate::helpers::style::match_color_or_gradient(self.pressed_gradient_color.as_ref(), self.pressed_color),
             shadow_color:     None,
             shadow_x:         0.,
             shadow_y:         0.,
@@ -595,13 +603,13 @@ pub fn volume_mixer_subscription() -> Pin<Box<dyn futures::Stream<Item = Message
 
             mainloop.lock();
 
-            let context = match Context::new(&mainloop, "icebar-volume-mixer")
+            let mut context = match Context::new(&mainloop, "icebar-volume-mixer")
             {
-                Some(c) => Arc::new(Mutex::new(c)),
+                Some(c) => Box::new(c),
                 None    => { mainloop.unlock(); return; }
             };
 
-            if context.lock().unwrap().connect(None, ContextFlagSet::NOFLAGS, None).is_err()
+            if context.connect(None, ContextFlagSet::NOFLAGS, None).is_err()
             {
                 mainloop.unlock();
                 return;
@@ -609,7 +617,7 @@ pub fn volume_mixer_subscription() -> Pin<Box<dyn futures::Stream<Item = Message
 
             loop
             {
-                match context.lock().unwrap().get_state()
+                match context.get_state()
                 {
                     libpulse_binding::context::State::Ready => break,
                     libpulse_binding::context::State::Failed |
@@ -621,48 +629,50 @@ pub fn volume_mixer_subscription() -> Pin<Box<dyn futures::Stream<Item = Message
                 mainloop.lock();
             }
 
-            {
-                let s = Arc::clone(&state_cb);
-                let t = tx_clone.clone();
-                fetch_all(Arc::clone(&context), Arc::clone(&s), t);
-            }
+            fetch_all_safe(&context, Arc::clone(&state_cb), tx_clone.clone());
 
-            {
-                let ctx = Arc::clone(&context);
-                let s   = Arc::clone(&state_cb);
-                let t   = tx_clone.clone();
+            let (event_tx, event_rx) = std::sync::mpsc::channel::<()>();
 
-                context.lock().unwrap().subscribe
-                (
-                    InterestMaskSet::SINK
-                    | InterestMaskSet::SOURCE
-                    | InterestMaskSet::SINK_INPUT
-                    | InterestMaskSet::SOURCE_OUTPUT
-                    | InterestMaskSet::SERVER,
-                    |_| {}
-                );
+            context.subscribe
+            (
+                InterestMaskSet::SINK
+                | InterestMaskSet::SOURCE
+                | InterestMaskSet::SINK_INPUT
+                | InterestMaskSet::SOURCE_OUTPUT
+                | InterestMaskSet::SERVER,
+                |_| {}
+            );
 
-                context.lock().unwrap().set_subscribe_callback
-                (
-                    Some
-                    (
-                        Box::new
-                        (
-                            move |_facility, _op, _index|
-                            {
-                                fetch_all(Arc::clone(&ctx), Arc::clone(&s), t.clone());
-                            }
-                        )
-                    )
-                );
-            }
+            context.set_subscribe_callback
+            (
+                Some(Box::new(move |_facility, _op, _index|
+                {
+                    let _ = event_tx.send(());
+                }))
+            );
 
             mainloop.unlock();
 
-            let _ = shutdown_rx.recv();
+            loop
+            {
+                match event_rx.recv_timeout(std::time::Duration::from_millis(200))
+                {
+                    Ok(()) =>
+                    {
+                        mainloop.lock();
+                        fetch_all_safe(&context, Arc::clone(&state_cb), tx_clone.clone());
+                        mainloop.unlock();
+                    }
+                    Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
+                    Err(std::sync::mpsc::RecvTimeoutError::Timeout) =>
+                    {
+                        if shutdown_rx.try_recv().is_ok() { break; }
+                    }
+                }
+            }
 
             mainloop.lock();
-            context.lock().unwrap().disconnect();
+            context.disconnect();
             mainloop.unlock();
             mainloop.stop();
         });
@@ -689,8 +699,7 @@ pub fn volume_mixer_subscription() -> Pin<Box<dyn futures::Stream<Item = Message
 
 
 
-
-fn fetch_all(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, tx: tokio::sync::mpsc::UnboundedSender<()>)
+fn fetch_all_safe(context: &Context, state: Arc<Mutex<PulseStateInternal>>, tx: tokio::sync::mpsc::UnboundedSender<()>)
 {
     {
         let mut s = state.lock().unwrap();
@@ -700,26 +709,180 @@ fn fetch_all(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, tx
         s.src_out_done = false;
     }
 
-    let state_srv = Arc::clone(&state);
-    let ctx2 = Arc::clone(&ctx);
-    let tx2  = tx.clone();
-    let ctx_guard = ctx.lock().unwrap();
-    let insp = ctx_guard.introspect();
-    insp.get_server_info(move |info|
+    // ---- server info ----
     {
-        let def_sink   = info.default_sink_name.as_deref().unwrap_or("").to_string();
-        let def_source = info.default_source_name.as_deref().unwrap_or("").to_string();
+        let state2 = Arc::clone(&state);
+        context.introspect().get_server_info(move |info|
         {
-            let mut s = state_srv.lock().unwrap();
+            let def_sink   = info.default_sink_name.as_deref().unwrap_or("").to_string();
+            let def_source = info.default_source_name.as_deref().unwrap_or("").to_string();
+            let mut s = state2.lock().unwrap();
             s.default_sink_name   = def_sink;
             s.default_source_name = def_source;
-        }
-        fetch_sinks(          Arc::clone(&ctx2), Arc::clone(&state_srv), tx2.clone());
-        fetch_sources(        Arc::clone(&ctx2), Arc::clone(&state_srv), tx2.clone());
-        fetch_sink_inputs(    Arc::clone(&ctx2), Arc::clone(&state_srv), tx2.clone());
-        fetch_source_outputs( Arc::clone(&ctx2), Arc::clone(&state_srv), tx2.clone());
-    });
+        });
+    }
+
+    // ---- sinks ----
+    {
+        let state2 = Arc::clone(&state);
+        let tx2    = tx.clone();
+        let mut devs: Vec<AudioDevice> = Vec::new();
+        context.introspect().get_sink_info_list(move |list|
+        {
+            match list
+            {
+                ListResult::Item(info) =>
+                {
+                    let name = info.name.as_deref().unwrap_or("").to_string();
+                    let desc = info.description.as_deref().unwrap_or(&name).to_string();
+                    let default_name = state2.lock().unwrap().default_sink_name.clone();
+                    devs.push(AudioDevice
+                    {
+                        index:       info.index,
+                        name:        name.clone(),
+                        description: desc,
+                        volume:      vol_to_f32(&info.volume),
+                        muted:       info.mute,
+                        is_default:  name == default_name,
+                    });
+                }
+                ListResult::End =>
+                {
+                    let mut s = state2.lock().unwrap();
+                    let def = s.default_sink_name.clone();
+                    for d in &mut devs { d.is_default = d.name == def; }
+                    s.output_devices = devs.clone();
+                    s.sinks_done = true;
+                    let _ = tx2.send(());
+                }
+                ListResult::Error => {}
+            }
+        });
+    }
+
+    // ---- sources ----
+    {
+        let state2 = Arc::clone(&state);
+        let tx2    = tx.clone();
+        let mut devs: Vec<AudioDevice> = Vec::new();
+        context.introspect().get_source_info_list(move |list|
+        {
+            match list
+            {
+                ListResult::Item(info) =>
+                {
+                    if info.name.as_deref().unwrap_or("").ends_with(".monitor") { return; }
+                    let name = info.name.as_deref().unwrap_or("").to_string();
+                    let desc = info.description.as_deref().unwrap_or(&name).to_string();
+                    let def  = state2.lock().unwrap().default_source_name.clone();
+                    devs.push(AudioDevice
+                    {
+                        index:       info.index,
+                        name:        name.clone(),
+                        description: desc,
+                        volume:      vol_to_f32(&info.volume),
+                        muted:       info.mute,
+                        is_default:  name == def,
+                    });
+                }
+                ListResult::End =>
+                {
+                    let mut s = state2.lock().unwrap();
+                    let def = s.default_source_name.clone();
+                    for d in &mut devs { d.is_default = d.name == def; }
+                    s.input_devices = devs.clone();
+                    s.sources_done = true;
+                    let _ = tx2.send(());
+                }
+                ListResult::Error => {}
+            }
+        });
+    }
+
+    // ---- sink inputs (output app streams) ----
+    {
+        let state2  = Arc::clone(&state);
+        let tx2     = tx.clone();
+        let mut streams: Vec<AppStream> = Vec::new();
+        context.introspect().get_sink_input_info_list(move |list|
+        {
+            match list
+            {
+                ListResult::Item(info) =>
+                {
+                    let name = info.proplist.get_str("application.name")
+                        .or_else(|| info.proplist.get_str("media.name"))
+                        .unwrap_or_else(|| format!("Stream #{}", info.index));
+                    streams.push(AppStream
+                    {
+                        index:      info.index,
+                        name,
+                        volume:     vol_to_f32(&info.volume),
+                        muted:      info.mute,
+                        sink_index: info.sink,
+                    });
+                }
+                ListResult::End =>
+                {
+                    let mut s = state2.lock().unwrap();
+                    s.output_streams = streams.clone();
+                    s.sink_in_done = true;
+                    let _ = tx2.send(());
+                }
+                ListResult::Error => {}
+            }
+        });
+    }
+
+    // ---- source outputs (input app streams) ----
+    {
+        let state2  = Arc::clone(&state);
+        let tx2     = tx.clone();
+        let mut streams: Vec<AppStream> = Vec::new();
+        context.introspect().get_source_output_info_list(move |list|
+        {
+            match list
+            {
+                ListResult::Item(info) =>
+                {
+                    let app_name = info.proplist.get_str("application.name").unwrap_or_default();
+                    if app_name == "PulseAudio Volume Control"
+                        || app_name.starts_with("peak detect")
+                        || info.name.as_deref().unwrap_or("").contains("peak detect")
+                    {
+                        return;
+                    }
+                    let name = if !app_name.is_empty()
+                    {
+                        app_name
+                    }
+                    else
+                    {
+                        info.proplist.get_str("media.name")
+                            .unwrap_or_else(|| format!("Stream #{}", info.index))
+                    };
+                    streams.push(AppStream
+                    {
+                        index:      info.index,
+                        name,
+                        volume:     vol_to_f32(&info.volume),
+                        muted:      info.mute,
+                        sink_index: info.source,
+                    });
+                }
+                ListResult::End =>
+                {
+                    let mut s = state2.lock().unwrap();
+                    s.input_streams = streams.clone();
+                    s.src_out_done = true;
+                    let _ = tx2.send(());
+                }
+                ListResult::Error => {}
+            }
+        });
+    }
 }
+
 
 
 
@@ -727,187 +890,6 @@ fn vol_to_f32(cv: &ChannelVolumes) -> f32
 {
     cv.avg().0 as f32 / Volume::NORMAL.0 as f32
 }
-
-
-
-fn fetch_sinks(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, tx: tokio::sync::mpsc::UnboundedSender<()>)
-{
-    let mut devs: Vec<AudioDevice> = Vec::new();
-    let state2 = Arc::clone(&state);
-    let tx2 = tx.clone();
-
-    let ctx_guard = ctx.lock().unwrap();
-    let insp = ctx_guard.introspect();
-    insp.get_sink_info_list(move |list|
-    {
-        match list
-        {
-            ListResult::Item(info) =>
-            {
-                let name = info.name.as_deref().unwrap_or("").to_string();
-                let desc = info.description.as_deref().unwrap_or(&name).to_string();
-                let default_name = state2.lock().unwrap().default_sink_name.clone();
-                devs.push(AudioDevice
-                {
-                    index:       info.index,
-                    name:        name.clone(),
-                    description: desc,
-                    volume:      vol_to_f32(&info.volume),
-                    muted:       info.mute,
-                    is_default:  name == default_name,
-                });
-            }
-            ListResult::End =>
-            {
-                let mut s = state2.lock().unwrap();
-                let def = s.default_sink_name.clone();
-                for d in &mut devs { d.is_default = d.name == def; }
-                s.output_devices = devs.clone();
-                s.sinks_done = true;
-                let _ = tx2.send(());
-            }
-            ListResult::Error => {}
-        }
-    });
-}
-
-
-
-fn fetch_sources(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, tx: tokio::sync::mpsc::UnboundedSender<()>)
-{
-    let mut devs: Vec<AudioDevice> = Vec::new();
-    let state2 = Arc::clone(&state);
-    let tx2 = tx.clone();
-
-    let ctx_guard = ctx.lock().unwrap();
-    let insp = ctx_guard.introspect();
-    insp.get_source_info_list(move |list|
-    {
-        match list
-        {
-            ListResult::Item(info) =>
-            {
-                if info.name.as_deref().unwrap_or("").ends_with(".monitor") { return; }
-                let name = info.name.as_deref().unwrap_or("").to_string();
-                let desc = info.description.as_deref().unwrap_or(&name).to_string();
-                let def  = state2.lock().unwrap().default_source_name.clone();
-                devs.push(AudioDevice
-                {
-                    index:       info.index,
-                    name:        name.clone(),
-                    description: desc,
-                    volume:      vol_to_f32(&info.volume),
-                    muted:       info.mute,
-                    is_default:  name == def,
-                });
-            }
-            ListResult::End =>
-            {
-                let mut s = state2.lock().unwrap();
-                let def = s.default_source_name.clone();
-                for d in &mut devs { d.is_default = d.name == def; }
-                s.input_devices = devs.clone();
-                s.sources_done = true;
-                let _ = tx2.send(());
-            }
-            ListResult::Error => {}
-        }
-    });
-}
-
-
-
-fn fetch_sink_inputs(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, tx: tokio::sync::mpsc::UnboundedSender<()>)
-{
-    let mut streams: Vec<AppStream> = Vec::new();
-    let state2 = Arc::clone(&state);
-    let tx2 = tx.clone();
-
-    let ctx_guard = ctx.lock().unwrap();
-    let insp = ctx_guard.introspect();
-    insp.get_sink_input_info_list(move |list|
-    {
-        match list
-        {
-            ListResult::Item(info) =>
-            {
-                let name = info.proplist.get_str("application.name")
-                    .or_else(|| info.proplist.get_str("media.name"))
-                    .unwrap_or_else(|| format!("Stream #{}", info.index));
-                streams.push(AppStream
-                {
-                    index:      info.index,
-                    name,
-                    volume:     vol_to_f32(&info.volume),
-                    muted:      info.mute,
-                    sink_index: info.sink,
-                });
-            }
-            ListResult::End =>
-            {
-                let mut s = state2.lock().unwrap();
-                s.output_streams = streams.clone();
-                s.sink_in_done = true;
-                let _ = tx2.send(());
-            }
-            ListResult::Error => {}
-        }
-    });
-}
-
-
-
-fn fetch_source_outputs(ctx: Arc<Mutex<Context>>, state: Arc<Mutex<PulseStateInternal>>, tx: tokio::sync::mpsc::UnboundedSender<()>)
-{
-    let mut streams: Vec<AppStream> = Vec::new();
-    let state2 = Arc::clone(&state);
-    let tx2 = tx.clone();
-
-    let ctx_guard = ctx.lock().unwrap();
-    let insp = ctx_guard.introspect();
-    insp.get_source_output_info_list(move |list|
-    {
-        match list
-        {
-            ListResult::Item(info) =>
-            {
-                let app_name = info.proplist.get_str("application.name").unwrap_or_default();
-                if app_name == "PulseAudio Volume Control"
-                    || app_name.starts_with("peak detect")
-                    || info.name.as_deref().unwrap_or("").contains("peak detect")
-                {
-                    return;
-                }
-                let name = if !app_name.is_empty()
-                {
-                    app_name
-                }
-                else
-                {
-                    info.proplist.get_str("media.name")
-                        .unwrap_or_else(|| format!("Stream #{}", info.index))
-                };
-                streams.push(AppStream
-                {
-                    index:      info.index,
-                    name,
-                    volume:     vol_to_f32(&info.volume),
-                    muted:      info.mute,
-                    sink_index: info.source,
-                });
-            }
-            ListResult::End =>
-            {
-                let mut s = state2.lock().unwrap();
-                s.input_streams = streams.clone();
-                s.src_out_done = true;
-                let _ = tx2.send(());
-            }
-            ListResult::Error => {}
-        }
-    });
-}
-
 
 
 

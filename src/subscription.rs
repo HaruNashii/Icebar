@@ -56,7 +56,16 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             && (has_mixer_action(&app.ron_config.media_player_metadata.action_on_left_click_media_player_metadata)
             || has_mixer_action(&app.ron_config.media_player_metadata.action_on_right_click_media_player_metadata))
         || app.modules_data.active_modules.contains(&Modules::PowerProfile) && (has_mixer_action(&app.ron_config.power_profile.action_on_left_click_power_profile)
-        || has_mixer_action(&app.ron_config.power_profile.action_on_right_click_power_profile));
+        || has_mixer_action(&app.ron_config.power_profile.action_on_right_click_power_profile))
+        || app.modules_data.active_modules.contains(&Modules::Ram) && (has_mixer_action(&app.ron_config.ram.action_on_left_click_ram)
+        || has_mixer_action(&app.ron_config.ram.action_on_right_click_ram))
+        || app.modules_data.active_modules.contains(&Modules::Disk) && (has_mixer_action(&app.ron_config.disk.action_on_left_click_disk)
+        || has_mixer_action(&app.ron_config.disk.action_on_right_click_disk))
+        || (app.modules_data.active_modules.contains(&Modules::FocusedWindowHypr)
+            || app.modules_data.active_modules.contains(&Modules::FocusedWindowNiri)
+            || app.modules_data.active_modules.contains(&Modules::FocusedWindowSway))
+            && (has_mixer_action(&app.ron_config.focused_window.action_on_left_click_focused_window)
+            || has_mixer_action(&app.ron_config.focused_window.action_on_right_click_focused_window));
 
     let event_reader = match (app.modules_data.active_modules.contains(&Modules::Tray), needs_cursor)
     {
