@@ -7,6 +7,13 @@ use std::{collections::HashSet, fs, path::PathBuf};
 
 
 // ============ CRATES ============
+use crate::helpers::
+{
+    string::find_field_colon,
+    color::{ColorType, Gradient},
+    ron_general::apply_general_settings,
+    style::{SideOption, TextOrientation}
+};
 use crate::modules::
 {
     clock::ClockConfig,
@@ -26,10 +33,12 @@ use crate::modules::
     data::Modules,
     group_of_modules::GroupOfModulesGroupsConfig
 };
-use crate::context_menu::ContextMenuConfig;
-use crate::helpers::{string::find_field_colon, color::{ColorType, Gradient}, ron_general::apply_general_settings, style::{SideOption, TextOrientation}};
-use crate::calendar::CalendarWindowConfig;
-use crate::volume_mixer::VolumeMixerConfig;
+use crate::windows::
+{
+    context_menu::ContextMenuConfig,
+    calendar::CalendarWindowConfig,
+    volume_mixer::VolumeMixerConfig
+};
 
 
 

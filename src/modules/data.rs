@@ -9,8 +9,7 @@ use iced::widget::image;
 
 // ============ CRATES ============
 use crate::modules::{clock::ClockData, custom_modules::CustomModuleData, focused_window::FocusedWindowData, image::ImageData, media_player::MediaPlayerData, network::NetworkData, power_profile::PowerProfileData, volume::VolumeData, workspaces::WorkspaceData};
-use crate::calendar::CalendarData;
-use crate::volume_mixer::{VolumeMixerData, MixerState};
+use crate::windows::{calendar::CalendarData, volume_mixer::{VolumeMixerData, MixerState}};
 
 
 

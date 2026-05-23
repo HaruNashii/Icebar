@@ -10,11 +10,11 @@ use iced_gif::gif;
 use crate::{helpers::{misc::{create_button_container, create_button_container_without_hover_message}, string::{convert_text_to_rich_text, convert_text_to_rich_text_ellipsized}, style::{apply_separator, bar_style, orient_text}}, modules::{cpu::define_cpu_style, cpu_temp::define_cpu_temp_style, focused_window::{define_focused_window_style, define_focused_window_text}, ram::define_ram_style, volume::define_volume_text}};
 use crate::modules::{image::{PreloadedImage, define_image_style}, disk::define_disk_style, clock::define_clock_style, custom_modules::{define_custom_module_style, define_custom_module_text}, data::Modules, group_of_modules::group_container_style, media_player::{create_media_button, define_button_data, define_media_player_buttons_text, define_media_player_metadata_style, define_media_player_metadata_text}, network::{define_network_style, define_network_text}, power_profile::{define_power_profile_rich_text, define_power_profile_style}, tray::{define_tray_icon, define_tray_style}, volume::{define_volume_input_style, define_volume_output_style}, workspaces::{build_workspace_style, define_workspaces_size, define_workspaces_style, define_workspaces_text}};
 use crate::ron::{ActionOnClick, BarPosition};
-use crate::context_menu::context_menu_view;
+use crate::windows::context_menu::context_menu_view;
 use crate::update::Message;
-use crate::{warning::warning_view, MAIN_ID, AppData, WindowInfo, id_info};
-use crate::calendar::calendar_view;
-use crate::volume_mixer::{volume_mixer_view, MixerKind};
+use crate::{windows::warning::warning_view, MAIN_ID, AppData, WindowInfo, id_info};
+use crate::windows::calendar::calendar_view;
+use crate::windows::volume_mixer::{volume_mixer_view, MixerKind};
 
 
 

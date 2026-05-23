@@ -25,7 +25,7 @@ use crate::modules::
     tray::{TraySubscription, tray_stream},
     poll_subscriptions::{CpuPollConfig, cpu_subscription, RamPollConfig, ram_subscription, DiskPollConfig, disk_subscription, CpuTempPollConfig, cpu_temp_subscription, NetworkSpeedPollConfig, network_speed_subscription}
 };
-use crate::volume_mixer::volume_mixer_subscription;
+use crate::windows::volume_mixer::volume_mixer_subscription;
 
 
 

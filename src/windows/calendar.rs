@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 // ============ CRATES ============
 use crate::helpers::{color::{ColorType, Gradient}, style::{UserStyle, set_style}};
-use crate::context_menu::smart_popup_position;
+use crate::windows::context_menu::smart_popup_position;
 use crate::{AppData, WindowInfo};
 use crate::ron::BarPosition;
 use crate::update::Message;

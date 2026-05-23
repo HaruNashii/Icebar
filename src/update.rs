@@ -10,12 +10,16 @@ use chrono::Datelike;
 
 // ============ CRATES ============
 use crate::modules::{power_profile::{read_power_profile, cycle_power_profile}, plasma, image::preload_image, clock::cycle_clock_timezones, clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction};
-use crate::volume_mixer::{MixerKind, MixerState, create_output_mixer_window, create_input_mixer_window, task_set_device_volume, task_toggle_device_mute, task_set_default_device, task_set_app_volume, task_toggle_app_mute};
+use crate::windows::
+{
+    volume_mixer::{MixerKind, MixerState, create_output_mixer_window, create_input_mixer_window, task_set_device_volume, task_toggle_device_mute, task_set_default_device, task_set_app_volume, task_toggle_app_mute},
+    calendar::{CalendarView, DayClickAction, create_calendar_window},
+    context_menu::{create_context_menu, get_context_menu_size},
+    warning::create_warning,
+};
+use crate::{MAIN_ID, AppData, WindowInfo};
 use crate::helpers::{string::format_volume, misc::{is_active_module, validate_bar_data, define_bar_anchor_position}, workspaces::build_workspace_list, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res};
 use crate::modules::focused_window::{read_focused_window_hypr, read_focused_window_sway, read_focused_window_niri};
-use crate::calendar::{CalendarView, DayClickAction, create_calendar_window};
-use crate::context_menu::{create_context_menu, get_context_menu_size};
-use crate::{warning::create_warning, MAIN_ID, AppData, WindowInfo};
 use crate::ron::read_ron_config;
 
 
@@ -835,7 +839,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             println!("Service: {service}");
             println!("Menu Path: {path}");
             println!("Id: {:?}\n", items);
-            let context_menu_data = crate::context_menu::ContextMenuData
+            let context_menu_data = crate::windows::context_menu::ContextMenuData
             {
                 mouse_position:        app.context_menu_data.mouse_position,
                 default_font:          app.default_font,
@@ -875,7 +879,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 for id in &ids { app.ids.remove(id); }
                 return Task::batch(ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
             }
-            let vmd = crate::volume_mixer::VolumeMixerData::from_config(
+            let vmd = crate::windows::volume_mixer::VolumeMixerData::from_config(
                 &app.ron_config.volume_output_mixer,
                 &app.ron_config.volume_input_mixer
             );
@@ -896,7 +900,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 for id in &ids { app.ids.remove(id); }
                 return Task::batch(ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
             }
-            let vmd = crate::volume_mixer::VolumeMixerData::from_config(
+            let vmd = crate::windows::volume_mixer::VolumeMixerData::from_config(
                 &app.ron_config.volume_output_mixer,
                 &app.ron_config.volume_input_mixer
             );

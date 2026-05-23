@@ -12,7 +12,7 @@ use iced::Font;
 use crate::helpers::{font::build_font, fs::check_if_config_file_exists, misc::{define_bar_anchor_position, is_active_module, validate_bar_data}, monitor::get_monitor_res, string::{intern_string, weight_from_str}, style::{UserStyle, set_style, style}};
 use crate::modules::{custom_modules::CustomModuleData, network::NetworkData, clock::ClockData, image::{ImageData, preload_image}, data::{Modules, ModulesData}, power_profile::{PowerProfileData, read_power_profile}, tray::{self, TrayEvent, start_tray}};
 use crate::ron::{read_ron_config, BarConfig};
-use crate::context_menu::ContextMenuData;
+use crate::windows::context_menu::ContextMenuData;
 use crate::subscription::subscription;
 use crate::update::update;
 use crate::view::view;
@@ -29,16 +29,13 @@ pub static MAIN_ID: OnceLock<iced::window::Id> = OnceLock::new();
 
 
 // ============ MOD'S ============
-mod context_menu;
 mod subscription;
+mod windows;
 mod modules;
 mod helpers;
-mod warning;
 mod update;
 mod view;
 mod ron;
-mod calendar;
-mod volume_mixer;
 
 
 
