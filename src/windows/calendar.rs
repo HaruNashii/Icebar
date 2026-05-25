@@ -1,7 +1,7 @@
 // ============ IMPORTS ============
 use chrono::{Datelike, Local, NaiveDate};
 use iced::{Alignment, Element, Length, Task, Theme, border::Radius, widget::{button, column, container, row, text, Space}};
-use iced_layershell::reexport::{Anchor, Layer, NewLayerShellSettings};
+use iced_layershell::reexport::{Anchor, Layer, NewLayerShellSettings, KeyboardInteractivity};
 use serde::{Deserialize, Serialize};
 
 
@@ -408,22 +408,40 @@ pub fn create_calendar_window(app: &mut AppData) -> Task<Message>
 
     let (mx, my) = app.modules_data.calendar_data.mouse_pos;
     let (pos_x, pos_y) = smart_popup_position(mx, my, app.monitor_size.0 as i32, app.monitor_size.1 as i32, w as i32, h as i32);
+    // backdrop
+    let backdrop_id = iced::window::Id::unique();
+    app.ids.insert(backdrop_id, WindowInfo::ContextMenuBackdrop);
+
+    // calendar window
     let id = iced::window::Id::unique();
     app.ids.insert(id, WindowInfo::Calendar);
-    Task::done(Message::NewLayerShell
+
+    let backdrop_settings = NewLayerShellSettings
     {
-        settings: NewLayerShellSettings
-        {
-            layer:                   Layer::Overlay,
-            size:                    Some((w, h)),
-            exclusive_zone:          Some(0),
-            keyboard_interactivity:  iced_layershell::reexport::KeyboardInteractivity::Exclusive,
-            anchor,
-            margin:                  Some((pos_y, 0, 0, pos_x)),
-            ..Default::default()
-        },
-        id
-    })
+        layer: Layer::Overlay,
+        size: Some((app.monitor_size.0 as u32, app.monitor_size.1 as u32)),
+        exclusive_zone: Some(0),
+        keyboard_interactivity: KeyboardInteractivity::None,
+        anchor: Anchor::Top | Anchor::Left,
+        margin: Some((0, 0, 0, 0)),
+        ..Default::default()
+    };
+
+    let cal_settings = NewLayerShellSettings
+    {
+        layer:                   Layer::Overlay,
+        size:                    Some((w, h)),
+        exclusive_zone:          Some(0),
+        keyboard_interactivity:  KeyboardInteractivity::Exclusive,
+        anchor,
+        margin:                  Some((pos_y, 0, 0, pos_x)),
+        ..Default::default()
+    };
+
+    Task::batch([
+        Task::done(Message::NewLayerShell { settings: backdrop_settings, id: backdrop_id }),
+        Task::done(Message::NewLayerShell { settings: cal_settings, id })
+    ])
 }
 
 

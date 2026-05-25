@@ -37,6 +37,14 @@ pub fn view(app: &AppData, id: iced::window::Id) -> Element<'_, Message>
 {
     match id_info(app, id) 
     {
+        Some(WindowInfo::ContextMenuBackdrop) =>
+        {
+            return container(
+                mouse_area(
+                    container(Space::new(Length::Fill, Length::Fill))
+                ).on_press(Message::CloseContextMenu)
+            ).width(Length::Fill).height(Length::Fill).into();
+        }
         Some(WindowInfo::ContextMenu)      => return context_menu_view(&app.context_menu_data, &app.ron_config),
         Some(WindowInfo::Calendar)         => return calendar_view(app),
         Some(WindowInfo::VolumeOutputMixer) => return volume_mixer_view(app, MixerKind::Output),
