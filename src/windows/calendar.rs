@@ -416,16 +416,16 @@ pub fn create_calendar_window(app: &mut AppData) -> Task<Message>
     let id = iced::window::Id::unique();
     app.ids.insert(id, WindowInfo::Calendar);
 
-    let backdrop_settings = NewLayerShellSettings
-    {
-        layer: Layer::Overlay,
-        size: Some((app.monitor_size.0 as u32, app.monitor_size.1 as u32)),
-        exclusive_zone: Some(0),
-        keyboard_interactivity: KeyboardInteractivity::None,
-        anchor: Anchor::Top | Anchor::Left,
-        margin: Some((0, 0, 0, 0)),
-        ..Default::default()
-    };
+ let backdrop_settings = NewLayerShellSettings
+{
+    layer: Layer::Overlay,
+    size: Some((app.monitor_size.0, app.monitor_size.1)),
+    exclusive_zone: Some(0),
+    keyboard_interactivity: KeyboardInteractivity::None,
+    anchor: Anchor::Top | Anchor::Left,
+    margin: Some((0, 0, 0, 0)),
+    ..Default::default()
+};
 
     let cal_settings = NewLayerShellSettings
     {

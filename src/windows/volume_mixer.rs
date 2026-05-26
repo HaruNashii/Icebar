@@ -994,7 +994,7 @@ pub fn create_output_mixer_window(app: &mut AppData) -> Task<Message>
     let backdrop_settings = NewLayerShellSettings
     {
         layer: Layer::Overlay,
-        size: Some((app.monitor_size.0 as u32, app.monitor_size.1 as u32)),
+        size: Some((app.monitor_size.0, app.monitor_size.1)),
         exclusive_zone: Some(0),
         keyboard_interactivity: KeyboardInteractivity::None,
         anchor: Anchor::Top | Anchor::Left,
@@ -1037,7 +1037,7 @@ pub fn create_input_mixer_window(app: &mut AppData) -> Task<Message>
     let backdrop_settings = NewLayerShellSettings
     {
         layer: Layer::Overlay,
-        size: Some((app.monitor_size.0 as u32, app.monitor_size.1 as u32)),
+        size: Some((app.monitor_size.0, app.monitor_size.1)),
         exclusive_zone: Some(0),
         keyboard_interactivity: KeyboardInteractivity::None,
         anchor: Anchor::Top | Anchor::Left,

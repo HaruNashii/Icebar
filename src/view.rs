@@ -35,29 +35,50 @@ pub enum Axis
 // ============ FUNCTIONS ============
 pub fn view(app: &AppData, id: iced::window::Id) -> Element<'_, Message>
 {
-    match id_info(app, id) 
+    match id_info(app, id)
     {
         Some(WindowInfo::ContextMenuBackdrop) =>
         {
             return container(
                 mouse_area(
-                    container(Space::new(Length::Fill, Length::Fill))
-                ).on_press(Message::CloseContextMenu)
-            ).width(Length::Fill).height(Length::Fill).into();
+                    container(
+                        Space::new()
+                            .width(Length::Fill)
+                            .height(Length::Fill)
+                    )
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                )
+                .on_press(Message::CloseContextMenu)
+            )
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into();
         }
-        Some(WindowInfo::ContextMenu)      => return context_menu_view(&app.context_menu_data, &app.ron_config),
-        Some(WindowInfo::Calendar)         => return calendar_view(app),
-        Some(WindowInfo::VolumeOutputMixer) => return volume_mixer_view(app, MixerKind::Output),
-        Some(WindowInfo::VolumeInputMixer)  => return volume_mixer_view(app, MixerKind::Input),
-        Some(WindowInfo::Warning) if app.config_parsed_failed => { return warning_view(&app.warning_err); },
-        _=> {}
+
+        Some(WindowInfo::ContextMenu) =>
+            return context_menu_view(&app.context_menu_data, &app.ron_config),
+
+        Some(WindowInfo::Calendar) =>
+            return calendar_view(app),
+
+        Some(WindowInfo::VolumeOutputMixer) =>
+            return volume_mixer_view(app, MixerKind::Output),
+
+        Some(WindowInfo::VolumeInputMixer) =>
+            return volume_mixer_view(app, MixerKind::Input),
+
+        Some(WindowInfo::Warning) if app.config_parsed_failed =>
+        {
+            return warning_view(&app.warning_err);
+        }
+
+        _ => {}
     };
 
     MAIN_ID.get_or_init(|| id);
     main_bar_view(app)
 }
-
-
 
 fn main_bar_view(app: &AppData) -> Element<'_, Message>
 {
