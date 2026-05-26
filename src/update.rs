@@ -161,7 +161,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             println!("Id: {id}");
 
             app.context_menu_data.context_menu_is_open = false;
-            let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
+            let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu || **info == WindowInfo::ContextMenuBackdrop).map(|(id, _)| *id).collect();
             for id in &window_ids_to_close { app.ids.remove(id); }
             let close_tasks = Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
             let activate_task = Task::perform
@@ -208,13 +208,13 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         {
             let mut tasks: Vec<Task<Message>> = Vec::new();
 
-            let has_context_menu = app.ids.values().any(|v| *v == WindowInfo::ContextMenu);
+            let has_context_menu = app.ids.values().any(|v| *v == WindowInfo::ContextMenu || *v == WindowInfo::ContextMenuBackdrop);
             if has_context_menu
             {
                 app.context_menu_data.context_menu_is_open = false;
                 if !app.context_menu_data.cursor_is_inside_menu
                 {
-                    let ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
+                    let ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu || **info == WindowInfo::ContextMenuBackdrop).map(|(id, _)| *id).collect();
                     for id in &ids_to_close { app.ids.remove(id); }
                     tasks.extend(ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
                 }
@@ -253,7 +253,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::CloseContextMenu =>
         {
             app.context_menu_data.context_menu_is_open = false;
-            let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
+            let window_ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu || **info == WindowInfo::ContextMenuBackdrop).map(|(id, _)| *id).collect();
             for id in &window_ids_to_close { app.ids.remove(id); }
             maybe_restart_hide_timer(app);
             return Task::batch(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
@@ -291,7 +291,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             let mut tasks: Vec<Task<Message>> = Vec::new();
 
             app.context_menu_data.context_menu_is_open = false;
-            let context_ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu).map(|(id, _)| *id).collect();
+            let context_ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::ContextMenu || **info == WindowInfo::ContextMenuBackdrop).map(|(id, _)| *id).collect();
             for id in &context_ids { app.ids.remove(id); }
             tasks.extend(context_ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
 

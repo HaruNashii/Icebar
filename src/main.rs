@@ -55,6 +55,7 @@ pub enum WindowInfo
     MainBar,
     Warning,
     ContextMenu,
+    ContextMenuBackdrop,
     Calendar,
     VolumeOutputMixer,
     VolumeInputMixer

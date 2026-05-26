@@ -1,6 +1,6 @@
 // ============ IMPORTS ============
 use iced::{Alignment, Element, Font, Length, Task, Theme, border::Radius, widget::{button, column, container, row, text}};
-use iced_layershell::reexport::{Anchor, Layer, NewLayerShellSettings};
+use iced_layershell::reexport::{Anchor, Layer, NewLayerShellSettings, KeyboardInteractivity};
 use serde::{Serialize, Deserialize};
 
 
@@ -115,22 +115,40 @@ pub fn create_context_menu(app: &mut AppData) -> Task<Message>
         smart_popup_position(app.context_menu_data.mouse_position.0, app.context_menu_data.mouse_position.1, app.monitor_size.0 as i32, app.monitor_size.1 as i32, context_menu_size.0 as i32, context_menu_size.1 as i32)
     };
 
+    // create a full-screen transparent backdrop to capture outside clicks
+    let backdrop_id = iced::window::Id::unique();
+    app.ids.insert(backdrop_id, WindowInfo::ContextMenuBackdrop);
+
+    // create the actual context menu window
     let id = iced::window::Id::unique();
     app.ids.insert(id, WindowInfo::ContextMenu);
-    Task::done(Message::NewLayerShell
+
+    let backdrop_settings = NewLayerShellSettings
     {
-        settings: NewLayerShellSettings
-        {
-            layer: Layer::Overlay,
-            size: Some((context_menu_size.0, context_menu_size.1)),
-            exclusive_zone: Some(0),
-            keyboard_interactivity: iced_layershell::reexport::KeyboardInteractivity::Exclusive,
-            anchor: anchor_position,
-            margin: Some((context_menu_pos_y, 0, 0, context_menu_pos_x)),
-            ..Default::default()
-        },
-        id
-    })
+        layer: Layer::Overlay,
+        size: Some((app.monitor_size.0, app.monitor_size.1)),
+        exclusive_zone: Some(0),
+        keyboard_interactivity: KeyboardInteractivity::None,
+        anchor: Anchor::Top | Anchor::Left,
+        margin: Some((0, 0, 0, 0)),
+        ..Default::default()
+    };
+
+    let menu_settings = NewLayerShellSettings
+    {
+        layer: Layer::Overlay,
+        size: Some((context_menu_size.0, context_menu_size.1)),
+        exclusive_zone: Some(0),
+        keyboard_interactivity: KeyboardInteractivity::Exclusive,
+        anchor: anchor_position,
+        margin: Some((context_menu_pos_y, 0, 0, context_menu_pos_x)),
+        ..Default::default()
+    };
+
+    Task::batch([
+        Task::done(Message::NewLayerShell { settings: backdrop_settings, id: backdrop_id }),
+        Task::done(Message::NewLayerShell { settings: menu_settings, id })
+    ])
 }
 
 

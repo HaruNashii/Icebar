@@ -1,7 +1,7 @@
 // ============ IMPORTS ============
 use libpulse_binding::{callbacks::ListResult, mainloop::threaded::Mainloop, volume::{ChannelVolumes, Volume}, context::{Context, FlagSet as ContextFlagSet, subscribe::InterestMaskSet}};
 use iced::{Alignment, Element, Length, Task, Theme, widget::{button, column, container, row, scrollable, slider, text, Space}};
-use iced_layershell::reexport::{Anchor, Layer, NewLayerShellSettings};
+use iced_layershell::reexport::{Anchor, Layer, NewLayerShellSettings, KeyboardInteractivity};
 use std::{pin::Pin, sync::{Arc, Mutex}};
 use serde::{Deserialize, Serialize};
 
@@ -983,22 +983,40 @@ pub fn create_output_mixer_window(app: &mut AppData) -> Task<Message>
     let anchor  = bar_anchor(&app.ron_config.general.bar_position);
     let (mx, my) = app.modules_data.volume_mixer_data.mouse_pos;
     let (px, py) = smart_popup_position(mx, my, app.monitor_size.0 as i32, app.monitor_size.1 as i32, w as i32, h as i32);
+    // backdrop
+    let backdrop_id = iced::window::Id::unique();
+    app.ids.insert(backdrop_id, WindowInfo::ContextMenuBackdrop);
+
+    // mixer window
     let id = iced::window::Id::unique();
     app.ids.insert(id, WindowInfo::VolumeOutputMixer);
-    Task::done(Message::NewLayerShell
+
+    let backdrop_settings = NewLayerShellSettings
     {
-        settings: NewLayerShellSettings
-        {
-            layer:                  Layer::Overlay,
-            size:                   Some((w, h)),
-            exclusive_zone:         Some(0),
-            keyboard_interactivity: iced_layershell::reexport::KeyboardInteractivity::Exclusive,
-            anchor,
-            margin:                 Some((py, 0, 0, px)),
-            ..Default::default()
-        },
-        id
-    })
+        layer: Layer::Overlay,
+        size: Some((app.monitor_size.0, app.monitor_size.1)),
+        exclusive_zone: Some(0),
+        keyboard_interactivity: KeyboardInteractivity::None,
+        anchor: Anchor::Top | Anchor::Left,
+        margin: Some((0, 0, 0, 0)),
+        ..Default::default()
+    };
+
+    let mixer_settings = NewLayerShellSettings
+    {
+        layer:                  Layer::Overlay,
+        size:                   Some((w, h)),
+        exclusive_zone:         Some(0),
+        keyboard_interactivity: KeyboardInteractivity::Exclusive,
+        anchor,
+        margin:                 Some((py, 0, 0, px)),
+        ..Default::default()
+    };
+
+    Task::batch([
+        Task::done(Message::NewLayerShell { settings: backdrop_settings, id: backdrop_id }),
+        Task::done(Message::NewLayerShell { settings: mixer_settings, id })
+    ])
 }
 
 pub fn create_input_mixer_window(app: &mut AppData) -> Task<Message>
@@ -1008,22 +1026,40 @@ pub fn create_input_mixer_window(app: &mut AppData) -> Task<Message>
     let anchor  = bar_anchor(&app.ron_config.general.bar_position);
     let (mx, my) = app.modules_data.volume_mixer_data.mouse_pos;
     let (px, py) = smart_popup_position(mx, my, app.monitor_size.0 as i32, app.monitor_size.1 as i32, w as i32, h as i32);
+    // backdrop
+    let backdrop_id = iced::window::Id::unique();
+    app.ids.insert(backdrop_id, WindowInfo::ContextMenuBackdrop);
+
+    // mixer window
     let id = iced::window::Id::unique();
     app.ids.insert(id, WindowInfo::VolumeInputMixer);
-    Task::done(Message::NewLayerShell
+
+    let backdrop_settings = NewLayerShellSettings
     {
-        settings: NewLayerShellSettings
-        {
-            layer:                  Layer::Overlay,
-            size:                   Some((w, h)),
-            exclusive_zone:         Some(0),
-            keyboard_interactivity: iced_layershell::reexport::KeyboardInteractivity::Exclusive,
-            anchor,
-            margin:                 Some((py, 0, 0, px)),
-            ..Default::default()
-        },
-        id
-    })
+        layer: Layer::Overlay,
+        size: Some((app.monitor_size.0, app.monitor_size.1)),
+        exclusive_zone: Some(0),
+        keyboard_interactivity: KeyboardInteractivity::None,
+        anchor: Anchor::Top | Anchor::Left,
+        margin: Some((0, 0, 0, 0)),
+        ..Default::default()
+    };
+
+    let mixer_settings = NewLayerShellSettings
+    {
+        layer:                  Layer::Overlay,
+        size:                   Some((w, h)),
+        exclusive_zone:         Some(0),
+        keyboard_interactivity: KeyboardInteractivity::Exclusive,
+        anchor,
+        margin:                 Some((py, 0, 0, px)),
+        ..Default::default()
+    };
+
+    Task::batch([
+        Task::done(Message::NewLayerShell { settings: backdrop_settings, id: backdrop_id }),
+        Task::done(Message::NewLayerShell { settings: mixer_settings, id })
+    ])
 }
 
 
