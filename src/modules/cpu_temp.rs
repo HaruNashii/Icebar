@@ -165,6 +165,9 @@ fn read_temp_file(path: &str) -> Option<f32>
 pub fn define_cpu_temp_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
     let cfg = &app.ron_config.cpu_temp;
+    let normal_background  = match_color_or_gradient(cfg.cpu_temp_button_gradient_color.as_ref(),         cfg.cpu_temp_button_color);
+    let hovered_background = match_color_or_gradient(cfg.cpu_temp_button_hovered_gradient_color.as_ref(), cfg.cpu_temp_button_hovered_color);
+    let pressed_background = match_color_or_gradient(cfg.cpu_temp_button_pressed_gradient_color.as_ref(), cfg.cpu_temp_button_pressed_color);
     set_style(UserStyle
     {
         status,
@@ -174,9 +177,9 @@ pub fn define_cpu_temp_style(app: &AppData, status: button::Status) -> iced::wid
         border_color:       cfg.cpu_temp_border_color,
         border_size:        cfg.cpu_temp_border_size,
         border_radius:      cfg.cpu_temp_border_radius,
-        normal_background:  match_color_or_gradient(cfg.cpu_temp_button_gradient_color.as_ref(),         cfg.cpu_temp_button_color),
-        hovered_background: match_color_or_gradient(cfg.cpu_temp_button_hovered_gradient_color.as_ref(), cfg.cpu_temp_button_hovered_color),
-        pressed_background: match_color_or_gradient(cfg.cpu_temp_button_pressed_gradient_color.as_ref(), cfg.cpu_temp_button_pressed_color),
+        normal_background,
+        hovered_background,
+        pressed_background,
         shadow_color:       cfg.cpu_temp_button_shadow_color,
         shadow_x:           cfg.cpu_temp_button_shadow_x,
         shadow_y:           cfg.cpu_temp_button_shadow_y,

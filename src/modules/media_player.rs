@@ -263,28 +263,34 @@ pub fn media_player_action(player: &str, action: MediaPlayerAction) -> Task<crat
 
 pub fn define_media_player_metadata_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let cfg          = &app.ron_config.media_player_metadata;
-    let hovered_text = cfg.media_player_metadata_button_hovered_text_color;
-    let pressed_text = cfg.media_player_metadata_button_pressed_text_color;
-    let normal_text  = cfg.media_player_metadata_text_color;
-    let border_size  = cfg.media_player_metadata_border_size;
-    let border_color = cfg.media_player_metadata_border_color;
-    let border_radius = cfg.media_player_metadata_border_radius;
-    set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.media_player_metadata_button_gradient_color.as_ref(), cfg.media_player_metadata_button_color), hovered_background: match_color_or_gradient(cfg.media_player_metadata_button_hovered_gradient_color.as_ref(), cfg.media_player_metadata_button_hovered_color), pressed_background: match_color_or_gradient(cfg.media_player_metadata_button_pressed_gradient_color.as_ref(), cfg.media_player_metadata_button_pressed_color), shadow_color: cfg.media_player_metadata_button_shadow_color, shadow_x: cfg.media_player_metadata_button_shadow_x, shadow_y: cfg.media_player_metadata_button_shadow_y, shadow_blur: cfg.media_player_metadata_button_shadow_blur })
+    let cfg              = &app.ron_config.media_player_metadata;
+    let hovered_text     = cfg.media_player_metadata_button_hovered_text_color;
+    let pressed_text     = cfg.media_player_metadata_button_pressed_text_color;
+    let normal_text      = cfg.media_player_metadata_text_color;
+    let border_size      = cfg.media_player_metadata_border_size;
+    let border_color     = cfg.media_player_metadata_border_color;
+    let border_radius    = cfg.media_player_metadata_border_radius;
+    let normal_background  = match_color_or_gradient(cfg.media_player_metadata_button_gradient_color.as_ref(),         cfg.media_player_metadata_button_color);
+    let hovered_background = match_color_or_gradient(cfg.media_player_metadata_button_hovered_gradient_color.as_ref(), cfg.media_player_metadata_button_hovered_color);
+    let pressed_background = match_color_or_gradient(cfg.media_player_metadata_button_pressed_gradient_color.as_ref(), cfg.media_player_metadata_button_pressed_color);
+    set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background, hovered_background, pressed_background, shadow_color: cfg.media_player_metadata_button_shadow_color, shadow_x: cfg.media_player_metadata_button_shadow_x, shadow_y: cfg.media_player_metadata_button_shadow_y, shadow_blur: cfg.media_player_metadata_button_shadow_blur })
 }
 
 
 
 pub fn define_media_player_buttons_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let cfg          = &app.ron_config.media_player_button;
-    let hovered_text = cfg.media_player_button_hovered_text_color;
-    let pressed_text = cfg.media_player_button_pressed_text_color;
-    let normal_text  = cfg.media_player_button_text_color;
-    let border_size  = cfg.media_player_button_border_size;
-    let border_color = cfg.media_player_button_border_color;
-    let border_radius = cfg.media_player_button_border_radius;
-    set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.media_player_button_gradient_color.as_ref(), cfg.media_player_button_color), hovered_background: match_color_or_gradient(cfg.media_player_button_hovered_gradient_color.as_ref(), cfg.media_player_button_hovered_color), pressed_background: match_color_or_gradient(cfg.media_player_button_pressed_gradient_color.as_ref(), cfg.media_player_button_pressed_color), shadow_color: cfg.media_player_button_shadow_color, shadow_x: cfg.media_player_button_shadow_x, shadow_y: cfg.media_player_button_shadow_y, shadow_blur: cfg.media_player_button_shadow_blur })
+    let cfg              = &app.ron_config.media_player_button;
+    let hovered_text     = cfg.media_player_button_hovered_text_color;
+    let pressed_text     = cfg.media_player_button_pressed_text_color;
+    let normal_text      = cfg.media_player_button_text_color;
+    let border_size      = cfg.media_player_button_border_size;
+    let border_color     = cfg.media_player_button_border_color;
+    let border_radius    = cfg.media_player_button_border_radius;
+    let normal_background  = match_color_or_gradient(cfg.media_player_button_gradient_color.as_ref(),         cfg.media_player_button_color);
+    let hovered_background = match_color_or_gradient(cfg.media_player_button_hovered_gradient_color.as_ref(), cfg.media_player_button_hovered_color);
+    let pressed_background = match_color_or_gradient(cfg.media_player_button_pressed_gradient_color.as_ref(), cfg.media_player_button_pressed_color);
+    set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background, hovered_background, pressed_background, shadow_color: cfg.media_player_button_shadow_color, shadow_x: cfg.media_player_button_shadow_x, shadow_y: cfg.media_player_button_shadow_y, shadow_blur: cfg.media_player_button_shadow_blur })
 }
 
 
@@ -356,6 +362,11 @@ pub fn define_button_data(previous_text: String, play_pause_text: String, next_t
 pub fn create_media_button<'a>(app: &'a AppData, padding: u16, label: String, message: Message) -> Element<'a, Message> 
 {
     let colored_label = convert_text_to_rich_text::<Message>(&label);
+    // Pre-compute all three status styles while AppData is live so the closure
+    // captures only Copy data and holds no borrow of AppData.
+    let style_active  = define_media_player_buttons_style(app, button::Status::Active);
+    let style_hovered = define_media_player_buttons_style(app, button::Status::Hovered);
+    let style_pressed = define_media_player_buttons_style(app, button::Status::Pressed);
     container
     (
         button
@@ -366,9 +377,14 @@ pub fn create_media_button<'a>(app: &'a AppData, padding: u16, label: String, me
             .size(app.ron_config.media_player_button.media_player_button_text_size)
             .center()
         )
-        .style(|_: &Theme, status: button::Status| 
+        .style(move |_: &Theme, status: button::Status|
         {
-            define_media_player_buttons_style(app, status)
+            match status
+            {
+                button::Status::Hovered => style_hovered,
+                button::Status::Pressed => style_pressed,
+                _                       => style_active,
+            }
         }).on_press(message)).align_y(Alignment::Center).padding(padding).into()
 }
 

@@ -190,6 +190,9 @@ pub fn define_power_profile_text(app: &AppData) -> String
 pub fn define_power_profile_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
     let cfg = &app.ron_config.power_profile;
+    let normal_background  = match_color_or_gradient(cfg.power_profile_button_gradient_color.as_ref(),         cfg.power_profile_button_color);
+    let hovered_background = match_color_or_gradient(cfg.power_profile_button_hovered_gradient_color.as_ref(), cfg.power_profile_button_hovered_color);
+    let pressed_background = match_color_or_gradient(cfg.power_profile_button_pressed_gradient_color.as_ref(), cfg.power_profile_button_pressed_color);
     set_style(UserStyle
     {
         status,
@@ -199,9 +202,9 @@ pub fn define_power_profile_style(app: &AppData, status: button::Status) -> iced
         border_color:       cfg.power_profile_border_color,
         border_size:        cfg.power_profile_border_size,
         border_radius:      cfg.power_profile_border_radius,
-        normal_background:  match_color_or_gradient(cfg.power_profile_button_gradient_color.as_ref(),         cfg.power_profile_button_color),
-        hovered_background: match_color_or_gradient(cfg.power_profile_button_hovered_gradient_color.as_ref(), cfg.power_profile_button_hovered_color),
-        pressed_background: match_color_or_gradient(cfg.power_profile_button_pressed_gradient_color.as_ref(), cfg.power_profile_button_pressed_color),
+        normal_background,
+        hovered_background,
+        pressed_background,
         shadow_color:       cfg.power_profile_button_shadow_color,
         shadow_x:           cfg.power_profile_button_shadow_x,
         shadow_y:           cfg.power_profile_button_shadow_y,

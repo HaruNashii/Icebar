@@ -376,28 +376,34 @@ async fn return_network_state(connection: &Connection) -> Result<Option<NetworkD
 
 
 pub fn define_network_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
-{   
+{
     if app.modules_data.network_data.is_showing_alt_network_module
     {
-        let cfg         = &app.ron_config.alt_network;
-        let hovered_text = cfg.alt_network_button_hovered_text_color;
-        let pressed_text = cfg.alt_network_button_pressed_text_color;
-        let normal_text = cfg.alt_network_text_color;
-        let border_size = cfg.alt_network_border_size;
-        let border_color = cfg.alt_network_border_color;
-        let border_radius = cfg.alt_network_border_radius;
-        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.alt_network_button_gradient_color.as_ref(), cfg.alt_network_button_color), hovered_background: match_color_or_gradient(cfg.alt_network_button_hovered_gradient_color.as_ref(), cfg.alt_network_button_hovered_color), pressed_background: match_color_or_gradient(cfg.alt_network_button_pressed_gradient_color.as_ref(), cfg.alt_network_button_pressed_color), shadow_color: cfg.alt_network_button_shadow_color, shadow_x: cfg.alt_network_button_shadow_x, shadow_y: cfg.alt_network_button_shadow_y, shadow_blur: cfg.alt_network_button_shadow_blur })
+        let cfg              = &app.ron_config.alt_network;
+        let hovered_text     = cfg.alt_network_button_hovered_text_color;
+        let pressed_text     = cfg.alt_network_button_pressed_text_color;
+        let normal_text      = cfg.alt_network_text_color;
+        let border_size      = cfg.alt_network_border_size;
+        let border_color     = cfg.alt_network_border_color;
+        let border_radius    = cfg.alt_network_border_radius;
+        let normal_background  = match_color_or_gradient(cfg.alt_network_button_gradient_color.as_ref(),         cfg.alt_network_button_color);
+        let hovered_background = match_color_or_gradient(cfg.alt_network_button_hovered_gradient_color.as_ref(), cfg.alt_network_button_hovered_color);
+        let pressed_background = match_color_or_gradient(cfg.alt_network_button_pressed_gradient_color.as_ref(), cfg.alt_network_button_pressed_color);
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background, hovered_background, pressed_background, shadow_color: cfg.alt_network_button_shadow_color, shadow_x: cfg.alt_network_button_shadow_x, shadow_y: cfg.alt_network_button_shadow_y, shadow_blur: cfg.alt_network_button_shadow_blur })
     }
     else
     {
-        let cfg         = &app.ron_config.network;
-        let hovered_text = cfg.network_button_hovered_text_color;
-        let pressed_text = cfg.network_button_pressed_text_color;
-        let normal_text = cfg.network_text_color;
-        let border_size = cfg.network_border_size;
-        let border_color = cfg.network_border_color;
-        let border_radius = cfg.network_border_radius;
-        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.network_button_gradient_color.as_ref(), cfg.network_button_color), hovered_background: match_color_or_gradient(cfg.network_button_hovered_gradient_color.as_ref(), cfg.network_button_hovered_color), pressed_background: match_color_or_gradient(cfg.network_button_pressed_gradient_color.as_ref(), cfg.network_button_pressed_color), shadow_color: cfg.network_button_shadow_color, shadow_x: cfg.network_button_shadow_x, shadow_y: cfg.network_button_shadow_y, shadow_blur: cfg.network_button_shadow_blur })
+        let cfg              = &app.ron_config.network;
+        let hovered_text     = cfg.network_button_hovered_text_color;
+        let pressed_text     = cfg.network_button_pressed_text_color;
+        let normal_text      = cfg.network_text_color;
+        let border_size      = cfg.network_border_size;
+        let border_color     = cfg.network_border_color;
+        let border_radius    = cfg.network_border_radius;
+        let normal_background  = match_color_or_gradient(cfg.network_button_gradient_color.as_ref(),         cfg.network_button_color);
+        let hovered_background = match_color_or_gradient(cfg.network_button_hovered_gradient_color.as_ref(), cfg.network_button_hovered_color);
+        let pressed_background = match_color_or_gradient(cfg.network_button_pressed_gradient_color.as_ref(), cfg.network_button_pressed_color);
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background, hovered_background, pressed_background, shadow_color: cfg.network_button_shadow_color, shadow_x: cfg.network_button_shadow_x, shadow_y: cfg.network_button_shadow_y, shadow_blur: cfg.network_button_shadow_blur })
     }
 }
 

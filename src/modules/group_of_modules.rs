@@ -53,33 +53,30 @@ impl Default for GroupOfModulesConfig
 
 
 // ============ FUNCTIONS ============
-pub fn group_container_style(group: &GroupOfModulesConfig) -> impl Fn(&iced::Theme) -> container::Style + '_
+pub fn group_container_style(group: &GroupOfModulesConfig) -> impl Fn(&iced::Theme) -> container::Style
 {
-    let background_color = group.background_color.to_iced_color();
-    let border_color     = group.border_color.to_iced_color();
-    let border_size      = group.border_size;
-    let border_radius    = group.border_radius;
-
-    move |_theme: &iced::Theme|
+    // Compute everything from the borrow NOW, before the closure is stored.
+    // The returned closure has no lifetime parameter so it does not carry a
+    // borrow of AppData into iced_layershell's transmute-to-'static path.
+    let style = container::Style
     {
-        container::Style
+        background: Some(iced::Background::Color(group.background_color.to_iced_color())),
+        border: Border
         {
-            background: Some(iced::Background::Color(background_color)),
-            border: Border
+            color:  group.border_color.to_iced_color(),
+            width:  group.border_size,
+            radius: Radius
             {
-                color:  border_color,
-                width:  border_size,
-                radius: Radius
-                {
-                    top_left:     border_radius[0],
-                    top_right:    border_radius[1],
-                    bottom_left:  border_radius[2],
-                    bottom_right: border_radius[3]
-                }
-            },
-            ..Default::default()
-        }
-    }
+                top_left:     group.border_radius[0],
+                top_right:    group.border_radius[1],
+                bottom_left:  group.border_radius[2],
+                bottom_right: group.border_radius[3]
+            }
+        },
+        ..Default::default()
+    };
+
+    move |_theme: &iced::Theme| style
 }
 
 

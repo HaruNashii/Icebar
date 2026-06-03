@@ -520,25 +520,31 @@ pub fn define_volume_output_style(app: &AppData, status: button::Status) -> iced
 {
     if app.modules_data.volume_data.volume_output_is_muted
     {
-        let cfg          = &app.ron_config.muted_volume_output;
-        let hovered_text = cfg.muted_volume_output_button_hovered_text_color;
-        let pressed_text = cfg.muted_volume_output_button_pressed_text_color;
-        let normal_text  = cfg.muted_volume_output_text_color;
-        let border_size  = cfg.muted_volume_output_border_size;
-        let border_color = cfg.muted_volume_output_border_color;
-        let border_radius = cfg.muted_volume_output_border_radius;
-        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.muted_volume_output_button_gradient_color.as_ref(), cfg.muted_volume_output_button_color), hovered_background: match_color_or_gradient(cfg.muted_volume_output_button_hovered_gradient_color.as_ref(), cfg.muted_volume_output_button_hovered_color), pressed_background: match_color_or_gradient(cfg.muted_volume_output_button_pressed_gradient_color.as_ref(), cfg.muted_volume_output_button_pressed_color), shadow_color: cfg.muted_volume_output_button_shadow_color, shadow_x: cfg.muted_volume_output_button_shadow_x, shadow_y: cfg.muted_volume_output_button_shadow_y, shadow_blur: cfg.muted_volume_output_button_shadow_blur })
+        let cfg              = &app.ron_config.muted_volume_output;
+        let hovered_text     = cfg.muted_volume_output_button_hovered_text_color;
+        let pressed_text     = cfg.muted_volume_output_button_pressed_text_color;
+        let normal_text      = cfg.muted_volume_output_text_color;
+        let border_size      = cfg.muted_volume_output_border_size;
+        let border_color     = cfg.muted_volume_output_border_color;
+        let border_radius    = cfg.muted_volume_output_border_radius;
+        let normal_background  = match_color_or_gradient(cfg.muted_volume_output_button_gradient_color.as_ref(),         cfg.muted_volume_output_button_color);
+        let hovered_background = match_color_or_gradient(cfg.muted_volume_output_button_hovered_gradient_color.as_ref(), cfg.muted_volume_output_button_hovered_color);
+        let pressed_background = match_color_or_gradient(cfg.muted_volume_output_button_pressed_gradient_color.as_ref(), cfg.muted_volume_output_button_pressed_color);
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background, hovered_background, pressed_background, shadow_color: cfg.muted_volume_output_button_shadow_color, shadow_x: cfg.muted_volume_output_button_shadow_x, shadow_y: cfg.muted_volume_output_button_shadow_y, shadow_blur: cfg.muted_volume_output_button_shadow_blur })
     }
     else
     {
-        let cfg          = &app.ron_config.volume_output;
-        let hovered_text = cfg.volume_output_button_hovered_text_color;
-        let pressed_text = cfg.volume_output_button_pressed_text_color;
-        let normal_text  = cfg.volume_output_text_color;
-        let border_size  = cfg.volume_output_border_size;
-        let border_color = cfg.volume_output_border_color;
-        let border_radius = cfg.volume_output_border_radius;
-        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.volume_output_button_gradient_color.as_ref(), cfg.volume_output_button_color), hovered_background: match_color_or_gradient(cfg.volume_output_button_hovered_gradient_color.as_ref(), cfg.volume_output_button_hovered_color), pressed_background: match_color_or_gradient(cfg.volume_output_button_pressed_gradient_color.as_ref(), cfg.volume_output_button_pressed_color), shadow_color: cfg.volume_output_button_shadow_color, shadow_x: cfg.volume_output_button_shadow_x, shadow_y: cfg.volume_output_button_shadow_y, shadow_blur: cfg.volume_output_button_shadow_blur })
+        let cfg              = &app.ron_config.volume_output;
+        let hovered_text     = cfg.volume_output_button_hovered_text_color;
+        let pressed_text     = cfg.volume_output_button_pressed_text_color;
+        let normal_text      = cfg.volume_output_text_color;
+        let border_size      = cfg.volume_output_border_size;
+        let border_color     = cfg.volume_output_border_color;
+        let border_radius    = cfg.volume_output_border_radius;
+        let normal_background  = match_color_or_gradient(cfg.volume_output_button_gradient_color.as_ref(),         cfg.volume_output_button_color);
+        let hovered_background = match_color_or_gradient(cfg.volume_output_button_hovered_gradient_color.as_ref(), cfg.volume_output_button_hovered_color);
+        let pressed_background = match_color_or_gradient(cfg.volume_output_button_pressed_gradient_color.as_ref(), cfg.volume_output_button_pressed_color);
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background, hovered_background, pressed_background, shadow_color: cfg.volume_output_button_shadow_color, shadow_x: cfg.volume_output_button_shadow_x, shadow_y: cfg.volume_output_button_shadow_y, shadow_blur: cfg.volume_output_button_shadow_blur })
     }
 }
 
@@ -548,25 +554,31 @@ pub fn define_volume_input_style(app: &AppData, status: button::Status) -> iced:
 {
     if app.modules_data.volume_data.volume_input_is_muted
     {
-        let cfg          = &app.ron_config.muted_volume_input;
-        let hovered_text = cfg.muted_volume_input_button_hovered_text_color;
-        let pressed_text = cfg.muted_volume_input_button_pressed_text_color;
-        let normal_text  = cfg.muted_volume_input_text_color;
-        let border_size  = cfg.muted_volume_input_border_size;
-        let border_color = cfg.muted_volume_input_border_color;
-        let border_radius = cfg.muted_volume_input_border_radius;
-        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.muted_volume_input_button_gradient_color.as_ref(), cfg.muted_volume_input_button_color), hovered_background: match_color_or_gradient(cfg.muted_volume_input_button_hovered_gradient_color.as_ref(), cfg.muted_volume_input_button_hovered_color), pressed_background: match_color_or_gradient(cfg.muted_volume_input_button_pressed_gradient_color.as_ref(), cfg.muted_volume_input_button_pressed_color), shadow_color: cfg.muted_volume_input_button_shadow_color, shadow_x: cfg.muted_volume_input_button_shadow_x, shadow_y: cfg.muted_volume_input_button_shadow_y, shadow_blur: cfg.muted_volume_input_button_shadow_blur })
+        let cfg              = &app.ron_config.muted_volume_input;
+        let hovered_text     = cfg.muted_volume_input_button_hovered_text_color;
+        let pressed_text     = cfg.muted_volume_input_button_pressed_text_color;
+        let normal_text      = cfg.muted_volume_input_text_color;
+        let border_size      = cfg.muted_volume_input_border_size;
+        let border_color     = cfg.muted_volume_input_border_color;
+        let border_radius    = cfg.muted_volume_input_border_radius;
+        let normal_background  = match_color_or_gradient(cfg.muted_volume_input_button_gradient_color.as_ref(),         cfg.muted_volume_input_button_color);
+        let hovered_background = match_color_or_gradient(cfg.muted_volume_input_button_hovered_gradient_color.as_ref(), cfg.muted_volume_input_button_hovered_color);
+        let pressed_background = match_color_or_gradient(cfg.muted_volume_input_button_pressed_gradient_color.as_ref(), cfg.muted_volume_input_button_pressed_color);
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background, hovered_background, pressed_background, shadow_color: cfg.muted_volume_input_button_shadow_color, shadow_x: cfg.muted_volume_input_button_shadow_x, shadow_y: cfg.muted_volume_input_button_shadow_y, shadow_blur: cfg.muted_volume_input_button_shadow_blur })
     }
     else
     {
-        let cfg          = &app.ron_config.volume_input;
-        let hovered_text = cfg.volume_input_button_hovered_text_color;
-        let pressed_text = cfg.volume_input_button_pressed_text_color;
-        let normal_text  = cfg.volume_input_text_color;
-        let border_size  = cfg.volume_input_border_size;
-        let border_color = cfg.volume_input_border_color;
-        let border_radius = cfg.volume_input_border_radius;
-        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.volume_input_button_gradient_color.as_ref(), cfg.volume_input_button_color), hovered_background: match_color_or_gradient(cfg.volume_input_button_hovered_gradient_color.as_ref(), cfg.volume_input_button_hovered_color), pressed_background: match_color_or_gradient(cfg.volume_input_button_pressed_gradient_color.as_ref(), cfg.volume_input_button_pressed_color), shadow_color: cfg.volume_input_button_shadow_color, shadow_x: cfg.volume_input_button_shadow_x, shadow_y: cfg.volume_input_button_shadow_y, shadow_blur: cfg.volume_input_button_shadow_blur })
+        let cfg              = &app.ron_config.volume_input;
+        let hovered_text     = cfg.volume_input_button_hovered_text_color;
+        let pressed_text     = cfg.volume_input_button_pressed_text_color;
+        let normal_text      = cfg.volume_input_text_color;
+        let border_size      = cfg.volume_input_border_size;
+        let border_color     = cfg.volume_input_border_color;
+        let border_radius    = cfg.volume_input_border_radius;
+        let normal_background  = match_color_or_gradient(cfg.volume_input_button_gradient_color.as_ref(),         cfg.volume_input_button_color);
+        let hovered_background = match_color_or_gradient(cfg.volume_input_button_hovered_gradient_color.as_ref(), cfg.volume_input_button_hovered_color);
+        let pressed_background = match_color_or_gradient(cfg.volume_input_button_pressed_gradient_color.as_ref(), cfg.volume_input_button_pressed_color);
+        set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background, hovered_background, pressed_background, shadow_color: cfg.volume_input_button_shadow_color, shadow_x: cfg.volume_input_button_shadow_x, shadow_y: cfg.volume_input_button_shadow_y, shadow_blur: cfg.volume_input_button_shadow_blur })
     }
 }
 

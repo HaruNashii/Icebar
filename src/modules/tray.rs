@@ -578,14 +578,17 @@ pub async fn activate_menu_item(service: &str, menu_path: &str, id: i32) -> zbus
 
 pub fn define_tray_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
-    let cfg         = &app.ron_config.tray;
-    let hovered_text = cfg.tray_button_hovered_text_color;
-    let pressed_text = cfg.tray_button_pressed_text_color;
-    let normal_text = ColorType::RGB([255, 255, 255]);
-    let border_size = cfg.tray_border_size;
-    let border_color = cfg.tray_border_color;
-    let border_radius = cfg.tray_border_radius;
-    set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background: match_color_or_gradient(cfg.tray_button_gradient_color.as_ref(), cfg.tray_button_color), hovered_background: match_color_or_gradient(cfg.tray_button_hovered_gradient_color.as_ref(), cfg.tray_button_hovered_color), pressed_background: match_color_or_gradient(cfg.tray_button_pressed_gradient_color.as_ref(), cfg.tray_button_pressed_color), shadow_color: cfg.tray_button_shadow_color, shadow_x: cfg.tray_button_shadow_x, shadow_y: cfg.tray_button_shadow_y, shadow_blur: cfg.tray_button_shadow_blur })
+    let cfg              = &app.ron_config.tray;
+    let hovered_text     = cfg.tray_button_hovered_text_color;
+    let pressed_text     = cfg.tray_button_pressed_text_color;
+    let normal_text      = ColorType::RGB([255, 255, 255]);
+    let border_size      = cfg.tray_border_size;
+    let border_color     = cfg.tray_border_color;
+    let border_radius    = cfg.tray_border_radius;
+    let normal_background  = match_color_or_gradient(cfg.tray_button_gradient_color.as_ref(),         cfg.tray_button_color);
+    let hovered_background = match_color_or_gradient(cfg.tray_button_hovered_gradient_color.as_ref(), cfg.tray_button_hovered_color);
+    let pressed_background = match_color_or_gradient(cfg.tray_button_pressed_gradient_color.as_ref(), cfg.tray_button_pressed_color);
+    set_style(UserStyle { status, hovered_text, pressed_text, normal_text, border_color, border_size, border_radius, normal_background, hovered_background, pressed_background, shadow_color: cfg.tray_button_shadow_color, shadow_x: cfg.tray_button_shadow_x, shadow_y: cfg.tray_button_shadow_y, shadow_blur: cfg.tray_button_shadow_blur })
 }
 
 

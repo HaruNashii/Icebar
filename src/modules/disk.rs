@@ -142,6 +142,9 @@ pub fn read_disk_data(mount: &str) -> Option<DiskData>
 pub fn define_disk_style(app: &AppData, status: button::Status) -> iced::widget::button::Style
 {
     let cfg = &app.ron_config.disk;
+    let normal_background  = match_color_or_gradient(cfg.disk_button_gradient_color.as_ref(),         cfg.disk_button_color);
+    let hovered_background = match_color_or_gradient(cfg.disk_button_hovered_gradient_color.as_ref(), cfg.disk_button_hovered_color);
+    let pressed_background = match_color_or_gradient(cfg.disk_button_pressed_gradient_color.as_ref(), cfg.disk_button_pressed_color);
     set_style(UserStyle
     {
         status,
@@ -151,9 +154,9 @@ pub fn define_disk_style(app: &AppData, status: button::Status) -> iced::widget:
         border_color:       cfg.disk_border_color,
         border_size:        cfg.disk_border_size,
         border_radius:      cfg.disk_border_radius,
-        normal_background:  match_color_or_gradient(cfg.disk_button_gradient_color.as_ref(),         cfg.disk_button_color),
-        hovered_background: match_color_or_gradient(cfg.disk_button_hovered_gradient_color.as_ref(), cfg.disk_button_hovered_color),
-        pressed_background: match_color_or_gradient(cfg.disk_button_pressed_gradient_color.as_ref(), cfg.disk_button_pressed_color),
+        normal_background,
+        hovered_background,
+        pressed_background,
         shadow_color:       cfg.disk_button_shadow_color,
         shadow_x:           cfg.disk_button_shadow_x,
         shadow_y:           cfg.disk_button_shadow_y,

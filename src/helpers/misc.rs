@@ -180,8 +180,35 @@ pub fn validate_bar_data(app: &mut AppData) -> ValidatedBarSizeAndMargin
 
 
 
-pub fn create_button_container_without_hover_message<'a, F>(app: &'a AppData, padding: u16, text_data: (iced::widget::text::Rich<'a, (), Message>, u32), left_click_message: Message, right_click_message: Message, style_func: F) -> Element<'a, Message>
-where F: Fn(&AppData, button::Status) -> button::Style + 'a,
+/// Pre-computed button styles for the three possible statuses.
+/// All fields are `Copy` (no heap allocation), so this struct can be safely
+/// `move`d into a style closure without capturing any borrow of `AppData`.
+#[derive(Copy, Clone)]
+pub struct ButtonStyles
+{
+    pub active:  button::Style,
+    pub hovered: button::Style,
+    pub pressed: button::Style,
+}
+
+impl ButtonStyles
+{
+    /// Eagerly evaluate a `define_*_style` function for all three statuses
+    /// while `AppData` is still live, producing a heap-free `ButtonStyles`.
+    pub fn from_fn(app: &AppData, f: fn(&AppData, button::Status) -> button::Style) -> Self
+    {
+        ButtonStyles
+        {
+            active:  f(app, button::Status::Active),
+            hovered: f(app, button::Status::Hovered),
+            pressed: f(app, button::Status::Pressed),
+        }
+    }
+}
+
+
+
+pub fn create_button_container_without_hover_message<'a>(app: &'a AppData, padding: u16, text_data: (iced::widget::text::Rich<'a, (), Message>, u32), left_click_message: Message, right_click_message: Message, styles: ButtonStyles) -> Element<'a, Message>
 {
     container
     (
@@ -196,9 +223,16 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
                 .center()
             )
             .on_press(left_click_message)
-            .style(move |_: &Theme, status: button::Status| 
+            // `styles` is Copy and contains no borrows of AppData, so this
+            // closure is safe even after iced_layershell transmutes it to 'static.
+            .style(move |_: &Theme, status: button::Status|
             {
-                style_func(app, status)
+                match status
+                {
+                    button::Status::Hovered => styles.hovered,
+                    button::Status::Pressed => styles.pressed,
+                    _                       => styles.active,
+                }
             })
         )
         .on_right_press(right_click_message)
@@ -208,8 +242,7 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
 
 
 
-pub fn create_button_container<'a, F>(app: &'a AppData, padding: u16, text_data: (iced::widget::text::Rich<'a, (), Message>, u32), hover_message: (Message, Message), left_click_message: Message, right_click_message: Message, style_func: F) -> Element<'a, Message>
-where F: Fn(&AppData, button::Status) -> button::Style + 'a,
+pub fn create_button_container<'a>(app: &'a AppData, padding: u16, text_data: (iced::widget::text::Rich<'a, (), Message>, u32), hover_message: (Message, Message), left_click_message: Message, right_click_message: Message, styles: ButtonStyles) -> Element<'a, Message>
 {
     container
     (
@@ -224,9 +257,14 @@ where F: Fn(&AppData, button::Status) -> button::Style + 'a,
                 .center()
             )
             .on_press(left_click_message)
-            .style(move |_: &Theme, status: button::Status| 
+            .style(move |_: &Theme, status: button::Status|
             {
-                style_func(app, status)
+                match status
+                {
+                    button::Status::Hovered => styles.hovered,
+                    button::Status::Pressed => styles.pressed,
+                    _                       => styles.active,
+                }
             })
         )
         .on_right_press(right_click_message)
