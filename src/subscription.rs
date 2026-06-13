@@ -21,7 +21,7 @@ use crate::modules::
     niri::niri_event_subscription,
     clock_subscription::clock_subscription,
     power_profile::power_profile_subscription,
-    media_player::media_player_subscription,
+    media_player::{media_player_subscription, media_player_position_subscription},
     tray::{TraySubscription, tray_stream},
     poll_subscriptions::{CpuPollConfig, cpu_subscription, RamPollConfig, ram_subscription, DiskPollConfig, disk_subscription, CpuTempPollConfig, cpu_temp_subscription, NetworkSpeedPollConfig, network_speed_subscription}
 };
@@ -182,10 +182,17 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             {
                     let player = app.ron_config.media_player_metadata.player.clone();
                     let format = app.ron_config.media_player_metadata.media_player_metadata_format.clone();
-                    subs.push(iced::Subscription::run_with((player, format), |(p, f)|
+                    subs.push(iced::Subscription::run_with((player.clone(), format), |(p, f)|
                     {
                         media_player_subscription(p.clone(), f.clone())
                     }));
+
+                    let interval = app.ron_config.media_player_window.progress_and_volume_bar_poll_interval_ms;
+                    subs.push(iced::Subscription::run_with((player, interval), |(p, i)|
+                    {
+                        media_player_position_subscription(p.clone(), *i)
+                    }));
+
                     media_player_sub_added = true;
             }
 

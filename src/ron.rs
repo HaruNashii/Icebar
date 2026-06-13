@@ -37,7 +37,8 @@ use crate::windows::
 {
     context_menu::ContextMenuConfig,
     calendar::CalendarWindowConfig,
-    volume_mixer::VolumeMixerConfig
+    volume_mixer::VolumeMixerConfig,
+    media_player_window::MediaPlayerWindowConfig,
 };
 
 
@@ -72,7 +73,8 @@ pub enum ActionOnClick
     ToggleAltClockAndCycleClockTimezones,
     ShowCalendar,
     ShowVolumeOutputMixer,
-    ShowVolumeInputMixer
+    ShowVolumeInputMixer,
+    ShowMediaPlayerWindow,
 }
 
 
@@ -240,6 +242,7 @@ pub struct BarConfig
     pub calendar_window:        CalendarWindowConfig,
     pub volume_output_mixer:    VolumeMixerConfig,
     pub volume_input_mixer:     VolumeMixerConfig,
+    pub media_player_window:    MediaPlayerWindowConfig,
     pub auto_hide:              Option<AutoHideConfig>
 }
 

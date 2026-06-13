@@ -115,11 +115,9 @@ pub fn create_context_menu(app: &mut AppData) -> Task<Message>
         smart_popup_position(app.context_menu_data.mouse_position.0, app.context_menu_data.mouse_position.1, app.monitor_size.0 as i32, app.monitor_size.1 as i32, context_menu_size.0 as i32, context_menu_size.1 as i32)
     };
 
-    // create a full-screen transparent backdrop to capture outside clicks
     let backdrop_id = iced::window::Id::unique();
     app.ids.insert(backdrop_id, WindowInfo::ContextMenuBackdrop);
 
-    // create the actual context menu window
     let id = iced::window::Id::unique();
     app.ids.insert(id, WindowInfo::ContextMenu);
 

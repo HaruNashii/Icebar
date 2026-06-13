@@ -58,7 +58,8 @@ pub enum WindowInfo
     ContextMenuBackdrop,
     Calendar,
     VolumeOutputMixer,
-    VolumeInputMixer
+    VolumeInputMixer,
+    MediaPlayerWindow,
 }
 
 #[derive(Clone)]

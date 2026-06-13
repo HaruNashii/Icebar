@@ -55,9 +55,6 @@ impl Default for GroupOfModulesConfig
 // ============ FUNCTIONS ============
 pub fn group_container_style(group: &GroupOfModulesConfig) -> impl Fn(&iced::Theme) -> container::Style
 {
-    // Compute everything from the borrow NOW, before the closure is stored.
-    // The returned closure has no lifetime parameter so it does not carry a
-    // borrow of AppData into iced_layershell's transmute-to-'static path.
     let style = container::Style
     {
         background: Some(iced::Background::Color(group.background_color.to_iced_color())),

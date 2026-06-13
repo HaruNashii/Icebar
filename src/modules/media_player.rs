@@ -174,7 +174,11 @@ pub struct MediaPlayerData
 {
     pub is_hovering_media_player_meta_data: bool,
     pub metadata: String,
-    pub status: String 
+    pub status:   String,
+    pub art_url:  String,
+    pub position_secs: f64,
+    pub duration_secs: f64,
+    pub volume: f64
 }
 
 pub enum MediaPlayerAction
@@ -205,6 +209,15 @@ pub async fn get_player_data_with_format(player: &str, format: &str) -> MediaPla
         tokio::process::Command::new("playerctl").arg(format!("--player={}", player)).arg("status").output()
     ).await.unwrap_or_else(|_| { eprintln!("[icebar] playerctl status timed out"); Err(std::io::Error::other("timeout")) });
 
+    let result_art_output = tokio::time::timeout(
+        PLAYERCTL_TIMEOUT,
+        tokio::process::Command::new("playerctl")
+            .arg(format!("--player={}", player))
+            .arg("metadata")
+            .arg("mpris:artUrl")
+            .output()
+    ).await.unwrap_or_else(|_| { eprintln!("[icebar] playerctl artUrl timed out"); Err(std::io::Error::other("timeout")) });
+
     let metadata_string = if let Ok(metadata_output) = result_metadata_output
     {
         String::from_utf8_lossy(&metadata_output.stdout).to_string().replace("\n", "")
@@ -223,11 +236,189 @@ pub async fn get_player_data_with_format(player: &str, format: &str) -> MediaPla
         String::new()
     };
 
-    MediaPlayerData 
+    let art_url_string = if let Ok(art_output) = result_art_output
+    {
+        String::from_utf8_lossy(&art_output.stdout).trim().to_string()
+    }
+    else
+    {
+        String::new()
+    };
+
+    let result_pos_output = tokio::time::timeout(
+        PLAYERCTL_TIMEOUT,
+        tokio::process::Command::new("playerctl")
+            .arg(format!("--player={}", player))
+            .arg("position")
+            .output()
+    ).await.unwrap_or_else(|_| { eprintln!("[icebar] playerctl position timed out"); Err(std::io::Error::other("timeout")) });
+
+    let result_dur_output = tokio::time::timeout(
+        PLAYERCTL_TIMEOUT,
+        tokio::process::Command::new("playerctl")
+            .arg(format!("--player={}", player))
+            .arg("metadata")
+            .arg("mpris:length")
+            .output()
+    ).await.unwrap_or_else(|_| { eprintln!("[icebar] playerctl mpris:length timed out"); Err(std::io::Error::other("timeout")) });
+
+    let position_secs = parse_position_output(&result_pos_output);
+    let duration_secs = parse_duration_output(&result_dur_output);
+
+    let result_vol_output = tokio::time::timeout(
+        PLAYERCTL_TIMEOUT,
+        tokio::process::Command::new("playerctl")
+            .arg(format!("--player={}", player))
+            .arg("volume")
+            .output()
+    ).await.unwrap_or_else(|_| { eprintln!("[icebar] playerctl volume timed out"); Err(std::io::Error::other("timeout")) });
+
+    let volume = match result_vol_output
+    {
+        Ok(out) => String::from_utf8_lossy(&out.stdout).trim().parse::<f64>().unwrap_or(0.0),
+        Err(_)  => 0.0,
+    };
+
+    MediaPlayerData
     {
         is_hovering_media_player_meta_data: false,
-        metadata: metadata_string, 
-        status: status_string
+        metadata: metadata_string,
+        status:   status_string,
+        art_url:  art_url_string,
+        position_secs,
+        duration_secs,
+        volume
+    }
+}
+
+
+
+pub fn parse_position_output(result: &Result<std::process::Output, std::io::Error>) -> f64
+{
+    match result
+    {
+        Ok(out) => String::from_utf8_lossy(&out.stdout).trim().parse::<f64>().unwrap_or(0.0),
+        Err(_)  => 0.0,
+    }
+}
+
+pub fn parse_duration_output(result: &Result<std::process::Output, std::io::Error>) -> f64
+{
+    match result
+    {
+        Ok(out) =>
+        {
+            let micros = String::from_utf8_lossy(&out.stdout).trim().parse::<u64>().unwrap_or(0);
+            micros as f64 / 1_000_000.0
+        }
+        Err(_) => 0.0,
+    }
+}
+
+
+
+pub async fn fetch_album_art(url: String) -> Option<iced::widget::image::Handle>
+{
+    if url.is_empty() { return None; }
+
+    let path = if url.starts_with("file://")
+    {
+        let raw = url.trim_start_matches("file://");
+        percent_decode(raw)
+    }
+    else if url.starts_with('/')
+    {
+        url.clone()
+    }
+    else if url.starts_with("http://") || url.starts_with("https://")
+    {
+        String::new() 
+    }
+    else
+    {
+        url.clone()  
+    };
+
+    if !path.is_empty()
+    {
+        match tokio::fs::read(&path).await
+        {
+            Ok(bytes) => return decode_image_bytes(&bytes),
+            Err(e)    => { eprintln!("[icebar] album art read error ({path}): {e}"); return None; }
+        }
+    }
+
+    let output = tokio::time::timeout(
+        std::time::Duration::from_secs(8),
+        tokio::process::Command::new("curl")
+            .args(["--silent", "--max-time", "6", "--location", "--output", "-", &url])
+            .output()
+    ).await;
+
+    match output
+    {
+        Ok(Ok(out)) if out.status.success() => decode_image_bytes(&out.stdout),
+        Ok(Ok(out)) =>
+        {
+            eprintln!("[icebar] curl album art failed: exit {}", out.status);
+            None
+        }
+        Ok(Err(e)) => { eprintln!("[icebar] curl error: {e}"); None }
+        Err(_)     => { eprintln!("[icebar] curl timed out fetching album art"); None }
+    }
+}
+
+
+
+fn decode_image_bytes(bytes: &[u8]) -> Option<iced::widget::image::Handle>
+{
+    use image::GenericImageView;
+    match image::load_from_memory(bytes)
+    {
+        Ok(img) =>
+        {
+            let (w, h) = img.dimensions();
+            let rgba   = img.into_rgba8().into_raw();
+            Some(iced::widget::image::Handle::from_rgba(w, h, rgba))
+        }
+        Err(e) => { eprintln!("[icebar] album art decode error: {e}"); None }
+    }
+}
+
+
+
+fn percent_decode(s: &str) -> String
+{
+    let mut out  = String::with_capacity(s.len());
+    let bytes    = s.as_bytes();
+    let mut i    = 0usize;
+    while i < bytes.len()
+    {
+        if bytes[i] == b'%' && i + 2 < bytes.len()
+        {
+            let hi = bytes[i + 1];
+            let lo = bytes[i + 2];
+            if let (Some(h), Some(l)) = (hex_val(hi), hex_val(lo))
+            {
+                out.push((h << 4 | l) as char);
+                i += 3;
+                continue;
+            }
+        }
+        out.push(bytes[i] as char);
+        i += 1;
+    }
+    out
+}
+
+fn hex_val(b: u8) -> Option<u8>
+{
+    match b
+    {
+        b'0'..=b'9' => Some(b - b'0'),
+        b'a'..=b'f' => Some(b - b'a' + 10),
+        b'A'..=b'F' => Some(b - b'A' + 10),
+        _             => None,
     }
 }
 
@@ -362,8 +553,6 @@ pub fn define_button_data(previous_text: String, play_pause_text: String, next_t
 pub fn create_media_button<'a>(app: &'a AppData, padding: u16, label: String, message: Message) -> Element<'a, Message> 
 {
     let colored_label = convert_text_to_rich_text::<Message>(&label);
-    // Pre-compute all three status styles while AppData is live so the closure
-    // captures only Copy data and holds no borrow of AppData.
     let style_active  = define_media_player_buttons_style(app, button::Status::Active);
     let style_hovered = define_media_player_buttons_style(app, button::Status::Hovered);
     let style_pressed = define_media_player_buttons_style(app, button::Status::Pressed);
@@ -446,11 +635,67 @@ pub fn media_player_subscription(player: String, format: String) -> Pin<Box<dyn 
                         (rest, "")
                     };
 
+                    let art_url = {
+                        let parg = format!("--player={}", player);
+                        let res  = tokio::time::timeout(
+                            std::time::Duration::from_secs(3),
+                            tokio::process::Command::new("playerctl")
+                                .args([&parg, "metadata", "mpris:artUrl"])
+                                .output()
+                        ).await;
+                        match res
+                        {
+                            Ok(Ok(out)) => String::from_utf8_lossy(&out.stdout).trim().to_string(),
+                            _           => String::new(),
+                        }
+                    };
+
+                    let parg2 = format!("--player={}", player);
+                    let (position_secs, duration_secs) = {
+                        let pos_res = tokio::time::timeout(
+                            std::time::Duration::from_secs(3),
+                            tokio::process::Command::new("playerctl")
+                                .args([&parg2, "position"])
+                                .output()
+                        ).await.map(|r| r.unwrap_or_else(|e| { eprintln!("[icebar] pos err: {e}"); std::process::Output { status: std::process::ExitStatus::default(), stdout: vec![], stderr: vec![] } })).unwrap_or_else(|_| std::process::Output { status: std::process::ExitStatus::default(), stdout: vec![], stderr: vec![] });
+
+                        let dur_res = tokio::time::timeout(
+                            std::time::Duration::from_secs(3),
+                            tokio::process::Command::new("playerctl")
+                                .args([&parg2, "metadata", "mpris:length"])
+                                .output()
+                        ).await.map(|r| r.unwrap_or_else(|e| { eprintln!("[icebar] dur err: {e}"); std::process::Output { status: std::process::ExitStatus::default(), stdout: vec![], stderr: vec![] } })).unwrap_or_else(|_| std::process::Output { status: std::process::ExitStatus::default(), stdout: vec![], stderr: vec![] });
+
+                        (
+                            parse_position_output(&Ok(pos_res)),
+                            parse_duration_output(&Ok(dur_res)),
+                        )
+                    };
+
+                    let volume = {
+                        let parg3 = format!("--player={}", player);
+                        let vol_res = tokio::time::timeout(
+                            std::time::Duration::from_secs(3),
+                            tokio::process::Command::new("playerctl")
+                                .args([&parg3, "volume"])
+                                .output()
+                        ).await;
+                        match vol_res
+                        {
+                            Ok(Ok(out)) => String::from_utf8_lossy(&out.stdout).trim().parse::<f64>().unwrap_or(0.0),
+                            _           => 0.0,
+                        }
+                    };
+
                     yield crate::update::Message::MediaPlayerDataFetched(MediaPlayerData
                     {
                         is_hovering_media_player_meta_data: false,
                         metadata: metadata_str.to_owned(),
-                        status:   status_str.to_owned()
+                        status:   status_str.to_owned(),
+                        art_url,
+                        position_secs,
+                        duration_secs,
+                        volume
                     });
                 }
             }
@@ -464,6 +709,53 @@ pub fn media_player_subscription(player: String, format: String) -> Pin<Box<dyn 
 }
 
 
+
+
+
+pub fn media_player_position_subscription(player: String, interval_ms: u64) -> std::pin::Pin<Box<dyn futures::Stream<Item = crate::update::Message> + Send>>
+{
+    Box::pin(async_stream::stream!
+    {
+        let interval = std::time::Duration::from_millis(interval_ms.max(100));
+        loop
+        {
+            tokio::time::sleep(interval).await;
+
+            let parg = format!("--player={}", player);
+
+            let pos_out = tokio::time::timeout(
+                std::time::Duration::from_secs(3),
+                tokio::process::Command::new("playerctl")
+                    .args([&parg, "position"])
+                    .output()
+            ).await;
+
+            let dur_out = tokio::time::timeout(
+                std::time::Duration::from_secs(3),
+                tokio::process::Command::new("playerctl")
+                    .args([&parg, "metadata", "mpris:length"])
+                    .output()
+            ).await;
+
+            let vol_out = tokio::time::timeout(
+                std::time::Duration::from_secs(3),
+                tokio::process::Command::new("playerctl")
+                    .args([&parg, "volume"])
+                    .output()
+            ).await;
+
+            let pos = match pos_out { Ok(Ok(o)) => parse_position_output(&Ok(o)), _ => continue };
+            let dur = match dur_out { Ok(Ok(o)) => parse_duration_output(&Ok(o)), _ => 0.0 };
+            let vol = match vol_out
+            {
+                Ok(Ok(o)) => String::from_utf8_lossy(&o.stdout).trim().parse::<f64>().unwrap_or(0.0),
+                _         => 0.0,
+            };
+
+            yield crate::update::Message::MediaPlayerPositionTick(pos, dur, vol);
+        }
+    })
+}
 
 
 
@@ -571,7 +863,11 @@ mod tests
         {
             is_hovering_media_player_meta_data: false,
             metadata: metadata.into(),
-            status: status.into()
+            status: status.into(),
+            art_url: String::new(),
+            position_secs: 0.0,
+            duration_secs: 0.0,
+            volume: 0.0
         };
         app.ron_config.media_player_metadata.media_player_metadata_text_limit_len = 20;
         app.ron_config.general.ellipsis_text = "...".into();
@@ -783,5 +1079,241 @@ mod tests
     {
         use crate::modules::media_player::MediaPlayerButtonConfig;
         assert_eq!(MediaPlayerButtonConfig::default().media_player_buttons_format.len(), 4);
+    }
+
+
+    fn make_output(stdout: &str) -> std::process::Output
+    {
+        std::process::Output
+        {
+            status: std::process::ExitStatus::default(),
+            stdout: stdout.as_bytes().to_vec(),
+            stderr: vec![],
+        }
+    }
+
+    #[test]
+    fn parse_position_valid_float()
+    {
+        let out = make_output("123.456
+");
+        assert!((parse_position_output(&Ok(out)) - 123.456).abs() < 1e-6);
+    }
+
+    #[test]
+    fn parse_position_zero_string()
+    {
+        let out = make_output("0
+");
+        assert_eq!(parse_position_output(&Ok(out)), 0.0);
+    }
+
+    #[test]
+    fn parse_position_empty_returns_zero()
+    {
+        let out = make_output("");
+        assert_eq!(parse_position_output(&Ok(out)), 0.0);
+    }
+
+    #[test]
+    fn parse_position_error_returns_zero()
+    {
+        let err: Result<std::process::Output, std::io::Error> = Err(std::io::Error::other("fail"));
+        assert_eq!(parse_position_output(&err), 0.0);
+    }
+
+    #[test]
+    fn parse_duration_valid_microseconds()
+    {
+        let out = make_output("210000000
+");
+        assert!((parse_duration_output(&Ok(out)) - 210.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn parse_duration_zero_returns_zero()
+    {
+        let out = make_output("0
+");
+        assert_eq!(parse_duration_output(&Ok(out)), 0.0);
+    }
+
+    #[test]
+    fn parse_duration_empty_returns_zero()
+    {
+        let out = make_output("");
+        assert_eq!(parse_duration_output(&Ok(out)), 0.0);
+    }
+
+    #[test]
+    fn parse_duration_error_returns_zero()
+    {
+        let err: Result<std::process::Output, std::io::Error> = Err(std::io::Error::other("fail"));
+        assert_eq!(parse_duration_output(&err), 0.0);
+    }
+
+    #[test]
+    fn media_player_data_default_position_is_zero()
+    {
+        assert_eq!(MediaPlayerData::default().position_secs, 0.0);
+    }
+
+    #[test]
+    fn media_player_data_default_duration_is_zero()
+    {
+        assert_eq!(MediaPlayerData::default().duration_secs, 0.0);
+    }
+
+
+    #[test]
+    fn media_player_data_default_art_url_is_empty()
+    {
+        assert!(MediaPlayerData::default().art_url.is_empty());
+    }
+
+    #[test]
+    fn media_player_data_art_url_stored_correctly()
+    {
+        let d = MediaPlayerData
+        {
+            art_url: "file:///tmp/cover.jpg".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(d.art_url, "file:///tmp/cover.jpg");
+    }
+
+
+    #[test]
+    fn percent_decode_plain_path_unchanged()
+    {
+        assert_eq!(percent_decode("/home/user/music"), "/home/user/music");
+    }
+
+    #[test]
+    fn percent_decode_space_encoded()
+    {
+        assert_eq!(percent_decode("/home/user/my%20music"), "/home/user/my music");
+    }
+
+    #[test]
+    fn percent_decode_mixed_encoded_chars()
+    {
+        assert_eq!(percent_decode("hello%20world%21"), "hello world!");
+    }
+
+    #[test]
+    fn percent_decode_uppercase_hex()
+    {
+        assert_eq!(percent_decode("%2F"), "/");
+    }
+
+    #[test]
+    fn percent_decode_lowercase_hex()
+    {
+        assert_eq!(percent_decode("%2f"), "/");
+    }
+
+    #[test]
+    fn percent_decode_empty_string()
+    {
+        assert_eq!(percent_decode(""), "");
+    }
+
+    #[test]
+    fn percent_decode_no_encoded_chars()
+    {
+        assert_eq!(percent_decode("abc"), "abc");
+    }
+
+    #[test]
+    fn percent_decode_percent_at_end_no_panic()
+    {
+        let result = percent_decode("abc%");
+        assert!(result.contains("abc"));
+    }
+
+    #[test]
+    fn percent_decode_single_hex_digit_no_panic()
+    {
+        let result = percent_decode("abc%2");
+        assert!(result.contains("abc"));
+    }
+
+
+    #[test]
+    fn hex_val_digit_zero()  { assert_eq!(hex_val(b'0'), Some(0)); }
+
+    #[test]
+    fn hex_val_digit_nine()  { assert_eq!(hex_val(b'9'), Some(9)); }
+
+    #[test]
+    fn hex_val_lower_a()     { assert_eq!(hex_val(b'a'), Some(10)); }
+
+    #[test]
+    fn hex_val_lower_f()     { assert_eq!(hex_val(b'f'), Some(15)); }
+
+    #[test]
+    fn hex_val_upper_a()     { assert_eq!(hex_val(b'A'), Some(10)); }
+
+    #[test]
+    fn hex_val_upper_f()     { assert_eq!(hex_val(b'F'), Some(15)); }
+
+    #[test]
+    fn hex_val_invalid_char() { assert_eq!(hex_val(b'g'), None); }
+
+    #[test]
+    fn hex_val_space()        { assert_eq!(hex_val(b' '), None); }
+
+
+    #[test]
+    fn decode_image_bytes_invalid_data_returns_none()
+    {
+        let bad = b"this is not an image";
+        assert!(decode_image_bytes(bad).is_none());
+    }
+
+    #[test]
+    fn decode_image_bytes_empty_returns_none()
+    {
+        assert!(decode_image_bytes(b"").is_none());
+    }
+
+    #[test]
+    fn decode_image_bytes_valid_png_returns_handle()
+    {
+        let png: &[u8] = &[
+            0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a, // signature
+            0x00,0x00,0x00,0x0d, b'I',b'H',b'D',b'R', // IHDR length + type
+            0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,  // width=1, height=1
+            0x08,0x02,0x00,0x00,0x00,0x90,0x77,0x53,0xde, // 8-bit RGB, CRC
+            0x00,0x00,0x00,0x0c, b'I',b'D',b'A',b'T', // IDAT length + type
+            0x08,0xd7,0x63,0xf8,0xcf,0xc0,0x00,0x00,
+            0x00,0x02,0x00,0x01, 0xe2,0x21,0xbc,0x33,  // IDAT data + CRC
+            0x00,0x00,0x00,0x00, b'I',b'E',b'N',b'D', // IEND
+            0xae,0x42,0x60,0x82,
+        ];
+        let _ = decode_image_bytes(png);
+    }
+
+
+    #[tokio::test]
+    async fn fetch_album_art_empty_url_returns_none()
+    {
+        let result = fetch_album_art(String::new()).await;
+        assert!(result.is_none());
+    }
+
+    #[tokio::test]
+    async fn fetch_album_art_nonexistent_file_returns_none()
+    {
+        let result = fetch_album_art("file:///this/path/does/not/exist/cover.jpg".to_string()).await;
+        assert!(result.is_none());
+    }
+
+    #[tokio::test]
+    async fn fetch_album_art_bare_nonexistent_path_returns_none()
+    {
+        let result = fetch_album_art("/this/path/does/not/exist/cover.jpg".to_string()).await;
+        assert!(result.is_none());
     }
 }

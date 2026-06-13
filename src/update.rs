@@ -16,6 +16,7 @@ use crate::windows::
     calendar::{CalendarView, DayClickAction, create_calendar_window},
     context_menu::{create_context_menu, get_context_menu_size},
     warning::create_warning,
+    media_player_window::create_media_player_window,
 };
 use crate::{MAIN_ID, AppData, WindowInfo};
 use crate::helpers::{string::format_volume, misc::{is_active_module, validate_bar_data, define_bar_anchor_position}, workspaces::build_workspace_list, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res};
@@ -45,6 +46,9 @@ pub enum Message
     CloseWarning,
 
     MediaPlayerDataFetched(crate::modules::media_player::MediaPlayerData),
+    AlbumArtFetched(Option<iced::widget::image::Handle>),
+    MediaPlayerPositionTick(f64, f64, f64),
+    MediaPlayerSeek(f64),
     CreateCustomModuleCommand((Option<usize>, Vec<String>, String, bool, bool)),
     MenuLoaded(String, String, Vec<MenuItem>),
     ContinuousCommandFinished(usize, String),
@@ -100,6 +104,14 @@ pub enum Message
     ToggleInputDeviceCategory,
     ToggleOutputAppCategory,
     ToggleInputAppCategory,
+
+    ShowMediaPlayerWindow,
+    CloseMediaPlayerWindow,
+    MediaPlayerVolumeDown,
+    MediaPlayerVolumeUp,
+    MediaPlayerSeekByFraction(f64),
+    MediaPlayerVolumeSet(f64),
+    MediaPlayerVolumeBarMouseMoved(f32),
 
     Tick,
     VolumeUpdated(f32, bool, f32, bool),
@@ -202,6 +214,15 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 app.modules_data.volume_mixer_data.input_cursor_inside = position.x >= 0.0 && position.y >= 0.0 && position.x <= mw as f32 && position.y <= mh as f32;
             }
             app.modules_data.volume_mixer_data.mouse_pos = (position.x as i32, position.y as i32);
+
+            if app.modules_data.media_player_window_data.is_open
+            {
+                let [mw, mh] = app.ron_config.media_player_window.window_size;
+                app.modules_data.media_player_window_data.cursor_inside =
+                    position.x >= 0.0 && position.y >= 0.0
+                    && position.x <= mw as f32 && position.y <= mh as f32;
+            }
+            app.modules_data.media_player_window_data.mouse_pos = (position.x as i32, position.y as i32);
         }
 
         Message::MouseButtonClicked =>
@@ -247,6 +268,15 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 tasks.extend(ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
             }
 
+            let has_media_player_window = app.ids.values().any(|v| *v == WindowInfo::MediaPlayerWindow);
+            if has_media_player_window && !app.modules_data.media_player_window_data.cursor_inside
+            {
+                app.modules_data.media_player_window_data.is_open = false;
+                let ids_to_close: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::MediaPlayerWindow).map(|(id, _)| *id).collect();
+                for id in &ids_to_close { app.ids.remove(id); }
+                tasks.extend(ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            }
+
             if !tasks.is_empty() { return Task::batch(tasks); }
         }
 
@@ -286,6 +316,15 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             return Task::batch(ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
         }
 
+        Message::CloseMediaPlayerWindow =>
+        {
+            app.modules_data.media_player_window_data.is_open = false;
+            let ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::MediaPlayerWindow).map(|(id, _)| *id).collect();
+            for id in &ids { app.ids.remove(id); }
+            maybe_restart_hide_timer(app);
+            return Task::batch(ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+        }
+
         Message::CloseContextMenuAndCalendar =>
         {
             let mut tasks: Vec<Task<Message>> = Vec::new();
@@ -309,6 +348,11 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             let in_mixer_ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::VolumeInputMixer).map(|(id, _)| *id).collect();
             for id in &in_mixer_ids { app.ids.remove(id); }
             tasks.extend(in_mixer_ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+
+            app.modules_data.media_player_window_data.is_open = false;
+            let mp_ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::MediaPlayerWindow).map(|(id, _)| *id).collect();
+            for id in &mp_ids { app.ids.remove(id); }
+            tasks.extend(mp_ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
 
             maybe_restart_hide_timer(app);
 
@@ -335,6 +379,39 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::MediaPlayerClickNext                => return media_player_action(&app.ron_config.media_player_metadata.player, MediaPlayerAction::Next),
         Message::MediaPlayerClickPlayPause           => return media_player_action(&app.ron_config.media_player_metadata.player, MediaPlayerAction::PlayPause),
         Message::MediaPlayerClickPrev                => return media_player_action(&app.ron_config.media_player_metadata.player, MediaPlayerAction::Prev),
+        Message::MediaPlayerVolumeDown               => return media_player_action(&app.ron_config.media_player_metadata.player, MediaPlayerAction::VolumeDown),
+        Message::MediaPlayerVolumeUp                 => return media_player_action(&app.ron_config.media_player_metadata.player, MediaPlayerAction::VolumeUp),
+        Message::MediaPlayerSeekByFraction(frac) =>
+        {
+            let dur    = app.modules_data.media_player_data.duration_secs;
+            let secs   = (frac.clamp(0.0, 1.0) * dur).max(0.0);
+            let player = app.ron_config.media_player_metadata.player.clone();
+            return Task::perform(
+                async move
+                {
+                    let parg = format!("--player={}", player);
+                    let _ = tokio::process::Command::new("playerctl").args([&parg, "position", &secs.to_string()]).output().await;
+                },
+                |_| Message::Nothing,
+            );
+        }
+        Message::MediaPlayerVolumeSet(vol) =>
+        {
+            let player = app.ron_config.media_player_metadata.player.clone();
+            return Task::perform(
+                async move
+                {
+                    let parg   = format!("--player={}", player);
+                    let vol_s  = format!("{:.2}", vol.clamp(0.0, 1.0));
+                    let _ = tokio::process::Command::new("playerctl").args([&parg, "volume", &vol_s]).output().await;
+                },
+                |_| Message::Nothing,
+            );
+        }
+        Message::MediaPlayerVolumeBarMouseMoved(x) =>
+        {
+            app.modules_data.media_player_window_data.vol_bar_mouse_x = x;
+        }
         Message::CycleClockTimeZones                 => cycle_clock_timezones(app),
         Message::ToggleAltClockAndCycleClockTimeZones => { app.modules_data.clock_data.is_showing_alt_clock = !app.modules_data.clock_data.is_showing_alt_clock; cycle_clock_timezones(app); }
 
@@ -372,7 +449,54 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::UpdateFocusedWindowNiri         => { return Task::perform(tokio::task::spawn_blocking(read_focused_window_niri), |result| Message::FocusedWindowNiriFetched(result.ok().flatten())); }
         Message::UpdateFocusedWindowSway         => { return Task::perform(tokio::task::spawn_blocking(read_focused_window_sway), |result| Message::FocusedWindowSwayFetched(result.ok().flatten())); }
         Message::UpdateFocusedWindowHypr         => { return Task::perform(read_focused_window_hypr(), Message::FocusedWindowHyprFetched); }
-        Message::MediaPlayerDataFetched(data)    => { app.modules_data.media_player_data = data; }
+        Message::MediaPlayerDataFetched(data) =>
+        {
+            let art_url = data.art_url.clone();
+            let prev_url = app.modules_data.media_player_data.art_url.clone();
+            app.modules_data.media_player_data = data;
+
+            if art_url != prev_url
+            {
+                if art_url.is_empty()
+                {
+                    app.modules_data.album_art = None;
+                }
+                else
+                {
+                    return Task::perform(
+                        crate::modules::media_player::fetch_album_art(art_url),
+                        Message::AlbumArtFetched,
+                    );
+                }
+            }
+        }
+
+        Message::AlbumArtFetched(handle) =>
+        {
+            app.modules_data.album_art = handle;
+        }
+
+        Message::MediaPlayerPositionTick(pos, dur, vol) =>
+        {
+            app.modules_data.media_player_data.position_secs = pos;
+            if dur > 0.0 { app.modules_data.media_player_data.duration_secs = dur; }
+            app.modules_data.media_player_data.volume = vol;
+        }
+
+        Message::MediaPlayerSeek(secs) =>
+        {
+            let player = app.ron_config.media_player_metadata.player.clone();
+            return Task::perform(
+                async move {
+                    let parg = format!("--player={}", player);
+                    let _ = tokio::process::Command::new("playerctl")
+                        .args([&parg, "position", &secs.to_string()])
+                        .output()
+                        .await;
+                },
+                |_| Message::Nothing,
+            );
+        }
         Message::SwayWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace = current; app.modules_data.workspace_data.visible_workspaces = list; }
         Message::NiriWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace = current; app.modules_data.workspace_data.visible_workspaces = list; }
         Message::HyprWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace = current; app.modules_data.workspace_data.visible_workspaces = list; }
@@ -911,6 +1035,21 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             return create_input_mixer_window(app);
         }
 
+        Message::ShowMediaPlayerWindow =>
+        {
+            let already_open = app.ids.values().any(|v| *v == WindowInfo::MediaPlayerWindow);
+            if already_open
+            {
+                app.modules_data.media_player_window_data.is_open = false;
+                let ids: Vec<iced::window::Id> = app.ids.iter().filter(|(_, info)| **info == WindowInfo::MediaPlayerWindow).map(|(id, _)| *id).collect();
+                for id in &ids { app.ids.remove(id); }
+                return Task::batch(ids.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
+            }
+            app.modules_data.media_player_window_data.is_open       = true;
+            app.modules_data.media_player_window_data.cursor_inside = false;
+            return create_media_player_window(app);
+        }
+
         Message::MixerStateUpdated(new_state) =>
         {
             app.modules_data.mixer_state = new_state;
@@ -1083,7 +1222,8 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             let popup_open = app.context_menu_data.context_menu_is_open
                 || app.modules_data.calendar_data.is_open
                 || app.modules_data.volume_mixer_data.output_mixer_open
-                || app.modules_data.volume_mixer_data.input_mixer_open;
+                || app.modules_data.volume_mixer_data.input_mixer_open
+                || app.modules_data.media_player_window_data.is_open;
 
             if app.ron_config.auto_hide.is_some() && app.bar_visible && !popup_open
             {
@@ -1134,7 +1274,8 @@ fn maybe_restart_hide_timer(app: &mut AppData)
     let any_popup_still_open = app.context_menu_data.context_menu_is_open
         || app.modules_data.calendar_data.is_open
         || app.modules_data.volume_mixer_data.output_mixer_open
-        || app.modules_data.volume_mixer_data.input_mixer_open;
+        || app.modules_data.volume_mixer_data.input_mixer_open
+        || app.modules_data.media_player_window_data.is_open;
 
     if !any_popup_still_open && app.hide_timer.is_none()
     {

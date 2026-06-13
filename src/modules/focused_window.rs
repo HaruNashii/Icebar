@@ -184,10 +184,6 @@ pub fn define_focused_window_style(app: &AppData, status: button::Status) -> ice
 {
     use crate::helpers::style::match_color_or_gradient;
     let cfg = &app.ron_config.focused_window;
-
-    // Pre-resolve gradients to iced::Background here, while we still hold `app`.
-    // This drops the `Vec`-containing `Gradient` before entering `set_style`,
-    // preventing a use-after-free when the closure outlives the borrow.
     let normal_bg  = match_color_or_gradient(cfg.focused_window_button_gradient_color.as_ref(),         cfg.focused_window_button_color);
     let hovered_bg = match_color_or_gradient(cfg.focused_window_button_hovered_gradient_color.as_ref(), cfg.focused_window_button_hovered_color);
     let pressed_bg = match_color_or_gradient(cfg.focused_window_button_pressed_gradient_color.as_ref(), cfg.focused_window_button_pressed_color);

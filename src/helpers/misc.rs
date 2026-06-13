@@ -180,9 +180,6 @@ pub fn validate_bar_data(app: &mut AppData) -> ValidatedBarSizeAndMargin
 
 
 
-/// Pre-computed button styles for the three possible statuses.
-/// All fields are `Copy` (no heap allocation), so this struct can be safely
-/// `move`d into a style closure without capturing any borrow of `AppData`.
 #[derive(Copy, Clone)]
 pub struct ButtonStyles
 {
@@ -193,8 +190,6 @@ pub struct ButtonStyles
 
 impl ButtonStyles
 {
-    /// Eagerly evaluate a `define_*_style` function for all three statuses
-    /// while `AppData` is still live, producing a heap-free `ButtonStyles`.
     pub fn from_fn(app: &AppData, f: fn(&AppData, button::Status) -> button::Style) -> Self
     {
         ButtonStyles
@@ -223,8 +218,6 @@ pub fn create_button_container_without_hover_message<'a>(app: &'a AppData, paddi
                 .center()
             )
             .on_press(left_click_message)
-            // `styles` is Copy and contains no borrows of AppData, so this
-            // closure is safe even after iced_layershell transmutes it to 'static.
             .style(move |_: &Theme, status: button::Status|
             {
                 match status

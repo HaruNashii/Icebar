@@ -983,11 +983,10 @@ pub fn create_output_mixer_window(app: &mut AppData) -> Task<Message>
     let anchor  = bar_anchor(&app.ron_config.general.bar_position);
     let (mx, my) = app.modules_data.volume_mixer_data.mouse_pos;
     let (px, py) = smart_popup_position(mx, my, app.monitor_size.0 as i32, app.monitor_size.1 as i32, w as i32, h as i32);
-    // backdrop
+
     let backdrop_id = iced::window::Id::unique();
     app.ids.insert(backdrop_id, WindowInfo::ContextMenuBackdrop);
 
-    // mixer window
     let id = iced::window::Id::unique();
     app.ids.insert(id, WindowInfo::VolumeOutputMixer);
 
@@ -1026,11 +1025,10 @@ pub fn create_input_mixer_window(app: &mut AppData) -> Task<Message>
     let anchor  = bar_anchor(&app.ron_config.general.bar_position);
     let (mx, my) = app.modules_data.volume_mixer_data.mouse_pos;
     let (px, py) = smart_popup_position(mx, my, app.monitor_size.0 as i32, app.monitor_size.1 as i32, w as i32, h as i32);
-    // backdrop
+
     let backdrop_id = iced::window::Id::unique();
     app.ids.insert(backdrop_id, WindowInfo::ContextMenuBackdrop);
 
-    // mixer window
     let id = iced::window::Id::unique();
     app.ids.insert(id, WindowInfo::VolumeInputMixer);
 

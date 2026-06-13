@@ -408,7 +408,6 @@ pub fn volume_subscription() -> Pin<Box<dyn futures::Stream<Item = Message> + Se
                 |_| {}
             );
 
-            // Callback captures only the sender — zero aliasing of context.
             context.set_subscribe_callback(Some(Box::new(
                 move |facility, _op, _index|
                 {

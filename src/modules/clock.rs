@@ -198,9 +198,6 @@ pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget
         let shadow_x         = cfg.alt_clock_button_shadow_x;
         let shadow_y         = cfg.alt_clock_button_shadow_y;
         let shadow_blur      = cfg.alt_clock_button_shadow_blur;
-        // Resolve Option<iced::Background> (Copy) from the Gradient borrow NOW,
-        // before the value is passed anywhere, so the &Vec inside Gradient is
-        // never held past this stack frame.
         let normal_background  = match_color_or_gradient(cfg.alt_clock_button_gradient_color.as_ref(),         cfg.alt_clock_button_color);
         let hovered_background = match_color_or_gradient(cfg.alt_clock_button_hovered_gradient_color.as_ref(), cfg.alt_clock_button_hovered_color);
         let pressed_background = match_color_or_gradient(cfg.alt_clock_button_pressed_gradient_color.as_ref(), cfg.alt_clock_button_pressed_color);
@@ -219,7 +216,6 @@ pub fn define_clock_style(app: &AppData, status: button::Status) -> iced::widget
         let shadow_x         = cfg.clock_button_shadow_x;
         let shadow_y         = cfg.clock_button_shadow_y;
         let shadow_blur      = cfg.clock_button_shadow_blur;
-        // Resolve backgrounds eagerly for the same reason as the alt-clock branch above.
         let normal_background  = match_color_or_gradient(cfg.clock_button_gradient_color.as_ref(),         cfg.clock_button_color);
         let hovered_background = match_color_or_gradient(cfg.clock_button_hovered_gradient_color.as_ref(), cfg.clock_button_hovered_color);
         let pressed_background = match_color_or_gradient(cfg.clock_button_pressed_gradient_color.as_ref(), cfg.clock_button_pressed_color);

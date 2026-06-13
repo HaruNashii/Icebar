@@ -408,11 +408,10 @@ pub fn create_calendar_window(app: &mut AppData) -> Task<Message>
 
     let (mx, my) = app.modules_data.calendar_data.mouse_pos;
     let (pos_x, pos_y) = smart_popup_position(mx, my, app.monitor_size.0 as i32, app.monitor_size.1 as i32, w as i32, h as i32);
-    // backdrop
+
     let backdrop_id = iced::window::Id::unique();
     app.ids.insert(backdrop_id, WindowInfo::ContextMenuBackdrop);
 
-    // calendar window
     let id = iced::window::Id::unique();
     app.ids.insert(id, WindowInfo::Calendar);
 
