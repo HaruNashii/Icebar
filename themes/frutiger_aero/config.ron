@@ -773,6 +773,158 @@ BarConfig
 
 
 
+    // ================= MEDIA PLAYER WINDOW =================
+    media_player_window:
+    (
+        // ── Window ───────────────────────────────────────────────────────
+        window_size:                  (340, 500),
+        window_padding:               18,
+        background_color:             RGBA((14, 55, 85, 220)),
+        background_border_color:      HEX("5bc8f5"),
+        background_border_size:       1.0,
+        background_border_radius:     (16.0, 16.0, 16.0, 16.0),
+
+        // ── Layout ───────────────────────────────────────────────────────
+        row_order:                    [Fill, Prev, PlayPause, Next, Fill],
+        row_height:                   54,
+        row_spacing:                  14,
+        section_spacing:              18,
+
+        // ── Metadata (title) ────────────────────────────────────────────
+        metadata_text_size:           15,
+        metadata_text_color:          HEX("e8f8ff"),
+        metadata_max_chars:           80,
+        metadata_button_style:
+        (
+            color:                  RGBA((0, 0, 0, 0)),
+            hovered_color:          RGBA((0, 0, 0, 0)),
+            pressed_color:          RGBA((0, 0, 0, 0)),
+            text_color:             HEX("e8f8ff"),
+            hovered_text_color:     HEX("e8f8ff"),
+            pressed_text_color:     HEX("a0d2eb"),
+            border_color:           RGBA((0, 0, 0, 0)),
+            border_size:            0.0,
+            border_radius:          (0.0, 0.0, 0.0, 0.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None,
+        ),
+        metadata_button_height:       24,
+        metadata_button_width:        0.0,
+
+        // ── Transport button labels ─────────────────────────────────────
+        prev_label:     "󰒮",
+        play_label:     "▶",
+        pause_label:    "󰏤",
+        next_label:     "󰒭",
+        vol_down_label: "󰝞",
+        vol_up_label:   "󰝝",
+
+        // ── Transport button styles ─────────────────────────────────────
+        button_text_size:             16,
+        button_width:                 40,
+        button_height:                40,
+        button_style:
+        (
+            color:                  RGBA((255, 255, 255, 12)),
+            hovered_color:          RGBA((91, 200, 245, 50)),
+            pressed_color:          RGBA((11, 110, 140, 80)),
+            text_color:             HEX("e8f8ff"),
+            hovered_text_color:     HEX("e8f8ff"),
+            pressed_text_color:     HEX("a0d2eb"),
+            border_color:           RGBA((0, 0, 0, 0)),
+            border_size:            0.0,
+            border_radius:          (20.0, 20.0, 20.0, 20.0),
+            gradient_color:         None,
+            hovered_gradient_color: None,
+            pressed_gradient_color: None,
+        ),
+        play_button_style:
+        (
+            color:                  HEX("5bc8f5"),
+            hovered_color:          HEX("65d2ff"),
+            pressed_color:          HEX("51beeb"),
+            text_color:             HEX("0a2846"),
+            hovered_text_color:     HEX("0a2846"),
+            pressed_text_color:     HEX("0a2846"),
+            border_color:           RGBA((0, 0, 0, 0)),
+            border_size:            0.0,
+            border_radius:          (20.0, 20.0, 20.0, 20.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, HEX("5bc8f5")), (1.0, HEX("74e1ff"))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, HEX("63d0fd")), (1.0, HEX("7ce9ff"))]))),
+            pressed_gradient_color: None,
+        ),
+        pause_button_style:
+        (
+            color:                  HEX("5bc8f5"),
+            hovered_color:          HEX("65d2ff"),
+            pressed_color:          HEX("51beeb"),
+            text_color:             HEX("0a2846"),
+            hovered_text_color:     HEX("0a2846"),
+            pressed_text_color:     HEX("0a2846"),
+            border_color:           RGBA((0, 0, 0, 0)),
+            border_size:            0.0,
+            border_radius:          (20.0, 20.0, 20.0, 20.0),
+            gradient_color:         Some(Gradient((180.0, [(0.0, HEX("5bc8f5")), (1.0, HEX("74e1ff"))]))),
+            hovered_gradient_color: Some(Gradient((180.0, [(0.0, HEX("63d0fd")), (1.0, HEX("7ce9ff"))]))),
+            pressed_gradient_color: None,
+        ),
+
+        // ── Album art ────────────────────────────────────────────────────
+        show_album_art:               true,
+        album_art_size:               260,
+        album_art_border_radius:      (14.0, 14.0, 14.0, 14.0),
+        album_art_border_color:       HEX("5bc8f5"),
+        album_art_border_size:        1.0,
+        album_art_spacing:            18,
+        album_art_placeholder_color:  HEX("ffffff"),
+        album_art_position:           Top,
+
+        // ── Progress bar ─────────────────────────────────────────────────
+        progress_bar_height:          4,
+        progress_bar_filled_color:    HEX("5bc8f5"),
+        progress_bar_track_color:     HEX("0b6e8c"),
+        progress_bar_border_color:    RGBA((0, 0, 0, 0)),
+        progress_bar_border_size:     0.0,
+        progress_bar_border_radius:   (2.0, 2.0, 2.0, 2.0),
+        progress_bar_seekable:        true,
+        progress_and_volume_bar_poll_interval_ms: 90,
+
+        // ── Volume bar ───────────────────────────────────────────────────
+        volume_bar_width:              90.0,
+        volume_bar_height:             4,
+        volume_bar_filled_color:       HEX("5bc8f5"),
+        volume_bar_track_color:        HEX("0b6e8c"),
+        volume_bar_border_color:       RGBA((0, 0, 0, 0)),
+        volume_bar_border_size:        0.0,
+        volume_bar_border_radius:      (2.0, 2.0, 2.0, 2.0),
+        volume_bar_clickable:          true,
+        volume_bar_label_format:       Some("{vol}%"),
+        volume_bar_label_position:     Right,
+        volume_bar_label_size:         12,
+        volume_bar_label_color:        HEX("a0d2eb"),
+        volume_bar_label_spacing:      8.0,
+
+        // ── Scrollbar ────────────────────────────────────────────────────
+        scrollbar:
+        (
+            show:                    false,
+            width:                   6,
+            margin:                  2,
+            scroller_width:          6,
+            border_radius:           (3.0, 3.0, 3.0, 3.0),
+            rail_color:              RGBA((0, 0, 0, 0)),
+            rail_border_color:       RGBA((0, 0, 0, 0)),
+            rail_border_width:       0.0,
+            scroller_color:          RGBA((100, 100, 100, 60)),
+            scroller_hovered_color:  RGBA((130, 130, 130, 80)),
+            scroller_dragging_color: RGBA((160, 160, 160, 100)),
+            scroller_border_color:   RGBA((0, 0, 0, 0)),
+            scroller_border_width:   0.0,
+        ),
+    ),
+
+
     // ================= CALENDAR =================
     calendar_window:
     (
