@@ -594,11 +594,11 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             app.modules_data.volume_data.volume_output_raw = out_vol;
             app.modules_data.volume_data.volume_input_raw  = in_vol;
 
-            let (output_str, _) = format_volume(out_vol, out_muted, app.ron_config.volume_output.output_volume_unique_format.clone(), &app.ron_config.volume_output.output_volume_format, &app.ron_config.volume_output.output_volume_muted_format);
+            let (output_str, _) = format_volume(out_vol, out_muted, app.ron_config.volume_output.output_volume_unique_format.clone(), &app.ron_config.volume_output.output_volume_format, &app.ron_config.muted_volume_output.muted_volume_output_format);
             app.modules_data.volume_data.output_volume_level  = output_str;
             app.modules_data.volume_data.volume_output_is_muted = out_muted;
 
-            let (input_str, _) = format_volume(in_vol, in_muted, app.ron_config.volume_input.input_volume_unique_format.clone(), &app.ron_config.volume_input.input_volume_format, &app.ron_config.volume_input.input_volume_muted_format);
+            let (input_str, _) = format_volume(in_vol, in_muted, app.ron_config.volume_input.input_volume_unique_format.clone(), &app.ron_config.volume_input.input_volume_format, &app.ron_config.muted_volume_input.muted_volume_input_format);
             app.modules_data.volume_data.input_volume_level  = input_str;
             app.modules_data.volume_data.volume_input_is_muted = in_muted;
         }
@@ -715,10 +715,10 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 task_vec.extend(window_ids_to_close.into_iter().map(|id| Task::done(Message::RemoveWindow(id))));
             }
 
-            let (output_str, _) = format_volume(app.modules_data.volume_data.volume_output_raw, app.modules_data.volume_data.volume_output_is_muted, app.ron_config.volume_output.output_volume_unique_format.clone(), &app.ron_config.volume_output.output_volume_format, &app.ron_config.volume_output.output_volume_muted_format);
+            let (output_str, _) = format_volume(app.modules_data.volume_data.volume_output_raw, app.modules_data.volume_data.volume_output_is_muted, app.ron_config.volume_output.output_volume_unique_format.clone(), &app.ron_config.volume_output.output_volume_format, &app.ron_config.muted_volume_output.muted_volume_output_format);
             app.modules_data.volume_data.output_volume_level = output_str;
 
-            let (input_str, _) = format_volume(app.modules_data.volume_data.volume_input_raw, app.modules_data.volume_data.volume_input_is_muted, app.ron_config.volume_input.input_volume_unique_format.clone(), &app.ron_config.volume_input.input_volume_format, &app.ron_config.volume_input.input_volume_muted_format);
+            let (input_str, _) = format_volume(app.modules_data.volume_data.volume_input_raw, app.modules_data.volume_data.volume_input_is_muted, app.ron_config.volume_input.input_volume_unique_format.clone(), &app.ron_config.volume_input.input_volume_format, &app.ron_config.muted_volume_input.muted_volume_input_format);
             app.modules_data.volume_data.input_volume_level = input_str;
 
             println!("\n=== CONFIG RELOAD ===");

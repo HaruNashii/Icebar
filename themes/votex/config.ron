@@ -135,7 +135,6 @@ BarConfig
             "󰕾  {}%",
             "󰕾  +{}%",
         ),
-        output_volume_muted_format: "[Color=(200, 70, 90), String=󰝟]  muted",
         incremental_steps_output: 10,
         action_on_left_click_volume_output: DefaultAction,
         action_on_right_click_volume_output: ShowVolumeOutputMixer,
@@ -163,6 +162,7 @@ BarConfig
     // ================= MUTED VOLUME OUTPUT =================
     muted_volume_output:
     (
+        muted_volume_output_format: "[Color=(200, 70, 90), String=󰝟]  muted",
         muted_volume_output_padding: 0,
         muted_volume_output_text_size: 11,
         muted_volume_output_text_color: RGB((200, 80, 100)),
@@ -196,7 +196,6 @@ BarConfig
             "󰍬  {}%",
             "󰍬  +{}%",
         ),
-        input_volume_muted_format: "[Color=(200, 70, 90), String=󰍭]  muted",
         incremental_steps_input: 10,
         action_on_left_click_volume_input: DefaultAction,
         action_on_right_click_volume_input: ShowVolumeInputMixer,
@@ -224,6 +223,7 @@ BarConfig
     // ================= MUTED VOLUME INPUT =================
     muted_volume_input:
     (
+        muted_volume_input_format: "[Color=(200, 70, 90), String=󰍭]  muted",
         muted_volume_input_padding: 0,
         muted_volume_input_text_size: 11,
         muted_volume_input_text_color: RGB((200, 80, 100)),

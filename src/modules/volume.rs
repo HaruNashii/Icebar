@@ -34,7 +34,6 @@ pub struct VolumeOutputConfig
 {
     pub output_volume_format:                        [String; 6],
     pub output_volume_unique_format:                 Option<String>,
-    pub output_volume_muted_format:                  String,
     pub incremental_steps_output:                    u8,
     pub action_on_left_click_volume_output:          ActionOnClick,
     pub action_on_right_click_volume_output:         ActionOnClick,
@@ -70,7 +69,6 @@ impl Default for VolumeOutputConfig
         Self
         {
             output_volume_format:                        ["   {}%".into(),"󰖀   {}%".into(),"   {}%".into(),"   {}%".into(),"   {}%".into(),"   + {}%".into()],
-            output_volume_muted_format:                  "   Muted".into(),
             output_volume_unique_format:                 None,
             incremental_steps_output:                    10,
             action_on_left_click_volume_output:          ActionOnClick::DefaultAction,
@@ -106,6 +104,7 @@ impl Default for VolumeOutputConfig
 #[serde(default)]
 pub struct MutedVolumeOutputConfig
 {
+    pub muted_volume_output_format:                        String,
     pub muted_volume_output_padding:                       u16,
     pub muted_volume_output_text_size:                     u32,
     pub muted_volume_output_text_color:                    ColorType,
@@ -137,6 +136,7 @@ impl Default for MutedVolumeOutputConfig
     {
         Self
         {
+            muted_volume_output_format:                        "   Muted".into(),
             muted_volume_output_padding:                       0,
             muted_volume_output_text_size:                     15,
             muted_volume_output_text_color:                    ColorType::RGB([255, 255, 255]),
@@ -170,7 +170,6 @@ pub struct VolumeInputConfig
 {
     pub input_volume_format:                        [String; 6],
     pub input_volume_unique_format:                  Option<String>,
-    pub input_volume_muted_format:                  String,
     pub incremental_steps_input:                    u8,
     pub action_on_left_click_volume_input:          ActionOnClick,
     pub action_on_right_click_volume_input:         ActionOnClick,
@@ -206,7 +205,6 @@ impl Default for VolumeInputConfig
         Self
         {
             input_volume_format:                        ["   {}%".into(),"  {}%".into(),"  {}%".into(),"  {}%".into(),"  {}%".into(),"󰢴  {}%".into()],
-            input_volume_muted_format:                  "   Muted".into(),
             input_volume_unique_format:                 None,
             incremental_steps_input:                    10,
             action_on_left_click_volume_input:          ActionOnClick::DefaultAction,
@@ -242,6 +240,7 @@ impl Default for VolumeInputConfig
 #[serde(default)]
 pub struct MutedVolumeInputConfig
 {
+    pub muted_volume_input_format:                  String,
     pub muted_volume_input_padding:                       u16,
     pub muted_volume_input_text_size:                     u32,
     pub muted_volume_input_text_color:                    ColorType,
@@ -273,6 +272,7 @@ impl Default for MutedVolumeInputConfig
     {
         Self
         {
+            muted_volume_input_format:                        "   Muted".into(),
             muted_volume_input_padding:                       0,
             muted_volume_input_text_size:                     15,
             muted_volume_input_text_color:                    ColorType::RGB([255, 255, 255]),

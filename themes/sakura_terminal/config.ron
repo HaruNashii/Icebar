@@ -154,7 +154,6 @@ BarConfig
             "♪  {}",
             "♪  {}!",
         ),
-        output_volume_muted_format: "♪  消音",
         incremental_steps_output: 5,
         action_on_left_click_volume_output: DefaultAction,
         action_on_right_click_volume_output: ShowVolumeOutputMixer,
@@ -182,6 +181,7 @@ BarConfig
     // ================= MUTED VOLUME OUTPUT =================
     muted_volume_output:
     (
+        muted_volume_output_format: "♪  消音",
         muted_volume_output_padding: 0,
         muted_volume_output_text_size: 13,
         muted_volume_output_text_color: RGB((185, 160, 130)),
@@ -215,7 +215,6 @@ BarConfig
             "◎  {}",
             "◎  {}!",
         ),
-        input_volume_muted_format: "◎  消音",
         incremental_steps_input: 5,
         action_on_left_click_volume_input: DefaultAction,
         action_on_right_click_volume_input: ShowVolumeInputMixer,
@@ -243,6 +242,7 @@ BarConfig
     // ================= MUTED VOLUME INPUT =================
     muted_volume_input:
     (
+        muted_volume_input_format: "◎  消音",
         muted_volume_input_padding: 0,
         muted_volume_input_text_size: 13,
         muted_volume_input_text_color: RGB((185, 160, 130)),
