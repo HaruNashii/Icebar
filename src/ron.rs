@@ -104,7 +104,8 @@ pub struct GeneralConfig
     pub force_static_position_context_menu: Option<(i32, i32)>,
     pub left_modules:                     Vec<Modules>,
     pub center_modules:                   Vec<Modules>,
-    pub right_modules:                    Vec<Modules>
+    pub right_modules:                    Vec<Modules>,
+    pub apply_general_to_custom_modules:  bool
 }
 
 impl Default for GeneralConfig
@@ -131,7 +132,8 @@ impl Default for GeneralConfig
             increased_exclusive_bar_zone: 0,
             spacing_between_all_modules: 0,
             floating_space: 0,
-            display: None
+            display: None,
+            apply_general_to_custom_modules: false
         }
     }
 }

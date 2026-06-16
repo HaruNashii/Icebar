@@ -595,4 +595,34 @@ pub fn apply_general_settings(ron_config: &mut BarConfig)
         ron_config.volume_input.volume_input_button_shadow_blur                              = v;
         ron_config.workspace.workspace_button_shadow_blur                                    = v;
     }
+
+    if ron_config.general.apply_general_to_custom_modules
+    {
+        for module in ron_config.custom_module.custom_modules.iter_mut()
+        {
+            if let Some(v) = ron_config.general_style.general_padding                          { module.padding                      = v; }
+            if let Some(v) = ron_config.general_style.general_text_size                        { module.text_size                    = v; }
+            if let Some(v) = ron_config.general_style.general_text_orientation                 { module.text_orientation             = v; }
+            if let Some(v) = ron_config.general_style.general_text_color                       { module.text_color                   = v; }
+            if let Some(v) = ron_config.general_style.general_button_color                     { module.button_color                 = v; }
+            if let Some(v) = ron_config.general_style.general_button_hovered_color             { module.button_hovered_color         = v; }
+            if let Some(v) = ron_config.general_style.general_button_hovered_text_color        { module.button_hovered_text_color    = v; }
+            if let Some(v) = ron_config.general_style.general_button_pressed_text_color        { module.button_pressed_text_color    = v; }
+            if let Some(v) = ron_config.general_style.general_button_pressed_color             { module.button_pressed_color         = v; }
+            if let Some(v) = ron_config.general_style.general_border_color                     { module.border_color                 = v; }
+            if let Some(v) = ron_config.general_style.general_border_size                      { module.border_size                  = v; }
+            if let Some(v) = ron_config.general_style.general_border_radius                    { module.border_radius                = v; }
+            if let Some(v) = ron_config.general_style.general_side_separator                   { module.side_separator               = Some(v); }
+            if let Some(v) = ron_config.general_style.general_side_separator_color             { module.separator_color              = v; }
+            if let Some(v) = ron_config.general_style.general_side_separator_width             { module.separator_width              = v; }
+            if let Some(v) = ron_config.general_style.general_side_separator_height            { module.separator_height             = v; }
+            if let Some(ref v) = ron_config.general_style.general_button_gradient_color        { module.button_gradient_color        = Some(v.clone()); }
+            if let Some(ref v) = ron_config.general_style.general_button_hovered_gradient_color { module.button_hovered_gradient_color = Some(v.clone()); }
+            if let Some(ref v) = ron_config.general_style.general_button_pressed_gradient_color { module.button_pressed_gradient_color = Some(v.clone()); }
+            if let Some(v) = ron_config.general_style.general_button_shadow_color              { module.button_shadow_color          = Some(v); }
+            if let Some(v) = ron_config.general_style.general_button_shadow_x                  { module.button_shadow_x              = v; }
+            if let Some(v) = ron_config.general_style.general_button_shadow_y                  { module.button_shadow_y              = v; }
+            if let Some(v) = ron_config.general_style.general_button_shadow_blur               { module.button_shadow_blur           = v; }
+        }
+    }
 }

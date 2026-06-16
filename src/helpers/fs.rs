@@ -181,7 +181,8 @@ BarConfig
         force_static_position_context_menu: None,
         left_modules:                       [CustomModule(0), Cpu, CpuTemp, Ram, Disk],
         center_modules:                     [Clock, MediaPlayerMetaData, MediaPlayerButtons],
-        right_modules:                      [PowerProfile, Tray, Network, VolumeOutput, VolumeInput]
+        right_modules:                      [PowerProfile, Tray, Network, VolumeOutput, VolumeInput],
+        apply_general_to_custom_modules:    true
     ),
 
 
