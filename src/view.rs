@@ -158,7 +158,7 @@ fn build_modules_with_spacing<'a>(list_of_modules: &'a Vec<Modules>, app: &'a Ap
             },
              
              
-            Modules::HyprWorkspaces | Modules::SwayWorkspaces | Modules::NiriWorkspaces | Modules::PlasmaWorkspaces =>
+            Modules::HyprWorkspaces | Modules::SwayWorkspaces | Modules::NiriWorkspaces | Modules::PlasmaWorkspaces | Modules::CosmicWorkspaces =>
             {
                 let workspace_buttons = app.modules_data.workspace_data.visible_workspaces.iter().map(|i|
                 {
@@ -256,7 +256,7 @@ fn build_modules_with_spacing<'a>(list_of_modules: &'a Vec<Modules>, app: &'a Ap
             },
              
              
-            Modules::FocusedWindowHypr | Modules::FocusedWindowNiri | Modules::FocusedWindowSway =>
+            Modules::FocusedWindowHypr | Modules::FocusedWindowNiri | Modules::FocusedWindowSway | Modules::FocusedWindowCosmic =>
             {
                 let text_to_send = &define_focused_window_text(app);
                 if app.ron_config.focused_window.dont_show_focused_window_if_empty && text_to_send.is_empty() { continue; };

@@ -115,8 +115,8 @@ pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Opt
 //
 //=================================================================[  TIPS  ]===================================================================
 // All possible modules:
-//   "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri",
-//   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "PlasmaWorkspaces",
+//   "FocusedWindowSway", "FocusedWindowHypr", "FocusedWindowNiri", "FocusedWindowCosmic",
+//   "NiriWorkspaces", "HyprWorkspaces", "SwayWorkspaces", "PlasmaWorkspaces", "CosmicWorkspaces",
 //   "MediaPlayerMetaData", "MediaPlayerButtons",
 //   "CustomModule(index)", "Image(index)",
 //   "CpuTemp", "Ram", "Cpu", "Disk", "PowerProfile"

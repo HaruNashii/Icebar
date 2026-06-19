@@ -336,7 +336,7 @@ pub fn read_ron_config(different_config_path: Option<String>) -> RonReturn
     };
 
     let mut active_modules: HashSet<Modules> = HashSet::new();
-    let all_possible_default_modules = [Modules::PlasmaWorkspaces, Modules::Disk, Modules::FocusedWindowSway, Modules::FocusedWindowHypr, Modules::FocusedWindowNiri, Modules::CpuTemp, Modules::Ram, Modules::Cpu, Modules::NiriWorkspaces, Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
+    let all_possible_default_modules = [Modules::PlasmaWorkspaces, Modules::Disk, Modules::FocusedWindowSway, Modules::FocusedWindowHypr, Modules::FocusedWindowNiri, Modules::FocusedWindowCosmic, Modules::CpuTemp, Modules::Ram, Modules::Cpu, Modules::NiriWorkspaces, Modules::CosmicWorkspaces, Modules::MediaPlayerMetaData, Modules::MediaPlayerButtons, Modules::Network, Modules::HyprWorkspaces, Modules::SwayWorkspaces, Modules::VolumeOutput, Modules::VolumeInput, Modules::Clock, Modules::Tray];
     let all_possible_position = [&bar_config.general.left_modules, &bar_config.general.center_modules, &bar_config.general.right_modules];
     for position in all_possible_position
     {

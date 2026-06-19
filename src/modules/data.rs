@@ -28,12 +28,14 @@ pub enum Modules
     HyprWorkspaces,
     NiriWorkspaces,
     SwayWorkspaces,
+    CosmicWorkspaces,
     VolumeOutput,
     MediaPlayerMetaData,
     MediaPlayerButtons,
     FocusedWindowSway,
     FocusedWindowHypr,
     FocusedWindowNiri,
+    FocusedWindowCosmic,
     VolumeInput,
     Network,
     CpuTemp,
@@ -90,6 +92,8 @@ mod tests
         assert_eq!(Modules::HyprWorkspaces,      Modules::HyprWorkspaces);
         assert_eq!(Modules::SwayWorkspaces,      Modules::SwayWorkspaces);
         assert_eq!(Modules::NiriWorkspaces,      Modules::NiriWorkspaces);
+        assert_eq!(Modules::CosmicWorkspaces,    Modules::CosmicWorkspaces);
+        assert_eq!(Modules::FocusedWindowCosmic, Modules::FocusedWindowCosmic);
         assert_eq!(Modules::VolumeOutput,        Modules::VolumeOutput);
         assert_eq!(Modules::VolumeInput,         Modules::VolumeInput);
         assert_eq!(Modules::MediaPlayerMetaData, Modules::MediaPlayerMetaData);
@@ -101,8 +105,10 @@ mod tests
     {
         assert_ne!(Modules::Clock,          Modules::Network);
         assert_ne!(Modules::Tray,           Modules::VolumeOutput);
-        assert_ne!(Modules::HyprWorkspaces, Modules::SwayWorkspaces);
-        assert_ne!(Modules::SwayWorkspaces, Modules::NiriWorkspaces);
+        assert_ne!(Modules::HyprWorkspaces,   Modules::SwayWorkspaces);
+        assert_ne!(Modules::SwayWorkspaces,   Modules::NiriWorkspaces);
+        assert_ne!(Modules::NiriWorkspaces,   Modules::CosmicWorkspaces);
+        assert_ne!(Modules::CosmicWorkspaces, Modules::HyprWorkspaces);
     }
 
     #[test]

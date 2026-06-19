@@ -17,6 +17,7 @@ pub mod tray;
 pub mod niri;
 pub mod hypr;
 pub mod sway;
+pub mod cosmic;
 pub mod data;
 pub mod disk;
 pub mod cpu;

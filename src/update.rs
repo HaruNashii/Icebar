@@ -9,7 +9,7 @@ use chrono::Datelike;
 
 
 // ============ CRATES ============
-use crate::modules::{power_profile::{read_power_profile, cycle_power_profile}, plasma, image::preload_image, clock::cycle_clock_timezones, clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction};
+use crate::modules::{power_profile::{read_power_profile, cycle_power_profile}, plasma, image::preload_image, clock::cycle_clock_timezones, clock::get_current_time, data::Modules, hypr::{self, change_workspace_hypr}, media_player::{MediaPlayerAction, get_player_data_with_format, media_player_action}, network::NetworkData, niri::{self, change_workspace_niri}, sway::{self, change_workspace_sway}, cosmic::{self, change_workspace_cosmic}, tray::{load_tray_menu, MenuItem, TrayEvent}, volume, workspaces::UserWorkspaceAction};
 use crate::windows::
 {
     volume_mixer::{MixerKind, MixerState, create_output_mixer_window, create_input_mixer_window, task_set_device_volume, task_toggle_device_mute, task_set_default_device, task_set_app_volume, task_toggle_app_mute},
@@ -20,7 +20,7 @@ use crate::windows::
 };
 use crate::{MAIN_ID, AppData, WindowInfo};
 use crate::helpers::{string::format_volume, misc::{is_active_module, validate_bar_data, define_bar_anchor_position}, workspaces::build_workspace_list, font::build_font, fs::check_if_config_file_exists, monitor::get_monitor_res};
-use crate::modules::focused_window::{read_focused_window_hypr, read_focused_window_sway, read_focused_window_niri};
+use crate::modules::focused_window::{read_focused_window_hypr, read_focused_window_sway, read_focused_window_niri, read_focused_window_cosmic};
 use crate::ron::read_ron_config;
 
 
@@ -118,9 +118,11 @@ pub enum Message
     FocusedWindowSwayFetched(Option<String>),
     FocusedWindowNiriFetched(Option<String>),
     FocusedWindowHyprFetched(Option<String>),
+    FocusedWindowCosmicFetched(Option<String>),
     SwayWorkspacesFetched(i32, Vec<i32>),
     NiriWorkspacesFetched(i32, Vec<i32>),
     HyprWorkspacesFetched(i32, Vec<i32>),
+    CosmicWorkspacesFetched(i32, Vec<i32>),
     PlasmaWorkspacesFetched(i32, Vec<i32>, Vec<String>),
 
 
@@ -138,11 +140,13 @@ pub enum Message
     UpdateFocusedWindowNiri,
     UpdateFocusedWindowSway,
     UpdateFocusedWindowHypr,
+    UpdateFocusedWindowCosmic,
     UpdateMediaPlayerMetadata,
     UpdatePlasmaWorkspaces,
     UpdateNiriWorkspaces,
     UpdateSwayWorkspaces,
     UpdateHyprWorkspaces,
+    UpdateCosmicWorkspaces,
     UpdateClock
 }
 
@@ -446,9 +450,11 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::FocusedWindowNiriFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); }
         Message::FocusedWindowSwayFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); }
         Message::FocusedWindowHyprFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); }
+        Message::FocusedWindowCosmicFetched(title) => { app.modules_data.focused_window_data.title = title.unwrap_or_default(); }
         Message::UpdateFocusedWindowNiri         => { return Task::perform(tokio::task::spawn_blocking(read_focused_window_niri), |result| Message::FocusedWindowNiriFetched(result.ok().flatten())); }
         Message::UpdateFocusedWindowSway         => { return Task::perform(tokio::task::spawn_blocking(read_focused_window_sway), |result| Message::FocusedWindowSwayFetched(result.ok().flatten())); }
         Message::UpdateFocusedWindowHypr         => { return Task::perform(read_focused_window_hypr(), Message::FocusedWindowHyprFetched); }
+        Message::UpdateFocusedWindowCosmic       => { return Task::perform(tokio::task::spawn_blocking(read_focused_window_cosmic), |result| Message::FocusedWindowCosmicFetched(result.ok().flatten())); }
         Message::MediaPlayerDataFetched(data) =>
         {
             let art_url = data.art_url.clone();
@@ -500,6 +506,7 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
         Message::SwayWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace = current; app.modules_data.workspace_data.visible_workspaces = list; }
         Message::NiriWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace = current; app.modules_data.workspace_data.visible_workspaces = list; }
         Message::HyprWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace = current; app.modules_data.workspace_data.visible_workspaces = list; }
+        Message::CosmicWorkspacesFetched(current, list) => { app.modules_data.workspace_data.current_workspace = current; app.modules_data.workspace_data.visible_workspaces = list; }
 
         Message::PlasmaWorkspacesFetched(current, list, ids) =>
         {
@@ -534,6 +541,13 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             {
                 return Task::perform(
                     tokio::task::spawn_blocking(move || change_workspace_niri(UserWorkspaceAction::ChangeWithIndex(id))),
+                    |_| Message::Nothing
+                );
+            }
+            else if is_active_module(&app.modules_data.active_modules, Modules::CosmicWorkspaces)
+            {
+                return Task::perform(
+                    tokio::task::spawn_blocking(move || change_workspace_cosmic(UserWorkspaceAction::ChangeWithIndex(id))),
                     |_| Message::Nothing
                 );
             }
@@ -622,6 +636,16 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
             {
                 let (current, counts) = result.unwrap_or((0, vec![]));
                 Message::NiriWorkspacesFetched(current, build_workspace_list(&counts, None))
+            });
+        }
+
+        Message::UpdateCosmicWorkspaces =>
+        {
+            let persistent = app.ron_config.workspace.persistent_workspaces;
+            return Task::perform(tokio::task::spawn_blocking(cosmic::current_workspace_and_count), move |result|
+            {
+                let (current, counts) = result.unwrap_or((0, vec![]));
+                Message::CosmicWorkspacesFetched(current, build_workspace_list(&counts, persistent))
             });
         }
 
@@ -763,20 +787,23 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 let hypr_active   = is_active_module(&app.modules_data.active_modules, Modules::HyprWorkspaces);
                 let sway_active   = is_active_module(&app.modules_data.active_modules, Modules::SwayWorkspaces);
                 let niri_active   = is_active_module(&app.modules_data.active_modules, Modules::NiriWorkspaces);
-                let plasma_active = is_active_module(&app.modules_data.active_modules, Modules::PlasmaWorkspaces);
+                let plasma_active  = is_active_module(&app.modules_data.active_modules, Modules::PlasmaWorkspaces);
+                let cosmic_active  = is_active_module(&app.modules_data.active_modules, Modules::CosmicWorkspaces);
 
                 if y > 0.
                 {
                     if app.ron_config.workspace.reverse_scroll_on_workspace
                     {
-                        if hypr_active        { change_workspace_hypr(UserWorkspaceAction::MoveNext); }
-                        else if sway_active   { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_sway(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
-                        else if niri_active   { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_niri(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
-                        else if plasma_active { let ids = app.modules_data.plasma_desktop_ids.clone(); return Task::perform(plasma::change_workspace_plasma(UserWorkspaceAction::MoveNext, ids), |_| Message::Nothing); }
+                        if hypr_active         { change_workspace_hypr(UserWorkspaceAction::MoveNext); }
+                        else if sway_active    { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_sway(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
+                        else if niri_active    { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_niri(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
+                        else if cosmic_active  { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_cosmic(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
+                        else if plasma_active  { let ids = app.modules_data.plasma_desktop_ids.clone(); return Task::perform(plasma::change_workspace_plasma(UserWorkspaceAction::MoveNext, ids), |_| Message::Nothing); }
                     }
                     else if hypr_active        { change_workspace_hypr(UserWorkspaceAction::MovePrev); }
                     else if sway_active        { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_sway(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
                     else if niri_active        { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_niri(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
+                    else if cosmic_active      { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_cosmic(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
                     else if plasma_active      { let ids = app.modules_data.plasma_desktop_ids.clone(); return Task::perform(plasma::change_workspace_plasma(UserWorkspaceAction::MovePrev, ids), |_| Message::Nothing); }
                 }
 
@@ -784,14 +811,16 @@ pub fn update(app: &mut AppData, message: Message) -> Task<Message>
                 {
                     if app.ron_config.workspace.reverse_scroll_on_workspace
                     {
-                        if hypr_active        { change_workspace_hypr(UserWorkspaceAction::MovePrev); }
-                        else if sway_active   { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_sway(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
-                        else if niri_active   { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_niri(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
-                        else if plasma_active { let ids = app.modules_data.plasma_desktop_ids.clone(); return Task::perform(plasma::change_workspace_plasma(UserWorkspaceAction::MovePrev, ids), |_| Message::Nothing); }
+                        if hypr_active         { change_workspace_hypr(UserWorkspaceAction::MovePrev); }
+                        else if sway_active    { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_sway(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
+                        else if niri_active    { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_niri(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
+                        else if cosmic_active  { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_cosmic(UserWorkspaceAction::MovePrev)), |_| Message::Nothing); }
+                        else if plasma_active  { let ids = app.modules_data.plasma_desktop_ids.clone(); return Task::perform(plasma::change_workspace_plasma(UserWorkspaceAction::MovePrev, ids), |_| Message::Nothing); }
                     }
                     else if hypr_active        { change_workspace_hypr(UserWorkspaceAction::MoveNext); }
                     else if sway_active        { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_sway(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
                     else if niri_active        { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_niri(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
+                    else if cosmic_active      { return Task::perform(tokio::task::spawn_blocking(|| change_workspace_cosmic(UserWorkspaceAction::MoveNext)), |_| Message::Nothing); }
                     else if plasma_active      { let ids = app.modules_data.plasma_desktop_ids.clone(); return Task::perform(plasma::change_workspace_plasma(UserWorkspaceAction::MoveNext, ids), |_| Message::Nothing); }
                 }
             }

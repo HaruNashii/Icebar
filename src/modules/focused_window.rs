@@ -166,6 +166,13 @@ pub fn read_focused_window_niri() -> Option<String>
 
 
 
+pub fn read_focused_window_cosmic() -> Option<String>
+{
+    crate::modules::cosmic::read_focused_window_cosmic()
+}
+
+
+
 pub fn define_focused_window_text(app: &AppData) -> String
 {
     let title = &app.modules_data.focused_window_data.title;

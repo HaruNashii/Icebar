@@ -19,6 +19,7 @@ use crate::modules::
     plasma::plasma_event_subscription,
     sway::sway_event_subscription,
     niri::niri_event_subscription,
+    cosmic::cosmic_event_subscription,
     clock_subscription::clock_subscription,
     power_profile::power_profile_subscription,
     media_player::{media_player_subscription, media_player_position_subscription},
@@ -63,7 +64,8 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
         || has_mixer_action(&app.ron_config.disk.action_on_right_click_disk))
         || (app.modules_data.active_modules.contains(&Modules::FocusedWindowHypr)
             || app.modules_data.active_modules.contains(&Modules::FocusedWindowNiri)
-            || app.modules_data.active_modules.contains(&Modules::FocusedWindowSway))
+            || app.modules_data.active_modules.contains(&Modules::FocusedWindowSway)
+            || app.modules_data.active_modules.contains(&Modules::FocusedWindowCosmic))
             && (has_mixer_action(&app.ron_config.focused_window.action_on_left_click_focused_window)
             || has_mixer_action(&app.ron_config.focused_window.action_on_right_click_focused_window));
 
@@ -98,6 +100,7 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
     let mut hypr_sub_added          = false;
     let mut sway_sub_added          = false;
     let mut niri_event_sub_added    = false;
+    let mut cosmic_sub_added        = false;
     let mut power_profile_sub_added = false;
     let mut media_player_sub_added  = false;
 
@@ -172,6 +175,12 @@ pub fn subscription(app: &AppData) -> iced::Subscription<Message>
             {
                     subs.push(iced::Subscription::run(niri_event_subscription));
                     niri_event_sub_added = true;
+            }
+
+            Modules::CosmicWorkspaces | Modules::FocusedWindowCosmic if !cosmic_sub_added =>
+            {
+                    subs.push(iced::Subscription::run(cosmic_event_subscription));
+                    cosmic_sub_added = true;
             }
 
             Modules::Tray => subs.push(iced::Subscription::run_with(TraySubscription, tray_stream)),
