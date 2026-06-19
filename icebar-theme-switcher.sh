@@ -11,9 +11,9 @@
 # │     --cycle        -c          Cycle through all themes one by one.     │
 # │     --cycletime    -ct <s>     Auto-advance cycle every <s> seconds.    │
 # │     --workspace    -w  <wm>    Bypass workspace picker. <wm>: Sway,     │
-# │                                Hypr, Niri, Plasma or None.              │
+# │                                Hypr, Niri, Plasma, Cosmic, or None.     │
 # │     --focused      -fw <wm>    Bypass focused window picker. <wm>:      │
-# │                                Sway, Hypr, Niri, or None.               │
+# │                                Sway, Hypr, Niri, Cosmic, or None.       │
 # │     --select      -s  <name>   Directly install theme by name.          │
 # │     --help         -h          Show this help message and exit.         │
 # ╰─────────────────────────────────────────────────────────────────────────╯
@@ -23,8 +23,8 @@ NO_EXIT=false
 FORCE=false
 CYCLE=false
 CYCLE_TIME=0    # seconds to wait between themes (0 = manual prompt)
-BYPASS_WM=""    # Sway | Hypr | Niri | Plasma | None
-BYPASS_FW=""    # Sway | Hypr | Niri | Plasma | None
+BYPASS_WM=""    # Sway | Hypr | Niri | Plasma | Cosmic | None
+BYPASS_FW=""    # Sway | Hypr | Niri | Cosmic | None
 SELECT=""       # theme name to install directly
 
 # ── Help ───────────────────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ print_help()
     echo -e "    ${CYAN}-s${RESET}, ${CYAN}--select${RESET}     ${DIM}<name>${RESET}    Directly install a theme by name."
     echo -e "    ${CYAN}-h${RESET}, ${CYAN}--help${RESET}                 Show this help message and exit."
     echo
-    echo -e "  ${BWHITE}<w> and ${BWHITE}<fw> values:${RESET}  ${WHITE}Sway${RESET}  ${WHITE}Hypr${RESET}  ${WHITE}Niri${RESET}  ${WHITE}Plasma${RESET}  ${WHITE}None${RESET}"
+    echo -e "  ${BWHITE}<w> and ${BWHITE}<fw> values:${RESET}  ${WHITE}Sway${RESET}  ${WHITE}Hypr${RESET}  ${WHITE}Niri${RESET}  ${WHITE}Plasma${RESET}  ${WHITE}Cosmic${RESET}  ${WHITE}None${RESET}"
     echo
     echo -e "  ${BWHITE}Examples:${RESET}"
     echo -e "    ${DIM}./icebar-theme-switcher.sh${RESET}"
@@ -68,9 +68,10 @@ resolve_wm_arg()
         hypr)  echo "Hypr" ;;
         niri)  echo "Niri" ;;
 	plasma) echo "Plasma" ;;
+        cosmic) echo "Cosmic" ;;
         none)  echo "None" ;;
         *)
-            echo -e "  ${RED}${BOLD}✗${RESET}  Unknown ${type} compositor '${1}'. Valid values: Sway, Hypr, Niri, None." >&2
+            echo -e "  ${RED}${BOLD}✗${RESET}  Unknown ${type} compositor '${1}'. Valid values: Sway, Hypr, Niri, Plasma, Cosmic, None." >&2
             exit 1
             ;;
     esac
@@ -96,7 +97,7 @@ while [[ $i -le $# ]]; do
             ;;
         --workspace|-w)
             i=$(( i + 1 ))
-            [[ $i -gt $# ]] && { echo -e "  ${RED}${BOLD}✗${RESET}  --workspace/-w requires a value (Sway, Hypr, Niri, None)." >&2; exit 1; }
+            [[ $i -gt $# ]] && { echo -e "  ${RED}${BOLD}✗${RESET}  --workspace/-w requires a value (Sway, Hypr, Niri, Plasma, Cosmic, None)." >&2; exit 1; }
             BYPASS_WM="$(resolve_wm_arg "${!i}" "workspace")"
             ;;
         --select|-s)
@@ -106,7 +107,7 @@ while [[ $i -le $# ]]; do
             ;;
         --focused|-fw)
             i=$(( i + 1 ))
-            [[ $i -gt $# ]] && { echo -e "  ${RED}${BOLD}✗${RESET}  --focused/-fw requires a value (Sway, Hypr, Niri, None)." >&2; exit 1; }
+            [[ $i -gt $# ]] && { echo -e "  ${RED}${BOLD}✗${RESET}  --focused/-fw requires a value (Sway, Hypr, Niri, Cosmic, None)." >&2; exit 1; }
             BYPASS_FW="$(resolve_wm_arg "${!i}" "focused window")"
             ;;
     esac
@@ -165,6 +166,7 @@ pick_module() {
             *Hypr*)  wm="Hyprland" ;;
             *Niri*)  wm="Niri"     ;;
 	    *Plasma*) wm="Plasma"  ;;
+	    *Cosmic*) wm="Cosmic"  ;;
             *)       wm=""         ;;
         esac
         labels+=("$wm")
@@ -375,7 +377,7 @@ fi  # end of select mode
 fi  # end of cycle/manual selection
 
 # ── Workspace module detection ─────────────────────────────────────────────
-WM_MODULES=("SwayWorkspaces" "HyprWorkspaces" "NiriWorkspaces" "PlasmaWorkspaces")
+WM_MODULES=("SwayWorkspaces" "HyprWorkspaces" "NiriWorkspaces" "PlasmaWorkspaces" "CosmicWorkspaces")
 
 FOUND_WM_MODULE=""
 for module in "${WM_MODULES[@]}"; do
@@ -399,7 +401,7 @@ if [[ -n "$FOUND_WM_MODULE" ]]; then
 fi
 
 # ── FocusedWindow module detection ─────────────────────────────────────────
-FW_MODULES=("FocusedWindowSway" "FocusedWindowHypr" "FocusedWindowNiri")
+FW_MODULES=("FocusedWindowSway" "FocusedWindowHypr" "FocusedWindowNiri" "FocusedWindowCosmic")
 
 FOUND_FW_MODULE=""
 for module in "${FW_MODULES[@]}"; do
