@@ -21,7 +21,7 @@ pub async fn fetch_icon(conn: &Connection, combined: &str) -> zbus::Result<TrayE
     let proxy = Proxy::new(conn, service, path, "org.kde.StatusNotifierItem").await?;
     if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("IconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().filter(|(w, h, data)| *w > 0 && *h > 0 && *w <= 4096 && *h <= 4096 && (*w as u64).saturating_mul(*h as u64).saturating_mul(4) == data.len() as u64).max_by_key(|(w, h, _)| (*w as i64).saturating_mul(*h as i64))
     {
-        let rgba_data = data.chunks_exact(4).flat_map(|p| [p[1], p[2], p[3], p[0]]).collect::<Vec<u8>>();
+        let rgba_data = data.as_chunks::<4>().0.iter().flat_map(|p| [p[1], p[2], p[3], p[0]]).collect::<Vec<u8>>();
         return Ok(TrayEvent::Icon { combined: combined.to_string(), data: rgba_data, width: w as u32, height: h as u32 });
     }
 
@@ -82,7 +82,7 @@ pub async fn fetch_attention_icon(conn: &Connection, combined: &str, attention_i
 
     if let Ok(pixmaps) = proxy.get_property::<Vec<(i32, i32, Vec<u8>)>>("AttentionIconPixmap").await && let Some((w, h, data)) = pixmaps.into_iter().filter(|(w, h, data)| *w > 0 && *h > 0 && *w <= 4096 && *h <= 4096 && (*w as u64).saturating_mul(*h as u64).saturating_mul(4) == data.len() as u64).max_by_key(|(w, h, _)| (*w as i64).saturating_mul(*h as i64))
     {
-        let rgba_data = data.chunks_exact(4).flat_map(|p| [p[1], p[2], p[3], p[0]]).collect::<Vec<u8>>();
+        let rgba_data = data.as_chunks::<4>().0.iter().flat_map(|p| [p[1], p[2], p[3], p[0]]).collect::<Vec<u8>>();
         return Some(TrayEvent::AttentionIcon { combined: combined.to_string(), data: rgba_data, width: w as u32, height: h as u32 });
     }
 
@@ -153,7 +153,7 @@ pub fn load_icon_from_desktop(name: &str) -> Option<(Vec<u8>, u32, u32)>
         let flatpak_app_dirs = vec!
         [
             format!("{home}/.local/share/flatpak/app"),
-            format!("/var/lib/flatpak/app")
+            "/var/lib/flatpak/app".to_string()
         ];
         for base in flatpak_app_dirs
         {
