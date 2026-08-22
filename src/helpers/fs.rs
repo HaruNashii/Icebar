@@ -153,7 +153,7 @@ pub fn check_if_config_file_exists(different_config_path: Option<String>) -> Opt
 //   Reference them in the module lists as "Image(index)" or "CustomModule(index)".
 //
 // - Report bugs or request features at: https://github.com/HaruNashii/Icebar
-// - Contact directly on Discord: harunashiii
+// - Contact directly on Discord: haru_silly
 // - Join the contact server: https://discord.gg/CRsz24Ts3a
 //
 // =============================================================================================================================================
