@@ -24,7 +24,6 @@ serde_json = "1.0.151"
 niri-ipc = "26.4.0"
 cosmic-client-toolkit = "0.2.0"
 cosmic-protocols = { version = "0.2.0", default-features = false, features = ["client"] }
-smithay-client-toolkit = "0.21.1"
 wayland-client = "0.31.15"
 wayland-protocols = { version = "0.32.13", features = ["client", "staging"] }
 tiny-skia = "0.12.0"
