@@ -10,37 +10,37 @@ name = "icebar"
 [dependencies]
 hyprland = { git = "https://github.com/hyprland-community/hyprland-rs", branch = "master" }
 iced = { version = "0.14.0", features = ["tokio", "image"] }
-tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros", "process", "time", "sync"] }
-serde = { version = "1.0.228", features = ["derive"] }
-zbus = { version = "5.15.0", features = ["tokio"] }
-clap = { version = "4.6.1", features = ["derive"] }
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "process", "time", "sync"] }
+serde = { version = "1.0.229", features = ["derive"] }
+zbus = { version = "5.19.0", features = ["tokio"] }
+clap = { version = "4.6.6", features = ["derive"] }
 libpulse-binding = "2.30.1"
-iced_layershell = "0.18.1"
-tokio-stream = "0.1.18"
-futures-util = "0.3.32"
+iced_layershell = "0.19.1"
+tokio-stream = "0.1.19"
+futures-util = "0.3.34"
 display-info = "0.5.9"
 async-stream = "0.3.6"
-serde_json = "1.0.150"
+serde_json = "1.0.151"
 niri-ipc = "26.4.0"
 cosmic-client-toolkit = "0.2.0"
 cosmic-protocols = { version = "0.2.0", default-features = false, features = ["client"] }
-smithay-client-toolkit = "0.20.0"
-wayland-client = "0.31.14"
-wayland-protocols = { version = "0.32.9", features = ["client", "staging"] }
+smithay-client-toolkit = "0.21.1"
+wayland-client = "0.31.15"
+wayland-protocols = { version = "0.32.13", features = ["client", "staging"] }
 tiny-skia = "0.12.0"
 chrono-tz = "0.10.4"
 anyhow = "1.0.102"
-futures = "0.3.32"
-chrono = "0.4.44"
+futures = "0.3.34"
+chrono = "0.4.45"
 swayipc = "4.0.0"
 strsim = "0.11.1"
 image = "0.25.10"
 notify = "8.2.0"
-resvg = "0.47.0"
+resvg = "0.48.1"
 home = "0.5.12"
-usvg = "0.47.0"
-ron = "0.12.1"
-libc = "0.2.186"
+usvg = "0.48.1"
+ron = "0.12.2"
+libc = "0.2.189"
 iced_gif = "0.14.0"
 
 [dev-dependencies]
