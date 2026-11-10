@@ -251,20 +251,28 @@ impl StatusNotifierWatcher
             Ok(c) => c,
             Err(e) => { eprintln!("Failed to create signal emitter: {e}"); return; }
         };
-        if let Err(e) = StatusNotifierWatcher::status_notifier_item_registered(&ctxt, &combined).await
+        if let Err(e) = StatusNotifierWatcher::status_notifier_item_registered(&ctxt, &dest).await
         {
             eprintln!("Failed to emit tray signal: {e}");
         }
         println!("\n=== Tray item registered ===\nService: '{dest}'\nPath: {path}");
         let _ = self.sender.send(TrayEvent::ItemRegistered(combined.clone())).await;
-        if let Ok(icon) = fetch_icon(&self.connection, &combined).await 
-        {
-            let _ = self.sender.send(icon).await;
-        }
-        if let Some(attn) = fetch_attention_icon(&self.connection, &combined, TRAY_ATTENTION_ICON_ENABLED.load(std::sync::atomic::Ordering::Relaxed)).await
-        {
-            let _ = self.sender.send(attn).await;
-        }
+
+        let conn = self.connection.clone();
+        let sender_chan = self.sender.clone();
+        let combined_bg = combined.clone();
+        
+        tokio::spawn(async move {
+            if let Ok(icon) = fetch_icon(&conn, &combined_bg).await 
+            {
+                let _ = sender_chan.send(icon).await;
+            }
+            if let Some(attn) = fetch_attention_icon(&conn, &combined_bg, TRAY_ATTENTION_ICON_ENABLED.load(std::sync::atomic::Ordering::Relaxed)).await 
+            {
+                let _ = sender_chan.send(attn).await;
+            }
+        });
+
         spawn_item_watcher(combined.clone(), self.sender.clone());
     }
 
